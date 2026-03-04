@@ -4,11 +4,40 @@ import { theme } from '../theme/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ensurePreviewDream } from '../features/dreams/repository/dreamsRepository';
+import { observability } from '../services/observability';
+import { OBS_EVENTS } from '../services/observability/events';
 
 const qc = new QueryClient();
 export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) => {
   React.useEffect(() => {
     ensurePreviewDream();
+    observability.trackEvent(OBS_EVENTS.AppOpened);
+  }, []);
+
+  React.useEffect(() => {
+    type GlobalErrorHandler = (error: Error, isFatal?: boolean) => void;
+    type ErrorUtilsShape = {
+      getGlobalHandler?: () => GlobalErrorHandler;
+      setGlobalHandler?: (handler: GlobalErrorHandler) => void;
+    };
+    const maybeErrorUtils = (globalThis as { ErrorUtils?: ErrorUtilsShape }).ErrorUtils;
+    const previous = maybeErrorUtils?.getGlobalHandler?.();
+
+    if (!maybeErrorUtils?.setGlobalHandler || !previous) {
+      return;
+    }
+
+    maybeErrorUtils.setGlobalHandler((error, isFatal) => {
+      observability.captureError(error, {
+        isFatal: Boolean(isFatal),
+        event: OBS_EVENTS.GlobalJsError,
+      });
+      previous(error, isFatal);
+    });
+
+    return () => {
+      maybeErrorUtils.setGlobalHandler?.(previous);
+    };
   }, []);
 
   return (

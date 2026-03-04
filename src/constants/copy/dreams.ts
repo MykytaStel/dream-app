@@ -1,0 +1,111 @@
+import { Mood } from '../../features/dreams/model/dream';
+
+export const DREAM_COPY = {
+  homeTitle: 'Dream log',
+  homeSubtitle:
+    'Your latest entries are stored locally and ready for future analysis.',
+  homeGreeting: 'Good morning',
+  homeSectionLabel: 'Recent dreams',
+  homeStreakLabel: 'Streak',
+  homeTotalLabel: 'Total',
+  homeAverageLabel: 'Avg words',
+  homeDaysUnit: 'days',
+  homeFilterAll: 'All',
+  homeFilterActive: 'Active',
+  homeFilterArchived: 'Archived',
+  openDreamHint: 'Tap any entry to open the full dream.',
+  swipeEdit: 'Edit',
+  swipeDelete: 'Delete',
+  swipeArchive: 'Archive',
+  swipeUnarchive: 'Unarchive',
+  emptyTitle: 'No dreams yet',
+  emptyDescription:
+    'Record the first one from the New tab. Keep it fast: title, voice note, or a few raw lines are enough.',
+  emptyActiveTitle: 'No active dreams',
+  emptyActiveDescription:
+    'All entries are archived right now. Switch filter or record a new dream.',
+  emptyArchivedTitle: 'No archived dreams',
+  emptyArchivedDescription:
+    'Archive older entries to keep the timeline focused.',
+  untitled: 'Untitled dream',
+  archivedTag: 'Archived',
+  audioOnlyPreview: 'Voice note saved. Transcript can be added later.',
+  noDetailsPreview: 'No written details yet.',
+  detailBack: 'Back',
+  detailEdit: 'Edit dream',
+  detailArchive: 'Archive dream',
+  detailUnarchive: 'Unarchive dream',
+  detailDelete: 'Delete dream',
+  detailDeleteTitle: 'Delete this dream?',
+  detailDeleteDescription:
+    'This action removes the entry from local storage and cannot be undone.',
+  detailDeleteCancel: 'Cancel',
+  detailDeleteConfirm: 'Delete',
+  detailMissingTitle: 'Dream not found',
+  detailMissingDescription:
+    'This entry is no longer available in local storage.',
+  detailMetaTitle: 'Dream details',
+  detailTranscriptTitle: 'Full entry',
+  detailTranscriptEmpty: 'No written transcript saved for this dream.',
+  detailTagsEmpty: 'No tags attached yet.',
+  detailAudioDescription: 'An original voice note is attached to this dream.',
+  detailAudioPathLabel: 'Local file',
+  createTitle: 'Capture a dream',
+  createSubtitle:
+    'Save the memory fast, keep the original voice note, and add just enough structure for future stats.',
+  createHeroTitle: 'Capture before it fades',
+  createHeroDescription:
+    'Write a few raw lines, keep the voice note, and shape the rest later.',
+  editTitle: 'Edit dream',
+  editSubtitle:
+    'Refine the memory, adjust tags and mood, and keep the original story intact.',
+  editHeroTitle: 'Polish the memory',
+  editHeroDescription:
+    'Update details while the dream is still meaningful, without losing the original entry.',
+  coreTitle: 'Core details',
+  coreDescription: 'Title is optional. A written note or a voice note is enough.',
+  titleLabel: 'Dream title',
+  titlePlaceholder: 'Flying over old rooftops',
+  sleepDateLabel: 'Sleep date',
+  sleepDatePlaceholder: 'YYYY-MM-DD',
+  textLabel: 'What do you remember?',
+  textPlaceholder: 'Write the dream while it is still fresh...',
+  wordsUnit: 'words',
+  moodTitle: 'Mood after waking',
+  moodDescription: 'Optional now, useful later for trends and monthly reports.',
+  tagsTitle: 'Tags',
+  tagsDescription: 'Add symbols, people, places, or recurring themes.',
+  tagsPlaceholder: 'ocean',
+  tagsEmpty: 'No tags yet. Tap add to save your first one.',
+  voiceTitle: 'Voice note',
+  voiceDescription: 'Keep the raw memory, then use transcription later.',
+  voiceIdleHint: 'One tap starts a raw voice capture.',
+  startRecording: 'Start recording',
+  stopRecording: 'Stop recording',
+  recordingHint: 'Recording in progress. Stop when you are done.',
+  attachedAudioTitle: 'Voice note attached',
+  removeAudio: 'Remove voice note',
+  addTag: 'Add',
+  saveDream: 'Save dream',
+  updateDream: 'Update dream',
+  saveErrorTitle: 'Nothing to save',
+  saveErrorDescription:
+    'Add a title, write what you remember, or attach a voice note first.',
+  saveSuccessTitle: 'Saved',
+  saveSuccessDescription: 'Your dream was saved locally.',
+  updateSuccessTitle: 'Updated',
+  updateSuccessDescription: 'Your dream was updated locally.',
+  audioErrorTitle: 'Audio error',
+} as const;
+
+export const DREAM_MOODS: Array<{ label: string; value: Mood }> = [
+  { label: 'Calm', value: 'neutral' },
+  { label: 'Bright', value: 'positive' },
+  { label: 'Heavy', value: 'negative' },
+];
+
+export const DREAM_MOOD_LABELS: Record<Mood, string> = {
+  neutral: 'Calm',
+  positive: 'Bright',
+  negative: 'Heavy',
+};

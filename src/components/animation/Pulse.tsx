@@ -1,7 +1,12 @@
 import React from 'react';
 import Animated, { useSharedValue, withRepeat, withTiming, useAnimatedStyle, Easing } from 'react-native-reanimated';
+import { useTheme } from '@shopify/restyle';
+import { Theme } from '../../theme/theme';
+import { createPulseStyles } from './Pulse.styles';
 
 export const Pulse = ({ size = 64, active }: { size?: number; active: boolean }) => {
+  const t = useTheme<Theme>();
+  const styles = createPulseStyles(t, size);
   const scale = useSharedValue(1);
 
   React.useEffect(() => {
@@ -13,6 +18,9 @@ export const Pulse = ({ size = 64, active }: { size?: number; active: boolean })
   }, [scale, active]);
 
   const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
-  // eslint-disable-next-line react-native/no-inline-styles
-  return <Animated.View style={[{ width: size, height: size, borderRadius: size/2, backgroundColor: '#8A7CFF' }, style]} />;
+  return (
+    <Animated.View
+      style={[styles.pulse, style]}
+    />
+  );
 };

@@ -1,0 +1,35 @@
+import React from 'react';
+import { TextInput, TextInputProps, View } from 'react-native';
+import { useTheme } from '@shopify/restyle';
+import { Theme } from '../../theme/theme';
+import { Text } from './Text';
+import { createFormFieldStyles } from './FormField.styles';
+
+export function FormField({
+  label,
+  multiline,
+  helperText,
+  inputStyle,
+  ...props
+}: TextInputProps & {
+  label?: string;
+  helperText?: string;
+  inputStyle?: TextInputProps['style'];
+}) {
+  const t = useTheme<Theme>();
+  const styles = createFormFieldStyles(t);
+
+  return (
+    <View style={styles.container}>
+      {label ? <Text style={styles.label}>{label}</Text> : null}
+      <TextInput
+        placeholderTextColor="#777"
+        multiline={multiline}
+        textAlignVertical={multiline ? 'top' : 'center'}
+        style={[styles.input, inputStyle]}
+        {...props}
+      />
+      {helperText ? <Text style={styles.helper}>{helperText}</Text> : null}
+    </View>
+  );
+}

@@ -26,3 +26,12 @@ Version: `0.0.1`
 
 This is an early MVP focused on the core journaling flow. Future iterations may
 add transcription, reminders, AI summaries, and richer dream analytics.
+
+## Infrastructure
+
+- CI (GitHub Actions): typecheck, lint, tests
+- Manual Android release pipeline (GitHub Actions): build `app-release.aab`
+- Observability layer is in place with console provider and global JS error hook
+
+See [docs/INFRASTRUCTURE_CHECKLIST.md](/Users/mykyta/Documents/projects/dream-app/docs/INFRASTRUCTURE_CHECKLIST.md) for step-by-step rollout.
+Secrets/access requirements are listed in [docs/GITHUB_SECRETS.md](/Users/mykyta/Documents/projects/dream-app/docs/GITHUB_SECRETS.md).

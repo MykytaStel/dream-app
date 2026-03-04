@@ -20,6 +20,7 @@ motivation to keep recording.
 - Local-first storage is acceptable for MVP
 - AI should summarize and enrich, not block the core journaling loop
 - Privacy must be understandable and explicit because dream data is sensitive
+- The product should be ready for English and Ukrainian support
 
 ## MVP scope
 
@@ -49,6 +50,11 @@ motivation to keep recording.
 
 - Morning reminder window
 - Optional evening reminder to prepare for sleep tracking
+
+### Languages
+
+- English
+- Ukrainian
 
 ## Post-MVP roadmap
 
@@ -147,6 +153,7 @@ type DreamEntry = {
 4. Add real `StatsScreen` metrics from local storage
 5. Add local notification reminders
 6. Decide whether transcription is local-only or server-assisted
+7. Prepare the UI copy layer for English and Ukrainian
 
 ## Current repo issues found
 

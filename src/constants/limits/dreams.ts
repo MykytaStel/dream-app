@@ -1,0 +1,2 @@
+export const DREAM_PREVIEW_MAX_LENGTH = 140;
+export const DREAM_TEXT_MIN_HEIGHT = 150;

@@ -25,6 +25,31 @@ export function deleteDream(id: string) {
   kv.set(KEY, JSON.stringify(next));
 }
 
+export function archiveDream(id: string) {
+  const next = listDreams().map(dream =>
+    dream.id === id
+      ? {
+          ...dream,
+          archivedAt: Date.now(),
+        }
+      : dream,
+  );
+  kv.set(KEY, JSON.stringify(next));
+}
+
+export function unarchiveDream(id: string) {
+  const next = listDreams().map(dream => {
+    if (dream.id !== id) {
+      return dream;
+    }
+
+    const nextDream: Dream = { ...dream, archivedAt: undefined };
+    delete nextDream.archivedAt;
+    return nextDream;
+  });
+  kv.set(KEY, JSON.stringify(next));
+}
+
 export function ensurePreviewDream() {
   if (!__DEV__) {
     return;

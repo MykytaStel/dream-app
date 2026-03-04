@@ -1,5 +1,5 @@
-import { kv } from './mmkv';
-import { Dream } from '../types/dream';
+import { kv } from '../../../services/storage/mmkv';
+import { Dream } from '../model/dream';
 
 const KEY = 'dreams';
 

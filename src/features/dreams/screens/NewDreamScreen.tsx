@@ -8,14 +8,14 @@ import {
   View,
 } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import { Button } from '../components/ui/Button';
-import { Card } from '../components/ui/Card';
-import { Text } from '../components/ui/Text';
-import { startRecording, stopRecording } from '../services/audio';
-import { saveDream } from '../storage/dreams';
-import { nanoid } from '../services/id';
-import { Dream, Mood } from '../types/dream';
-import { Theme } from '../theme/theme';
+import { Button } from '../../../components/ui/Button';
+import { Card } from '../../../components/ui/Card';
+import { Text } from '../../../components/ui/Text';
+import { Theme } from '../../../theme/theme';
+import { Dream, Mood } from '../model/dream';
+import { saveDream } from '../repository/dreamsRepository';
+import { startRecording, stopRecording } from '../services/audioService';
+import { createDreamId } from '../utils/createDreamId';
 
 const MOODS: Array<{ label: string; value: Mood }> = [
   { label: 'Calm', value: 'neutral' },
@@ -104,7 +104,7 @@ export default function NewDreamScreen() {
     }
 
     const dream: Dream = {
-      id: nanoid(),
+      id: createDreamId(),
       createdAt: Date.now(),
       sleepDate: sleepDate.trim() || getTodayDate(),
       title: cleanTitle || undefined,

@@ -3,11 +3,11 @@ import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
-import { Card } from '../components/ui/Card';
-import { Text } from '../components/ui/Text';
-import { listDreams } from '../storage/dreams';
-import { Dream } from '../types/dream';
-import { Theme } from '../theme/theme';
+import { Card } from '../../../components/ui/Card';
+import { Text } from '../../../components/ui/Text';
+import { Theme } from '../../../theme/theme';
+import { Dream } from '../../dreams/model/dream';
+import { listDreams } from '../../dreams/repository/dreamsRepository';
 
 function toDreamDate(dream: Dream) {
   const value = dream.sleepDate ?? new Date(dream.createdAt).toISOString().slice(0, 10);

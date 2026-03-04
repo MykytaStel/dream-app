@@ -1,2 +1,3 @@
-import { MMKV } from 'react-native-mmkv';
-export const kv = new MMKV({ id: 'kaleidoscope' });
+import { createMMKV } from 'react-native-mmkv';
+
+export const kv = createMMKV({ id: 'kaleidoscope' });

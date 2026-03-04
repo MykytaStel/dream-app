@@ -2,6 +2,7 @@ import React from 'react';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import DreamDetailScreen from '../../features/dreams/screens/DreamDetailScreen';
+import EditDreamScreen from '../../features/dreams/screens/EditDreamScreen';
 import Tabs from './tabs';
 import { useTheme } from '@shopify/restyle';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from './routes';
@@ -35,6 +36,10 @@ export default function RootNavigator() {
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.DreamDetail}
           component={DreamDetailScreen}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.DreamEditor}
+          component={EditDreamScreen}
         />
       </Stack.Navigator>
     </NavigationContainer>

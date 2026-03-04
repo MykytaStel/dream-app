@@ -1,36 +1,37 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
+import { ScreenContainer } from '../../../components/ui/ScreenContainer';
+import { SectionHeader } from '../../../components/ui/SectionHeader';
+import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
-import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
 import { listDreams } from '../repository/dreamsRepository';
+import { DREAM_COPY, DREAM_MOOD_LABELS } from '../../../constants/copy/dreams';
+import { DREAM_PREVIEW_MAX_LENGTH } from '../../../constants/limits/dreams';
 
 function formatPreview(dream: Dream) {
   const text = dream.text?.trim();
   if (text) {
-    return text.length > 140 ? `${text.slice(0, 137)}...` : text;
+    return text.length > DREAM_PREVIEW_MAX_LENGTH
+      ? `${text.slice(0, DREAM_PREVIEW_MAX_LENGTH - 3)}...`
+      : text;
   }
 
   if (dream.audioUri) {
-    return 'Voice note saved. Transcript can be added later.';
+    return DREAM_COPY.audioOnlyPreview;
   }
 
-  return 'No written details yet.';
+  return DREAM_COPY.noDetailsPreview;
 }
 
 function moodLabel(mood?: Dream['mood']) {
-  if (mood === 'positive') return 'Bright';
-  if (mood === 'negative') return 'Heavy';
-  if (mood === 'neutral') return 'Calm';
-  return undefined;
+  return mood ? DREAM_MOOD_LABELS[mood] : undefined;
 }
 
 export default function HomeScreen() {
-  const t = useTheme<Theme>();
   const [dreams, setDreams] = React.useState(() => listDreams());
 
   useFocusEffect(
@@ -41,36 +42,21 @@ export default function HomeScreen() {
 
   if (!dreams.length) {
     return (
-      <View
-        style={{
-          flex: 1,
-          padding: 16,
-          justifyContent: 'center',
-          backgroundColor: t.colors.background,
-        }}
-      >
+      <ScreenContainer scroll={false} style={{ justifyContent: 'center' }}>
         <Card style={{ gap: 10 }}>
-          <Text style={{ fontSize: 24, fontWeight: '700' }}>No dreams yet</Text>
-          <Text style={{ color: t.colors.textDim }}>
-            Record the first one from the New tab. Keep it fast: title, voice note,
-            or a few raw lines are enough.
-          </Text>
+          <SectionHeader title={DREAM_COPY.emptyTitle} subtitle={DREAM_COPY.emptyDescription} />
         </Card>
-      </View>
+      </ScreenContainer>
     );
   }
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: t.colors.background }}
-      contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}
-    >
-      <View style={{ gap: 6 }}>
-        <Text style={{ fontSize: 28, fontWeight: '700' }}>Dream log</Text>
-        <Text style={{ color: t.colors.textDim }}>
-          Your latest entries are stored locally and ready for future analysis.
-        </Text>
-      </View>
+    <ScreenContainer scroll>
+      <SectionHeader
+        title={DREAM_COPY.homeTitle}
+        subtitle={DREAM_COPY.homeSubtitle}
+        large
+      />
 
       {dreams.map(dream => {
         const mood = moodLabel(dream.mood);
@@ -78,9 +64,9 @@ export default function HomeScreen() {
           <Card key={dream.id} style={{ gap: 12 }}>
             <View style={{ gap: 6 }}>
               <Text style={{ fontSize: 18, fontWeight: '700' }}>
-                {dream.title || 'Untitled dream'}
+                {dream.title || DREAM_COPY.untitled}
               </Text>
-              <Text style={{ color: t.colors.textDim }}>
+              <Text style={{ color: '#B6B6C2' }}>
                 {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
                 {' · '}
                 {new Date(dream.createdAt).toLocaleTimeString([], {
@@ -90,58 +76,16 @@ export default function HomeScreen() {
               </Text>
             </View>
 
-            <Text style={{ color: t.colors.textDim }}>{formatPreview(dream)}</Text>
+            <Text style={{ color: '#B6B6C2' }}>{formatPreview(dream)}</Text>
 
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-              {mood ? (
-                <View
-                  style={{
-                    borderRadius: 999,
-                    backgroundColor: t.colors.surfaceAlt,
-                    borderWidth: 1,
-                    borderColor: t.colors.border,
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                  }}
-                >
-                  <Text style={{ fontWeight: '600' }}>{mood}</Text>
-                </View>
-              ) : null}
-
-              {dream.audioUri ? (
-                <View
-                  style={{
-                    borderRadius: 999,
-                    backgroundColor: t.colors.surfaceAlt,
-                    borderWidth: 1,
-                    borderColor: t.colors.border,
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                  }}
-                >
-                  <Text style={{ fontWeight: '600' }}>Audio</Text>
-                </View>
-              ) : null}
-
-              {dream.tags.map(tag => (
-                <View
-                  key={tag}
-                  style={{
-                    borderRadius: 999,
-                    backgroundColor: t.colors.surfaceAlt,
-                    borderWidth: 1,
-                    borderColor: t.colors.border,
-                    paddingVertical: 6,
-                    paddingHorizontal: 10,
-                  }}
-                >
-                  <Text style={{ fontWeight: '600' }}>{tag}</Text>
-                </View>
-              ))}
+              {mood ? <TagChip label={mood} /> : null}
+              {dream.audioUri ? <TagChip label="Audio" /> : null}
+              {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
             </View>
           </Card>
         );
       })}
-    </ScrollView>
+    </ScreenContainer>
   );
 }

@@ -1,13 +1,16 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
-import { ScrollView, View } from 'react-native';
+import { View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
-import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
+import { InfoRow } from '../../../components/ui/InfoRow';
+import { ScreenContainer } from '../../../components/ui/ScreenContainer';
+import { SectionHeader } from '../../../components/ui/SectionHeader';
+import { StatCard } from '../../../components/ui/StatCard';
 import { Text } from '../../../components/ui/Text';
-import { Theme } from '../../../theme/theme';
 import { Dream } from '../../dreams/model/dream';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
+import { STATS_COPY } from '../../../constants/copy/stats';
 
 function toDreamDate(dream: Dream) {
   const value = dream.sleepDate ?? new Date(dream.createdAt).toISOString().slice(0, 10);
@@ -64,7 +67,6 @@ function getEntriesLastSevenDays(dreams: Dream[]) {
 }
 
 export default function StatsScreen() {
-  const t = useTheme<Theme>();
   const [dreams, setDreams] = React.useState(() => listDreams());
 
   useFocusEffect(
@@ -84,75 +86,33 @@ export default function StatsScreen() {
   const averageWords = dreams.length ? Math.round(totalWords / dreams.length) : 0;
 
   return (
-    <ScrollView
-      style={{ flex: 1, backgroundColor: t.colors.background }}
-      contentContainerStyle={{ padding: 16, gap: 12, paddingBottom: 32 }}
-    >
-      <View style={{ gap: 6 }}>
-        <Text style={{ fontSize: 28, fontWeight: '700' }}>Stats</Text>
-        <Text style={{ color: t.colors.textDim }}>
-          Lightweight analytics from local dream entries.
-        </Text>
-      </View>
+    <ScreenContainer scroll>
+      <SectionHeader title={STATS_COPY.title} subtitle={STATS_COPY.subtitle} large />
 
       <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Card style={{ flex: 1 }}>
-          <Text style={{ fontWeight: '700' }}>Current streak</Text>
-          <Text style={{ marginTop: 6, fontSize: 28, fontWeight: '700' }}>
-            {streak}
-          </Text>
-        </Card>
-        <Card style={{ flex: 1 }}>
-          <Text style={{ fontWeight: '700' }}>Last 7 days</Text>
-          <Text style={{ marginTop: 6, fontSize: 28, fontWeight: '700' }}>
-            {lastSevenDays}
-          </Text>
-        </Card>
+        <StatCard label={STATS_COPY.currentStreak} value={streak} />
+        <StatCard label={STATS_COPY.lastSevenDays} value={lastSevenDays} />
       </View>
 
       <Card style={{ gap: 12 }}>
-        <Text style={{ fontWeight: '700' }}>Journal volume</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Entries</Text>
-          <Text>{dreams.length}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Words saved</Text>
-          <Text>{totalWords}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Average words</Text>
-          <Text>{averageWords}</Text>
-        </View>
+        <Text style={{ fontWeight: '700' }}>{STATS_COPY.journalVolume}</Text>
+        <InfoRow label={STATS_COPY.entries} value={dreams.length} />
+        <InfoRow label={STATS_COPY.wordsSaved} value={totalWords} />
+        <InfoRow label={STATS_COPY.averageWords} value={averageWords} />
       </Card>
 
       <Card style={{ gap: 12 }}>
-        <Text style={{ fontWeight: '700' }}>Entry structure</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Voice notes</Text>
-          <Text>{voiceNotes}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Tagged dreams</Text>
-          <Text>{taggedEntries}</Text>
-        </View>
+        <Text style={{ fontWeight: '700' }}>{STATS_COPY.entryStructure}</Text>
+        <InfoRow label={STATS_COPY.voiceNotes} value={voiceNotes} />
+        <InfoRow label={STATS_COPY.taggedDreams} value={taggedEntries} />
       </Card>
 
       <Card style={{ gap: 12 }}>
-        <Text style={{ fontWeight: '700' }}>Mood breakdown</Text>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Bright</Text>
-          <Text>{positive}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Calm</Text>
-          <Text>{neutral}</Text>
-        </View>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text style={{ color: t.colors.textDim }}>Heavy</Text>
-          <Text>{negative}</Text>
-        </View>
+        <Text style={{ fontWeight: '700' }}>{STATS_COPY.moodBreakdown}</Text>
+        <InfoRow label={STATS_COPY.bright} value={positive} />
+        <InfoRow label={STATS_COPY.calm} value={neutral} />
+        <InfoRow label={STATS_COPY.heavy} value={negative} />
       </Card>
-    </ScrollView>
+    </ScreenContainer>
   );
 }

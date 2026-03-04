@@ -31,7 +31,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: yarn
 
       - name: Setup Java
         uses: actions/setup-java@v4
@@ -43,7 +42,9 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Enable Corepack
-        run: corepack enable
+        run: |
+          corepack enable
+          corepack prepare yarn@3.6.4 --activate
 
       - name: Install dependencies
         run: yarn install --immutable

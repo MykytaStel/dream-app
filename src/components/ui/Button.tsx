@@ -11,11 +11,15 @@ export const Button = ({
   onPress,
   style,
   variant = 'primary',
-}: { title: string; onPress?: () => void; style?: ViewStyle; variant?: 'primary' | 'ghost' }) => {
+}: {
+  title: string;
+  onPress?: () => void;
+  style?: ViewStyle;
+  variant?: 'primary' | 'ghost' | 'danger';
+}) => {
   const t = useTheme<Theme>();
   const [pressed, setPressed] = React.useState(false);
-  const isPrimary = variant === 'primary';
-  const styles = createButtonStyles(t, isPrimary);
+  const styles = createButtonStyles(t, variant);
   const anim = useAnimatedStyle(() => ({
     transform: [
       { scale: withTiming(pressed ? 0.985 : 1, { duration: 120 }) },

@@ -20,6 +20,11 @@ export function getDream(id: string): Dream | undefined {
   return listDreams().find(x => x.id === id);
 }
 
+export function deleteDream(id: string) {
+  const next = listDreams().filter(dream => dream.id !== id);
+  kv.set(KEY, JSON.stringify(next));
+}
+
 export function ensurePreviewDream() {
   if (!__DEV__) {
     return;

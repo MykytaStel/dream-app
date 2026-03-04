@@ -15,6 +15,38 @@ export function createHomeScreenStyles(theme: Theme) {
     dreamPressable: {
       borderRadius: theme.borderRadii.xl,
     },
+    swipeableContainer: {
+      borderRadius: theme.borderRadii.xl,
+      overflow: 'hidden',
+    },
+    swipeActionsContainer: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      gap: 8,
+      paddingLeft: 8,
+    },
+    swipeAction: {
+      width: 84,
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderRadius: theme.borderRadii.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    swipeEditAction: {
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    swipeDeleteAction: {
+      backgroundColor: theme.colors.primaryAlt,
+      borderColor: theme.colors.primaryAlt,
+    },
+    swipeActionText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.text,
+      textAlign: 'center',
+    },
     heroCard: {
       gap: 18,
       overflow: 'hidden',

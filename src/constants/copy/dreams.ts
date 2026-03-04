@@ -11,6 +11,8 @@ export const DREAM_COPY = {
   homeAverageLabel: 'Avg words',
   homeDaysUnit: 'days',
   openDreamHint: 'Tap any entry to open the full dream.',
+  swipeEdit: 'Edit',
+  swipeDelete: 'Delete',
   emptyTitle: 'No dreams yet',
   emptyDescription:
     'Record the first one from the New tab. Keep it fast: title, voice note, or a few raw lines are enough.',
@@ -19,6 +21,12 @@ export const DREAM_COPY = {
   noDetailsPreview: 'No written details yet.',
   detailBack: 'Back',
   detailEdit: 'Edit dream',
+  detailDelete: 'Delete dream',
+  detailDeleteTitle: 'Delete this dream?',
+  detailDeleteDescription:
+    'This action removes the entry from local storage and cannot be undone.',
+  detailDeleteCancel: 'Cancel',
+  detailDeleteConfirm: 'Delete',
   detailMissingTitle: 'Dream not found',
   detailMissingDescription:
     'This entry is no longer available in local storage.',

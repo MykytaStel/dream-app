@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
@@ -14,7 +14,7 @@ import { Theme } from '../../../theme/theme';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
-import { getDream } from '../repository/dreamsRepository';
+import { deleteDream, getDream } from '../repository/dreamsRepository';
 import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
 import { Button } from '../../../components/ui/Button';
 
@@ -69,8 +69,30 @@ export default function DreamDetailScreen() {
     );
   }
 
+  const dreamId = dream.id;
   const moodLabel = dream.mood ? DREAM_MOOD_LABELS[dream.mood] : undefined;
   const wordsCount = countDreamWords(dream.text);
+
+  function onDeleteDream() {
+    Alert.alert(
+      DREAM_COPY.detailDeleteTitle,
+      DREAM_COPY.detailDeleteDescription,
+      [
+        {
+          text: DREAM_COPY.detailDeleteCancel,
+          style: 'cancel',
+        },
+        {
+          text: DREAM_COPY.detailDeleteConfirm,
+          style: 'destructive',
+          onPress: () => {
+            deleteDream(dreamId);
+            navigation.goBack();
+          },
+        },
+      ],
+    );
+  }
 
   return (
     <ScreenContainer scroll>
@@ -119,9 +141,14 @@ export default function DreamDetailScreen() {
           variant="ghost"
           onPress={() =>
             navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
-              dreamId: dream.id,
+              dreamId,
             })
           }
+        />
+        <Button
+          title={DREAM_COPY.detailDelete}
+          variant="danger"
+          onPress={onDeleteDream}
         />
       </Card>
 

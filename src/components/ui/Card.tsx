@@ -7,6 +7,7 @@ export const Card = ({ style, ...p }: ViewProps) => {
   const t = useTheme<Theme>();
   return (
     <View
+      // eslint-disable-next-line react-native/no-inline-styles
       style={[{
         backgroundColor: t.colors.surface,
         borderRadius: t.borderRadii.lg,

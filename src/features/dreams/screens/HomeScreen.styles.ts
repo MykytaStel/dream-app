@@ -12,6 +12,9 @@ export function createHomeScreenStyles(theme: Theme) {
     dreamCard: {
       gap: 12,
     },
+    dreamPressable: {
+      borderRadius: theme.borderRadii.xl,
+    },
     heroCard: {
       gap: 18,
       overflow: 'hidden',
@@ -85,6 +88,9 @@ export function createHomeScreenStyles(theme: Theme) {
       fontWeight: '600',
       letterSpacing: 0.6,
       textTransform: 'uppercase',
+    },
+    sectionHint: {
+      color: theme.colors.textDim,
     },
     dreamRow: {
       flexDirection: 'row',

@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
@@ -15,7 +14,7 @@ import { saveDream } from '../repository/dreamsRepository';
 import { startRecording, stopRecording } from '../services/audioService';
 import { createDreamId } from '../utils/createDreamId';
 import { DREAM_COPY, DREAM_MOODS } from '../../../constants/copy/dreams';
-import { DREAM_TEXT_MIN_HEIGHT } from '../../../constants/limits/dreams';
+import { createNewDreamScreenStyles } from './NewDreamScreen.styles';
 
 function getTodayDate() {
   const now = new Date();
@@ -37,6 +36,7 @@ export default function NewDreamScreen() {
   const [mood, setMood] = React.useState<Mood | undefined>();
   const [tags, setTags] = React.useState<string[]>([]);
   const [tagInput, setTagInput] = React.useState('');
+  const baseStyles = createNewDreamScreenStyles(t, false);
 
   async function onToggleRecord() {
     try {
@@ -118,7 +118,7 @@ export default function NewDreamScreen() {
         large
       />
 
-      <Card style={{ gap: 12 }}>
+      <Card style={baseStyles.card}>
         <SectionHeader
           title={DREAM_COPY.coreTitle}
           subtitle={DREAM_COPY.coreDescription}
@@ -143,7 +143,7 @@ export default function NewDreamScreen() {
           value={text}
           onChangeText={setText}
           multiline
-          inputStyle={{ minHeight: DREAM_TEXT_MIN_HEIGHT }}
+          inputStyle={baseStyles.textInput}
           helperText={
             text.trim()
               ? `${text.trim().split(/\s+/).length} ${DREAM_COPY.wordsUnit}`
@@ -152,15 +152,16 @@ export default function NewDreamScreen() {
         />
       </Card>
 
-      <Card style={{ gap: 12 }}>
+      <Card style={baseStyles.card}>
         <SectionHeader
           title={DREAM_COPY.moodTitle}
           subtitle={DREAM_COPY.moodDescription}
         />
 
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={baseStyles.moodRow}>
           {DREAM_MOODS.map(option => {
             const selected = mood === option.value;
+            const styles = createNewDreamScreenStyles(t, selected);
             return (
               <Pressable
                 key={option.value}
@@ -169,23 +170,9 @@ export default function NewDreamScreen() {
                     current === option.value ? undefined : option.value,
                   )
                 }
-                style={{
-                  flex: 1,
-                  paddingVertical: 12,
-                  paddingHorizontal: 10,
-                  borderRadius: 14,
-                  borderWidth: 1,
-                  borderColor: selected ? t.colors.primary : t.colors.border,
-                  backgroundColor: selected ? t.colors.primary : t.colors.surfaceAlt,
-                }}
+                style={styles.moodOption}
               >
-                <Text
-                  style={{
-                    textAlign: 'center',
-                    fontWeight: '700',
-                    color: selected ? t.colors.background : t.colors.text,
-                  }}
-                >
+                <Text style={styles.moodLabel}>
                   {option.label}
                 </Text>
               </Pressable>
@@ -194,36 +181,36 @@ export default function NewDreamScreen() {
         </View>
       </Card>
 
-      <Card style={{ gap: 12 }}>
+      <Card style={baseStyles.card}>
         <SectionHeader
           title={DREAM_COPY.tagsTitle}
           subtitle={DREAM_COPY.tagsDescription}
         />
 
-        <View style={{ flexDirection: 'row', gap: 8 }}>
+        <View style={baseStyles.tagsInputRow}>
           <FormField
             label=""
             placeholder={DREAM_COPY.tagsPlaceholder}
             value={tagInput}
             onChangeText={setTagInput}
             onSubmitEditing={addTag}
-            inputStyle={{ flex: 1 }}
+            inputStyle={baseStyles.tagInput}
           />
-          <Button title={DREAM_COPY.addTag} onPress={addTag} style={{ minWidth: 92 }} />
+          <Button title={DREAM_COPY.addTag} onPress={addTag} style={baseStyles.tagButton} />
         </View>
 
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View style={baseStyles.tagsWrap}>
           {tags.length ? (
             tags.map(tag => (
               <TagChip key={tag} label={`${tag} x`} onPress={() => removeTag(tag)} />
             ))
           ) : (
-            <Text style={{ color: t.colors.textDim }}>{DREAM_COPY.tagsEmpty}</Text>
+            <Text style={baseStyles.emptyTags}>{DREAM_COPY.tagsEmpty}</Text>
           )}
         </View>
       </Card>
 
-      <Card style={{ gap: 12 }}>
+      <Card style={baseStyles.card}>
         <SectionHeader
           title={DREAM_COPY.voiceTitle}
           subtitle={DREAM_COPY.voiceDescription}
@@ -235,22 +222,13 @@ export default function NewDreamScreen() {
         />
 
         {recording ? (
-          <Text style={{ color: t.colors.accent }}>{DREAM_COPY.recordingHint}</Text>
+          <Text style={baseStyles.recordingHint}>{DREAM_COPY.recordingHint}</Text>
         ) : null}
 
         {audioUri ? (
-          <View
-            style={{
-              gap: 8,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: t.colors.border,
-              backgroundColor: t.colors.surfaceAlt,
-              padding: 12,
-            }}
-          >
-            <Text style={{ fontWeight: '700' }}>{DREAM_COPY.attachedAudioTitle}</Text>
-            <Text style={{ color: t.colors.textDim }}>{audioUri}</Text>
+          <View style={baseStyles.attachedAudioCard}>
+            <Text style={baseStyles.attachedAudioTitle}>{DREAM_COPY.attachedAudioTitle}</Text>
+            <Text style={baseStyles.attachedAudioUri}>{audioUri}</Text>
             <Button
               title={DREAM_COPY.removeAudio}
               variant="ghost"

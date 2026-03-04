@@ -1,13 +1,13 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { Card } from './Card';
 import { Text } from './Text';
+import { statCardStyles } from './StatCard.styles';
 
 export function StatCard({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <Card style={{ flex: 1 }}>
-      <Text style={{ fontWeight: '700' }}>{label}</Text>
-      <Text style={{ marginTop: 6, fontSize: 28, fontWeight: '700' }}>{value}</Text>
+    <Card style={statCardStyles.card}>
+      <Text style={statCardStyles.label}>{label}</Text>
+      <Text style={statCardStyles.value}>{value}</Text>
     </Card>
   );
 }

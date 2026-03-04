@@ -1,9 +1,9 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../theme/theme';
 import { Text } from './Text';
+import { createSectionHeaderStyles } from './SectionHeader.styles';
 
 export function SectionHeader({
   title,
@@ -15,11 +15,12 @@ export function SectionHeader({
   large?: boolean;
 }) {
   const t = useTheme<Theme>();
+  const styles = createSectionHeaderStyles(t, large);
 
   return (
-    <View style={{ gap: 6 }}>
-      <Text style={{ fontSize: large ? 28 : 22, fontWeight: '700' }}>{title}</Text>
-      {subtitle ? <Text style={{ color: t.colors.textDim }}>{subtitle}</Text> : null}
+    <View style={styles.container}>
+      <Text style={styles.title}>{title}</Text>
+      {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
     </View>
   );
 }

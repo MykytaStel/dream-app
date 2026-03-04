@@ -1,6 +1,6 @@
 import React from 'react';
-import { View } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { Pressable, View } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
@@ -13,6 +13,8 @@ import { getAverageWords, getCurrentStreak, getDreamDate } from '../model/dreamA
 import { listDreams } from '../repository/dreamsRepository';
 import { DREAM_COPY, DREAM_MOOD_LABELS } from '../../../constants/copy/dreams';
 import { DREAM_PREVIEW_MAX_LENGTH } from '../../../constants/limits/dreams';
+import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { createHomeScreenStyles } from './HomeScreen.styles';
 
 function formatPreview(dream: Dream) {
@@ -57,6 +59,7 @@ function formatDateParts(dream: Dream) {
 
 export default function HomeScreen() {
   const t = useTheme<Theme>();
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [dreams, setDreams] = React.useState(() => listDreams());
   const styles = createHomeScreenStyles(t);
   const streak = getCurrentStreak(dreams);
@@ -107,59 +110,70 @@ export default function HomeScreen() {
       </Card>
 
       <Text style={styles.sectionLabel}>{DREAM_COPY.homeSectionLabel}</Text>
+      <Text style={styles.sectionHint}>{DREAM_COPY.openDreamHint}</Text>
 
       {dreams.map(dream => {
         const mood = moodLabel(dream.mood);
         const dateParts = formatDateParts(dream);
         return (
-          <Card key={dream.id} style={styles.dreamCard}>
-            <View style={styles.dreamRow}>
-              <View style={styles.dateColumn}>
-                <Text style={styles.weekday}>{dateParts.weekday}</Text>
-                <Text style={styles.dayNumber}>{dateParts.day}</Text>
-                <Text style={styles.month}>{dateParts.month}</Text>
-              </View>
+          <Pressable
+            key={dream.id}
+            style={styles.dreamPressable}
+            onPress={() =>
+              navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+                dreamId: dream.id,
+              })
+            }
+          >
+            <Card style={styles.dreamCard}>
+              <View style={styles.dreamRow}>
+                <View style={styles.dateColumn}>
+                  <Text style={styles.weekday}>{dateParts.weekday}</Text>
+                  <Text style={styles.dayNumber}>{dateParts.day}</Text>
+                  <Text style={styles.month}>{dateParts.month}</Text>
+                </View>
 
-              <View style={styles.dreamContent}>
-                <View style={styles.dreamMeta}>
-                  <View style={styles.titleRow}>
-                    <Text style={styles.title}>
-                      {dream.title || DREAM_COPY.untitled}
+                <View style={styles.dreamContent}>
+                  <View style={styles.dreamMeta}>
+                    <View style={styles.titleRow}>
+                      <Text style={styles.title}>
+                        {dream.title || DREAM_COPY.untitled}
+                      </Text>
+                      <View
+                        style={[
+                          styles.moodDot,
+                          { backgroundColor: moodColor(t, dream.mood) },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.timestamp}>
+                      {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
+                      {' · '}
+                      {new Date(dream.createdAt).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
                     </Text>
-                    <View
-                      style={[
-                        styles.moodDot,
-                        { backgroundColor: moodColor(t, dream.mood) },
-                      ]}
-                    />
                   </View>
-                  <Text style={styles.timestamp}>
-                    {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
-                    {' · '}
-                    {new Date(dream.createdAt).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </Text>
+
+                  <Text style={styles.preview}>{formatPreview(dream)}</Text>
+
+                  <View style={styles.tags}>
+                    {mood ? <TagChip label={mood} /> : null}
+                    {dream.audioUri ? <TagChip label="Audio" /> : null}
+                    {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
+                  </View>
                 </View>
 
-                <Text style={styles.preview}>{formatPreview(dream)}</Text>
-
-                <View style={styles.tags}>
-                  {mood ? <TagChip label={mood} /> : null}
-                  {dream.audioUri ? <TagChip label="Audio" /> : null}
-                  {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
-                </View>
+                <View
+                  style={[
+                    styles.cardFacet,
+                    { backgroundColor: moodColor(t, dream.mood) },
+                  ]}
+                />
               </View>
-
-              <View
-                style={[
-                  styles.cardFacet,
-                  { backgroundColor: moodColor(t, dream.mood) },
-                ]}
-              />
-            </View>
-          </Card>
+            </Card>
+          </Pressable>
         );
       })}
     </ScreenContainer>

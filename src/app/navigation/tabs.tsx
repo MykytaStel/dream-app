@@ -3,6 +3,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useTheme } from '@shopify/restyle';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import HomeScreen from '../../features/dreams/screens/HomeScreen';
 import NewDreamScreen from '../../features/dreams/screens/NewDreamScreen';
@@ -15,7 +16,8 @@ import { TAB_ROUTE_LABELS, TAB_ROUTE_NAMES, type TabParamList } from './routes';
 const Tab = createBottomTabNavigator<TabParamList>();
 export default function Tabs() {
   const t = useTheme<Theme>();
-  const tabStyles = createTabsStyles(t, false);
+  const insets = useSafeAreaInsets();
+  const tabStyles = createTabsStyles(t, false, insets.bottom);
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -24,12 +26,9 @@ export default function Tabs() {
         tabBarActiveTintColor: t.colors.primary,
         tabBarInactiveTintColor: t.colors.tabIcon,
         tabBarStyle: tabStyles.tabBar,
-        tabBarLabelStyle: [
-          tabStyles.tabBarLabel,
-          route.name === TAB_ROUTE_NAMES.New ? tabStyles.recordTabBarLabel : undefined,
-        ],
+        tabBarLabelStyle: tabStyles.tabBarLabel,
         tabBarIcon: ({ color, focused }) => {
-          const styles = createTabsStyles(t, focused);
+          const styles = createTabsStyles(t, focused, insets.bottom);
           const icon =
             route.name === TAB_ROUTE_NAMES.Home
               ? 'time-outline'
@@ -40,6 +39,10 @@ export default function Tabs() {
                   : 'settings-outline';
 
           if (route.name === TAB_ROUTE_NAMES.New) {
+            if (!focused) {
+              return <Ionicons name={icon} size={22} color={color} />;
+            }
+
             return (
               <View style={styles.recordIconContainer}>
                 <Ionicons

@@ -10,7 +10,6 @@ export function createScreenContainerStyles(theme: Theme) {
     content: {
       padding: theme.spacing.md,
       gap: theme.spacing.sm,
-      paddingBottom: theme.spacing.xxl,
     },
   });
 }

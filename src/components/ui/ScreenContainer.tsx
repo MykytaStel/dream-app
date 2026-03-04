@@ -1,11 +1,15 @@
 import React from 'react';
 import { ScrollView, ScrollViewProps, View, ViewProps } from 'react-native';
 import { useTheme } from '@shopify/restyle';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { getTabBarReservedSpace } from '../../app/navigation/tabBarLayout';
 import { Theme } from '../../theme/theme';
 import { createScreenContainerStyles } from './ScreenContainer.styles';
 
 type BaseProps = {
   padded?: boolean;
+  withTopInset?: boolean;
+  withBottomInset?: boolean;
 };
 
 type ScrollContainerProps = BaseProps &
@@ -20,23 +24,38 @@ type StaticContainerProps = BaseProps &
 
 export function ScreenContainer(props: ScrollContainerProps | StaticContainerProps) {
   const t = useTheme<Theme>();
+  const insets = useSafeAreaInsets();
   const styles = createScreenContainerStyles(t);
+  const { padded = true, withTopInset = true, withBottomInset = true } = props;
+  const insetStyle = {
+    paddingTop: padded && withTopInset ? insets.top : undefined,
+    paddingBottom: padded && withBottomInset ? getTabBarReservedSpace(insets.bottom) : undefined,
+  };
 
   if (props.scroll) {
-    const { contentContainerStyle, style, padded = true, ...rest } = props;
+    const { contentContainerStyle, style, ...rest } = props;
     return (
       <ScrollView
         style={[styles.base, style]}
-        contentContainerStyle={[padded ? styles.content : undefined, contentContainerStyle]}
+        contentContainerStyle={[
+          padded ? styles.content : undefined,
+          padded ? insetStyle : undefined,
+          contentContainerStyle,
+        ]}
         {...rest}
       />
     );
   }
 
-  const { style, padded = true, ...rest } = props;
+  const { style, ...rest } = props;
   return (
     <View
-      style={[styles.base, padded ? styles.content : undefined, style]}
+      style={[
+        styles.base,
+        padded ? styles.content : undefined,
+        padded ? insetStyle : undefined,
+        style,
+      ]}
       {...rest}
     />
   );

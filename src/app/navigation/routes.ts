@@ -5,6 +5,11 @@ export const TAB_ROUTE_NAMES = {
   Settings: 'Settings',
 } as const;
 
+export const ROOT_ROUTE_NAMES = {
+  Tabs: 'Tabs',
+  DreamDetail: 'DreamDetail',
+} as const;
+
 export const TAB_ROUTE_LABELS = {
   [TAB_ROUTE_NAMES.Home]: 'Timeline',
   [TAB_ROUTE_NAMES.New]: 'Record',
@@ -19,4 +24,11 @@ export type TabParamList = {
   [TAB_ROUTE_NAMES.New]: undefined;
   [TAB_ROUTE_NAMES.Stats]: undefined;
   [TAB_ROUTE_NAMES.Settings]: undefined;
+};
+
+export type RootStackParamList = {
+  [ROOT_ROUTE_NAMES.Tabs]: undefined;
+  [ROOT_ROUTE_NAMES.DreamDetail]: {
+    dreamId: string;
+  };
 };

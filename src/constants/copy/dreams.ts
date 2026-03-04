@@ -10,12 +10,23 @@ export const DREAM_COPY = {
   homeTotalLabel: 'Total',
   homeAverageLabel: 'Avg words',
   homeDaysUnit: 'days',
+  openDreamHint: 'Tap any entry to open the full dream.',
   emptyTitle: 'No dreams yet',
   emptyDescription:
     'Record the first one from the New tab. Keep it fast: title, voice note, or a few raw lines are enough.',
   untitled: 'Untitled dream',
   audioOnlyPreview: 'Voice note saved. Transcript can be added later.',
   noDetailsPreview: 'No written details yet.',
+  detailBack: 'Back',
+  detailMissingTitle: 'Dream not found',
+  detailMissingDescription:
+    'This entry is no longer available in local storage.',
+  detailMetaTitle: 'Dream details',
+  detailTranscriptTitle: 'Full entry',
+  detailTranscriptEmpty: 'No written transcript saved for this dream.',
+  detailTagsEmpty: 'No tags attached yet.',
+  detailAudioDescription: 'An original voice note is attached to this dream.',
+  detailAudioPathLabel: 'Local file',
   createTitle: 'Capture a dream',
   createSubtitle:
     'Save the memory fast, keep the original voice note, and add just enough structure for future stats.',

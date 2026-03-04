@@ -1,16 +1,21 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../theme/theme';
+import {
+  TAB_BAR_BOTTOM_OFFSET,
+  TAB_BAR_SIDE_OFFSET,
+  getTabBarHeight,
+} from './tabBarLayout';
 
-export function createTabsStyles(theme: Theme, focused: boolean) {
+export function createTabsStyles(theme: Theme, focused: boolean, bottomInset: number) {
   return StyleSheet.create({
     tabBar: {
       position: 'absolute',
-      left: 12,
-      right: 12,
-      bottom: 12,
-      height: 76,
+      left: TAB_BAR_SIDE_OFFSET,
+      right: TAB_BAR_SIDE_OFFSET,
+      bottom: TAB_BAR_BOTTOM_OFFSET,
+      height: getTabBarHeight(bottomInset),
       paddingTop: 10,
-      paddingBottom: 10,
+      paddingBottom: Math.max(bottomInset, 10),
       backgroundColor: theme.colors.surface,
       borderTopWidth: 1,
       borderColor: theme.colors.border,
@@ -25,24 +30,21 @@ export function createTabsStyles(theme: Theme, focused: boolean) {
       fontSize: 10,
       fontWeight: '600',
     },
-    recordTabBarLabel: {
-      marginTop: 4,
-    },
     recordIconContainer: {
-      width: 56,
-      height: 56,
-      borderRadius: 18,
-      marginTop: -26,
+      width: focused ? 56 : 44,
+      height: focused ? 56 : 44,
+      borderRadius: focused ? 18 : 14,
+      marginTop: focused ? -26 : -8,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: focused ? theme.colors.primary : theme.colors.surfaceElevated,
+      backgroundColor: focused ? theme.colors.primary : theme.colors.surface,
       borderWidth: 1,
       borderColor: focused ? theme.colors.primary : theme.colors.border,
       shadowColor: focused ? theme.colors.glow : '#000',
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: focused ? 0.22 : 0.12,
-      shadowRadius: 22,
-      elevation: 10,
+      shadowOpacity: focused ? 0.22 : 0.04,
+      shadowRadius: focused ? 22 : 8,
+      elevation: focused ? 10 : 2,
     },
   });
 }

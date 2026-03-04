@@ -1,0 +1,17 @@
+export const STATS_COPY = {
+  title: 'Stats',
+  subtitle: 'Lightweight analytics from local dream entries.',
+  currentStreak: 'Current streak',
+  lastSevenDays: 'Last 7 days',
+  journalVolume: 'Journal volume',
+  entries: 'Entries',
+  wordsSaved: 'Words saved',
+  averageWords: 'Average words',
+  entryStructure: 'Entry structure',
+  voiceNotes: 'Voice notes',
+  taggedDreams: 'Tagged dreams',
+  moodBreakdown: 'Mood breakdown',
+  bright: 'Bright',
+  calm: 'Calm',
+  heavy: 'Heavy',
+} as const;

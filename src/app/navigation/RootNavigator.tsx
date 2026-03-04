@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavigationContainer } from '@react-navigation/native';
+import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import Tabs from './tabs';
 import { useTheme } from '@shopify/restyle';
 
@@ -8,8 +8,10 @@ export default function RootNavigator() {
   return (
     <NavigationContainer
       theme={{
+        ...DarkTheme,
         dark: true,
         colors: {
+          ...DarkTheme.colors,
           primary: t.colors.primary,
           background: t.colors.background,
           card: t.colors.surface,

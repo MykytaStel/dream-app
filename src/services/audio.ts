@@ -1,13 +1,23 @@
 import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 import { Platform } from 'react-native';
+import {
+  AudioSourceAndroidType,
+  OutputFormatAndroidType,
+  AudioEncoderAndroidType,
+  AVEncoderAudioQualityIOSType,
+} from 'react-native-audio-recorder-player';
 
-const arp = new AudioRecorderPlayer();
+const arp = AudioRecorderPlayer;
 
 export async function startRecording(): Promise<string> {
   const path = Platform.select({ ios: 'dream.m4a', android: 'sdcard/dream.mp4' })!;
   await arp.startRecorder(path, {
-    format: Platform.OS === 'ios' ? 'm4a' : undefined,
-    audioSource: 6, // VOICE_RECOGNITION (Android)
+    AudioSourceAndroid: AudioSourceAndroidType.VOICE_RECOGNITION,
+    OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
+    AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+    AVFormatIDKeyIOS: 'aac',
+    AVEncodingOptionIOS: 'aac',
+    AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
   });
   return path;
 }

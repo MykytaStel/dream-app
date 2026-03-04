@@ -3,11 +3,11 @@ import React from 'react';
 import { ScrollView, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
-import { Card } from '../components/ui/Card';
-import { Text } from '../components/ui/Text';
-import { listDreams } from '../storage/dreams';
-import { Dream } from '../types/dream';
-import { Theme } from '../theme/theme';
+import { Card } from '../../../components/ui/Card';
+import { Text } from '../../../components/ui/Text';
+import { Theme } from '../../../theme/theme';
+import { Dream } from '../model/dream';
+import { listDreams } from '../repository/dreamsRepository';
 
 function formatPreview(dream: Dream) {
   const text = dream.text?.trim();

@@ -1,9 +1,9 @@
 import React from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import HomeScreen from '../../screens/HomeScreen';
-import NewDreamScreen from '../../screens/NewDreamScreen';
-import StatsScreen from '../../screens/StatsScreen';
-import SettingsScreen from '../../screens/SettingsScreen';
+import HomeScreen from '../../features/dreams/screens/HomeScreen';
+import NewDreamScreen from '../../features/dreams/screens/NewDreamScreen';
+import StatsScreen from '../../features/stats/screens/StatsScreen';
+import SettingsScreen from '../../features/settings/screens/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 export default function Tabs() {

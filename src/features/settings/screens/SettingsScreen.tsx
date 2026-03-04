@@ -1,8 +1,8 @@
 /* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { View } from 'react-native';
-import { Card } from '../components/ui/Card';
-import { Text } from '../components/ui/Text';
+import { Card } from '../../../components/ui/Card';
+import { Text } from '../../../components/ui/Text';
 
 export default function SettingsScreen() {
   return (

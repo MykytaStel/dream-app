@@ -3,6 +3,56 @@ import { Theme } from '../../../theme/theme';
 
 export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
   return StyleSheet.create({
+    heroCard: {
+      gap: 16,
+    },
+    heroTopRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 16,
+    },
+    heroCopy: {
+      flex: 1,
+      gap: 6,
+    },
+    heroEyebrow: {
+      color: theme.colors.accent,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.8,
+      textTransform: 'uppercase',
+    },
+    heroDescription: {
+      color: theme.colors.textDim,
+    },
+    pulseShell: {
+      width: 76,
+      height: 76,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 24,
+      backgroundColor: theme.colors.surfaceAlt,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    helperChipsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    helperChip: {
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+    },
+    helperChipLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+    },
     card: {
       gap: 12,
     },

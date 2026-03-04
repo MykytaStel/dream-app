@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert, Pressable, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
+import { Pulse } from '../../../components/animation/Pulse';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { FormField } from '../../../components/ui/FormField';
@@ -112,11 +113,33 @@ export default function NewDreamScreen() {
 
   return (
     <ScreenContainer scroll keyboardShouldPersistTaps="handled">
-      <SectionHeader
-        title={DREAM_COPY.createTitle}
-        subtitle={DREAM_COPY.createSubtitle}
-        large
-      />
+      <Card style={baseStyles.heroCard}>
+        <View style={baseStyles.heroTopRow}>
+          <View style={baseStyles.heroCopy}>
+            <Text style={baseStyles.heroEyebrow}>{DREAM_COPY.createTitle}</Text>
+            <SectionHeader
+              title={DREAM_COPY.createHeroTitle}
+              subtitle={DREAM_COPY.createSubtitle}
+              large
+            />
+            <Text style={baseStyles.heroDescription}>{DREAM_COPY.createHeroDescription}</Text>
+          </View>
+          <View style={baseStyles.pulseShell}>
+            <Pulse size={44} active={recording} />
+          </View>
+        </View>
+
+        <View style={baseStyles.helperChipsRow}>
+          <View style={baseStyles.helperChip}>
+            <Text style={baseStyles.helperChipLabel}>{sleepDate}</Text>
+          </View>
+          <View style={baseStyles.helperChip}>
+            <Text style={baseStyles.helperChipLabel}>
+              {audioUri ? DREAM_COPY.attachedAudioTitle : DREAM_COPY.voiceIdleHint}
+            </Text>
+          </View>
+        </View>
+      </Card>
 
       <Card style={baseStyles.card}>
         <SectionHeader

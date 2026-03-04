@@ -10,8 +10,9 @@ import StatsScreen from '../../features/stats/screens/StatsScreen';
 import SettingsScreen from '../../features/settings/screens/SettingsScreen';
 import { Theme } from '../../theme/theme';
 import { createTabsStyles } from './tabs.styles';
+import { TAB_ROUTE_LABELS, TAB_ROUTE_NAMES, type TabParamList } from './routes';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<TabParamList>();
 export default function Tabs() {
   const t = useTheme<Theme>();
   const tabStyles = createTabsStyles(t, false);
@@ -25,20 +26,20 @@ export default function Tabs() {
         tabBarStyle: tabStyles.tabBar,
         tabBarLabelStyle: [
           tabStyles.tabBarLabel,
-          route.name === 'New' ? tabStyles.recordTabBarLabel : undefined,
+          route.name === TAB_ROUTE_NAMES.New ? tabStyles.recordTabBarLabel : undefined,
         ],
         tabBarIcon: ({ color, focused }) => {
           const styles = createTabsStyles(t, focused);
           const icon =
-            route.name === 'Home'
+            route.name === TAB_ROUTE_NAMES.Home
               ? 'time-outline'
-              : route.name === 'New'
+              : route.name === TAB_ROUTE_NAMES.New
                 ? 'mic'
-                : route.name === 'Stats'
+                : route.name === TAB_ROUTE_NAMES.Stats
                   ? 'bar-chart-outline'
                   : 'settings-outline';
 
-          if (route.name === 'New') {
+          if (route.name === TAB_ROUTE_NAMES.New) {
             return (
               <View style={styles.recordIconContainer}>
                 <Ionicons
@@ -55,23 +56,24 @@ export default function Tabs() {
       })}
     >
       <Tab.Screen
-        name="Home"
+        name={TAB_ROUTE_NAMES.Home}
         component={HomeScreen}
-        options={{ tabBarLabel: 'Timeline' }}
+        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.Home] }}
       />
       <Tab.Screen
-        name="New"
+        name={TAB_ROUTE_NAMES.New}
         component={NewDreamScreen}
-        options={{ tabBarLabel: 'Record' }}
+        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.New] }}
       />
       <Tab.Screen
-        name="Stats"
+        name={TAB_ROUTE_NAMES.Stats}
         component={StatsScreen}
-        options={{ tabBarLabel: 'Insights' }}
+        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.Stats] }}
       />
       <Tab.Screen
-        name="Settings"
+        name={TAB_ROUTE_NAMES.Settings}
         component={SettingsScreen}
+        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.Settings] }}
       />
     </Tab.Navigator>
   );

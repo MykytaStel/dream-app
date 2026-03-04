@@ -9,6 +9,7 @@ import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
+import { getAverageWords, getCurrentStreak, getDreamDate } from '../model/dreamAnalytics';
 import { listDreams } from '../repository/dreamsRepository';
 import { DREAM_COPY, DREAM_MOOD_LABELS } from '../../../constants/copy/dreams';
 import { DREAM_PREVIEW_MAX_LENGTH } from '../../../constants/limits/dreams';
@@ -33,10 +34,33 @@ function moodLabel(mood?: Dream['mood']) {
   return mood ? DREAM_MOOD_LABELS[mood] : undefined;
 }
 
+function moodColor(theme: Theme, mood?: Dream['mood']) {
+  if (mood === 'positive') {
+    return theme.colors.accent;
+  }
+
+  if (mood === 'negative') {
+    return theme.colors.primaryAlt;
+  }
+
+  return theme.colors.primary;
+}
+
+function formatDateParts(dream: Dream) {
+  const date = getDreamDate(dream);
+  return {
+    weekday: date.toLocaleDateString([], { weekday: 'short' }),
+    day: date.getDate(),
+    month: date.toLocaleDateString([], { month: 'short' }),
+  };
+}
+
 export default function HomeScreen() {
   const t = useTheme<Theme>();
   const [dreams, setDreams] = React.useState(() => listDreams());
   const styles = createHomeScreenStyles(t);
+  const streak = getCurrentStreak(dreams);
+  const averageWords = getAverageWords(dreams);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -56,36 +80,84 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer scroll>
-      <SectionHeader
-        title={DREAM_COPY.homeTitle}
-        subtitle={DREAM_COPY.homeSubtitle}
-        large
-      />
+      <Card style={styles.heroCard}>
+        <View style={styles.heroTopRow}>
+          <View style={styles.heroCopy}>
+            <Text style={styles.heroEyebrow}>{DREAM_COPY.homeGreeting}</Text>
+            <Text style={styles.heroTitle}>{DREAM_COPY.homeTitle}</Text>
+            <Text style={styles.heroSubtitle}>{DREAM_COPY.homeSubtitle}</Text>
+          </View>
+          <View style={styles.heroFacet} />
+        </View>
+
+        <View style={styles.statsRow}>
+          <View style={styles.statChip}>
+            <Text style={styles.statLabel}>{DREAM_COPY.homeStreakLabel}</Text>
+            <Text style={styles.statValue}>{`${streak} ${DREAM_COPY.homeDaysUnit}`}</Text>
+          </View>
+          <View style={styles.statChip}>
+            <Text style={styles.statLabel}>{DREAM_COPY.homeTotalLabel}</Text>
+            <Text style={styles.statValue}>{dreams.length}</Text>
+          </View>
+          <View style={styles.statChip}>
+            <Text style={styles.statLabel}>{DREAM_COPY.homeAverageLabel}</Text>
+            <Text style={styles.statValue}>{averageWords}</Text>
+          </View>
+        </View>
+      </Card>
+
+      <Text style={styles.sectionLabel}>{DREAM_COPY.homeSectionLabel}</Text>
 
       {dreams.map(dream => {
         const mood = moodLabel(dream.mood);
+        const dateParts = formatDateParts(dream);
         return (
           <Card key={dream.id} style={styles.dreamCard}>
-            <View style={styles.dreamMeta}>
-              <Text style={styles.title}>
-                {dream.title || DREAM_COPY.untitled}
-              </Text>
-              <Text style={styles.timestamp}>
-                {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
-                {' · '}
-                {new Date(dream.createdAt).toLocaleTimeString([], {
-                  hour: '2-digit',
-                  minute: '2-digit',
-                })}
-              </Text>
-            </View>
+            <View style={styles.dreamRow}>
+              <View style={styles.dateColumn}>
+                <Text style={styles.weekday}>{dateParts.weekday}</Text>
+                <Text style={styles.dayNumber}>{dateParts.day}</Text>
+                <Text style={styles.month}>{dateParts.month}</Text>
+              </View>
 
-            <Text style={styles.preview}>{formatPreview(dream)}</Text>
+              <View style={styles.dreamContent}>
+                <View style={styles.dreamMeta}>
+                  <View style={styles.titleRow}>
+                    <Text style={styles.title}>
+                      {dream.title || DREAM_COPY.untitled}
+                    </Text>
+                    <View
+                      style={[
+                        styles.moodDot,
+                        { backgroundColor: moodColor(t, dream.mood) },
+                      ]}
+                    />
+                  </View>
+                  <Text style={styles.timestamp}>
+                    {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
+                    {' · '}
+                    {new Date(dream.createdAt).toLocaleTimeString([], {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    })}
+                  </Text>
+                </View>
 
-            <View style={styles.tags}>
-              {mood ? <TagChip label={mood} /> : null}
-              {dream.audioUri ? <TagChip label="Audio" /> : null}
-              {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
+                <Text style={styles.preview}>{formatPreview(dream)}</Text>
+
+                <View style={styles.tags}>
+                  {mood ? <TagChip label={mood} /> : null}
+                  {dream.audioUri ? <TagChip label="Audio" /> : null}
+                  {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
+                </View>
+              </View>
+
+              <View
+                style={[
+                  styles.cardFacet,
+                  { backgroundColor: moodColor(t, dream.mood) },
+                ]}
+              />
             </View>
           </Card>
         );

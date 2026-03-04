@@ -13,9 +13,23 @@ export default function SettingsScreen() {
   const styles = createSettingsScreenStyles(t);
 
   return (
-    <ScreenContainer scroll={false}>
-      <SectionHeader title={SETTINGS_COPY.title} />
-      <Card>
+    <ScreenContainer scroll>
+      <Card style={styles.heroCard}>
+        <Text style={styles.heroEyebrow}>{SETTINGS_COPY.title}</Text>
+        <SectionHeader title={SETTINGS_COPY.title} subtitle={SETTINGS_COPY.subtitle} large />
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.title}>{SETTINGS_COPY.versionTitle}</Text>
+        <Text style={styles.description}>{SETTINGS_COPY.versionValue}</Text>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.title}>{SETTINGS_COPY.architectureTitle}</Text>
+        <Text style={styles.description}>{SETTINGS_COPY.architectureDescription}</Text>
+      </Card>
+
+      <Card style={styles.sectionCard}>
         <Text style={styles.title}>{SETTINGS_COPY.plannedTitle}</Text>
         <Text style={styles.description}>
           {SETTINGS_COPY.plannedDescription}

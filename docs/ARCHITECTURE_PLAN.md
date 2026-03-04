@@ -151,6 +151,53 @@ system.
 
 This lets the app become visually consistent before Figma is ready.
 
+## Localization strategy
+
+Kaleidoskop should be built with localization in mind from the early MVP stage.
+
+### Initial language scope
+
+- English
+- Ukrainian
+
+### Rules
+
+- do not hardcode user-facing copy directly in feature logic long-term
+- keep translation keys grouped by domain
+- use a single localization layer across the app
+- dates, pluralization, and future notifications should also go through locale-aware formatting
+
+### Recommended structure
+
+```txt
+src/
+  constants/
+    i18n/
+      en/
+        common.ts
+        dreams.ts
+        stats.ts
+        settings.ts
+      uk/
+        common.ts
+        dreams.ts
+        stats.ts
+        settings.ts
+```
+
+### Recommended approach
+
+- start with extracted copy/constants now
+- migrate those constants into translation dictionaries next
+- use a library such as `i18next` with a thin app wrapper
+- keep the default locale simple and deterministic during MVP
+
+### Practical note
+
+The current copy extraction step is a good transition point. We do not need full
+runtime language switching today, but all new user-facing copy should be written
+so it can move into localization files cleanly.
+
 ## State management strategy
 
 For current scope:
@@ -385,6 +432,91 @@ Examples:
 - OpenAI goes behind `aiService`
 - Supabase goes behind `apiClient` + repositories
 
+## Testing strategy
+
+Testing should grow with the product, not become ceremony too early. The right
+goal is confidence around core flows, not maximum test count.
+
+### Testing layers
+
+#### 1. UI smoke tests
+
+Start early.
+
+Use for:
+
+- screen rendering
+- empty states
+- button presence
+- basic form interactions
+- critical text appearing in the UI
+
+Recommended tools:
+
+- Jest
+- React Native Testing Library
+
+#### 2. Domain/unit tests
+
+Add when logic becomes non-trivial.
+
+Use for:
+
+- dream validation
+- streak calculations
+- tag normalization
+- date helpers
+- repository transformations
+
+#### 3. Integration tests
+
+Add when repositories, sync, or backend orchestration appear.
+
+Use for:
+
+- repository behavior
+- storage persistence
+- sync status transitions
+- API mapping
+
+#### 4. End-to-end tests
+
+Add when the main journaling flow stabilizes and release risk becomes real.
+
+Use for:
+
+- create dream flow
+- save and reopen flow
+- reminder-triggered open and save flow
+- future auth/sync flows
+
+Recommended tool:
+
+- Detox
+
+### Testing priority for Kaleidoskop
+
+#### Now
+
+- UI tests for core screens
+- unit tests for pure helpers only when extracted
+
+#### Next
+
+- repository tests
+- stats calculation tests
+
+#### Later
+
+- E2E coverage for critical flows
+
+### Practical rule
+
+- do not test implementation details
+- test behavior that protects product confidence
+- prioritize dream creation and persistence over visual micro-details
+- add tests when a module becomes reusable or risky
+
 ## Immediate cleanup plan
 
 ### Step 1
@@ -427,6 +559,7 @@ until the offline loop feels stable.
 - add edit flow
 - add local reminders
 - refactor to feature/repository structure
+- add base UI smoke tests for critical screens
 
 ### v0.0.2
 
@@ -434,6 +567,7 @@ until the offline loop feels stable.
 - add pre-sleep survey
 - extract shared UI/form primitives
 - prepare backend schema and sync contract
+- introduce English/Ukrainian localization layer
 
 ### v0.1.0
 
@@ -441,12 +575,14 @@ until the offline loop feels stable.
 - add cloud sync
 - upload audio
 - user settings persistence
+- add repository/integration tests for sync-related flows
 
 ### v0.2.0
 
 - add transcription
 - add AI summaries
 - add monthly reports
+- add E2E tests for critical release flows
 
 ## Decision summary
 
@@ -455,4 +591,6 @@ until the offline loop feels stable.
 - Backend: Supabase
 - AI layer: add later behind service adapters
 - Design approach: semantic tokens + reusable primitives before final Figma
+- Localization: English and Ukrainian from the early architecture stage
+- Testing: UI smoke tests early, broader automated coverage as complexity grows
 - Main priority: structure the code now so later growth does not create chaos

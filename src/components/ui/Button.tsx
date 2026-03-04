@@ -3,6 +3,8 @@ import { Pressable, ViewStyle } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Text } from './Text';
 import Animated, { useAnimatedStyle, withTiming } from 'react-native-reanimated';
+import { Theme } from '../../theme/theme';
+import { createButtonStyles } from './Button.styles';
 
 export const Button = ({
   title,
@@ -10,23 +12,28 @@ export const Button = ({
   style,
   variant = 'primary',
 }: { title: string; onPress?: () => void; style?: ViewStyle; variant?: 'primary' | 'ghost' }) => {
-  const t = useTheme<any>();
+  const t = useTheme<Theme>();
   const [pressed, setPressed] = React.useState(false);
+  const isPrimary = variant === 'primary';
+  const styles = createButtonStyles(t, isPrimary);
   const anim = useAnimatedStyle(() => ({
-    transform: [{ scale: withTiming(pressed ? 0.98 : 1, { duration: 100 }) }],
+    transform: [
+      { scale: withTiming(pressed ? 0.985 : 1, { duration: 120 }) },
+      { translateY: withTiming(pressed ? 1 : 0, { duration: 120 }) },
+    ],
   }));
-  const bg = variant === 'primary' ? t.colors.primary : t.colors.surfaceAlt;
-  const fg = variant === 'primary' ? '#0B0B0D' : t.colors.text;
 
   return (
-    <Animated.View style={[{ borderRadius: t.borderRadii.xl }, anim, style]}>
+    <Animated.View style={[styles.container, anim, style]}>
       <Pressable
         onPressIn={() => setPressed(true)}
         onPressOut={() => setPressed(false)}
         onPress={onPress}
-        style={{ backgroundColor: bg, paddingVertical: 14, paddingHorizontal: 18, borderRadius: t.borderRadii.xl, borderWidth: 1, borderColor: t.colors.border }}
+        style={styles.pressable}
       >
-        <Text style={{ textAlign: 'center', color: fg, fontWeight: '700' }}>{title}</Text>
+        <Text style={styles.label}>
+          {title}
+        </Text>
       </Pressable>
     </Animated.View>
   );

@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
@@ -11,6 +10,7 @@ import { Text } from '../../../components/ui/Text';
 import { Dream } from '../../dreams/model/dream';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
 import { STATS_COPY } from '../../../constants/copy/stats';
+import { statsScreenStyles } from './StatsScreen.styles';
 
 function toDreamDate(dream: Dream) {
   const value = dream.sleepDate ?? new Date(dream.createdAt).toISOString().slice(0, 10);
@@ -89,26 +89,26 @@ export default function StatsScreen() {
     <ScreenContainer scroll>
       <SectionHeader title={STATS_COPY.title} subtitle={STATS_COPY.subtitle} large />
 
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+      <View style={statsScreenStyles.summaryRow}>
         <StatCard label={STATS_COPY.currentStreak} value={streak} />
         <StatCard label={STATS_COPY.lastSevenDays} value={lastSevenDays} />
       </View>
 
-      <Card style={{ gap: 12 }}>
-        <Text style={{ fontWeight: '700' }}>{STATS_COPY.journalVolume}</Text>
+      <Card style={statsScreenStyles.sectionCard}>
+        <Text style={statsScreenStyles.sectionTitle}>{STATS_COPY.journalVolume}</Text>
         <InfoRow label={STATS_COPY.entries} value={dreams.length} />
         <InfoRow label={STATS_COPY.wordsSaved} value={totalWords} />
         <InfoRow label={STATS_COPY.averageWords} value={averageWords} />
       </Card>
 
-      <Card style={{ gap: 12 }}>
-        <Text style={{ fontWeight: '700' }}>{STATS_COPY.entryStructure}</Text>
+      <Card style={statsScreenStyles.sectionCard}>
+        <Text style={statsScreenStyles.sectionTitle}>{STATS_COPY.entryStructure}</Text>
         <InfoRow label={STATS_COPY.voiceNotes} value={voiceNotes} />
         <InfoRow label={STATS_COPY.taggedDreams} value={taggedEntries} />
       </Card>
 
-      <Card style={{ gap: 12 }}>
-        <Text style={{ fontWeight: '700' }}>{STATS_COPY.moodBreakdown}</Text>
+      <Card style={statsScreenStyles.sectionCard}>
+        <Text style={statsScreenStyles.sectionTitle}>{STATS_COPY.moodBreakdown}</Text>
         <InfoRow label={STATS_COPY.bright} value={positive} />
         <InfoRow label={STATS_COPY.calm} value={neutral} />
         <InfoRow label={STATS_COPY.heavy} value={negative} />

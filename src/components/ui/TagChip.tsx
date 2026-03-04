@@ -1,9 +1,9 @@
-/* eslint-disable react-native/no-inline-styles */
 import React from 'react';
 import { Pressable, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../theme/theme';
 import { Text } from './Text';
+import { createTagChipStyles } from './TagChip.styles';
 
 export function TagChip({
   label,
@@ -13,18 +13,10 @@ export function TagChip({
   onPress?: () => void;
 }) {
   const t = useTheme<Theme>();
+  const styles = createTagChipStyles(t);
   const content = (
-    <View
-      style={{
-        borderRadius: 999,
-        backgroundColor: t.colors.surfaceAlt,
-        borderWidth: 1,
-        borderColor: t.colors.border,
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-      }}
-    >
-      <Text style={{ fontWeight: '600' }}>{label}</Text>
+    <View style={styles.chip}>
+      <Text style={styles.label}>{label}</Text>
     </View>
   );
 

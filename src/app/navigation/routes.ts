@@ -8,6 +8,7 @@ export const TAB_ROUTE_NAMES = {
 export const ROOT_ROUTE_NAMES = {
   Tabs: 'Tabs',
   DreamDetail: 'DreamDetail',
+  DreamEditor: 'DreamEditor',
 } as const;
 
 export const TAB_ROUTE_LABELS = {
@@ -29,6 +30,9 @@ export type TabParamList = {
 export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.Tabs]: undefined;
   [ROOT_ROUTE_NAMES.DreamDetail]: {
+    dreamId: string;
+  };
+  [ROOT_ROUTE_NAMES.DreamEditor]: {
     dreamId: string;
   };
 };

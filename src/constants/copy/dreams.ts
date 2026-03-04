@@ -18,6 +18,7 @@ export const DREAM_COPY = {
   audioOnlyPreview: 'Voice note saved. Transcript can be added later.',
   noDetailsPreview: 'No written details yet.',
   detailBack: 'Back',
+  detailEdit: 'Edit dream',
   detailMissingTitle: 'Dream not found',
   detailMissingDescription:
     'This entry is no longer available in local storage.',
@@ -33,6 +34,12 @@ export const DREAM_COPY = {
   createHeroTitle: 'Capture before it fades',
   createHeroDescription:
     'Write a few raw lines, keep the voice note, and shape the rest later.',
+  editTitle: 'Edit dream',
+  editSubtitle:
+    'Refine the memory, adjust tags and mood, and keep the original story intact.',
+  editHeroTitle: 'Polish the memory',
+  editHeroDescription:
+    'Update details while the dream is still meaningful, without losing the original entry.',
   coreTitle: 'Core details',
   coreDescription: 'Title is optional. A written note or a voice note is enough.',
   titleLabel: 'Dream title',
@@ -58,11 +65,14 @@ export const DREAM_COPY = {
   removeAudio: 'Remove voice note',
   addTag: 'Add',
   saveDream: 'Save dream',
+  updateDream: 'Update dream',
   saveErrorTitle: 'Nothing to save',
   saveErrorDescription:
     'Add a title, write what you remember, or attach a voice note first.',
   saveSuccessTitle: 'Saved',
   saveSuccessDescription: 'Your dream was saved locally.',
+  updateSuccessTitle: 'Updated',
+  updateSuccessDescription: 'Your dream was updated locally.',
   audioErrorTitle: 'Audio error',
 } as const;
 

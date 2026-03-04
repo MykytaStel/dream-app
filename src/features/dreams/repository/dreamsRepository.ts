@@ -2,6 +2,7 @@ import { kv } from '../../../services/storage/mmkv';
 import { Dream } from '../model/dream';
 
 const KEY = 'dreams';
+const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 
 export function listDreams(): Dream[] {
   const raw = kv.getString(KEY);
@@ -17,4 +18,30 @@ export function saveDream(d: Dream) {
 
 export function getDream(id: string): Dream | undefined {
   return listDreams().find(x => x.id === id);
+}
+
+export function ensurePreviewDream() {
+  if (!__DEV__) {
+    return;
+  }
+
+  const all = listDreams();
+  if (all.some(dream => dream.id === PREVIEW_DREAM_ID)) {
+    return;
+  }
+
+  const today = new Date();
+  const offset = today.getTimezoneOffset() * 60_000;
+  const sleepDate = new Date(today.getTime() - offset).toISOString().slice(0, 10);
+
+  saveDream({
+    id: PREVIEW_DREAM_ID,
+    createdAt: Date.now() - 1000 * 60 * 45,
+    sleepDate,
+    title: 'Staircase over the sea',
+    text:
+      'I was climbing a narrow staircase made of blue glass, floating above a dark quiet sea. Each step lit up under my feet, and somewhere in the distance I could hear a city waking up. At the top there was a small room full of postcards from places I had never visited, but somehow remembered.',
+    tags: ['ocean', 'glass', 'stairs', 'city'],
+    mood: 'positive',
+  });
 }

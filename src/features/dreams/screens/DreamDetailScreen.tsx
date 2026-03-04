@@ -16,6 +16,7 @@ import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
 import { getDream } from '../repository/dreamsRepository';
 import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
+import { Button } from '../../../components/ui/Button';
 
 function moodColor(theme: Theme, mood?: Dream['mood']) {
   if (mood === 'positive') {
@@ -112,6 +113,16 @@ export default function DreamDetailScreen() {
             </View>
           ) : null}
         </View>
+
+        <Button
+          title={DREAM_COPY.detailEdit}
+          variant="ghost"
+          onPress={() =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
+              dreamId: dream.id,
+            })
+          }
+        />
       </Card>
 
       <Card style={styles.sectionCard}>

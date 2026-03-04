@@ -23,7 +23,12 @@ export function createHomeScreenStyles(theme: Theme) {
       flexDirection: 'row',
       alignItems: 'stretch',
       gap: 8,
+    },
+    swipeRightActionsContainer: {
       paddingLeft: 8,
+    },
+    swipeLeftActionsContainer: {
+      paddingRight: 8,
     },
     swipeAction: {
       width: 84,
@@ -41,11 +46,22 @@ export function createHomeScreenStyles(theme: Theme) {
       backgroundColor: theme.colors.primaryAlt,
       borderColor: theme.colors.primaryAlt,
     },
+    swipeArchiveAction: {
+      backgroundColor: theme.colors.accent,
+      borderColor: theme.colors.accent,
+    },
+    swipeUnarchiveAction: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
     swipeActionText: {
       fontSize: 12,
       fontWeight: '700',
       color: theme.colors.text,
       textAlign: 'center',
+    },
+    swipeActionTextInverted: {
+      color: theme.colors.background,
     },
     heroCard: {
       gap: 18,
@@ -123,6 +139,30 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     sectionHint: {
       color: theme.colors.textDim,
+    },
+    filterRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    filterButton: {
+      borderRadius: theme.borderRadii.pill,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    filterButtonActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    filterButtonLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    filterButtonLabelActive: {
+      color: theme.colors.background,
     },
     dreamRow: {
       flexDirection: 'row',

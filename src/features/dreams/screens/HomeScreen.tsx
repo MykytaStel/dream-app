@@ -13,7 +13,7 @@ import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
 import { getAverageWords, getCurrentStreak, getDreamDate } from '../model/dreamAnalytics';
-import { deleteDream, listDreams } from '../repository/dreamsRepository';
+import { archiveDream, deleteDream, listDreams, unarchiveDream } from '../repository/dreamsRepository';
 import { DREAM_COPY, DREAM_MOOD_LABELS } from '../../../constants/copy/dreams';
 import { DREAM_PREVIEW_MAX_LENGTH } from '../../../constants/limits/dreams';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
@@ -60,13 +60,45 @@ function formatDateParts(dream: Dream) {
   };
 }
 
+function isDreamArchived(dream: Dream) {
+  return typeof dream.archivedAt === 'number';
+}
+
+type HomeFilter = 'all' | 'active' | 'archived';
+
+const HOME_FILTERS: Array<{ key: HomeFilter; label: string }> = [
+  { key: 'all', label: DREAM_COPY.homeFilterAll },
+  { key: 'active', label: DREAM_COPY.homeFilterActive },
+  { key: 'archived', label: DREAM_COPY.homeFilterArchived },
+];
+
 export default function HomeScreen() {
   const t = useTheme<Theme>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [dreams, setDreams] = React.useState(() => listDreams());
+  const [selectedFilter, setSelectedFilter] = React.useState<HomeFilter>('all');
   const styles = createHomeScreenStyles(t);
-  const streak = getCurrentStreak(dreams);
-  const averageWords = getAverageWords(dreams);
+  const activeDreams = React.useMemo(
+    () => dreams.filter(dream => !isDreamArchived(dream)),
+    [dreams],
+  );
+  const archivedDreams = React.useMemo(
+    () => dreams.filter(dream => isDreamArchived(dream)),
+    [dreams],
+  );
+  const filteredDreams = React.useMemo(() => {
+    if (selectedFilter === 'active') {
+      return activeDreams;
+    }
+
+    if (selectedFilter === 'archived') {
+      return archivedDreams;
+    }
+
+    return dreams;
+  }, [activeDreams, archivedDreams, dreams, selectedFilter]);
+  const streak = getCurrentStreak(activeDreams);
+  const averageWords = getAverageWords(activeDreams);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -97,6 +129,15 @@ export default function HomeScreen() {
     });
   }, [navigation]);
 
+  const toggleArchiveFromList = React.useCallback((dream: Dream) => {
+    if (isDreamArchived(dream)) {
+      unarchiveDream(dream.id);
+    } else {
+      archiveDream(dream.id);
+    }
+    setDreams(listDreams());
+  }, []);
+
   const removeDreamFromList = React.useCallback((dreamId: string) => {
     Alert.alert(
       DREAM_COPY.detailDeleteTitle,
@@ -119,18 +160,18 @@ export default function HomeScreen() {
   }, []);
 
   const renderRightActions = (
-    dreamId: string,
+    dream: Dream,
     swipeableMethods: SwipeableMethods,
   ) => {
-    swipeMethods.current[dreamId] = swipeableMethods;
+    swipeMethods.current[dream.id] = swipeableMethods;
 
     return (
-      <View style={styles.swipeActionsContainer}>
+      <View style={[styles.swipeActionsContainer, styles.swipeRightActionsContainer]}>
         <Pressable
           style={[styles.swipeAction, styles.swipeEditAction]}
           onPress={() => {
-            closeSwipe(dreamId);
-            openDreamEditor(dreamId);
+            closeSwipe(dream.id);
+            openDreamEditor(dream.id);
           }}
         >
           <Text style={styles.swipeActionText}>{DREAM_COPY.swipeEdit}</Text>
@@ -138,11 +179,46 @@ export default function HomeScreen() {
         <Pressable
           style={[styles.swipeAction, styles.swipeDeleteAction]}
           onPress={() => {
-            closeSwipe(dreamId);
-            removeDreamFromList(dreamId);
+            closeSwipe(dream.id);
+            removeDreamFromList(dream.id);
           }}
         >
-          <Text style={styles.swipeActionText}>{DREAM_COPY.swipeDelete}</Text>
+          <Text
+            style={[styles.swipeActionText, styles.swipeActionTextInverted]}
+          >
+            {DREAM_COPY.swipeDelete}
+          </Text>
+        </Pressable>
+      </View>
+    );
+  };
+
+  const renderLeftActions = (
+    dream: Dream,
+    swipeableMethods: SwipeableMethods,
+  ) => {
+    swipeMethods.current[dream.id] = swipeableMethods;
+    const archiveLabel = isDreamArchived(dream)
+      ? DREAM_COPY.swipeUnarchive
+      : DREAM_COPY.swipeArchive;
+    const archiveActionStyle = isDreamArchived(dream)
+      ? styles.swipeUnarchiveAction
+      : styles.swipeArchiveAction;
+
+    return (
+      <View style={[styles.swipeActionsContainer, styles.swipeLeftActionsContainer]}>
+        <Pressable
+          style={[styles.swipeAction, archiveActionStyle]}
+          onPress={() => {
+            closeSwipe(dream.id);
+            toggleArchiveFromList(dream);
+          }}
+        >
+          <Text
+            style={[styles.swipeActionText, styles.swipeActionTextInverted]}
+          >
+            {archiveLabel}
+          </Text>
         </Pressable>
       </View>
     );
@@ -177,7 +253,7 @@ export default function HomeScreen() {
           </View>
           <View style={styles.statChip}>
             <Text style={styles.statLabel}>{DREAM_COPY.homeTotalLabel}</Text>
-            <Text style={styles.statValue}>{dreams.length}</Text>
+            <Text style={styles.statValue}>{activeDreams.length}</Text>
           </View>
           <View style={styles.statChip}>
             <Text style={styles.statLabel}>{DREAM_COPY.homeAverageLabel}</Text>
@@ -188,18 +264,65 @@ export default function HomeScreen() {
 
       <Text style={styles.sectionLabel}>{DREAM_COPY.homeSectionLabel}</Text>
       <Text style={styles.sectionHint}>{DREAM_COPY.openDreamHint}</Text>
+      <View style={styles.filterRow}>
+        {HOME_FILTERS.map(filter => {
+          const active = selectedFilter === filter.key;
+          return (
+            <Pressable
+              key={filter.key}
+              style={[
+                styles.filterButton,
+                active ? styles.filterButtonActive : null,
+              ]}
+              onPress={() => setSelectedFilter(filter.key)}
+            >
+              <Text
+                style={[
+                  styles.filterButtonLabel,
+                  active ? styles.filterButtonLabelActive : null,
+                ]}
+              >
+                {filter.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
 
-      {dreams.map(dream => {
+      {!filteredDreams.length ? (
+        <Card style={styles.emptyCard}>
+          <SectionHeader
+            title={
+              selectedFilter === 'archived'
+                ? DREAM_COPY.emptyArchivedTitle
+                : DREAM_COPY.emptyActiveTitle
+            }
+            subtitle={
+              selectedFilter === 'archived'
+                ? DREAM_COPY.emptyArchivedDescription
+                : DREAM_COPY.emptyActiveDescription
+            }
+          />
+        </Card>
+      ) : null}
+
+      {filteredDreams.map(dream => {
         const mood = moodLabel(dream.mood);
         const dateParts = formatDateParts(dream);
+        const archived = isDreamArchived(dream);
         return (
           <ReanimatedSwipeable
             key={dream.id}
             containerStyle={styles.swipeableContainer}
             overshootRight={false}
+            overshootLeft={false}
+            leftThreshold={32}
             rightThreshold={32}
+            renderLeftActions={(_, __, methods) =>
+              renderLeftActions(dream, methods)
+            }
             renderRightActions={(_, __, methods) =>
-              renderRightActions(dream.id, methods)
+              renderRightActions(dream, methods)
             }
             onSwipeableOpen={() => closePreviousSwipe(dream.id)}
             onSwipeableClose={() => {
@@ -251,6 +374,7 @@ export default function HomeScreen() {
 
                     <View style={styles.tags}>
                       {mood ? <TagChip label={mood} /> : null}
+                      {archived ? <TagChip label={DREAM_COPY.archivedTag} /> : null}
                       {dream.audioUri ? <TagChip label="Audio" /> : null}
                       {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
                     </View>

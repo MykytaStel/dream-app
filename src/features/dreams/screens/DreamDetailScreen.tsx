@@ -14,7 +14,7 @@ import { Theme } from '../../../theme/theme';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
-import { deleteDream, getDream } from '../repository/dreamsRepository';
+import { archiveDream, deleteDream, getDream, unarchiveDream } from '../repository/dreamsRepository';
 import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
 import { Button } from '../../../components/ui/Button';
 
@@ -70,8 +70,18 @@ export default function DreamDetailScreen() {
   }
 
   const dreamId = dream.id;
+  const archived = typeof dream.archivedAt === 'number';
   const moodLabel = dream.mood ? DREAM_MOOD_LABELS[dream.mood] : undefined;
   const wordsCount = countDreamWords(dream.text);
+
+  function onToggleArchiveDream() {
+    if (archived) {
+      unarchiveDream(dreamId);
+    } else {
+      archiveDream(dreamId);
+    }
+    navigation.goBack();
+  }
 
   function onDeleteDream() {
     Alert.alert(
@@ -144,6 +154,11 @@ export default function DreamDetailScreen() {
               dreamId,
             })
           }
+        />
+        <Button
+          title={archived ? DREAM_COPY.detailUnarchive : DREAM_COPY.detailArchive}
+          variant="ghost"
+          onPress={onToggleArchiveDream}
         />
         <Button
           title={DREAM_COPY.detailDelete}

@@ -109,6 +109,7 @@ export function DreamComposer({
     const dream: Dream = {
       id: initialDream?.id ?? createDreamId(),
       createdAt: initialDream?.createdAt ?? Date.now(),
+      archivedAt: initialDream?.archivedAt,
       sleepDate: sleepDate.trim() || getTodayDate(),
       title: cleanTitle || undefined,
       text: cleanText || undefined,

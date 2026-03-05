@@ -6,7 +6,7 @@ on:
       ref:
         description: Git ref (branch or tag) to build
         required: false
-        default: dev/kaleidoskop-v0.0.1
+        default: main
   push:
     tags:
       - 'v*'

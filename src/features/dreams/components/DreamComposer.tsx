@@ -9,9 +9,13 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
-import { DREAM_COPY, DREAM_MOODS } from '../../../constants/copy/dreams';
+import {
+  DREAM_COPY,
+  DREAM_MOODS,
+  DREAM_STRESS_LEVELS,
+} from '../../../constants/copy/dreams';
 import { Theme } from '../../../theme/theme';
-import { Dream, Mood } from '../model/dream';
+import { Dream, Mood, SleepContext, StressLevel } from '../model/dream';
 import { saveDream } from '../repository/dreamsRepository';
 import { startRecording, stopRecording } from '../services/audioService';
 import { createDreamId } from '../utils/createDreamId';
@@ -25,6 +29,17 @@ function getTodayDate() {
 
 function normalizeTag(value: string) {
   return value.trim().toLowerCase().replace(/\s+/g, '-');
+}
+
+function hasSleepContextValues(context: SleepContext) {
+  return (
+    typeof context.stressLevel === 'number' ||
+    typeof context.alcoholTaken === 'boolean' ||
+    typeof context.caffeineLate === 'boolean' ||
+    Boolean(context.medications?.trim()) ||
+    Boolean(context.importantEvents?.trim()) ||
+    Boolean(context.healthNotes?.trim())
+  );
 }
 
 type DreamComposerProps = {
@@ -45,6 +60,24 @@ export function DreamComposer({
   const [recording, setRecording] = React.useState(false);
   const [audioUri, setAudioUri] = React.useState<string | undefined>(initialDream?.audioUri);
   const [mood, setMood] = React.useState<Mood | undefined>(initialDream?.mood);
+  const [stressLevel, setStressLevel] = React.useState<StressLevel | undefined>(
+    initialDream?.sleepContext?.stressLevel,
+  );
+  const [alcoholTaken, setAlcoholTaken] = React.useState<boolean | undefined>(
+    initialDream?.sleepContext?.alcoholTaken,
+  );
+  const [caffeineLate, setCaffeineLate] = React.useState<boolean | undefined>(
+    initialDream?.sleepContext?.caffeineLate,
+  );
+  const [medications, setMedications] = React.useState(
+    initialDream?.sleepContext?.medications ?? '',
+  );
+  const [importantEvents, setImportantEvents] = React.useState(
+    initialDream?.sleepContext?.importantEvents ?? '',
+  );
+  const [healthNotes, setHealthNotes] = React.useState(
+    initialDream?.sleepContext?.healthNotes ?? '',
+  );
   const [tags, setTags] = React.useState<string[]>(initialDream?.tags ?? []);
   const [tagInput, setTagInput] = React.useState('');
   const baseStyles = createNewDreamScreenStyles(t, false);
@@ -92,6 +125,12 @@ export function DreamComposer({
     setSleepDate(getTodayDate());
     setAudioUri(undefined);
     setMood(undefined);
+    setStressLevel(undefined);
+    setAlcoholTaken(undefined);
+    setCaffeineLate(undefined);
+    setMedications('');
+    setImportantEvents('');
+    setHealthNotes('');
     setTags([]);
     setTagInput('');
     setRecording(false);
@@ -100,6 +139,18 @@ export function DreamComposer({
   function onSave() {
     const cleanTitle = title.trim();
     const cleanText = text.trim();
+    const cleanMedications = medications.trim();
+    const cleanImportantEvents = importantEvents.trim();
+    const cleanHealthNotes = healthNotes.trim();
+
+    const sleepContext: SleepContext = {
+      stressLevel,
+      alcoholTaken,
+      caffeineLate,
+      medications: cleanMedications || undefined,
+      importantEvents: cleanImportantEvents || undefined,
+      healthNotes: cleanHealthNotes || undefined,
+    };
 
     if (!cleanText && !audioUri && !cleanTitle) {
       Alert.alert(DREAM_COPY.saveErrorTitle, DREAM_COPY.saveErrorDescription);
@@ -116,6 +167,7 @@ export function DreamComposer({
       audioUri,
       tags,
       mood,
+      sleepContext: hasSleepContextValues(sleepContext) ? sleepContext : undefined,
     };
 
     saveDream(dream);
@@ -224,6 +276,109 @@ export function DreamComposer({
             );
           })}
         </View>
+      </Card>
+
+      <Card style={baseStyles.card}>
+        <SectionHeader
+          title={DREAM_COPY.sleepContextTitle}
+          subtitle={DREAM_COPY.sleepContextDescription}
+        />
+
+        <View style={baseStyles.contextBlock}>
+          <Text style={baseStyles.contextFieldLabel}>{DREAM_COPY.stressLabel}</Text>
+          <View style={baseStyles.contextOptionsRow}>
+            {DREAM_STRESS_LEVELS.map(option => {
+              const selected = stressLevel === option.value;
+              const styles = createNewDreamScreenStyles(t, selected);
+              return (
+                <Pressable
+                  key={option.value}
+                  onPress={() =>
+                    setStressLevel(current => (current === option.value ? undefined : option.value))
+                  }
+                  style={styles.contextOption}
+                >
+                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={baseStyles.contextBlock}>
+          <Text style={baseStyles.contextFieldLabel}>{DREAM_COPY.alcoholLabel}</Text>
+          <View style={baseStyles.contextOptionsRow}>
+            {[
+              { label: DREAM_COPY.boolNo, value: false },
+              { label: DREAM_COPY.boolYes, value: true },
+            ].map(option => {
+              const selected = alcoholTaken === option.value;
+              const styles = createNewDreamScreenStyles(t, selected);
+              return (
+                <Pressable
+                  key={`alcohol-${option.label}`}
+                  onPress={() =>
+                    setAlcoholTaken(current => (current === option.value ? undefined : option.value))
+                  }
+                  style={styles.contextOption}
+                >
+                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <View style={baseStyles.contextBlock}>
+          <Text style={baseStyles.contextFieldLabel}>{DREAM_COPY.caffeineLabel}</Text>
+          <View style={baseStyles.contextOptionsRow}>
+            {[
+              { label: DREAM_COPY.boolNo, value: false },
+              { label: DREAM_COPY.boolYes, value: true },
+            ].map(option => {
+              const selected = caffeineLate === option.value;
+              const styles = createNewDreamScreenStyles(t, selected);
+              return (
+                <Pressable
+                  key={`caffeine-${option.label}`}
+                  onPress={() =>
+                    setCaffeineLate(current => (current === option.value ? undefined : option.value))
+                  }
+                  style={styles.contextOption}
+                >
+                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+
+        <FormField
+          label={DREAM_COPY.medicationsLabel}
+          placeholder={DREAM_COPY.medicationsPlaceholder}
+          value={medications}
+          onChangeText={setMedications}
+          multiline
+          inputStyle={baseStyles.contextTextInput}
+        />
+
+        <FormField
+          label={DREAM_COPY.eventsLabel}
+          placeholder={DREAM_COPY.eventsPlaceholder}
+          value={importantEvents}
+          onChangeText={setImportantEvents}
+          multiline
+          inputStyle={baseStyles.contextTextInput}
+        />
+
+        <FormField
+          label={DREAM_COPY.healthNotesLabel}
+          placeholder={DREAM_COPY.healthNotesPlaceholder}
+          value={healthNotes}
+          onChangeText={setHealthNotes}
+          multiline
+          inputStyle={baseStyles.contextTextInput}
+        />
       </Card>
 
       <Card style={baseStyles.card}>

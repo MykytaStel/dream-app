@@ -9,7 +9,7 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
-import { DREAM_COPY, DREAM_MOOD_LABELS } from '../../../constants/copy/dreams';
+import { DREAM_COPY, DREAM_MOOD_LABELS, DREAM_STRESS_LABELS } from '../../../constants/copy/dreams';
 import { Theme } from '../../../theme/theme';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { Dream } from '../model/dream';
@@ -37,6 +37,22 @@ function formatMetaDate(value: number | string) {
     month: 'short',
     year: 'numeric',
   });
+}
+
+function hasSleepContext(dream: Dream) {
+  const context = dream.sleepContext;
+  if (!context) {
+    return false;
+  }
+
+  return (
+    typeof context.stressLevel === 'number' ||
+    typeof context.alcoholTaken === 'boolean' ||
+    typeof context.caffeineLate === 'boolean' ||
+    Boolean(context.medications) ||
+    Boolean(context.importantEvents) ||
+    Boolean(context.healthNotes)
+  );
 }
 
 export default function DreamDetailScreen() {
@@ -73,6 +89,7 @@ export default function DreamDetailScreen() {
   const archived = typeof dream.archivedAt === 'number';
   const moodLabel = dream.mood ? DREAM_MOOD_LABELS[dream.mood] : undefined;
   const wordsCount = countDreamWords(dream.text);
+  const hasContext = hasSleepContext(dream);
 
   function onToggleArchiveDream() {
     if (archived) {
@@ -183,6 +200,52 @@ export default function DreamDetailScreen() {
             <Text style={styles.mutedText}>{DREAM_COPY.detailTagsEmpty}</Text>
           )}
         </View>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>{DREAM_COPY.detailContextTitle}</Text>
+        {!hasContext ? (
+          <Text style={styles.mutedText}>{DREAM_COPY.detailContextEmpty}</Text>
+        ) : (
+          <View style={styles.contextRows}>
+            {typeof dream.sleepContext?.stressLevel === 'number' ? (
+              <InfoRow
+                label={DREAM_COPY.stressLabel}
+                value={DREAM_STRESS_LABELS[dream.sleepContext.stressLevel]}
+              />
+            ) : null}
+            {typeof dream.sleepContext?.alcoholTaken === 'boolean' ? (
+              <InfoRow
+                label={DREAM_COPY.alcoholLabel}
+                value={dream.sleepContext.alcoholTaken ? DREAM_COPY.boolYes : DREAM_COPY.boolNo}
+              />
+            ) : null}
+            {typeof dream.sleepContext?.caffeineLate === 'boolean' ? (
+              <InfoRow
+                label={DREAM_COPY.caffeineLabel}
+                value={dream.sleepContext.caffeineLate ? DREAM_COPY.boolYes : DREAM_COPY.boolNo}
+              />
+            ) : null}
+            {dream.sleepContext?.medications ? (
+              <InfoRow
+                label={DREAM_COPY.medicationsLabel}
+                value={dream.sleepContext.medications}
+              />
+            ) : null}
+            {dream.sleepContext?.importantEvents ? (
+              <InfoRow
+                label={DREAM_COPY.eventsLabel}
+                value={dream.sleepContext.importantEvents}
+              />
+            ) : null}
+            {dream.sleepContext?.healthNotes ? (
+              <InfoRow
+                label={DREAM_COPY.healthNotesLabel}
+                value={dream.sleepContext.healthNotes}
+              />
+            ) : null}
+          </View>
+        )}
       </Card>
 
       {dream.audioUri ? (

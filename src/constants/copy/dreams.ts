@@ -1,4 +1,4 @@
-import { Mood } from '../../features/dreams/model/dream';
+import { Mood, StressLevel } from '../../features/dreams/model/dream';
 
 export const DREAM_COPY = {
   homeTitle: 'Dream log',
@@ -73,6 +73,22 @@ export const DREAM_COPY = {
   wordsUnit: 'words',
   moodTitle: 'Mood after waking',
   moodDescription: 'Optional now, useful later for trends and monthly reports.',
+  sleepContextTitle: 'Before sleep context',
+  sleepContextDescription:
+    'Optional signals before sleep that can help you detect patterns later.',
+  stressLabel: 'Stress level',
+  alcoholLabel: 'Alcohol before sleep',
+  caffeineLabel: 'Late caffeine',
+  medicationsLabel: 'Medications or supplements',
+  medicationsPlaceholder: 'e.g. melatonin 3mg',
+  eventsLabel: 'Important events',
+  eventsPlaceholder: 'e.g. exams, conflict, celebration',
+  healthNotesLabel: 'Health notes',
+  healthNotesPlaceholder: 'e.g. headache, anxiety, low mood',
+  boolYes: 'Yes',
+  boolNo: 'No',
+  detailContextTitle: 'Pre-sleep context',
+  detailContextEmpty: 'No pre-sleep context was saved for this dream.',
   tagsTitle: 'Tags',
   tagsDescription: 'Add symbols, people, places, or recurring themes.',
   tagsPlaceholder: 'ocean',
@@ -108,4 +124,18 @@ export const DREAM_MOOD_LABELS: Record<Mood, string> = {
   neutral: 'Calm',
   positive: 'Bright',
   negative: 'Heavy',
+};
+
+export const DREAM_STRESS_LEVELS: Array<{ label: string; value: StressLevel }> = [
+  { label: 'Low', value: 0 },
+  { label: 'Moderate', value: 1 },
+  { label: 'High', value: 2 },
+  { label: 'Overload', value: 3 },
+];
+
+export const DREAM_STRESS_LABELS: Record<StressLevel, string> = {
+  0: 'Low',
+  1: 'Moderate',
+  2: 'High',
+  3: 'Overload',
 };

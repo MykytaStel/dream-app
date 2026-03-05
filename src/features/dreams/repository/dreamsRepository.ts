@@ -73,5 +73,11 @@ export function ensurePreviewDream() {
       'I was climbing a narrow staircase made of blue glass, floating above a dark quiet sea. Each step lit up under my feet, and somewhere in the distance I could hear a city waking up. At the top there was a small room full of postcards from places I had never visited, but somehow remembered.',
     tags: ['ocean', 'glass', 'stairs', 'city'],
     mood: 'positive',
+    sleepContext: {
+      stressLevel: 1,
+      alcoholTaken: false,
+      caffeineLate: true,
+      importantEvents: 'Late-night product planning and release prep.',
+    },
   });
 }

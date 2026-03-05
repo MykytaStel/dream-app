@@ -90,6 +90,9 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 8,
     },
+    contextRows: {
+      gap: 10,
+    },
     audioCard: {
       gap: 8,
       borderRadius: 14,

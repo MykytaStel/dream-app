@@ -77,6 +77,36 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       fontWeight: '700',
       color: selected ? theme.colors.background : theme.colors.text,
     },
+    contextBlock: {
+      gap: 8,
+    },
+    contextFieldLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    contextOptionsRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    contextOption: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: selected ? theme.colors.primary : theme.colors.border,
+      backgroundColor: selected ? theme.colors.primary : theme.colors.surfaceAlt,
+    },
+    contextOptionLabel: {
+      textAlign: 'center',
+      fontWeight: '700',
+      fontSize: 12,
+      color: selected ? theme.colors.background : theme.colors.text,
+    },
+    contextTextInput: {
+      minHeight: 96,
+    },
     tagsInputRow: {
       flexDirection: 'row',
       gap: 8,

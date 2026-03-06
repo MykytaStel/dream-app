@@ -22,7 +22,7 @@ This project is being developed by Mykyta Stelmashenko.
 
 ## Status
 
-Version: `0.0.6`
+Version: `0.0.7`
 
 This is an early MVP focused on the core journaling flow with local reminders
 and offline transcription. Future iterations may add AI summaries and richer

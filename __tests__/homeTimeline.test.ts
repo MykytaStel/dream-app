@@ -4,7 +4,9 @@ import {
   DEFAULT_HOME_TIMELINE_FILTERS,
   getAvailableTimelineTags,
   getDreamEntryType,
+  getDreamSearchScore,
   hasActiveTimelineRefinements,
+  matchesDreamTranscriptFilter,
 } from '../src/features/dreams/model/homeTimeline';
 
 describe('homeTimeline', () => {
@@ -25,6 +27,7 @@ describe('homeTimeline', () => {
       title: 'Voice note only',
       audioUri: 'file:///voice.m4a',
       transcript: 'A silver staircase opened above the street.',
+      transcriptSource: 'generated',
       tags: ['stairs'],
       mood: 'neutral',
     },
@@ -39,6 +42,26 @@ describe('homeTimeline', () => {
       mood: 'negative',
       archivedAt: new Date('2026-03-10T08:00:00.000Z').getTime(),
     },
+    {
+      id: 'dream-4',
+      createdAt: new Date('2026-03-03T08:00:00.000Z').getTime(),
+      sleepDate: '2026-03-03',
+      title: 'Edited voice dream',
+      audioUri: 'file:///edited.m4a',
+      transcript: 'I kept repeating lantern over water.',
+      transcriptSource: 'edited',
+      tags: ['lantern'],
+      mood: 'neutral',
+    },
+    {
+      id: 'dream-5',
+      createdAt: new Date('2026-03-02T08:00:00.000Z').getTime(),
+      sleepDate: '2026-03-02',
+      title: 'Raw audio only',
+      audioUri: 'file:///raw.m4a',
+      tags: ['raw'],
+      mood: 'neutral',
+    },
   ];
 
   test('detects entry type from available content', () => {
@@ -47,13 +70,21 @@ describe('homeTimeline', () => {
     expect(getDreamEntryType(dreams[2])).toBe('mixed');
   });
 
+  test('matches transcript-aware filters', () => {
+    expect(matchesDreamTranscriptFilter(dreams[0], 'with-transcript')).toBe(false);
+    expect(matchesDreamTranscriptFilter(dreams[1], 'with-transcript')).toBe(true);
+    expect(matchesDreamTranscriptFilter(dreams[1], 'audio-only')).toBe(false);
+    expect(matchesDreamTranscriptFilter(dreams[3], 'edited-transcript')).toBe(true);
+    expect(matchesDreamTranscriptFilter(dreams[4], 'audio-only')).toBe(true);
+  });
+
   test('filters timeline by archive, mood, tags, type, and search query', () => {
     expect(
       applyHomeTimelineFilters(dreams, {
         ...DEFAULT_HOME_TIMELINE_FILTERS,
         archive: 'active',
       }).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5']);
 
     expect(
       applyHomeTimelineFilters(dreams, {
@@ -72,20 +103,34 @@ describe('homeTimeline', () => {
         searchQuery: 'silver staircase',
       }).map(dream => dream.id),
     ).toEqual(['dream-2']);
+
+    expect(
+      applyHomeTimelineFilters(dreams, {
+        ...DEFAULT_HOME_TIMELINE_FILTERS,
+        transcript: 'edited-transcript',
+      }).map(dream => dream.id),
+    ).toEqual(['dream-4']);
+
+    expect(
+      applyHomeTimelineFilters(dreams, {
+        ...DEFAULT_HOME_TIMELINE_FILTERS,
+        transcript: 'audio-only',
+      }).map(dream => dream.id),
+    ).toEqual(['dream-5']);
   });
 
   test('filters timeline by date range relative to provided current date', () => {
     const moreDreams: Dream[] = [
       ...dreams,
       {
-        id: 'dream-4',
+        id: 'dream-6',
         createdAt: new Date('2026-02-20T08:00:00.000Z').getTime(),
         sleepDate: '2026-02-20',
         title: 'Older window',
         tags: [],
       },
       {
-        id: 'dream-5',
+        id: 'dream-7',
         createdAt: new Date('2025-12-20T08:00:00.000Z').getTime(),
         sleepDate: '2025-12-20',
         title: 'Very old',
@@ -102,7 +147,7 @@ describe('homeTimeline', () => {
         },
         new Date('2026-03-06T12:00:00.000Z'),
       ).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5']);
 
     expect(
       applyHomeTimelineFilters(
@@ -113,7 +158,7 @@ describe('homeTimeline', () => {
         },
         new Date('2026-03-06T12:00:00.000Z'),
       ).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5', 'dream-6']);
 
     expect(
       applyHomeTimelineFilters(
@@ -124,28 +169,67 @@ describe('homeTimeline', () => {
         },
         new Date('2026-03-06T12:00:00.000Z'),
       ).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5', 'dream-6', 'dream-7']);
   });
 
   test('sorts timeline newest first by default and can switch to oldest first', () => {
     expect(
       applyHomeTimelineFilters(dreams, DEFAULT_HOME_TIMELINE_FILTERS).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5']);
 
     expect(
       applyHomeTimelineFilters(dreams, {
         ...DEFAULT_HOME_TIMELINE_FILTERS,
         sortOrder: 'oldest',
       }).map(dream => dream.id),
-    ).toEqual(['dream-3', 'dream-2', 'dream-1']);
+    ).toEqual(['dream-5', 'dream-4', 'dream-3', 'dream-2', 'dream-1']);
+  });
+
+  test('boosts more relevant search matches before chronological order', () => {
+    const scoredDreams: Dream[] = [
+      {
+        id: 'title-hit',
+        createdAt: new Date('2026-03-05T08:00:00.000Z').getTime(),
+        sleepDate: '2026-03-05',
+        title: 'Lantern room',
+        tags: [],
+      },
+      {
+        id: 'transcript-hit',
+        createdAt: new Date('2026-03-06T08:00:00.000Z').getTime(),
+        sleepDate: '2026-03-06',
+        transcript: 'Lantern lantern over water',
+        transcriptSource: 'generated',
+        tags: [],
+      },
+    ];
+
+    expect(getDreamSearchScore(scoredDreams[0], 'lantern')).toBeGreaterThan(0);
+    expect(getDreamSearchScore(scoredDreams[1], 'lantern')).toBeGreaterThan(
+      getDreamSearchScore(scoredDreams[0], 'lantern'),
+    );
+    expect(
+      applyHomeTimelineFilters(scoredDreams, {
+        ...DEFAULT_HOME_TIMELINE_FILTERS,
+        searchQuery: 'lantern',
+      }).map(dream => dream.id),
+    ).toEqual(['transcript-hit', 'title-hit']);
   });
 
   test('returns sorted unique tags and detects active refinements', () => {
-    expect(getAvailableTimelineTags(dreams)).toEqual(['door', 'ocean', 'stairs', 'train']);
+    expect(getAvailableTimelineTags(dreams)).toEqual([
+      'door',
+      'lantern',
+      'ocean',
+      'raw',
+      'stairs',
+      'train',
+    ]);
     expect(hasActiveTimelineRefinements(DEFAULT_HOME_TIMELINE_FILTERS)).toBe(false);
     expect(
       hasActiveTimelineRefinements({
         ...DEFAULT_HOME_TIMELINE_FILTERS,
+        transcript: 'with-transcript',
         dateRange: '7d',
       }),
     ).toBe(true);

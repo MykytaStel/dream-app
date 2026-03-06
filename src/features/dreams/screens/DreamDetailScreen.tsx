@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
+import { FormField } from '../../../components/ui/FormField';
 import { InfoRow } from '../../../components/ui/InfoRow';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
@@ -20,7 +21,14 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
-import { archiveDream, deleteDream, getDream, unarchiveDream } from '../repository/dreamsRepository';
+import {
+  archiveDream,
+  clearDreamTranscript,
+  deleteDream,
+  getDream,
+  saveDreamTranscriptEdit,
+  unarchiveDream,
+} from '../repository/dreamsRepository';
 import { play, stop } from '../services/audioService';
 import {
   DreamTranscriptionProgress,
@@ -46,6 +54,16 @@ function formatMetaDate(value: number | string) {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
+  });
+}
+
+function formatMetaTimestamp(value: number) {
+  return new Date(value).toLocaleString([], {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -77,14 +95,19 @@ export default function DreamDetailScreen() {
   const [dream, setDream] = React.useState(() => getDream(route.params.dreamId));
   const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
   const [isTranscribingAudio, setIsTranscribingAudio] = React.useState(false);
+  const [isEditingTranscript, setIsEditingTranscript] = React.useState(false);
+  const [transcriptDraft, setTranscriptDraft] = React.useState('');
   const [transcriptionProgress, setTranscriptionProgress] =
     React.useState<DreamTranscriptionProgress | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
-      setDream(getDream(route.params.dreamId));
+      const nextDream = getDream(route.params.dreamId);
+      setDream(nextDream);
+      setTranscriptDraft(nextDream?.transcript ?? '');
       setIsPlayingAudio(false);
       setIsTranscribingAudio(false);
+      setIsEditingTranscript(false);
       setTranscriptionProgress(null);
 
       return () => {
@@ -116,6 +139,10 @@ export default function DreamDetailScreen() {
   const wordsCount = countDreamWords(dream.text);
   const hasContext = hasSleepContext(dream);
   const transcriptStatus = dream.transcriptStatus ?? (dream.transcript ? 'ready' : 'idle');
+  const transcriptSourceLabel =
+    dream.transcriptSource === 'edited'
+      ? copy.detailGeneratedTranscriptSourceEdited
+      : copy.detailGeneratedTranscriptSourceGenerated;
 
   function formatTranscriptionProgress(progress: DreamTranscriptionProgress | null) {
     if (!progress) {
@@ -201,12 +228,16 @@ export default function DreamDetailScreen() {
     });
 
     try {
-      await transcribeDreamAudio(dreamId, nextProgress => {
+      const pendingTranscription = transcribeDreamAudio(dreamId, nextProgress => {
         setTranscriptionProgress(nextProgress);
       });
       setDream(getDream(dreamId));
+      await pendingTranscription;
+      setDream(getDream(dreamId));
+      setTranscriptDraft(getDream(dreamId)?.transcript ?? '');
     } catch (error) {
       setDream(getDream(dreamId));
+      setTranscriptDraft(getDream(dreamId)?.transcript ?? '');
       const fallbackDescription = copy.detailTranscriptionErrorDescription;
       const message = error instanceof Error ? error.message : String(error);
       Alert.alert(
@@ -217,6 +248,59 @@ export default function DreamDetailScreen() {
       setIsTranscribingAudio(false);
       setTranscriptionProgress(null);
     }
+  }
+
+  function onStartTranscriptEdit() {
+    setTranscriptDraft(dream?.transcript ?? '');
+    setIsEditingTranscript(true);
+  }
+
+  function onCancelTranscriptEdit() {
+    setTranscriptDraft(dream?.transcript ?? '');
+    setIsEditingTranscript(false);
+  }
+
+  function onSaveTranscriptEdit() {
+    const nextTranscript = transcriptDraft.trim();
+    if (!nextTranscript) {
+      Alert.alert(
+        copy.detailGeneratedTranscriptEmptyErrorTitle,
+        copy.detailGeneratedTranscriptEmptyErrorDescription,
+      );
+      return;
+    }
+
+    const nextDream = saveDreamTranscriptEdit(dreamId, nextTranscript);
+    setDream(nextDream);
+    setTranscriptDraft(nextDream.transcript ?? '');
+    setIsEditingTranscript(false);
+    Alert.alert(
+      copy.detailGeneratedTranscriptSaveSuccessTitle,
+      copy.detailGeneratedTranscriptSaveSuccessDescription,
+    );
+  }
+
+  function onClearTranscript() {
+    Alert.alert(
+      copy.detailGeneratedTranscriptClearTitle,
+      copy.detailGeneratedTranscriptClearDescription,
+      [
+        {
+          text: copy.detailDeleteCancel,
+          style: 'cancel',
+        },
+        {
+          text: copy.detailGeneratedTranscriptClear,
+          style: 'destructive',
+          onPress: () => {
+            const nextDream = clearDreamTranscript(dreamId);
+            setDream(nextDream);
+            setTranscriptDraft('');
+            setIsEditingTranscript(false);
+          },
+        },
+      ],
+    );
   }
 
   return (
@@ -301,7 +385,15 @@ export default function DreamDetailScreen() {
             </View>
           ) : null}
 
-          {dream.transcript ? (
+          {isEditingTranscript ? (
+            <FormField
+              value={transcriptDraft}
+              onChangeText={setTranscriptDraft}
+              multiline
+              inputStyle={styles.transcriptEditorInput}
+              helperText={`${transcriptDraft.trim() ? transcriptDraft.trim().split(/\s+/).length : 0} ${copy.wordsUnit}`}
+            />
+          ) : dream.transcript ? (
             <Text style={styles.bodyText}>{dream.transcript}</Text>
           ) : transcriptStatus === 'processing' || isTranscribingAudio ? (
             <Text style={styles.statusText}>{copy.detailGeneratedTranscriptProcessing}</Text>
@@ -311,23 +403,83 @@ export default function DreamDetailScreen() {
             <Text style={styles.mutedText}>{copy.detailGeneratedTranscriptEmpty}</Text>
           )}
 
+          {dream.transcript ? (
+            <View style={styles.transcriptMetaCard}>
+              <InfoRow
+                label={copy.detailGeneratedTranscriptSourceLabel}
+                value={transcriptSourceLabel}
+              />
+              {dream.transcriptUpdatedAt ? (
+                <InfoRow
+                  label={copy.detailGeneratedTranscriptUpdatedLabel}
+                  value={formatMetaTimestamp(dream.transcriptUpdatedAt)}
+                />
+              ) : null}
+            </View>
+          ) : null}
+
+          {transcriptStatus === 'processing' && dream.transcript ? (
+            <Text style={styles.statusText}>{copy.detailGeneratedTranscriptProcessing}</Text>
+          ) : null}
+
+          {transcriptStatus === 'error' && dream.transcript ? (
+            <Text style={styles.statusErrorText}>{copy.detailGeneratedTranscriptReplaceError}</Text>
+          ) : null}
+
           <Text style={styles.mutedText}>{copy.detailGeneratedTranscriptHint}</Text>
 
-          {dream.audioUri ? (
-            <Button
-              title={
-                isTranscribingAudio
-                  ? formatTranscriptionProgress(transcriptionProgress) ??
-                    copy.detailTranscribeInProgress
-                  : transcriptStatus === 'error'
-                    ? copy.detailTranscribeRetry
-                    : copy.detailTranscribeAudio
-              }
-              variant={transcriptStatus === 'error' ? 'ghost' : 'primary'}
-              onPress={onTranscribeAudio}
-              disabled={isTranscribingAudio}
-            />
-          ) : null}
+          <View style={styles.transcriptActions}>
+            {isEditingTranscript ? (
+              <>
+                <Button
+                  title={copy.detailGeneratedTranscriptSave}
+                  onPress={onSaveTranscriptEdit}
+                />
+                <Button
+                  title={copy.detailGeneratedTranscriptCancel}
+                  variant="ghost"
+                  onPress={onCancelTranscriptEdit}
+                />
+              </>
+            ) : (
+              <>
+                {dream.transcript ? (
+                  <>
+                    <Button
+                      title={copy.detailGeneratedTranscriptEdit}
+                      variant="ghost"
+                      onPress={onStartTranscriptEdit}
+                    />
+                    <Button
+                      title={copy.detailGeneratedTranscriptClear}
+                      variant="danger"
+                      onPress={onClearTranscript}
+                    />
+                  </>
+                ) : null}
+
+                {dream.audioUri ? (
+                  <Button
+                    title={
+                      isTranscribingAudio
+                        ? formatTranscriptionProgress(transcriptionProgress) ??
+                          copy.detailTranscribeInProgress
+                        : dream.transcript
+                          ? copy.detailGeneratedTranscriptReplace
+                          : transcriptStatus === 'error'
+                            ? copy.detailTranscribeRetry
+                            : copy.detailTranscribeAudio
+                    }
+                    variant={
+                      dream.transcript || transcriptStatus === 'error' ? 'ghost' : 'primary'
+                    }
+                    onPress={onTranscribeAudio}
+                    disabled={isTranscribingAudio}
+                  />
+                ) : null}
+              </>
+            )}
+          </View>
         </Card>
       ) : null}
 

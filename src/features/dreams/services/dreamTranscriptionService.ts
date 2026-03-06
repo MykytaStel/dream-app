@@ -187,6 +187,7 @@ export async function transcribeDreamAudio(
     return updateDreamTranscriptState(dreamId, {
       transcript,
       transcriptStatus: 'ready',
+      transcriptSource: 'generated',
       transcriptUpdatedAt: Date.now(),
     });
   } catch (error) {

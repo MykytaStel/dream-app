@@ -95,6 +95,26 @@ const DREAM_COPY_EN = {
     'Transcription is running locally on this device. Keep the app open until it finishes.',
   detailGeneratedTranscriptError:
     'The last transcription attempt did not finish. The original voice note is still saved.',
+  detailGeneratedTranscriptReplaceError:
+    'The latest replace attempt failed. The previous transcript is still saved locally.',
+  detailGeneratedTranscriptSourceLabel: 'Source',
+  detailGeneratedTranscriptSourceGenerated: 'Generated from audio',
+  detailGeneratedTranscriptSourceEdited: 'Edited by hand',
+  detailGeneratedTranscriptUpdatedLabel: 'Updated',
+  detailGeneratedTranscriptEdit: 'Edit transcript',
+  detailGeneratedTranscriptSave: 'Save transcript',
+  detailGeneratedTranscriptCancel: 'Cancel editing',
+  detailGeneratedTranscriptClear: 'Clear transcript',
+  detailGeneratedTranscriptReplace: 'Replace transcript',
+  detailGeneratedTranscriptEmptyErrorTitle: 'Transcript is empty',
+  detailGeneratedTranscriptEmptyErrorDescription:
+    'Write at least one line before saving, or clear the transcript instead.',
+  detailGeneratedTranscriptSaveSuccessTitle: 'Transcript updated',
+  detailGeneratedTranscriptSaveSuccessDescription:
+    'The edited transcript is saved locally and remains searchable.',
+  detailGeneratedTranscriptClearTitle: 'Clear transcript?',
+  detailGeneratedTranscriptClearDescription:
+    'This removes the saved transcript but keeps the original voice note on device.',
   detailTranscribeAudio: 'Transcribe audio',
   detailTranscribeRetry: 'Retry transcription',
   detailTranscribePreparingModel: 'Preparing offline model',
@@ -277,6 +297,26 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Транскрипція виконується локально на цьому пристрої. Не закривай застосунок, доки вона не завершиться.',
   detailGeneratedTranscriptError:
     'Остання спроба транскрипції не завершилась. Оригінальна голосова нотатка все ще збережена.',
+  detailGeneratedTranscriptReplaceError:
+    'Остання спроба заміни транскрипту не завершилась. Попередній транскрипт усе ще збережений локально.',
+  detailGeneratedTranscriptSourceLabel: 'Джерело',
+  detailGeneratedTranscriptSourceGenerated: 'Згенеровано з аудіо',
+  detailGeneratedTranscriptSourceEdited: 'Відредаговано вручну',
+  detailGeneratedTranscriptUpdatedLabel: 'Оновлено',
+  detailGeneratedTranscriptEdit: 'Редагувати транскрипт',
+  detailGeneratedTranscriptSave: 'Зберегти транскрипт',
+  detailGeneratedTranscriptCancel: 'Скасувати редагування',
+  detailGeneratedTranscriptClear: 'Очистити транскрипт',
+  detailGeneratedTranscriptReplace: 'Замінити транскрипт',
+  detailGeneratedTranscriptEmptyErrorTitle: 'Порожній транскрипт',
+  detailGeneratedTranscriptEmptyErrorDescription:
+    'Додай хоча б один рядок перед збереженням або очисти транскрипт окремо.',
+  detailGeneratedTranscriptSaveSuccessTitle: 'Транскрипт оновлено',
+  detailGeneratedTranscriptSaveSuccessDescription:
+    'Відредагований транскрипт збережено локально і він лишається доступним для пошуку.',
+  detailGeneratedTranscriptClearTitle: 'Очистити транскрипт?',
+  detailGeneratedTranscriptClearDescription:
+    'Це видалить збережений транскрипт, але залишить оригінальну голосову нотатку на пристрої.',
   detailTranscribeAudio: 'Транскрибувати аудіо',
   detailTranscribeRetry: 'Повторити транскрипцію',
   detailTranscribePreparingModel: 'Підготовка офлайн-моделі',

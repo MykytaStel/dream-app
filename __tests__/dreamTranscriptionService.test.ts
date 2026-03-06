@@ -70,6 +70,7 @@ describe('dreamTranscriptionService', () => {
     expect(getDream('dream-audio-1')).toMatchObject({
       transcript: 'Glass hallway above the sea',
       transcriptStatus: 'ready',
+      transcriptSource: 'generated',
     });
   });
 

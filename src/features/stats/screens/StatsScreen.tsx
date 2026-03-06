@@ -17,7 +17,10 @@ import {
   getAverageWords,
   getCurrentStreak,
   getEntriesLastSevenDays,
+  getMoodCorrelationStats,
   getMoodCounts,
+  type NegativeMoodRate,
+  getSleepContextStats,
 } from '../../dreams/model/dreamAnalytics';
 import { createStatsScreenStyles } from './StatsScreen.styles';
 
@@ -35,6 +38,29 @@ function getRecurringTags(tags: string[]) {
     .map(([tag]) => tag);
 }
 
+function formatCountWithShare(count: number, total: number) {
+  if (total <= 0) {
+    return '0 (0%)';
+  }
+
+  return `${count} (${Math.round((count / total) * 100)}%)`;
+}
+
+function formatNegativeRate(metric: NegativeMoodRate, baselineRate?: number) {
+  if (typeof metric.rate !== 'number') {
+    return STATS_COPY.noData;
+  }
+
+  const delta =
+    typeof baselineRate === 'number'
+      ? `${metric.rate - baselineRate >= 0 ? '+' : ''}${metric.rate - baselineRate}pp`
+      : undefined;
+
+  return `${metric.rate}% (${metric.negativeCount}/${metric.total}${
+    delta ? `, ${delta}` : ''
+  })`;
+}
+
 export default function StatsScreen() {
   const t = useTheme<Theme>();
   const [dreams, setDreams] = React.useState(() => listDreams());
@@ -50,9 +76,11 @@ export default function StatsScreen() {
   const voiceNotes = dreams.filter(dream => Boolean(dream.audioUri)).length;
   const taggedEntries = dreams.filter(dream => dream.tags.length > 0).length;
   const moodCounts = getMoodCounts(dreams);
+  const moodCorrelation = getMoodCorrelationStats(dreams);
   const streak = getCurrentStreak(dreams);
   const lastSevenDays = getEntriesLastSevenDays(dreams);
   const averageWords = getAverageWords(dreams);
+  const sleepContextStats = getSleepContextStats(dreams);
   const recurringTags = getRecurringTags(dreams.flatMap(dream => dream.tags));
   const moodItems = [
     { label: STATS_COPY.bright, count: moodCounts.positive, color: t.colors.accent },
@@ -60,6 +88,7 @@ export default function StatsScreen() {
     { label: STATS_COPY.heavy, count: moodCounts.negative, color: t.colors.primaryAlt },
   ];
   const maxMoodCount = Math.max(...moodItems.map(item => item.count), 1);
+  const baselineNegativeRate = moodCorrelation.overall.rate;
 
   return (
     <ScreenContainer scroll>
@@ -109,6 +138,74 @@ export default function StatsScreen() {
             <Text style={styles.moodValue}>{item.count}</Text>
           </View>
         ))}
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>{STATS_COPY.sleepContextBreakdown}</Text>
+        <InfoRow
+          label={STATS_COPY.entriesWithContext}
+          value={formatCountWithShare(sleepContextStats.withContext, dreams.length)}
+        />
+        <InfoRow
+          label={STATS_COPY.averageStressLevel}
+          value={
+            typeof sleepContextStats.averageStress === 'number'
+              ? `${sleepContextStats.averageStress.toFixed(1)} / 3`
+              : STATS_COPY.noData
+          }
+        />
+        <InfoRow
+          label={STATS_COPY.alcoholBeforeSleep}
+          value={formatCountWithShare(sleepContextStats.alcoholTaken, dreams.length)}
+        />
+        <InfoRow
+          label={STATS_COPY.lateCaffeine}
+          value={formatCountWithShare(sleepContextStats.caffeineLate, dreams.length)}
+        />
+        <InfoRow
+          label={STATS_COPY.medicationsNoted}
+          value={formatCountWithShare(sleepContextStats.medications, dreams.length)}
+        />
+        <InfoRow
+          label={STATS_COPY.importantEventsNoted}
+          value={formatCountWithShare(sleepContextStats.importantEvents, dreams.length)}
+        />
+        <InfoRow
+          label={STATS_COPY.healthNotesNoted}
+          value={formatCountWithShare(sleepContextStats.healthNotes, dreams.length)}
+        />
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>{STATS_COPY.moodSignalTitle}</Text>
+        <InfoRow
+          label={STATS_COPY.negativeMoodRate}
+          value={formatNegativeRate(moodCorrelation.overall)}
+        />
+        <InfoRow
+          label={STATS_COPY.negativeWithAlcohol}
+          value={formatNegativeRate(moodCorrelation.alcoholTaken, baselineNegativeRate)}
+        />
+        <InfoRow
+          label={STATS_COPY.negativeWithoutAlcohol}
+          value={formatNegativeRate(moodCorrelation.noAlcohol, baselineNegativeRate)}
+        />
+        <InfoRow
+          label={STATS_COPY.negativeWithLateCaffeine}
+          value={formatNegativeRate(moodCorrelation.caffeineLate, baselineNegativeRate)}
+        />
+        <InfoRow
+          label={STATS_COPY.negativeWithoutLateCaffeine}
+          value={formatNegativeRate(moodCorrelation.noLateCaffeine, baselineNegativeRate)}
+        />
+        <InfoRow
+          label={STATS_COPY.negativeWithHighStress}
+          value={formatNegativeRate(moodCorrelation.highStress, baselineNegativeRate)}
+        />
+        <InfoRow
+          label={STATS_COPY.negativeWithLowStress}
+          value={formatNegativeRate(moodCorrelation.lowStress, baselineNegativeRate)}
+        />
       </Card>
 
       <Card style={styles.sectionCard}>

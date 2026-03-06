@@ -2,6 +2,8 @@
 
 import 'react-native-gesture-handler/jestSetup';
 
+jest.mock('@notifee/react-native', () => require('@notifee/react-native/jest-mock'));
+
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');
   Reanimated.default.call = () => {};
@@ -29,6 +31,9 @@ jest.mock('react-native-mmkv', () => {
         return typeof value === 'number' ? value : undefined;
       },
       delete: key => {
+        store.delete(key);
+      },
+      remove: key => {
         store.delete(key);
       },
       clearAll: () => {

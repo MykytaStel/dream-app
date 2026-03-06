@@ -1,19 +1,40 @@
 import { kv } from '../../../services/storage/mmkv';
+import { DREAMS_STORAGE_KEY } from '../../../services/storage/keys';
 import { Dream } from '../model/dream';
+import { sanitizeDream, sortDreamsStable } from '../model/dreamRules';
 
-const KEY = 'dreams';
 const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 
 export function listDreams(): Dream[] {
-  const raw = kv.getString(KEY);
-  return raw ? (JSON.parse(raw) as Dream[]) : [];
+  const raw = kv.getString(DREAMS_STORAGE_KEY);
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Dream[];
+    return sortDreamsStable(parsed.map(sanitizeDream));
+  } catch {
+    return [];
+  }
+}
+
+function persistDreams(dreams: Dream[]) {
+  kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(dreams.map(sanitizeDream))));
 }
 
 export function saveDream(d: Dream) {
   const all = listDreams();
-  const idx = all.findIndex(x => x.id === d.id);
-  if (idx >= 0) all[idx] = d; else all.unshift(d);
-  kv.set(KEY, JSON.stringify(all));
+  const nextDream = sanitizeDream(d);
+  const idx = all.findIndex(x => x.id === nextDream.id);
+
+  if (idx >= 0) {
+    all[idx] = nextDream;
+  } else {
+    all.unshift(nextDream);
+  }
+
+  persistDreams(all);
 }
 
 export function getDream(id: string): Dream | undefined {
@@ -21,8 +42,7 @@ export function getDream(id: string): Dream | undefined {
 }
 
 export function deleteDream(id: string) {
-  const next = listDreams().filter(dream => dream.id !== id);
-  kv.set(KEY, JSON.stringify(next));
+  persistDreams(listDreams().filter(dream => dream.id !== id));
 }
 
 export function archiveDream(id: string) {
@@ -34,7 +54,7 @@ export function archiveDream(id: string) {
         }
       : dream,
   );
-  kv.set(KEY, JSON.stringify(next));
+  persistDreams(next);
 }
 
 export function unarchiveDream(id: string) {
@@ -47,7 +67,7 @@ export function unarchiveDream(id: string) {
     delete nextDream.archivedAt;
     return nextDream;
   });
-  kv.set(KEY, JSON.stringify(next));
+  persistDreams(next);
 }
 
 export function ensurePreviewDream() {
@@ -73,5 +93,11 @@ export function ensurePreviewDream() {
       'I was climbing a narrow staircase made of blue glass, floating above a dark quiet sea. Each step lit up under my feet, and somewhere in the distance I could hear a city waking up. At the top there was a small room full of postcards from places I had never visited, but somehow remembered.',
     tags: ['ocean', 'glass', 'stairs', 'city'],
     mood: 'positive',
+    sleepContext: {
+      stressLevel: 1,
+      alcoholTaken: false,
+      caffeineLate: true,
+      importantEvents: 'Late-night product planning and release prep.',
+    },
   });
 }

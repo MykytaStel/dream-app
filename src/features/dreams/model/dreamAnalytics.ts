@@ -78,3 +78,185 @@ export function getMoodCounts(dreams: Dream[]): Record<Mood, number> {
     },
   );
 }
+
+export type SleepContextStats = {
+  withContext: number;
+  withStress: number;
+  averageStress?: number;
+  alcoholTaken: number;
+  caffeineLate: number;
+  medications: number;
+  importantEvents: number;
+  healthNotes: number;
+};
+
+export type NegativeMoodRate = {
+  negativeCount: number;
+  total: number;
+  rate?: number;
+};
+
+export type MoodCorrelationStats = {
+  overall: NegativeMoodRate;
+  alcoholTaken: NegativeMoodRate;
+  noAlcohol: NegativeMoodRate;
+  caffeineLate: NegativeMoodRate;
+  noLateCaffeine: NegativeMoodRate;
+  highStress: NegativeMoodRate;
+  lowStress: NegativeMoodRate;
+};
+
+function hasText(value?: string) {
+  return Boolean(value?.trim());
+}
+
+function toNegativeMoodRate(negativeCount: number, total: number): NegativeMoodRate {
+  return {
+    negativeCount,
+    total,
+    rate: total > 0 ? Math.round((negativeCount / total) * 100) : undefined,
+  };
+}
+
+export function getSleepContextStats(dreams: Dream[]): SleepContextStats {
+  let withContext = 0;
+  let withStress = 0;
+  let stressTotal = 0;
+  let alcoholTaken = 0;
+  let caffeineLate = 0;
+  let medications = 0;
+  let importantEvents = 0;
+  let healthNotes = 0;
+
+  dreams.forEach(dream => {
+    const context = dream.sleepContext;
+    if (!context) {
+      return;
+    }
+
+    withContext += 1;
+
+    if (typeof context.stressLevel === 'number') {
+      withStress += 1;
+      stressTotal += context.stressLevel;
+    }
+
+    if (context.alcoholTaken) {
+      alcoholTaken += 1;
+    }
+
+    if (context.caffeineLate) {
+      caffeineLate += 1;
+    }
+
+    if (hasText(context.medications)) {
+      medications += 1;
+    }
+
+    if (hasText(context.importantEvents)) {
+      importantEvents += 1;
+    }
+
+    if (hasText(context.healthNotes)) {
+      healthNotes += 1;
+    }
+  });
+
+  return {
+    withContext,
+    withStress,
+    averageStress:
+      withStress > 0 ? Math.round((stressTotal / withStress) * 10) / 10 : undefined,
+    alcoholTaken,
+    caffeineLate,
+    medications,
+    importantEvents,
+    healthNotes,
+  };
+}
+
+export function getMoodCorrelationStats(dreams: Dream[]): MoodCorrelationStats {
+  let overallTotal = 0;
+  let overallNegative = 0;
+
+  let alcoholYesTotal = 0;
+  let alcoholYesNegative = 0;
+  let alcoholNoTotal = 0;
+  let alcoholNoNegative = 0;
+
+  let caffeineYesTotal = 0;
+  let caffeineYesNegative = 0;
+  let caffeineNoTotal = 0;
+  let caffeineNoNegative = 0;
+
+  let highStressTotal = 0;
+  let highStressNegative = 0;
+  let lowStressTotal = 0;
+  let lowStressNegative = 0;
+
+  dreams.forEach(dream => {
+    if (!dream.mood) {
+      return;
+    }
+
+    const isNegative = dream.mood === 'negative';
+    const context = dream.sleepContext;
+
+    overallTotal += 1;
+    if (isNegative) {
+      overallNegative += 1;
+    }
+
+    if (typeof context?.alcoholTaken === 'boolean') {
+      if (context.alcoholTaken) {
+        alcoholYesTotal += 1;
+        if (isNegative) {
+          alcoholYesNegative += 1;
+        }
+      } else {
+        alcoholNoTotal += 1;
+        if (isNegative) {
+          alcoholNoNegative += 1;
+        }
+      }
+    }
+
+    if (typeof context?.caffeineLate === 'boolean') {
+      if (context.caffeineLate) {
+        caffeineYesTotal += 1;
+        if (isNegative) {
+          caffeineYesNegative += 1;
+        }
+      } else {
+        caffeineNoTotal += 1;
+        if (isNegative) {
+          caffeineNoNegative += 1;
+        }
+      }
+    }
+
+    if (typeof context?.stressLevel === 'number') {
+      if (context.stressLevel >= 2) {
+        highStressTotal += 1;
+        if (isNegative) {
+          highStressNegative += 1;
+        }
+      } else {
+        lowStressTotal += 1;
+        if (isNegative) {
+          lowStressNegative += 1;
+        }
+      }
+    }
+  });
+
+  return {
+    overall: toNegativeMoodRate(overallNegative, overallTotal),
+    alcoholTaken: toNegativeMoodRate(alcoholYesNegative, alcoholYesTotal),
+    noAlcohol: toNegativeMoodRate(alcoholNoNegative, alcoholNoTotal),
+    caffeineLate: toNegativeMoodRate(caffeineYesNegative, caffeineYesTotal),
+    noLateCaffeine: toNegativeMoodRate(caffeineNoNegative, caffeineNoTotal),
+    highStress: toNegativeMoodRate(highStressNegative, highStressTotal),
+    lowStress: toNegativeMoodRate(lowStressNegative, lowStressTotal),
+  };
+}

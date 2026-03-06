@@ -36,9 +36,10 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     heroTitle: {
       flex: 1,
-      fontSize: 30,
-      lineHeight: 34,
+      fontSize: 28,
+      lineHeight: 36,
       fontWeight: '700',
+      includeFontPadding: false,
     },
     moodDot: {
       width: 12,
@@ -47,6 +48,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     heroSubtitle: {
       color: theme.colors.textDim,
+      lineHeight: 22,
     },
     chipsRow: {
       flexDirection: 'row',
@@ -89,6 +91,9 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 8,
+    },
+    contextRows: {
+      gap: 10,
     },
     audioCard: {
       gap: 8,

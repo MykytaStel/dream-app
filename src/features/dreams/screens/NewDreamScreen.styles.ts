@@ -1,10 +1,13 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../../theme/theme';
+import { getDreamLayout } from '../constants/layout';
 
 export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
+  const layout = getDreamLayout(theme);
+
   return StyleSheet.create({
     heroCard: {
-      gap: 16,
+      gap: layout.heroGap,
     },
     heroTopRow: {
       flexDirection: 'row',
@@ -14,7 +17,7 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     },
     heroCopy: {
       flex: 1,
-      gap: 6,
+      gap: layout.rowGap,
     },
     heroEyebrow: {
       color: theme.colors.accent,
@@ -54,7 +57,7 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       fontSize: 12,
     },
     card: {
-      gap: 12,
+      gap: layout.sectionGap + 2,
     },
     textInput: {
       minHeight: 180,
@@ -76,6 +79,36 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       textAlign: 'center',
       fontWeight: '700',
       color: selected ? theme.colors.background : theme.colors.text,
+    },
+    contextBlock: {
+      gap: 8,
+    },
+    contextFieldLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    contextOptionsRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    contextOption: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: selected ? theme.colors.primary : theme.colors.border,
+      backgroundColor: selected ? theme.colors.primary : theme.colors.surfaceAlt,
+    },
+    contextOptionLabel: {
+      textAlign: 'center',
+      fontWeight: '700',
+      fontSize: 12,
+      color: selected ? theme.colors.background : theme.colors.text,
+    },
+    contextTextInput: {
+      minHeight: 96,
     },
     tagsInputRow: {
       flexDirection: 'row',
@@ -99,12 +132,12 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       color: theme.colors.accent,
     },
     attachedAudioCard: {
-      gap: 8,
+      gap: layout.rowGap + 2,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.surfaceAlt,
-      padding: 12,
+      padding: layout.surfacePadding - 2,
     },
     attachedAudioTitle: {
       fontWeight: '700',

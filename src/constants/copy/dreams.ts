@@ -1,6 +1,7 @@
-import { Mood } from '../../features/dreams/model/dream';
+import { AppLocale } from '../../i18n/types';
+import { Mood, StressLevel } from '../../features/dreams/model/dream';
 
-export const DREAM_COPY = {
+const DREAM_COPY_EN = {
   homeTitle: 'Dream log',
   homeSubtitle:
     'Your latest entries are stored locally and ready for future analysis.',
@@ -13,6 +14,12 @@ export const DREAM_COPY = {
   homeFilterAll: 'All',
   homeFilterActive: 'Active',
   homeFilterArchived: 'Archived',
+  actionRetry: 'Retry',
+  clearErrorAction: 'Dismiss',
+  timelineLoadingTitle: 'Loading timeline',
+  timelineLoadingDescription: 'Refreshing local entries...',
+  timelineErrorTitle: 'Could not load timeline',
+  timelineErrorDescription: 'Try again. Local storage may be temporarily unavailable.',
   openDreamHint: 'Tap any entry to open the full dream.',
   swipeEdit: 'Edit',
   swipeDelete: 'Delete',
@@ -29,6 +36,7 @@ export const DREAM_COPY = {
     'Archive older entries to keep the timeline focused.',
   untitled: 'Untitled dream',
   archivedTag: 'Archived',
+  audioTag: 'Audio',
   audioOnlyPreview: 'Voice note saved. Transcript can be added later.',
   noDetailsPreview: 'No written details yet.',
   detailBack: 'Back',
@@ -56,6 +64,13 @@ export const DREAM_COPY = {
   createHeroTitle: 'Capture before it fades',
   createHeroDescription:
     'Write a few raw lines, keep the voice note, and shape the rest later.',
+  recordEmptyTitle: 'Start with a quick capture',
+  recordEmptyDescription:
+    'Add title, text, voice, or tags. Save once you have at least one signal.',
+  recordLoadingTitle: 'Working on it',
+  recordLoadingDescription: 'Please wait while the action is completing.',
+  recordErrorTitle: 'Action failed',
+  recordErrorDescription: 'Try again or continue with text-only capture for now.',
   editTitle: 'Edit dream',
   editSubtitle:
     'Refine the memory, adjust tags and mood, and keep the original story intact.',
@@ -68,11 +83,29 @@ export const DREAM_COPY = {
   titlePlaceholder: 'Flying over old rooftops',
   sleepDateLabel: 'Sleep date',
   sleepDatePlaceholder: 'YYYY-MM-DD',
+  sleepDateInvalidTitle: 'Invalid sleep date',
+  sleepDateInvalidDescription: 'Use format YYYY-MM-DD and a real calendar date.',
   textLabel: 'What do you remember?',
   textPlaceholder: 'Write the dream while it is still fresh...',
   wordsUnit: 'words',
   moodTitle: 'Mood after waking',
   moodDescription: 'Optional now, useful later for trends and monthly reports.',
+  sleepContextTitle: 'Before sleep context',
+  sleepContextDescription:
+    'Optional signals before sleep that can help you detect patterns later.',
+  stressLabel: 'Stress level',
+  alcoholLabel: 'Alcohol before sleep',
+  caffeineLabel: 'Late caffeine',
+  medicationsLabel: 'Medications or supplements',
+  medicationsPlaceholder: 'e.g. melatonin 3mg',
+  eventsLabel: 'Important events',
+  eventsPlaceholder: 'e.g. exams, conflict, celebration',
+  healthNotesLabel: 'Health notes',
+  healthNotesPlaceholder: 'e.g. headache, anxiety, low mood',
+  boolYes: 'Yes',
+  boolNo: 'No',
+  detailContextTitle: 'Pre-sleep context',
+  detailContextEmpty: 'No pre-sleep context was saved for this dream.',
   tagsTitle: 'Tags',
   tagsDescription: 'Add symbols, people, places, or recurring themes.',
   tagsPlaceholder: 'ocean',
@@ -96,16 +129,208 @@ export const DREAM_COPY = {
   updateSuccessTitle: 'Updated',
   updateSuccessDescription: 'Your dream was updated locally.',
   audioErrorTitle: 'Audio error',
-} as const;
+};
 
-export const DREAM_MOODS: Array<{ label: string; value: Mood }> = [
+const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
+  ...DREAM_COPY_EN,
+  homeTitle: 'Щоденник снів',
+  homeSubtitle:
+    'Останні записи зберігаються локально і готові до подальшого аналізу.',
+  homeGreeting: 'Доброго ранку',
+  homeSectionLabel: 'Останні сни',
+  homeStreakLabel: 'Серія',
+  homeTotalLabel: 'Всього',
+  homeAverageLabel: 'Сер. слів',
+  homeDaysUnit: 'днів',
+  homeFilterAll: 'Усі',
+  homeFilterActive: 'Активні',
+  homeFilterArchived: 'Архів',
+  actionRetry: 'Повторити',
+  clearErrorAction: 'Закрити',
+  timelineLoadingTitle: 'Завантаження таймлайну',
+  timelineLoadingDescription: 'Оновлюємо локальні записи...',
+  timelineErrorTitle: 'Не вдалося завантажити таймлайн',
+  timelineErrorDescription:
+    'Спробуй ще раз. Локальне сховище може бути тимчасово недоступне.',
+  openDreamHint: 'Натисни на запис, щоб відкрити повний сон.',
+  swipeEdit: 'Змінити',
+  swipeDelete: 'Видалити',
+  swipeArchive: 'Архів',
+  swipeUnarchive: 'Розархівувати',
+  emptyTitle: 'Поки немає снів',
+  emptyDescription:
+    'Додай перший запис у вкладці Record. Достатньо назви, голосу або кількох рядків.',
+  emptyActiveTitle: 'Немає активних снів',
+  emptyActiveDescription: 'Усі записи в архіві. Зміни фільтр або створи новий сон.',
+  emptyArchivedTitle: 'Архів порожній',
+  emptyArchivedDescription: 'Архівуй старі записи, щоб сфокусувати таймлайн.',
+  untitled: 'Сон без назви',
+  archivedTag: 'Архів',
+  audioTag: 'Аудіо',
+  audioOnlyPreview: 'Голосову нотатку збережено. Текст можна додати пізніше.',
+  noDetailsPreview: 'Поки без текстового опису.',
+  detailBack: 'Назад',
+  detailEdit: 'Редагувати сон',
+  detailArchive: 'В архів',
+  detailUnarchive: 'З архіву',
+  detailDelete: 'Видалити сон',
+  detailDeleteTitle: 'Видалити цей сон?',
+  detailDeleteDescription: 'Запис буде видалено з локального сховища без можливості відновлення.',
+  detailDeleteCancel: 'Скасувати',
+  detailDeleteConfirm: 'Видалити',
+  detailMissingTitle: 'Сон не знайдено',
+  detailMissingDescription: 'Цей запис більше недоступний у локальному сховищі.',
+  detailMetaTitle: 'Деталі сну',
+  detailTranscriptTitle: 'Повний запис',
+  detailTranscriptEmpty: 'Для цього сну ще немає текстового опису.',
+  detailTagsEmpty: 'Теги ще не додані.',
+  detailAudioDescription: 'До цього сну прикріплена оригінальна голосова нотатка.',
+  detailAudioPathLabel: 'Локальний файл',
+  createTitle: 'Запис сну',
+  createSubtitle:
+    'Швидко збережи спогад, залиш голосову нотатку і додай мінімальну структуру.',
+  createHeroTitle: 'Запиши, поки не зникло',
+  createHeroDescription:
+    'Додай кілька сирих рядків, збережи голос і доповниш деталі пізніше.',
+  recordEmptyTitle: 'Почни з короткого запису',
+  recordEmptyDescription:
+    'Додай назву, текст, голос або теги. Збережи, щойно є хоча б один сигнал.',
+  recordLoadingTitle: 'Виконується дія',
+  recordLoadingDescription: 'Зачекай, поки операція завершиться.',
+  recordErrorTitle: 'Дія не виконалась',
+  recordErrorDescription: 'Спробуй ще раз або продовж запис текстом.',
+  editTitle: 'Редагування сну',
+  editSubtitle: 'Уточни запис, теги і настрій, не втрачаючи оригінальну історію.',
+  editHeroTitle: 'Уточни спогад',
+  editHeroDescription: 'Онови деталі, поки сон ще свіжий і важливий.',
+  coreTitle: 'Основне',
+  coreDescription: 'Назва необовʼязкова. Достатньо тексту або голосової нотатки.',
+  titleLabel: 'Назва сну',
+  titlePlaceholder: 'Політ над старими дахами',
+  sleepDateLabel: 'Дата сну',
+  sleepDateInvalidTitle: 'Некоректна дата сну',
+  sleepDateInvalidDescription: 'Використовуй формат YYYY-MM-DD і реальну календарну дату.',
+  textLabel: 'Що ти памʼятаєш?',
+  textPlaceholder: 'Запиши сон, поки він ще свіжий...',
+  wordsUnit: 'слів',
+  moodTitle: 'Настрій після пробудження',
+  moodDescription: 'Опційно зараз, корисно для трендів і місячних звітів.',
+  sleepContextTitle: 'Контекст перед сном',
+  sleepContextDescription:
+    'Опційні фактори перед сном, які допоможуть знайти патерни пізніше.',
+  stressLabel: 'Рівень стресу',
+  alcoholLabel: 'Алкоголь перед сном',
+  caffeineLabel: 'Пізній кофеїн',
+  medicationsLabel: 'Препарати або добавки',
+  medicationsPlaceholder: 'напр. мелатонін 3мг',
+  eventsLabel: 'Важливі події',
+  eventsPlaceholder: 'напр. іспит, конфлікт, святкування',
+  healthNotesLabel: 'Нотатки про здоровʼя',
+  healthNotesPlaceholder: 'напр. головний біль, тривожність, низький настрій',
+  boolYes: 'Так',
+  boolNo: 'Ні',
+  detailContextTitle: 'Контекст перед сном',
+  detailContextEmpty: 'Для цього сну контекст перед сном не збережено.',
+  tagsTitle: 'Теги',
+  tagsDescription: 'Додавай символи, людей, місця або повторювані теми.',
+  tagsPlaceholder: 'океан',
+  tagsEmpty: 'Тегів ще немає. Додай перший.',
+  voiceTitle: 'Голосова нотатка',
+  voiceDescription: 'Збережи сирий спогад, а транскрипцію додаси пізніше.',
+  voiceIdleHint: 'Один тап запускає запис голосу.',
+  startRecording: 'Почати запис',
+  stopRecording: 'Зупинити запис',
+  recordingHint: 'Йде запис. Зупини, коли завершиш.',
+  attachedAudioTitle: 'Голосову нотатку додано',
+  removeAudio: 'Видалити голос',
+  addTag: 'Додати',
+  saveDream: 'Зберегти сон',
+  updateDream: 'Оновити сон',
+  saveErrorTitle: 'Немає що зберігати',
+  saveErrorDescription: 'Додай назву, текст або голосову нотатку.',
+  saveSuccessTitle: 'Збережено',
+  saveSuccessDescription: 'Сон збережено локально.',
+  updateSuccessTitle: 'Оновлено',
+  updateSuccessDescription: 'Сон оновлено локально.',
+  audioErrorTitle: 'Помилка аудіо',
+};
+
+const DREAM_MOODS_EN: Array<{ label: string; value: Mood }> = [
   { label: 'Calm', value: 'neutral' },
   { label: 'Bright', value: 'positive' },
   { label: 'Heavy', value: 'negative' },
 ];
 
-export const DREAM_MOOD_LABELS: Record<Mood, string> = {
+const DREAM_MOODS_UK: typeof DREAM_MOODS_EN = [
+  { label: 'Спокійний', value: 'neutral' },
+  { label: 'Світлий', value: 'positive' },
+  { label: 'Важкий', value: 'negative' },
+];
+
+const DREAM_MOOD_LABELS_EN: Record<Mood, string> = {
   neutral: 'Calm',
   positive: 'Bright',
   negative: 'Heavy',
 };
+
+const DREAM_MOOD_LABELS_UK: typeof DREAM_MOOD_LABELS_EN = {
+  neutral: 'Спокійний',
+  positive: 'Світлий',
+  negative: 'Важкий',
+};
+
+const DREAM_STRESS_LEVELS_EN: Array<{ label: string; value: StressLevel }> = [
+  { label: 'Low', value: 0 },
+  { label: 'Moderate', value: 1 },
+  { label: 'High', value: 2 },
+  { label: 'Overload', value: 3 },
+];
+
+const DREAM_STRESS_LEVELS_UK: typeof DREAM_STRESS_LEVELS_EN = [
+  { label: 'Низький', value: 0 },
+  { label: 'Помірний', value: 1 },
+  { label: 'Високий', value: 2 },
+  { label: 'Перевантаження', value: 3 },
+];
+
+const DREAM_STRESS_LABELS_EN: Record<StressLevel, string> = {
+  0: 'Low',
+  1: 'Moderate',
+  2: 'High',
+  3: 'Overload',
+};
+
+const DREAM_STRESS_LABELS_UK: typeof DREAM_STRESS_LABELS_EN = {
+  0: 'Низький',
+  1: 'Помірний',
+  2: 'Високий',
+  3: 'Перевантаження',
+};
+
+export type DreamCopy = typeof DREAM_COPY_EN;
+
+export function getDreamCopy(locale: AppLocale): DreamCopy {
+  return locale === 'uk' ? DREAM_COPY_UK : DREAM_COPY_EN;
+}
+
+export function getDreamMoods(locale: AppLocale) {
+  return locale === 'uk' ? DREAM_MOODS_UK : DREAM_MOODS_EN;
+}
+
+export function getDreamMoodLabels(locale: AppLocale) {
+  return locale === 'uk' ? DREAM_MOOD_LABELS_UK : DREAM_MOOD_LABELS_EN;
+}
+
+export function getDreamStressLevels(locale: AppLocale) {
+  return locale === 'uk' ? DREAM_STRESS_LEVELS_UK : DREAM_STRESS_LEVELS_EN;
+}
+
+export function getDreamStressLabels(locale: AppLocale) {
+  return locale === 'uk' ? DREAM_STRESS_LABELS_UK : DREAM_STRESS_LABELS_EN;
+}
+
+export const DREAM_COPY = DREAM_COPY_EN;
+export const DREAM_MOODS = DREAM_MOODS_EN;
+export const DREAM_MOOD_LABELS = DREAM_MOOD_LABELS_EN;
+export const DREAM_STRESS_LEVELS = DREAM_STRESS_LEVELS_EN;
+export const DREAM_STRESS_LABELS = DREAM_STRESS_LABELS_EN;

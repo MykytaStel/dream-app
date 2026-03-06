@@ -1,7 +1,10 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../../theme/theme';
+import { getDreamLayout } from '../constants/layout';
 
 export function createHomeScreenStyles(theme: Theme) {
+  const layout = getDreamLayout(theme);
+
   return StyleSheet.create({
     emptyContainer: {
       justifyContent: 'center',
@@ -31,9 +34,11 @@ export function createHomeScreenStyles(theme: Theme) {
       paddingRight: 8,
     },
     swipeAction: {
-      width: 84,
+      width: layout.swipeActionWidth,
+      minHeight: layout.swipeActionHeight,
       justifyContent: 'center',
       alignItems: 'center',
+      paddingHorizontal: 10,
       borderRadius: theme.borderRadii.md,
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -64,7 +69,7 @@ export function createHomeScreenStyles(theme: Theme) {
       color: theme.colors.background,
     },
     heroCard: {
-      gap: 18,
+      gap: layout.heroGap,
       overflow: 'hidden',
     },
     heroTopRow: {
@@ -75,7 +80,7 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     heroCopy: {
       flex: 1,
-      gap: 6,
+      gap: layout.rowGap,
     },
     heroEyebrow: {
       color: theme.colors.accent,
@@ -85,12 +90,16 @@ export function createHomeScreenStyles(theme: Theme) {
       textTransform: 'uppercase',
     },
     heroTitle: {
-      fontSize: 28,
-      lineHeight: 32,
+      fontSize: 26,
+      lineHeight: 33,
       fontWeight: '700',
+      flexShrink: 1,
+      includeFontPadding: false,
     },
     heroSubtitle: {
       color: theme.colors.textDim,
+      lineHeight: 22,
+      flexShrink: 1,
     },
     heroFacet: {
       width: 54,
@@ -192,7 +201,7 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     dreamContent: {
       flex: 1,
-      gap: 10,
+      gap: layout.sectionGap,
     },
     dreamMeta: {
       gap: 6,
@@ -204,8 +213,10 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     title: {
       fontSize: 18,
+      lineHeight: 24,
       fontWeight: '700',
       flex: 1,
+      includeFontPadding: false,
     },
     moodDot: {
       width: 10,

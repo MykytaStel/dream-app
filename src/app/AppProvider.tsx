@@ -10,6 +10,7 @@ import {
 } from '../features/reminders/services/dreamReminderService';
 import { observability } from '../services/observability';
 import { OBS_EVENTS } from '../services/observability/events';
+import { I18nProvider } from '../i18n/I18nProvider';
 
 const qc = new QueryClient();
 export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) => {
@@ -50,7 +51,9 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) =>
   return (
     <QueryClientProvider client={qc}>
       <SafeAreaProvider>
-        <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        <I18nProvider>
+          <ThemeProvider theme={theme}>{children}</ThemeProvider>
+        </I18nProvider>
       </SafeAreaProvider>
     </QueryClientProvider>
   );

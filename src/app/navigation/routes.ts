@@ -1,4 +1,5 @@
 import { NavigatorScreenParams } from '@react-navigation/native';
+import { AppLocale } from '../../i18n/types';
 
 export const TAB_ROUTE_NAMES = {
   Home: 'Home',
@@ -13,12 +14,25 @@ export const ROOT_ROUTE_NAMES = {
   DreamEditor: 'DreamEditor',
 } as const;
 
-export const TAB_ROUTE_LABELS = {
+type TabRouteLabelMap = Record<(typeof TAB_ROUTE_NAMES)[keyof typeof TAB_ROUTE_NAMES], string>;
+
+const TAB_ROUTE_LABELS_EN: TabRouteLabelMap = {
   [TAB_ROUTE_NAMES.Home]: 'Timeline',
   [TAB_ROUTE_NAMES.New]: 'Record',
   [TAB_ROUTE_NAMES.Stats]: 'Insights',
   [TAB_ROUTE_NAMES.Settings]: 'Settings',
-} as const;
+};
+
+const TAB_ROUTE_LABELS_UK: TabRouteLabelMap = {
+  [TAB_ROUTE_NAMES.Home]: 'Таймлайн',
+  [TAB_ROUTE_NAMES.New]: 'Запис',
+  [TAB_ROUTE_NAMES.Stats]: 'Аналітика',
+  [TAB_ROUTE_NAMES.Settings]: 'Налаштування',
+};
+
+export function getTabRouteLabels(locale: AppLocale) {
+  return locale === 'uk' ? TAB_ROUTE_LABELS_UK : TAB_ROUTE_LABELS_EN;
+}
 
 export type TabRouteName = keyof typeof TAB_ROUTE_NAMES;
 

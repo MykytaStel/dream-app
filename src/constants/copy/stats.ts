@@ -1,4 +1,6 @@
-export const STATS_COPY = {
+import { AppLocale } from '../../i18n/types';
+
+const STATS_COPY_EN = {
   title: 'Insights',
   subtitle: 'Lightweight analytics from your local dream archive.',
   monthLabel: 'Current local snapshot',
@@ -32,7 +34,54 @@ export const STATS_COPY = {
   negativeWithLowStress: 'Negative with low stress',
   noData: 'No data',
   recurringThemes: 'Recurring themes',
+  recurringThemesEmpty: 'Add tags to surface recurring themes here.',
   bright: 'Bright',
   calm: 'Calm',
   heavy: 'Heavy',
-} as const;
+};
+
+const STATS_COPY_UK: typeof STATS_COPY_EN = {
+  ...STATS_COPY_EN,
+  title: 'Аналітика',
+  subtitle: 'Легка аналітика з твого локального архіву снів.',
+  monthLabel: 'Поточний локальний стан',
+  currentStreak: 'Поточний стрік',
+  lastSevenDays: 'Останні 7 днів',
+  journalVolume: 'Обсяг щоденника',
+  entries: 'Записи',
+  wordsSaved: 'Збережено слів',
+  averageWords: 'Середньо слів',
+  averageWordsShort: 'Сер. слів',
+  entryStructure: 'Структура записів',
+  voiceNotes: 'Голосові нотатки',
+  taggedDreams: 'Записи з тегами',
+  moodBreakdown: 'Розподіл настрою',
+  sleepContextBreakdown: 'Фактори перед сном',
+  entriesWithContext: 'Записи з контекстом',
+  averageStressLevel: 'Середній стрес',
+  alcoholBeforeSleep: 'Алкоголь перед сном',
+  lateCaffeine: 'Пізній кофеїн',
+  medicationsNoted: 'Вказані препарати',
+  importantEventsNoted: 'Вказані важливі події',
+  healthNotesNoted: 'Нотатки про здоровʼя',
+  moodSignalTitle: 'Сигнали настрою (експериментально)',
+  negativeMoodRate: 'Частка негативного настрою',
+  negativeWithAlcohol: 'Негатив після алкоголю',
+  negativeWithoutAlcohol: 'Негатив без алкоголю',
+  negativeWithLateCaffeine: 'Негатив після пізнього кофеїну',
+  negativeWithoutLateCaffeine: 'Негатив без пізнього кофеїну',
+  negativeWithHighStress: 'Негатив при високому стресі',
+  negativeWithLowStress: 'Негатив при низькому стресі',
+  noData: 'Немає даних',
+  recurringThemes: 'Повторювані теми',
+  recurringThemesEmpty: 'Додай теги, щоб тут зʼявлялися повторювані теми.',
+  bright: 'Світлий',
+  calm: 'Спокійний',
+  heavy: 'Важкий',
+};
+
+export type StatsCopy = typeof STATS_COPY_EN;
+
+export function getStatsCopy(locale: AppLocale): StatsCopy {
+  return locale === 'uk' ? STATS_COPY_UK : STATS_COPY_EN;
+}

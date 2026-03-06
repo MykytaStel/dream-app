@@ -5,22 +5,27 @@ import { useTheme } from '@shopify/restyle';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
-import { Theme } from '../../../theme/theme';
-import { Dream } from '../model/dream';
-import { getAverageWords, getCurrentStreak, getDreamDate } from '../model/dreamAnalytics';
-import { archiveDream, deleteDream, listDreams, unarchiveDream } from '../repository/dreamsRepository';
-import { DREAM_COPY, DREAM_MOOD_LABELS } from '../../../constants/copy/dreams';
+import {
+  getDreamCopy,
+  getDreamMoodLabels,
+  type DreamCopy,
+} from '../../../constants/copy/dreams';
 import { DREAM_PREVIEW_MAX_LENGTH } from '../../../constants/limits/dreams';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useI18n } from '../../../i18n/I18nProvider';
+import { Theme } from '../../../theme/theme';
+import { Dream, Mood } from '../model/dream';
+import { getAverageWords, getCurrentStreak, getDreamDate } from '../model/dreamAnalytics';
+import { archiveDream, deleteDream, listDreams, unarchiveDream } from '../repository/dreamsRepository';
 import { createHomeScreenStyles } from './HomeScreen.styles';
 
-function formatPreview(dream: Dream) {
+function formatPreview(dream: Dream, copy: DreamCopy) {
   const text = dream.text?.trim();
   if (text) {
     return text.length > DREAM_PREVIEW_MAX_LENGTH
@@ -29,14 +34,14 @@ function formatPreview(dream: Dream) {
   }
 
   if (dream.audioUri) {
-    return DREAM_COPY.audioOnlyPreview;
+    return copy.audioOnlyPreview;
   }
 
-  return DREAM_COPY.noDetailsPreview;
+  return copy.noDetailsPreview;
 }
 
-function moodLabel(mood?: Dream['mood']) {
-  return mood ? DREAM_MOOD_LABELS[mood] : undefined;
+function moodLabel(mood: Dream['mood'] | undefined, moodLabels: Record<Mood, string>) {
+  return mood ? moodLabels[mood] : undefined;
 }
 
 function moodColor(theme: Theme, mood?: Dream['mood']) {
@@ -66,18 +71,23 @@ function isDreamArchived(dream: Dream) {
 
 type HomeFilter = 'all' | 'active' | 'archived';
 
-const HOME_FILTERS: Array<{ key: HomeFilter; label: string }> = [
-  { key: 'all', label: DREAM_COPY.homeFilterAll },
-  { key: 'active', label: DREAM_COPY.homeFilterActive },
-  { key: 'archived', label: DREAM_COPY.homeFilterArchived },
-];
-
 export default function HomeScreen() {
   const t = useTheme<Theme>();
+  const { locale } = useI18n();
+  const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [dreams, setDreams] = React.useState(() => listDreams());
   const [selectedFilter, setSelectedFilter] = React.useState<HomeFilter>('all');
   const styles = createHomeScreenStyles(t);
+  const homeFilters = React.useMemo<Array<{ key: HomeFilter; label: string }>>(
+    () => [
+      { key: 'all', label: copy.homeFilterAll },
+      { key: 'active', label: copy.homeFilterActive },
+      { key: 'archived', label: copy.homeFilterArchived },
+    ],
+    [copy],
+  );
   const activeDreams = React.useMemo(
     () => dreams.filter(dream => !isDreamArchived(dream)),
     [dreams],
@@ -140,15 +150,15 @@ export default function HomeScreen() {
 
   const removeDreamFromList = React.useCallback((dreamId: string) => {
     Alert.alert(
-      DREAM_COPY.detailDeleteTitle,
-      DREAM_COPY.detailDeleteDescription,
+      copy.detailDeleteTitle,
+      copy.detailDeleteDescription,
       [
         {
-          text: DREAM_COPY.detailDeleteCancel,
+          text: copy.detailDeleteCancel,
           style: 'cancel',
         },
         {
-          text: DREAM_COPY.detailDeleteConfirm,
+          text: copy.detailDeleteConfirm,
           style: 'destructive',
           onPress: () => {
             deleteDream(dreamId);
@@ -157,7 +167,7 @@ export default function HomeScreen() {
         },
       ],
     );
-  }, []);
+  }, [copy]);
 
   const renderRightActions = (
     dream: Dream,
@@ -174,7 +184,7 @@ export default function HomeScreen() {
             openDreamEditor(dream.id);
           }}
         >
-          <Text style={styles.swipeActionText}>{DREAM_COPY.swipeEdit}</Text>
+          <Text style={styles.swipeActionText}>{copy.swipeEdit}</Text>
         </Pressable>
         <Pressable
           style={[styles.swipeAction, styles.swipeDeleteAction]}
@@ -186,7 +196,7 @@ export default function HomeScreen() {
           <Text
             style={[styles.swipeActionText, styles.swipeActionTextInverted]}
           >
-            {DREAM_COPY.swipeDelete}
+            {copy.swipeDelete}
           </Text>
         </Pressable>
       </View>
@@ -199,8 +209,8 @@ export default function HomeScreen() {
   ) => {
     swipeMethods.current[dream.id] = swipeableMethods;
     const archiveLabel = isDreamArchived(dream)
-      ? DREAM_COPY.swipeUnarchive
-      : DREAM_COPY.swipeArchive;
+      ? copy.swipeUnarchive
+      : copy.swipeArchive;
     const archiveActionStyle = isDreamArchived(dream)
       ? styles.swipeUnarchiveAction
       : styles.swipeArchiveAction;
@@ -228,7 +238,7 @@ export default function HomeScreen() {
     return (
       <ScreenContainer scroll={false} style={styles.emptyContainer}>
         <Card style={styles.emptyCard}>
-          <SectionHeader title={DREAM_COPY.emptyTitle} subtitle={DREAM_COPY.emptyDescription} />
+          <SectionHeader title={copy.emptyTitle} subtitle={copy.emptyDescription} />
         </Card>
       </ScreenContainer>
     );
@@ -239,33 +249,33 @@ export default function HomeScreen() {
       <Card style={styles.heroCard}>
         <View style={styles.heroTopRow}>
           <View style={styles.heroCopy}>
-            <Text style={styles.heroEyebrow}>{DREAM_COPY.homeGreeting}</Text>
-            <Text style={styles.heroTitle}>{DREAM_COPY.homeTitle}</Text>
-            <Text style={styles.heroSubtitle}>{DREAM_COPY.homeSubtitle}</Text>
+            <Text style={styles.heroEyebrow}>{copy.homeGreeting}</Text>
+            <Text style={styles.heroTitle}>{copy.homeTitle}</Text>
+            <Text style={styles.heroSubtitle}>{copy.homeSubtitle}</Text>
           </View>
           <View style={styles.heroFacet} />
         </View>
 
         <View style={styles.statsRow}>
           <View style={styles.statChip}>
-            <Text style={styles.statLabel}>{DREAM_COPY.homeStreakLabel}</Text>
-            <Text style={styles.statValue}>{`${streak} ${DREAM_COPY.homeDaysUnit}`}</Text>
+            <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
+            <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
           </View>
           <View style={styles.statChip}>
-            <Text style={styles.statLabel}>{DREAM_COPY.homeTotalLabel}</Text>
+            <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
             <Text style={styles.statValue}>{activeDreams.length}</Text>
           </View>
           <View style={styles.statChip}>
-            <Text style={styles.statLabel}>{DREAM_COPY.homeAverageLabel}</Text>
+            <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
             <Text style={styles.statValue}>{averageWords}</Text>
           </View>
         </View>
       </Card>
 
-      <Text style={styles.sectionLabel}>{DREAM_COPY.homeSectionLabel}</Text>
-      <Text style={styles.sectionHint}>{DREAM_COPY.openDreamHint}</Text>
+      <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
+      <Text style={styles.sectionHint}>{copy.openDreamHint}</Text>
       <View style={styles.filterRow}>
-        {HOME_FILTERS.map(filter => {
+        {homeFilters.map(filter => {
           const active = selectedFilter === filter.key;
           return (
             <Pressable
@@ -294,20 +304,20 @@ export default function HomeScreen() {
           <SectionHeader
             title={
               selectedFilter === 'archived'
-                ? DREAM_COPY.emptyArchivedTitle
-                : DREAM_COPY.emptyActiveTitle
+                ? copy.emptyArchivedTitle
+                : copy.emptyActiveTitle
             }
             subtitle={
               selectedFilter === 'archived'
-                ? DREAM_COPY.emptyArchivedDescription
-                : DREAM_COPY.emptyActiveDescription
+                ? copy.emptyArchivedDescription
+                : copy.emptyActiveDescription
             }
           />
         </Card>
       ) : null}
 
       {filteredDreams.map(dream => {
-        const mood = moodLabel(dream.mood);
+        const mood = moodLabel(dream.mood, moodLabels);
         const dateParts = formatDateParts(dream);
         const archived = isDreamArchived(dream);
         return (
@@ -351,7 +361,7 @@ export default function HomeScreen() {
                     <View style={styles.dreamMeta}>
                       <View style={styles.titleRow}>
                         <Text style={styles.title}>
-                          {dream.title || DREAM_COPY.untitled}
+                          {dream.title || copy.untitled}
                         </Text>
                         <View
                           style={[
@@ -370,12 +380,12 @@ export default function HomeScreen() {
                       </Text>
                     </View>
 
-                    <Text style={styles.preview}>{formatPreview(dream)}</Text>
+                    <Text style={styles.preview}>{formatPreview(dream, copy)}</Text>
 
                     <View style={styles.tags}>
                       {mood ? <TagChip label={mood} /> : null}
-                      {archived ? <TagChip label={DREAM_COPY.archivedTag} /> : null}
-                      {dream.audioUri ? <TagChip label="Audio" /> : null}
+                      {archived ? <TagChip label={copy.archivedTag} /> : null}
+                      {dream.audioUri ? <TagChip label={copy.audioTag} /> : null}
                       {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
                     </View>
                   </View>

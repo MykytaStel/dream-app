@@ -85,4 +85,17 @@ jest.mock('react-native-mmkv', () => {
   };
 });
 
+jest.mock('react-native-fs', () => ({
+  DocumentDirectoryPath: '/documents',
+  ExternalDirectoryPath: '/external',
+  mkdir: jest.fn().mockResolvedValue(undefined),
+  writeFile: jest.fn().mockResolvedValue(undefined),
+  exists: jest.fn().mockResolvedValue(false),
+  unlink: jest.fn().mockResolvedValue(undefined),
+  stat: jest.fn().mockResolvedValue({ size: '0' }),
+  downloadFile: jest.fn(() => ({
+    promise: Promise.resolve({ statusCode: 200 }),
+  })),
+}));
+
 jest.mock('react-native/src/private/animated/NativeAnimatedHelper');

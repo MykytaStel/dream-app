@@ -4745,6 +4745,7 @@ __metadata:
     react-native-worklets: 0.7.4
     react-test-renderer: 19.2.4
     typescript: 5.9.3
+    whisper.rn: ^0.5.5
     zod: 4.3.6
     zustand: 5.0.11
   languageName: unknown
@@ -9016,7 +9017,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"safe-buffer@npm:5.2.1, safe-buffer@npm:~5.2.0":
+"safe-buffer@npm:5.2.1, safe-buffer@npm:^5.2.1, safe-buffer@npm:~5.2.0":
   version: 5.2.1
   resolution: "safe-buffer@npm:5.2.1"
   checksum: b99c4b41fdd67a6aaf280fcd05e9ffb0813654894223afb78a31f14a19ad220bba8aba1cb14eddce1fcfb037155fe6de4e861784eb434f7d11ed58d1e70dd491
@@ -10198,6 +10199,18 @@ __metadata:
   bin:
     node-which: bin/which.js
   checksum: 6ec99e89ba32c7e748b8a3144e64bfc74aa63e2b2eacbb61a0060ad0b961eb1a632b08fb1de067ed59b002cec3e21de18299216ebf2325ef0f78e0f121e14e90
+  languageName: node
+  linkType: hard
+
+"whisper.rn@npm:^0.5.5":
+  version: 0.5.5
+  resolution: "whisper.rn@npm:0.5.5"
+  dependencies:
+    safe-buffer: ^5.2.1
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 044f1fe0892632ee9ea9604adfc9839e8466769788e25b2c75e753dc1651629606de9fdb92a1319c8fc4f98f84f9d32ac3009b62e8daae3a95eacea828a5a5c6
   languageName: node
   linkType: hard
 

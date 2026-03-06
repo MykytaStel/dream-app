@@ -24,6 +24,7 @@ describe('homeTimeline', () => {
       sleepDate: '2026-03-05',
       title: 'Voice note only',
       audioUri: 'file:///voice.m4a',
+      transcript: 'A silver staircase opened above the street.',
       tags: ['stairs'],
       mood: 'neutral',
     },
@@ -64,6 +65,13 @@ describe('homeTimeline', () => {
         searchQuery: 'train',
       }).map(dream => dream.id),
     ).toEqual(['dream-3']);
+
+    expect(
+      applyHomeTimelineFilters(dreams, {
+        ...DEFAULT_HOME_TIMELINE_FILTERS,
+        searchQuery: 'silver staircase',
+      }).map(dream => dream.id),
+    ).toEqual(['dream-2']);
   });
 
   test('filters timeline by date range relative to provided current date', () => {

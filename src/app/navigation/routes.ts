@@ -24,10 +24,10 @@ const TAB_ROUTE_LABELS_EN: TabRouteLabelMap = {
 };
 
 const TAB_ROUTE_LABELS_UK: TabRouteLabelMap = {
-  [TAB_ROUTE_NAMES.Home]: 'Таймлайн',
+  [TAB_ROUTE_NAMES.Home]: 'Стрічка',
   [TAB_ROUTE_NAMES.New]: 'Запис',
   [TAB_ROUTE_NAMES.Stats]: 'Аналітика',
-  [TAB_ROUTE_NAMES.Settings]: 'Налаштування',
+  [TAB_ROUTE_NAMES.Settings]: 'Опції',
 };
 
 export function getTabRouteLabels(locale: AppLocale) {

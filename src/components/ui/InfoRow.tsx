@@ -12,7 +12,7 @@ export function InfoRow({ label, value }: { label: string; value: React.ReactNod
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
-      <Text>{value}</Text>
+      <Text style={styles.value}>{value}</Text>
     </View>
   );
 }

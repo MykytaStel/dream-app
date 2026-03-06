@@ -6,7 +6,8 @@ export function createTextStyles(theme: Theme) {
     base: {
       color: theme.colors.text,
       fontSize: 16,
-      lineHeight: 22,
+      lineHeight: 23,
+      includeFontPadding: false,
     },
   });
 }

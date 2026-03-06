@@ -64,10 +64,14 @@ export function createSettingsScreenStyles(theme: Theme) {
     },
     title: {
       fontWeight: '700',
+      lineHeight: 24,
+      flexShrink: 1,
     },
     description: {
       marginTop: 6,
       color: theme.colors.textDim,
+      lineHeight: 22,
+      flexShrink: 1,
     },
   });
 }

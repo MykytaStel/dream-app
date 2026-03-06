@@ -33,6 +33,9 @@ jest.mock('react-native-mmkv', () => {
       delete: key => {
         store.delete(key);
       },
+      remove: key => {
+        store.delete(key);
+      },
       clearAll: () => {
         store.clear();
       },

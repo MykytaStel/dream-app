@@ -17,6 +17,34 @@ const STATS_COPY_EN = {
   entriesWithTags: 'Entries with tags',
   readinessHint:
     'Small sample sizes can swing fast. Treat early patterns as directional, not final.',
+  milestonesTitle: 'Recording milestones',
+  milestonesDescription:
+    'A lightweight motivation layer based on what you have already saved locally.',
+  milestonesUnlockedLabel: 'Unlocked',
+  milestonesCompleteTitle: 'Milestones complete',
+  milestonesCompleteDescription:
+    'All core recording milestones are unlocked. The archive now has enough volume for richer reflection.',
+  milestoneHighlightLabel: 'Highlight',
+  milestoneUnlocked: 'Unlocked',
+  milestoneInProgress: 'In progress',
+  milestoneProgressLabel: 'Progress',
+  milestoneFirstDreamTitle: 'First dream saved',
+  milestoneFirstDreamDescription: 'Capture the first dream to start building a usable archive.',
+  milestoneThreeDayStreakTitle: 'Three days in a row',
+  milestoneThreeDayStreakDescription:
+    'Log dreams on three consecutive days to prove the habit is taking hold.',
+  milestoneTenDreamsTitle: 'Ten dreams recorded',
+  milestoneTenDreamsDescription:
+    'Reach ten saved dreams so trends and recurring themes start to become clearer.',
+  milestoneFirstVoiceDreamTitle: 'First voice dream',
+  milestoneFirstVoiceDreamDescription:
+    'Save one dream with audio to preserve the original memory before it fades.',
+  weeklyGoalTitle: 'Weekly goal',
+  weeklyGoalDescription: 'Aim for three entries in the last seven days to keep the habit warm.',
+  weeklyGoalStatusDone: 'On track',
+  weeklyGoalStatusPending: 'Keep going',
+  weeklyGoalProgressLabel: 'Entries this week',
+  weeklyGoalTargetLabel: 'Goal',
   journalVolume: 'Journal volume',
   entries: 'Entries',
   wordsSaved: 'Words saved',
@@ -70,6 +98,36 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   entriesWithTags: 'Записи з тегами',
   readinessHint:
     'На малому обсязі даних патерни легко коливаються. Сприймай ранні сигнали як орієнтир, а не як висновок.',
+  milestonesTitle: 'Майлстоуни запису',
+  milestonesDescription:
+    'Легка мотивація на основі того, що ти вже зберіг локально.',
+  milestonesUnlockedLabel: 'Відкрито',
+  milestonesCompleteTitle: 'Майлстоуни закрито',
+  milestonesCompleteDescription:
+    'Усі базові майлстоуни запису відкриті. Архів уже достатньо насичений для глибшої рефлексії.',
+  milestoneHighlightLabel: 'Фокус',
+  milestoneUnlocked: 'Відкрито',
+  milestoneInProgress: 'У процесі',
+  milestoneProgressLabel: 'Прогрес',
+  milestoneFirstDreamTitle: 'Перший сон збережено',
+  milestoneFirstDreamDescription:
+    'Збережи перший сон, щоб почати будувати корисний архів.',
+  milestoneThreeDayStreakTitle: 'Три дні поспіль',
+  milestoneThreeDayStreakDescription:
+    'Записуй сни три дні підряд, щоб закріпити звичку.',
+  milestoneTenDreamsTitle: 'Десять снів записано',
+  milestoneTenDreamsDescription:
+    'Дійди до десяти збережених снів, щоб тренди й повторювані теми стали помітнішими.',
+  milestoneFirstVoiceDreamTitle: 'Перший голосовий сон',
+  milestoneFirstVoiceDreamDescription:
+    'Збережи хоча б один сон з аудіо, щоб не втратити оригінальний спогад.',
+  weeklyGoalTitle: 'Ціль на тиждень',
+  weeklyGoalDescription:
+    'Спробуй дійти до трьох записів за останні сім днів, щоб не втрачати ритм.',
+  weeklyGoalStatusDone: 'Рух хороший',
+  weeklyGoalStatusPending: 'Продовжуй',
+  weeklyGoalProgressLabel: 'Записів за тиждень',
+  weeklyGoalTargetLabel: 'Ціль',
   journalVolume: 'Обсяг щоденника',
   entries: 'Записи',
   wordsSaved: 'Збережено слів',

@@ -23,6 +23,11 @@ import {
   type NegativeMoodRate,
   getSleepContextStats,
 } from '../../dreams/model/dreamAnalytics';
+import {
+  getDreamAchievements,
+  getDreamAchievementSummary,
+  type DreamAchievementId,
+} from '../model/achievements';
 import { createStatsScreenStyles } from './StatsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 
@@ -63,6 +68,31 @@ function formatNegativeRate(metric: NegativeMoodRate, noData: string, baselineRa
   })`;
 }
 
+function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof getStatsCopy>) {
+  switch (id) {
+    case 'first-dream':
+      return {
+        title: copy.milestoneFirstDreamTitle,
+        description: copy.milestoneFirstDreamDescription,
+      };
+    case 'three-day-streak':
+      return {
+        title: copy.milestoneThreeDayStreakTitle,
+        description: copy.milestoneThreeDayStreakDescription,
+      };
+    case 'ten-dreams':
+      return {
+        title: copy.milestoneTenDreamsTitle,
+        description: copy.milestoneTenDreamsDescription,
+      };
+    case 'first-voice-dream':
+      return {
+        title: copy.milestoneFirstVoiceDreamTitle,
+        description: copy.milestoneFirstVoiceDreamDescription,
+      };
+  }
+}
+
 export default function StatsScreen() {
   const t = useTheme<Theme>();
   const { locale } = useI18n();
@@ -87,6 +117,10 @@ export default function StatsScreen() {
   const averageWords = getAverageWords(dreams);
   const sleepContextStats = getSleepContextStats(dreams);
   const recurringTags = getRecurringTags(dreams.flatMap(dream => dream.tags));
+  const achievements = getDreamAchievements(dreams);
+  const achievementSummary = getDreamAchievementSummary(achievements);
+  const weeklyGoalTarget = 3;
+  const weeklyGoalComplete = lastSevenDays >= weeklyGoalTarget;
   const moodItems = [
     { label: copy.bright, count: moodCounts.positive, color: t.colors.accent },
     { label: copy.calm, count: moodCounts.neutral, color: t.colors.primary },
@@ -135,6 +169,119 @@ export default function StatsScreen() {
           <Text style={styles.sectionHint}>{copy.readinessHint}</Text>
         </Card>
       ) : null}
+
+      <Card style={styles.sectionCard}>
+        <SectionHeader title={copy.milestonesTitle} subtitle={copy.milestonesDescription} />
+        <View style={styles.weeklyGoalCard}>
+          <View style={styles.achievementHeaderRow}>
+            <View style={styles.achievementCopy}>
+              <Text style={styles.achievementTitle}>{copy.weeklyGoalTitle}</Text>
+              <Text style={styles.achievementDescription}>{copy.weeklyGoalDescription}</Text>
+            </View>
+            <View
+              style={[
+                styles.achievementBadge,
+                weeklyGoalComplete ? styles.achievementBadgeUnlocked : null,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.achievementBadgeText,
+                  weeklyGoalComplete ? styles.achievementBadgeTextUnlocked : null,
+                ]}
+              >
+                {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
+              </Text>
+            </View>
+          </View>
+          <InfoRow label={copy.weeklyGoalProgressLabel} value={`${lastSevenDays}/${weeklyGoalTarget}`} />
+          <InfoRow label={copy.weeklyGoalTargetLabel} value={weeklyGoalTarget} />
+        </View>
+
+        <View style={styles.milestoneSummaryCard}>
+          <View style={styles.achievementHeaderRow}>
+            <View style={styles.achievementCopy}>
+              <Text style={styles.achievementTitle}>
+                {achievementSummary.unlockedCount === achievementSummary.totalCount
+                  ? copy.milestonesCompleteTitle
+                  : copy.milestonesTitle}
+              </Text>
+              <Text style={styles.achievementDescription}>
+                {achievementSummary.unlockedCount === achievementSummary.totalCount
+                  ? copy.milestonesCompleteDescription
+                  : copy.milestonesDescription}
+              </Text>
+            </View>
+            <View style={[styles.achievementBadge, styles.achievementBadgeUnlocked]}>
+              <Text style={[styles.achievementBadgeText, styles.achievementBadgeTextUnlocked]}>
+                {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
+              </Text>
+            </View>
+          </View>
+          <InfoRow
+            label={copy.milestonesUnlockedLabel}
+            value={`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
+          />
+          {achievementSummary.highlightedId ? (
+            <InfoRow
+              label={copy.milestoneHighlightLabel}
+              value={getAchievementContent(achievementSummary.highlightedId, copy).title}
+            />
+          ) : null}
+        </View>
+
+        <View style={styles.achievementsList}>
+          {achievements.map(achievement => {
+            const content = getAchievementContent(achievement.id, copy);
+            const progressValue = `${Math.min(achievement.current, achievement.target)}/${achievement.target}`;
+            const progressRatio = Math.min(achievement.current / achievement.target, 1);
+            const isHighlighted = achievement.id === achievementSummary.highlightedId;
+
+            return (
+              <View
+                key={achievement.id}
+                style={[
+                  styles.achievementItem,
+                  achievement.unlocked ? styles.achievementItemUnlocked : null,
+                  isHighlighted ? styles.achievementItemHighlighted : null,
+                ]}
+              >
+                <View style={styles.achievementHeaderRow}>
+                  <View style={styles.achievementCopy}>
+                    <Text style={styles.achievementTitle}>{content.title}</Text>
+                    <Text style={styles.achievementDescription}>{content.description}</Text>
+                  </View>
+                  <View
+                    style={[
+                      styles.achievementBadge,
+                      achievement.unlocked ? styles.achievementBadgeUnlocked : null,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.achievementBadgeText,
+                        achievement.unlocked ? styles.achievementBadgeTextUnlocked : null,
+                      ]}
+                    >
+                      {achievement.unlocked ? copy.milestoneUnlocked : copy.milestoneInProgress}
+                    </Text>
+                  </View>
+                </View>
+                <InfoRow label={copy.milestoneProgressLabel} value={progressValue} />
+                <View style={styles.achievementProgressTrack}>
+                  <View
+                    style={[
+                      styles.achievementProgressFill,
+                      achievement.unlocked ? styles.achievementProgressFillUnlocked : null,
+                      { width: `${progressRatio * 100}%` },
+                    ]}
+                  />
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      </Card>
 
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.journalVolume}</Text>

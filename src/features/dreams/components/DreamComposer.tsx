@@ -56,12 +56,14 @@ type DreamComposerProps = {
   mode: 'create' | 'edit';
   initialDream?: Dream;
   onSaved?: (dream: Dream) => void;
+  autoStartRecordingKey?: number;
 };
 
 export function DreamComposer({
   mode,
   initialDream,
   onSaved,
+  autoStartRecordingKey,
 }: DreamComposerProps) {
   const initialDraft = React.useMemo(
     () => (mode === 'create' ? getDreamDraft() : null),
@@ -125,6 +127,7 @@ export function DreamComposer({
     tags.length === 0 &&
     !mood;
   const saveDisabled = isBusy || recording || validationError !== null;
+  const lastAutoStartKey = React.useRef<number | undefined>(undefined);
 
   React.useEffect(() => {
     if (mode !== 'create') {
@@ -161,7 +164,7 @@ export function DreamComposer({
     title,
   ]);
 
-  async function onToggleRecord() {
+  const onToggleRecord = React.useCallback(async () => {
     setIsBusy(true);
     setLastActionError(null);
 
@@ -182,7 +185,33 @@ export function DreamComposer({
     } finally {
       setIsBusy(false);
     }
-  }
+  }, [copy.audioErrorTitle, recording]);
+
+  React.useEffect(() => {
+    if (mode !== 'create') {
+      return;
+    }
+
+    if (!autoStartRecordingKey) {
+      return;
+    }
+
+    if (lastAutoStartKey.current === autoStartRecordingKey) {
+      return;
+    }
+
+    if (recording || audioUri) {
+      lastAutoStartKey.current = autoStartRecordingKey;
+      return;
+    }
+
+    if (isBusy) {
+      return;
+    }
+
+    lastAutoStartKey.current = autoStartRecordingKey;
+    onToggleRecord().catch(() => undefined);
+  }, [audioUri, autoStartRecordingKey, isBusy, mode, onToggleRecord, recording]);
 
   function addTag() {
     const next = normalizeTag(tagInput);

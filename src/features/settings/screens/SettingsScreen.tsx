@@ -11,6 +11,7 @@ import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { APP_VERSION_LABEL } from '../../../config/app';
 import { Theme } from '../../../theme/theme';
+import { exportDreamDataSnapshot } from '../services/dataExportService';
 import {
   applyDreamReminderSettings,
   getDreamReminderPermissionGranted,
@@ -33,6 +34,8 @@ export default function SettingsScreen() {
   );
   const [permissionGranted, setPermissionGranted] = React.useState<boolean>(true);
   const [isApplyingReminder, setIsApplyingReminder] = React.useState(false);
+  const [isExporting, setIsExporting] = React.useState(false);
+  const [lastExportPath, setLastExportPath] = React.useState<string | null>(null);
 
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
@@ -109,6 +112,23 @@ export default function SettingsScreen() {
       setPermissionGranted(await getDreamReminderPermissionGranted());
     } catch (error) {
       Alert.alert(copy.reminderSaveErrorTitle, String(error));
+    }
+  }
+
+  async function onExportData() {
+    setIsExporting(true);
+
+    try {
+      const result = await exportDreamDataSnapshot();
+      setLastExportPath(result.filePath);
+      Alert.alert(copy.exportSuccessTitle, `${copy.exportSuccessDescription}\n${result.filePath}`);
+    } catch (error) {
+      Alert.alert(
+        copy.exportErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsExporting(false);
     }
   }
 
@@ -235,6 +255,28 @@ export default function SettingsScreen() {
           <InfoRow label={copy.privacyReminderLabel} value={copy.privacyReminderValue} />
         </View>
         <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.title}>{copy.exportTitle}</Text>
+        <Text style={styles.description}>{copy.exportDescription}</Text>
+        <View style={styles.privacyRows}>
+          <InfoRow label={copy.exportIncludesLabel} value={copy.exportIncludesValue} />
+          <InfoRow label={copy.exportFormatLabel} value={copy.exportFormatValue} />
+        </View>
+        {lastExportPath ? (
+          <View style={styles.exportPathBlock}>
+            <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
+            <Text style={styles.exportPathValue}>{lastExportPath}</Text>
+          </View>
+        ) : null}
+        <Button
+          title={isExporting ? copy.exportButtonBusy : copy.exportButton}
+          variant="primary"
+          onPress={onExportData}
+          disabled={isExporting}
+        />
+        <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
       </Card>
 
       <Card style={styles.sectionCard}>

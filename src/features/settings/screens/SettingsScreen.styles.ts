@@ -83,6 +83,24 @@ export function createSettingsScreenStyles(theme: Theme) {
     privacyRows: {
       gap: 10,
     },
+    exportPathBlock: {
+      gap: 6,
+      padding: 12,
+      borderRadius: theme.borderRadii.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    exportPathLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+    },
+    exportPathValue: {
+      fontSize: 12,
+      lineHeight: 18,
+    },
     privacyFootnote: {
       color: theme.colors.textDim,
       lineHeight: 20,

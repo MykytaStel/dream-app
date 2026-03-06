@@ -22,7 +22,7 @@ This project is being developed by Mykyta Stelmashenko.
 
 ## Status
 
-Version: `0.0.3`
+Version: `0.0.4`
 
 This is an early MVP focused on the core journaling flow. Future iterations may
 add transcription, reminders, AI summaries, and richer dream analytics.

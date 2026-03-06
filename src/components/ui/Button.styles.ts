@@ -3,7 +3,7 @@ import { Theme } from '../../theme/theme';
 
 type ButtonVariant = 'primary' | 'ghost' | 'danger';
 
-export function createButtonStyles(theme: Theme, variant: ButtonVariant) {
+export function createButtonStyles(theme: Theme, variant: ButtonVariant, disabled = false) {
   const isPrimary = variant === 'primary';
   const isDanger = variant === 'danger';
 
@@ -15,6 +15,7 @@ export function createButtonStyles(theme: Theme, variant: ButtonVariant) {
       shadowOpacity: isPrimary || isDanger ? 0.18 : 0,
       shadowRadius: 20,
       elevation: isPrimary || isDanger ? 6 : 0,
+      opacity: disabled ? 0.56 : 1,
     },
     pressable: {
       paddingVertical: 15,

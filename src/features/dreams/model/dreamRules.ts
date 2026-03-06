@@ -1,6 +1,13 @@
 import { Dream, SleepContext } from './dream';
 
 const SLEEP_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+export const DREAM_SAVE_VALIDATION = {
+  missingContent: 'missing-content',
+  invalidSleepDate: 'invalid-sleep-date',
+} as const;
+
+export type DreamSaveValidationError =
+  (typeof DREAM_SAVE_VALIDATION)[keyof typeof DREAM_SAVE_VALIDATION];
 
 export function isValidSleepDate(value: string) {
   if (!SLEEP_DATE_REGEX.test(value)) {
@@ -88,6 +95,23 @@ export function resolveDreamSleepDate(rawSleepDate: string | undefined, createdA
   }
 
   return formatLocalDate(createdAt);
+}
+
+export function hasDreamContent(input: Pick<Dream, 'text' | 'audioUri'>) {
+  return Boolean(input.text?.trim() || input.audioUri?.trim());
+}
+
+export function validateDreamForSave(input: Pick<Dream, 'text' | 'audioUri' | 'sleepDate'>) {
+  if (!hasDreamContent(input)) {
+    return DREAM_SAVE_VALIDATION.missingContent;
+  }
+
+  const cleanSleepDate = input.sleepDate?.trim();
+  if (cleanSleepDate && !isValidSleepDate(cleanSleepDate)) {
+    return DREAM_SAVE_VALIDATION.invalidSleepDate;
+  }
+
+  return null;
 }
 
 export function sanitizeDream(input: Dream): Dream {

@@ -1,7 +1,11 @@
 import { kv } from '../../../services/storage/mmkv';
 import { DREAMS_STORAGE_KEY } from '../../../services/storage/keys';
 import { Dream } from '../model/dream';
-import { sanitizeDream, sortDreamsStable } from '../model/dreamRules';
+import {
+  sanitizeDream,
+  sortDreamsStable,
+  validateDreamForSave,
+} from '../model/dreamRules';
 
 const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 
@@ -24,6 +28,11 @@ function persistDreams(dreams: Dream[]) {
 }
 
 export function saveDream(d: Dream) {
+  const validationError = validateDreamForSave(d);
+  if (validationError) {
+    throw new Error(validationError);
+  }
+
   const all = listDreams();
   const nextDream = sanitizeDream(d);
   const idx = all.findIndex(x => x.id === nextDream.id);

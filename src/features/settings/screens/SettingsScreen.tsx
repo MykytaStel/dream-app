@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert, Pressable, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
@@ -7,9 +8,11 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
+import { APP_VERSION_LABEL } from '../../../config/app';
 import { Theme } from '../../../theme/theme';
 import {
   applyDreamReminderSettings,
+  getDreamReminderPermissionGranted,
   getDreamReminderSettings,
   REMINDER_TIME_OPTIONS,
   requestReminderPermission,
@@ -27,13 +30,43 @@ export default function SettingsScreen() {
   const [reminderSettings, setReminderSettings] = React.useState<DreamReminderSettings>(() =>
     getDreamReminderSettings(),
   );
+  const [permissionGranted, setPermissionGranted] = React.useState<boolean>(true);
+  const [isApplyingReminder, setIsApplyingReminder] = React.useState(false);
+
+  const refreshReminderState = React.useCallback(async () => {
+    setReminderSettings(getDreamReminderSettings());
+    setPermissionGranted(await getDreamReminderPermissionGranted());
+  }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshReminderState().catch(() => undefined);
+    }, [refreshReminderState]),
+  );
 
   async function updateReminderSettings(next: DreamReminderSettings) {
+    setIsApplyingReminder(true);
+
     try {
-      setReminderSettings(next);
-      await applyDreamReminderSettings(next);
+      const appliedSettings = await applyDreamReminderSettings(next);
+      const granted = await getDreamReminderPermissionGranted();
+      setReminderSettings(appliedSettings);
+      setPermissionGranted(granted);
+
+      if (next.enabled && !appliedSettings.enabled && !granted) {
+        Alert.alert(
+          copy.reminderPermissionDeniedTitle,
+          copy.reminderPermissionDeniedDescription,
+        );
+      }
     } catch (error) {
-      Alert.alert(copy.reminderSaveErrorTitle, String(error));
+      await refreshReminderState();
+      Alert.alert(
+        copy.reminderSaveErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsApplyingReminder(false);
     }
   }
 
@@ -45,8 +78,11 @@ export default function SettingsScreen() {
           copy.reminderPermissionDeniedTitle,
           copy.reminderPermissionDeniedDescription,
         );
+        setPermissionGranted(false);
         return;
       }
+
+      setPermissionGranted(true);
     }
 
     await updateReminderSettings({
@@ -67,7 +103,9 @@ export default function SettingsScreen() {
     setLocale(nextLocale);
 
     try {
-      await applyDreamReminderSettings(reminderSettings);
+      const appliedSettings = await applyDreamReminderSettings(reminderSettings);
+      setReminderSettings(appliedSettings);
+      setPermissionGranted(await getDreamReminderPermissionGranted());
     } catch (error) {
       Alert.alert(copy.reminderSaveErrorTitle, String(error));
     }
@@ -82,21 +120,34 @@ export default function SettingsScreen() {
 
       <Card style={styles.sectionCard}>
         <Text style={styles.title}>{copy.versionTitle}</Text>
-        <Text style={styles.description}>{copy.versionValue}</Text>
+        <Text style={styles.description}>{APP_VERSION_LABEL}</Text>
       </Card>
 
       <Card style={styles.sectionCard}>
         <Text style={styles.title}>{copy.reminderTitle}</Text>
         <Text style={styles.description}>{copy.reminderDescription}</Text>
 
-        <View style={styles.reminderRow}>
-          <Text style={styles.reminderLabel}>{copy.reminderStatusLabel}</Text>
-          <Text style={styles.reminderValue}>
-            {reminderSettings.enabled
-              ? copy.reminderEnabled
-              : copy.reminderDisabled}
-          </Text>
+        <View style={styles.reminderMetaStack}>
+          <View style={styles.reminderRow}>
+            <Text style={styles.reminderLabel}>{copy.reminderStatusLabel}</Text>
+            <Text style={styles.reminderValue}>
+              {reminderSettings.enabled
+                ? copy.reminderEnabled
+                : copy.reminderDisabled}
+            </Text>
+          </View>
+
+          <View style={styles.reminderRow}>
+            <Text style={styles.reminderLabel}>{copy.reminderPermissionLabel}</Text>
+            <Text style={styles.reminderValue}>
+              {permissionGranted
+                ? copy.reminderPermissionAllowed
+                : copy.reminderPermissionBlocked}
+            </Text>
+          </View>
         </View>
+
+        <Text style={styles.reminderHint}>{copy.reminderStateHint}</Text>
 
         <Text style={styles.reminderLabel}>{copy.reminderTimeLabel}</Text>
         <View style={styles.reminderTimeRow}>
@@ -111,6 +162,7 @@ export default function SettingsScreen() {
                   styles.reminderTimeChip,
                   active ? styles.reminderTimeChipActive : null,
                 ]}
+                disabled={isApplyingReminder}
                 onPress={() => onSelectTime(option.hour, option.minute)}
               >
                 <Text
@@ -134,6 +186,7 @@ export default function SettingsScreen() {
           }
           variant={reminderSettings.enabled ? 'ghost' : 'primary'}
           onPress={onToggleReminder}
+          disabled={isApplyingReminder}
         />
       </Card>
 
@@ -154,6 +207,7 @@ export default function SettingsScreen() {
                   styles.reminderTimeChip,
                   selected ? styles.reminderTimeChipActive : null,
                 ]}
+                disabled={isApplyingReminder}
                 onPress={() => onSelectLocale(option.value)}
               >
                 <Text

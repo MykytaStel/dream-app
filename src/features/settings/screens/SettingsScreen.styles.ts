@@ -28,6 +28,9 @@ export function createSettingsScreenStyles(theme: Theme) {
       paddingVertical: 10,
       paddingHorizontal: 12,
     },
+    reminderMetaStack: {
+      gap: 10,
+    },
     reminderLabel: {
       color: theme.colors.textDim,
       fontSize: 12,
@@ -36,6 +39,10 @@ export function createSettingsScreenStyles(theme: Theme) {
     },
     reminderValue: {
       fontWeight: '700',
+    },
+    reminderHint: {
+      color: theme.colors.textDim,
+      lineHeight: 20,
     },
     reminderTimeRow: {
       flexDirection: 'row',

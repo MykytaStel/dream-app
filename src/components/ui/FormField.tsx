@@ -9,12 +9,16 @@ export function FormField({
   label,
   multiline,
   helperText,
+  helperTone = 'default',
   inputStyle,
+  invalid = false,
   ...props
 }: TextInputProps & {
   label?: string;
   helperText?: string;
+  helperTone?: 'default' | 'error';
   inputStyle?: TextInputProps['style'];
+  invalid?: boolean;
 }) {
   const t = useTheme<Theme>();
   const styles = createFormFieldStyles(t);
@@ -26,10 +30,14 @@ export function FormField({
         placeholderTextColor="#777"
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : 'center'}
-        style={[styles.input, inputStyle]}
+        style={[styles.input, invalid ? styles.inputInvalid : null, inputStyle]}
         {...props}
       />
-      {helperText ? <Text style={styles.helper}>{helperText}</Text> : null}
+      {helperText ? (
+        <Text style={[styles.helper, helperTone === 'error' ? styles.helperError : null]}>
+          {helperText}
+        </Text>
+      ) : null}
     </View>
   );
 }

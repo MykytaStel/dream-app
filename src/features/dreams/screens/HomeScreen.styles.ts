@@ -119,6 +119,23 @@ export function createHomeScreenStyles(theme: Theme) {
       flexDirection: 'row',
       gap: 10,
     },
+    heroActionsRow: {
+      flexDirection: 'row',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    heroPrimaryAction: {
+      flexGrow: 1,
+      minWidth: 148,
+    },
+    heroSecondaryAction: {
+      flexGrow: 1,
+      minWidth: 148,
+    },
+    heroActionHint: {
+      color: theme.colors.textDim,
+      lineHeight: 20,
+    },
     statChip: {
       flex: 1,
       gap: 3,
@@ -151,7 +168,63 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     filterRow: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 8,
+    },
+    filtersCard: {
+      gap: layout.sectionGap,
+    },
+    primaryControlsRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 12,
+      flexWrap: 'wrap',
+    },
+    primaryActionsRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    resultCount: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '600',
+    },
+    inlineActionButton: {
+      borderRadius: theme.borderRadii.pill,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    inlineActionButtonActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    inlineActionButtonText: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    inlineActionButtonTextActive: {
+      color: theme.colors.background,
+    },
+    activeFiltersRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 8,
+    },
+    filterGroup: {
+      gap: 8,
+    },
+    filterGroupLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '600',
     },
     filterButton: {
       borderRadius: theme.borderRadii.pill,
@@ -172,6 +245,20 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     filterButtonLabelActive: {
       color: theme.colors.background,
+    },
+    clearFiltersButton: {
+      alignSelf: 'flex-start',
+      borderRadius: theme.borderRadii.pill,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    clearFiltersButtonText: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: '700',
     },
     dreamRow: {
       flexDirection: 'row',

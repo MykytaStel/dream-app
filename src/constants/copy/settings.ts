@@ -47,9 +47,10 @@ const SETTINGS_COPY_EN = {
   exportDescription:
     'Create a versioned JSON snapshot of your local archive so the data is portable before sync exists.',
   exportIncludesLabel: 'Includes',
-  exportIncludesValue: 'Dreams, transcripts, draft, locale, reminder settings, and export metadata',
+  exportIncludesValue:
+    'Dreams, transcript status/source metadata, draft, locale, reminder settings, and export metadata',
   exportFormatLabel: 'Format',
-  exportFormatValue: 'JSON v1',
+  exportFormatValue: 'JSON v2',
   exportLatestPathLabel: 'Latest file',
   exportFootnote:
     'Import and share sheet are not included yet. For now, export creates a local file path you can access later.',
@@ -133,9 +134,10 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   exportDescription:
     'Створи versioned JSON snapshot локального архіву, щоб дані були переносимими ще до появи sync.',
   exportIncludesLabel: 'Що входить',
-  exportIncludesValue: 'Сни, транскрипти, чернетка, мова, нагадування і metadata експорту',
+  exportIncludesValue:
+    'Сни, metadata статусу й джерела транскрипту, чернетка, мова, нагадування і metadata експорту',
   exportFormatLabel: 'Формат',
-  exportFormatValue: 'JSON v1',
+  exportFormatValue: 'JSON v2',
   exportLatestPathLabel: 'Останній файл',
   exportFootnote:
     'Імпорт і share sheet поки не додані. Наразі експорт створює локальний файл із шляхом, до якого можна повернутися.',

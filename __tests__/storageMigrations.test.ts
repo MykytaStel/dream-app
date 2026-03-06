@@ -116,10 +116,50 @@ describe('storage migrations', () => {
       id: 'voice-1',
       transcript: 'Echoes in a station hall',
       transcriptStatus: 'ready',
+      transcriptSource: 'generated',
     });
     expect(migrated[1]).toMatchObject({
       id: 'voice-2',
       transcriptStatus: 'error',
+    });
+  });
+
+  test('migrates transcript source into schema v4 and infers generated source for legacy audio transcripts', () => {
+    kv.set(
+      DREAMS_STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'voice-legacy',
+          createdAt: 1710000000000,
+          sleepDate: '2026-03-05',
+          audioUri: 'file:///voice.m4a',
+          transcript: '  Existing transcript  ',
+          tags: [],
+        },
+        {
+          id: 'text-edited',
+          createdAt: 1710001000000,
+          sleepDate: '2026-03-04',
+          transcript: '  Manual transcript only  ',
+          transcriptSource: 'edited',
+          tags: [],
+        },
+      ]),
+    );
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 3);
+
+    runStorageMigrations();
+
+    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    expect(migrated[0]).toMatchObject({
+      id: 'voice-legacy',
+      transcript: 'Existing transcript',
+      transcriptSource: 'generated',
+    });
+    expect(migrated[1]).toMatchObject({
+      id: 'text-edited',
+      transcript: 'Manual transcript only',
+      transcriptSource: 'edited',
     });
   });
 

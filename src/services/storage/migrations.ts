@@ -161,6 +161,10 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
       record.transcriptStatus === 'error'
         ? record.transcriptStatus
         : undefined,
+    transcriptSource:
+      record.transcriptSource === 'generated' || record.transcriptSource === 'edited'
+        ? record.transcriptSource
+        : undefined,
     transcriptUpdatedAt:
       typeof record.transcriptUpdatedAt === 'number' && Number.isFinite(record.transcriptUpdatedAt)
         ? record.transcriptUpdatedAt
@@ -265,6 +269,30 @@ function migrateDreamsToV3() {
   }
 }
 
+function migrateDreamsToV4() {
+  const raw = kv.getString(DREAMS_STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+      return;
+    }
+
+    const migrated = parsed
+      .map(coerceLegacyDream)
+      .filter((dream): dream is Dream => Boolean(dream))
+      .map(sanitizeDream);
+
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
+  } catch {
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+  }
+}
+
 export function runStorageMigrations() {
   const currentVersion = kv.getNumber(STORAGE_SCHEMA_VERSION_KEY) ?? 1;
   if (currentVersion >= CURRENT_STORAGE_SCHEMA_VERSION) {
@@ -281,6 +309,11 @@ export function runStorageMigrations() {
   if (nextVersion < 3) {
     migrateDreamsToV3();
     nextVersion = 3;
+  }
+
+  if (nextVersion < 4) {
+    migrateDreamsToV4();
+    nextVersion = 4;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

@@ -30,9 +30,19 @@ describe('data export service', () => {
     const payload = buildDreamExportSnapshot({
       exportedAt: '2026-03-06T08:00:00.000Z',
       appVersion: 'v0.0.5',
+      storageSchemaVersion: 4,
       locale: 'uk',
       platform: 'ios',
-      dreams: [{ id: 'dream-1', createdAt: 1, sleepDate: '2026-03-06', tags: [] }],
+      dreams: [
+        {
+          id: 'dream-1',
+          createdAt: 1,
+          sleepDate: '2026-03-06',
+          tags: [],
+          transcript: 'Edited transcript',
+          transcriptSource: 'edited',
+        },
+      ],
       draft: {
         title: 'Draft',
         text: 'Partial capture',
@@ -55,15 +65,25 @@ describe('data export service', () => {
       appVersion: 'v0.0.5',
       platform: 'ios',
       locale: 'uk',
-      storageSchemaVersion: 3,
+      storageSchemaVersion: 4,
       summary: {
         dreamCount: 1,
         archivedDreamCount: 0,
         audioDreamCount: 0,
-        transcribedDreamCount: 0,
+        transcribedDreamCount: 1,
+        editedTranscriptCount: 1,
         draftIncluded: true,
       },
-      dreams: [{ id: 'dream-1', createdAt: 1, sleepDate: '2026-03-06', tags: [] }],
+      dreams: [
+        {
+          id: 'dream-1',
+          createdAt: 1,
+          sleepDate: '2026-03-06',
+          tags: [],
+          transcript: 'Edited transcript',
+          transcriptSource: 'edited',
+        },
+      ],
       draft: {
         title: 'Draft',
         text: 'Partial capture',
@@ -136,6 +156,7 @@ describe('data export service', () => {
       archivedDreamCount: 0,
       audioDreamCount: 1,
       transcribedDreamCount: 1,
+      editedTranscriptCount: 0,
       draftIncluded: true,
     });
     expect(result.payload.dreams).toEqual([
@@ -150,6 +171,7 @@ describe('data export service', () => {
         sleepContext: undefined,
         transcript: 'Blue hallway and water',
         transcriptStatus: 'ready',
+        transcriptSource: 'generated',
         transcriptUpdatedAt: undefined,
       },
     ]);

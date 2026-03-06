@@ -1,10 +1,13 @@
 import { kv } from '../src/services/storage/mmkv';
 import {
   archiveDream,
+  clearDreamTranscript,
   deleteDream,
   getDream,
   listDreams,
+  saveDreamTranscriptEdit,
   saveDream,
+  updateDreamTranscriptState,
   unarchiveDream,
 } from '../src/features/dreams/repository/dreamsRepository';
 
@@ -138,6 +141,85 @@ describe('dream repository flows', () => {
       caffeineLate: false,
       medications: 'melatonin',
       healthNotes: 'headache',
+    });
+  });
+
+  test('supports edited transcript lifecycle without mixing it into written notes', () => {
+    saveDream({
+      id: 'voice-edit',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      text: 'Original authored note',
+      audioUri: 'file:///voice-edit.m4a',
+      transcript: 'Initial generated transcript',
+      transcriptStatus: 'ready',
+      transcriptSource: 'generated',
+      tags: [],
+    });
+
+    saveDreamTranscriptEdit('voice-edit', '  Transcript edited by hand  ');
+
+    expect(getDream('voice-edit')).toMatchObject({
+      text: 'Original authored note',
+      transcript: 'Transcript edited by hand',
+      transcriptStatus: 'ready',
+      transcriptSource: 'edited',
+    });
+  });
+
+  test('preserves previous transcript while replace attempt is processing or fails', () => {
+    saveDream({
+      id: 'voice-replace',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      audioUri: 'file:///voice-replace.m4a',
+      transcript: 'Stable previous transcript',
+      transcriptStatus: 'ready',
+      transcriptSource: 'generated',
+      tags: [],
+    });
+
+    updateDreamTranscriptState('voice-replace', {
+      transcriptStatus: 'processing',
+      transcriptUpdatedAt: Date.now(),
+    });
+    expect(getDream('voice-replace')).toMatchObject({
+      transcript: 'Stable previous transcript',
+      transcriptStatus: 'processing',
+      transcriptSource: 'generated',
+    });
+
+    updateDreamTranscriptState('voice-replace', {
+      transcriptStatus: 'error',
+      transcriptUpdatedAt: Date.now(),
+    });
+    expect(getDream('voice-replace')).toMatchObject({
+      transcript: 'Stable previous transcript',
+      transcriptStatus: 'error',
+      transcriptSource: 'generated',
+    });
+  });
+
+  test('clears transcript and resets state back to audio-ready idle', () => {
+    saveDream({
+      id: 'voice-clear',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      audioUri: 'file:///voice-clear.m4a',
+      transcript: 'Transcript to clear',
+      transcriptStatus: 'ready',
+      transcriptSource: 'edited',
+      tags: [],
+    });
+
+    clearDreamTranscript('voice-clear');
+
+    expect(getDream('voice-clear')).toMatchObject({
+      audioUri: 'file:///voice-clear.m4a',
+      transcript: undefined,
+      transcriptStatus: 'idle',
+      transcriptSource: undefined,
+      transcriptUpdatedAt: undefined,
     });
   });
 

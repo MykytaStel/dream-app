@@ -1,7 +1,8 @@
-import { Dream, DreamTranscriptStatus, SleepContext } from './dream';
+import { Dream, DreamTranscriptSource, DreamTranscriptStatus, SleepContext } from './dream';
 
 const SLEEP_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = ['idle', 'processing', 'ready', 'error'];
+const TRANSCRIPT_SOURCE_VALUES: DreamTranscriptSource[] = ['generated', 'edited'];
 const STALE_TRANSCRIPT_PROCESSING_MS = 1000 * 60 * 15;
 export const DREAM_SAVE_VALIDATION = {
   missingContent: 'missing-content',
@@ -48,6 +49,14 @@ function normalizeTranscriptStatus(rawStatus: Dream['transcriptStatus']) {
   return TRANSCRIPT_STATUS_VALUES.includes(rawStatus) ? rawStatus : undefined;
 }
 
+function normalizeTranscriptSource(rawSource: Dream['transcriptSource']) {
+  if (!rawSource) {
+    return undefined;
+  }
+
+  return TRANSCRIPT_SOURCE_VALUES.includes(rawSource) ? rawSource : undefined;
+}
+
 function normalizeTranscriptFields(input: Dream) {
   const transcript = normalizeOptionalText(input.transcript);
   const transcriptUpdatedAt =
@@ -56,6 +65,7 @@ function normalizeTranscriptFields(input: Dream) {
       : undefined;
   const hasAudio = Boolean(input.audioUri?.trim());
   let transcriptStatus = normalizeTranscriptStatus(input.transcriptStatus);
+  let transcriptSource = normalizeTranscriptSource(input.transcriptSource);
 
   if (transcriptStatus === 'processing') {
     const startedAt = transcriptUpdatedAt ?? 0;
@@ -65,22 +75,29 @@ function normalizeTranscriptFields(input: Dream) {
   }
 
   if (transcript) {
-    if (transcriptStatus !== 'processing') {
+    if (!transcriptStatus || transcriptStatus === 'idle') {
       transcriptStatus = 'ready';
+    }
+    if (!transcriptSource) {
+      transcriptSource = hasAudio ? 'generated' : 'edited';
     }
   } else if (hasAudio) {
     if (!transcriptStatus || transcriptStatus === 'ready') {
       transcriptStatus = 'idle';
     }
+    transcriptSource = undefined;
   } else if (transcriptStatus === 'ready') {
     transcriptStatus = 'idle';
+    transcriptSource = undefined;
   } else if (!transcriptStatus) {
     transcriptStatus = undefined;
+    transcriptSource = undefined;
   }
 
   return {
     transcript,
     transcriptStatus,
+    transcriptSource,
     transcriptUpdatedAt:
       transcript || transcriptStatus === 'processing' || transcriptStatus === 'error'
         ? transcriptUpdatedAt
@@ -174,6 +191,7 @@ export function sanitizeDream(input: Dream): Dream {
     text: normalizeOptionalText(input.text),
     transcript: transcriptFields.transcript,
     transcriptStatus: transcriptFields.transcriptStatus,
+    transcriptSource: transcriptFields.transcriptSource,
     transcriptUpdatedAt: transcriptFields.transcriptUpdatedAt,
     tags: normalizeTags(input.tags ?? []),
     sleepContext: normalizeSleepContext(input.sleepContext),

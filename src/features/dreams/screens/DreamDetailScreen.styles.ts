@@ -129,5 +129,19 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       fontSize: 12,
       fontWeight: '600',
     },
+    transcriptMetaCard: {
+      gap: 10,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      padding: 12,
+    },
+    transcriptEditorInput: {
+      minHeight: 168,
+    },
+    transcriptActions: {
+      gap: 10,
+    },
   });
 }

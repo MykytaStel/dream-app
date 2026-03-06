@@ -1,6 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { DREAMS_STORAGE_KEY } from '../../../services/storage/keys';
-import { Dream, DreamTranscriptStatus } from '../model/dream';
+import { Dream, DreamTranscriptSource, DreamTranscriptStatus } from '../model/dream';
 import {
   sanitizeDream,
   sortDreamsStable,
@@ -97,6 +97,7 @@ export function updateDreamTranscriptState(
   input: {
     transcriptStatus: DreamTranscriptStatus;
     transcript?: string;
+    transcriptSource?: DreamTranscriptSource;
     transcriptUpdatedAt?: number;
   },
 ) {
@@ -109,6 +110,42 @@ export function updateDreamTranscriptState(
 
     if (typeof input.transcript === 'string') {
       nextDream.transcript = input.transcript;
+    }
+
+    if (input.transcriptSource) {
+      nextDream.transcriptSource = input.transcriptSource;
+    }
+
+    return nextDream;
+  });
+}
+
+export function saveDreamTranscriptEdit(id: string, transcript: string) {
+  return updateDreamById(id, dream => ({
+    ...dream,
+    transcript,
+    transcriptStatus: 'ready',
+    transcriptSource: 'edited',
+    transcriptUpdatedAt: Date.now(),
+  }));
+}
+
+export function clearDreamTranscript(id: string) {
+  return updateDreamById(id, dream => {
+    const nextDream: Dream = {
+      ...dream,
+      transcript: undefined,
+      transcriptSource: undefined,
+      transcriptUpdatedAt: undefined,
+      transcriptStatus: dream.audioUri?.trim() ? 'idle' : undefined,
+    };
+
+    delete nextDream.transcript;
+    delete nextDream.transcriptSource;
+    delete nextDream.transcriptUpdatedAt;
+
+    if (!nextDream.transcriptStatus) {
+      delete nextDream.transcriptStatus;
     }
 
     return nextDream;

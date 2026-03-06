@@ -87,6 +87,14 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     mutedText: {
       color: theme.colors.textDim,
     },
+    statusText: {
+      lineHeight: 22,
+      color: theme.colors.textDim,
+    },
+    statusErrorText: {
+      lineHeight: 22,
+      color: theme.colors.danger,
+    },
     tagsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -106,6 +114,20 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     audioPath: {
       color: theme.colors.textDim,
       fontSize: 13,
+    },
+    progressBadge: {
+      alignSelf: 'flex-start',
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+    },
+    progressBadgeLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '600',
     },
   });
 }

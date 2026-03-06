@@ -13,6 +13,13 @@ import { APP_VERSION_LABEL } from '../../../config/app';
 import { Theme } from '../../../theme/theme';
 import { exportDreamDataSnapshot } from '../services/dataExportService';
 import {
+  ensureDreamTranscriptionModelInstalled,
+  deleteDreamTranscriptionModel,
+  getDreamTranscriptionModelStatus,
+  type DreamTranscriptionProgress,
+  type DreamTranscriptionModelStatus,
+} from '../../dreams/services/dreamTranscriptionService';
+import {
   applyDreamReminderSettings,
   getDreamReminderPermissionGranted,
   getDreamReminderSettings,
@@ -35,11 +42,45 @@ export default function SettingsScreen() {
   const [permissionGranted, setPermissionGranted] = React.useState<boolean>(true);
   const [isApplyingReminder, setIsApplyingReminder] = React.useState(false);
   const [isExporting, setIsExporting] = React.useState(false);
+  const [isDownloadingTranscriptionModel, setIsDownloadingTranscriptionModel] =
+    React.useState(false);
+  const [isDeletingTranscriptionModel, setIsDeletingTranscriptionModel] = React.useState(false);
   const [lastExportPath, setLastExportPath] = React.useState<string | null>(null);
+  const [transcriptionModelStatus, setTranscriptionModelStatus] =
+    React.useState<DreamTranscriptionModelStatus | null>(null);
+  const [transcriptionDownloadProgress, setTranscriptionDownloadProgress] =
+    React.useState<DreamTranscriptionProgress | null>(null);
+
+  function formatModelSize(sizeBytes: number | null) {
+    if (typeof sizeBytes !== 'number' || Number.isNaN(sizeBytes)) {
+      return 'Unknown';
+    }
+
+    const sizeMiB = sizeBytes / (1024 * 1024);
+    return `${sizeMiB.toFixed(sizeMiB >= 100 ? 0 : 1)} MiB`;
+  }
+
+  function formatDownloadProgress(progress: DreamTranscriptionProgress | null) {
+    if (!progress) {
+      return null;
+    }
+
+    const base =
+      progress.phase === 'preparing-model'
+        ? copy.transcriptionDownloadButtonBusy
+        : copy.transcriptionStatusInstalled;
+
+    if (typeof progress.progress !== 'number') {
+      return base;
+    }
+
+    return `${base} ${progress.progress}%`;
+  }
 
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
     setPermissionGranted(await getDreamReminderPermissionGranted());
+    setTranscriptionModelStatus(await getDreamTranscriptionModelStatus());
   }, []);
 
   useFocusEffect(
@@ -129,6 +170,54 @@ export default function SettingsScreen() {
       );
     } finally {
       setIsExporting(false);
+    }
+  }
+
+  async function onDeleteTranscriptionModel() {
+    setIsDeletingTranscriptionModel(true);
+
+    try {
+      await deleteDreamTranscriptionModel();
+      const nextStatus = await getDreamTranscriptionModelStatus();
+      setTranscriptionModelStatus(nextStatus);
+      Alert.alert(
+        copy.transcriptionDeleteSuccessTitle,
+        copy.transcriptionDeleteSuccessDescription,
+      );
+    } catch (error) {
+      Alert.alert(
+        copy.transcriptionDeleteErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsDeletingTranscriptionModel(false);
+    }
+  }
+
+  async function onDownloadTranscriptionModel() {
+    setIsDownloadingTranscriptionModel(true);
+    setTranscriptionDownloadProgress({
+      phase: 'preparing-model',
+      progress: 0,
+    });
+
+    try {
+      const result = await ensureDreamTranscriptionModelInstalled(progress => {
+        setTranscriptionDownloadProgress(progress);
+      });
+      setTranscriptionModelStatus(result.status);
+      Alert.alert(
+        copy.transcriptionDownloadSuccessTitle,
+        copy.transcriptionDownloadSuccessDescription,
+      );
+    } catch (error) {
+      Alert.alert(
+        copy.transcriptionDownloadErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsDownloadingTranscriptionModel(false);
+      setTranscriptionDownloadProgress(null);
     }
   }
 
@@ -253,8 +342,56 @@ export default function SettingsScreen() {
           <InfoRow label={copy.privacySyncLabel} value={copy.privacySyncValue} />
           <InfoRow label={copy.privacyAccountLabel} value={copy.privacyAccountValue} />
           <InfoRow label={copy.privacyReminderLabel} value={copy.privacyReminderValue} />
+          <InfoRow
+            label={copy.privacyTranscriptionLabel}
+            value={copy.privacyTranscriptionValue}
+          />
         </View>
         <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.title}>{copy.transcriptionTitle}</Text>
+        <Text style={styles.description}>{copy.transcriptionDescription}</Text>
+        <View style={styles.privacyRows}>
+          <InfoRow
+            label={copy.transcriptionStatusLabel}
+            value={
+              transcriptionModelStatus?.installed
+                ? copy.transcriptionStatusInstalled
+                : copy.transcriptionStatusMissing
+            }
+          />
+          <InfoRow
+            label={copy.transcriptionSizeLabel}
+            value={formatModelSize(transcriptionModelStatus?.sizeBytes ?? null)}
+          />
+          <InfoRow
+            label={copy.transcriptionPathLabel}
+            value={transcriptionModelStatus?.filePath ?? '...'}
+          />
+        </View>
+        <Button
+          title={
+            isDownloadingTranscriptionModel
+              ? formatDownloadProgress(transcriptionDownloadProgress) ??
+                copy.transcriptionDownloadButtonBusy
+              : copy.transcriptionDownloadButton
+          }
+          variant="primary"
+          onPress={onDownloadTranscriptionModel}
+          disabled={isDownloadingTranscriptionModel || Boolean(transcriptionModelStatus?.installed)}
+        />
+        <Button
+          title={
+            isDeletingTranscriptionModel
+              ? copy.transcriptionDeleteButtonBusy
+              : copy.transcriptionDeleteButton
+          }
+          variant="ghost"
+          onPress={onDeleteTranscriptionModel}
+          disabled={isDeletingTranscriptionModel || !transcriptionModelStatus?.installed}
+        />
       </Card>
 
       <Card style={styles.sectionCard}>

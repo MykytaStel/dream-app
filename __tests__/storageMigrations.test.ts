@@ -82,6 +82,47 @@ describe('storage migrations', () => {
     expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
   });
 
+  test('migrates transcript fields into schema v3 and normalizes stale processing state', () => {
+    kv.set(
+      DREAMS_STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'voice-1',
+          createdAt: 1710000000000,
+          sleepDate: '2026-03-05',
+          audioUri: 'file:///voice.m4a',
+          transcript: '  Echoes in a station hall  ',
+          transcriptStatus: 'ready',
+          transcriptUpdatedAt: 1710000005000,
+          tags: ['station'],
+        },
+        {
+          id: 'voice-2',
+          createdAt: 1710001000000,
+          sleepDate: '2026-03-04',
+          audioUri: 'file:///voice-2.m4a',
+          transcriptStatus: 'processing',
+          transcriptUpdatedAt: Date.now() - 1000 * 60 * 20,
+          tags: [],
+        },
+      ]),
+    );
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 2);
+
+    runStorageMigrations();
+
+    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    expect(migrated[0]).toMatchObject({
+      id: 'voice-1',
+      transcript: 'Echoes in a station hall',
+      transcriptStatus: 'ready',
+    });
+    expect(migrated[1]).toMatchObject({
+      id: 'voice-2',
+      transcriptStatus: 'error',
+    });
+  });
+
   test('is idempotent when already on latest schema version', () => {
     kv.set(STORAGE_SCHEMA_VERSION_KEY, CURRENT_STORAGE_SCHEMA_VERSION);
     kv.set(APP_LOCALE_KEY, 'en');

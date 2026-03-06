@@ -1,6 +1,8 @@
-import { Dream, SleepContext } from './dream';
+import { Dream, DreamTranscriptStatus, SleepContext } from './dream';
 
 const SLEEP_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = ['idle', 'processing', 'ready', 'error'];
+const STALE_TRANSCRIPT_PROCESSING_MS = 1000 * 60 * 15;
 export const DREAM_SAVE_VALIDATION = {
   missingContent: 'missing-content',
   invalidSleepDate: 'invalid-sleep-date',
@@ -36,6 +38,54 @@ function formatLocalDate(epoch: number) {
 function normalizeOptionalText(value?: string) {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
+}
+
+function normalizeTranscriptStatus(rawStatus: Dream['transcriptStatus']) {
+  if (!rawStatus) {
+    return undefined;
+  }
+
+  return TRANSCRIPT_STATUS_VALUES.includes(rawStatus) ? rawStatus : undefined;
+}
+
+function normalizeTranscriptFields(input: Dream) {
+  const transcript = normalizeOptionalText(input.transcript);
+  const transcriptUpdatedAt =
+    typeof input.transcriptUpdatedAt === 'number' && Number.isFinite(input.transcriptUpdatedAt)
+      ? input.transcriptUpdatedAt
+      : undefined;
+  const hasAudio = Boolean(input.audioUri?.trim());
+  let transcriptStatus = normalizeTranscriptStatus(input.transcriptStatus);
+
+  if (transcriptStatus === 'processing') {
+    const startedAt = transcriptUpdatedAt ?? 0;
+    if (!startedAt || Date.now() - startedAt > STALE_TRANSCRIPT_PROCESSING_MS) {
+      transcriptStatus = 'error';
+    }
+  }
+
+  if (transcript) {
+    if (transcriptStatus !== 'processing') {
+      transcriptStatus = 'ready';
+    }
+  } else if (hasAudio) {
+    if (!transcriptStatus || transcriptStatus === 'ready') {
+      transcriptStatus = 'idle';
+    }
+  } else if (transcriptStatus === 'ready') {
+    transcriptStatus = 'idle';
+  } else if (!transcriptStatus) {
+    transcriptStatus = undefined;
+  }
+
+  return {
+    transcript,
+    transcriptStatus,
+    transcriptUpdatedAt:
+      transcript || transcriptStatus === 'processing' || transcriptStatus === 'error'
+        ? transcriptUpdatedAt
+        : undefined,
+  };
 }
 
 export function normalizeTag(value: string) {
@@ -115,11 +165,16 @@ export function validateDreamForSave(input: Pick<Dream, 'text' | 'audioUri' | 's
 }
 
 export function sanitizeDream(input: Dream): Dream {
+  const transcriptFields = normalizeTranscriptFields(input);
+
   return {
     ...input,
     sleepDate: resolveDreamSleepDate(input.sleepDate, input.createdAt),
     title: normalizeOptionalText(input.title),
     text: normalizeOptionalText(input.text),
+    transcript: transcriptFields.transcript,
+    transcriptStatus: transcriptFields.transcriptStatus,
+    transcriptUpdatedAt: transcriptFields.transcriptUpdatedAt,
     tags: normalizeTags(input.tags ?? []),
     sleepContext: normalizeSleepContext(input.sleepContext),
   };

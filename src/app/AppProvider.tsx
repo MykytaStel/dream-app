@@ -4,6 +4,10 @@ import { theme } from '../theme/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ensurePreviewDream } from '../features/dreams/repository/dreamsRepository';
+import {
+  getDreamReminderSettings,
+  scheduleDreamReminder,
+} from '../features/reminders/services/dreamReminderService';
 import { observability } from '../services/observability';
 import { OBS_EVENTS } from '../services/observability/events';
 
@@ -12,6 +16,9 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) =>
   React.useEffect(() => {
     ensurePreviewDream();
     observability.trackEvent(OBS_EVENTS.AppOpened);
+    scheduleDreamReminder(getDreamReminderSettings()).catch(error => {
+      observability.captureError(error, { event: 'schedule_dream_reminder_on_launch' });
+    });
   }, []);
 
   React.useEffect(() => {

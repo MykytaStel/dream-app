@@ -1,3 +1,5 @@
+import { NavigatorScreenParams } from '@react-navigation/native';
+
 export const TAB_ROUTE_NAMES = {
   Home: 'Home',
   New: 'New',
@@ -28,7 +30,7 @@ export type TabParamList = {
 };
 
 export type RootStackParamList = {
-  [ROOT_ROUTE_NAMES.Tabs]: undefined;
+  [ROOT_ROUTE_NAMES.Tabs]: NavigatorScreenParams<TabParamList> | undefined;
   [ROOT_ROUTE_NAMES.DreamDetail]: {
     dreamId: string;
   };

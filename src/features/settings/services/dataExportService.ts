@@ -26,6 +26,7 @@ export type DreamExportV1 = {
     dreamCount: number;
     archivedDreamCount: number;
     audioDreamCount: number;
+    transcribedDreamCount: number;
     draftIncluded: boolean;
   };
   dreams: Dream[];
@@ -54,6 +55,7 @@ export function buildDreamExportSnapshot(input: {
       dreamCount: input.dreams.length,
       archivedDreamCount: input.dreams.filter(dream => typeof dream.archivedAt === 'number').length,
       audioDreamCount: input.dreams.filter(dream => Boolean(dream.audioUri?.trim())).length,
+      transcribedDreamCount: input.dreams.filter(dream => Boolean(dream.transcript?.trim())).length,
       draftIncluded: Boolean(input.draft),
     },
     dreams: input.dreams,

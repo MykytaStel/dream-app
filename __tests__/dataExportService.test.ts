@@ -29,7 +29,7 @@ describe('data export service', () => {
   test('builds a versioned export payload', () => {
     const payload = buildDreamExportSnapshot({
       exportedAt: '2026-03-06T08:00:00.000Z',
-      appVersion: 'v0.0.4',
+      appVersion: 'v0.0.5',
       locale: 'uk',
       platform: 'ios',
       dreams: [{ id: 'dream-1', createdAt: 1, sleepDate: '2026-03-06', tags: [] }],
@@ -52,14 +52,15 @@ describe('data export service', () => {
     expect(payload).toEqual({
       version: DREAM_EXPORT_VERSION,
       exportedAt: '2026-03-06T08:00:00.000Z',
-      appVersion: 'v0.0.4',
+      appVersion: 'v0.0.5',
       platform: 'ios',
       locale: 'uk',
-      storageSchemaVersion: 2,
+      storageSchemaVersion: 3,
       summary: {
         dreamCount: 1,
         archivedDreamCount: 0,
         audioDreamCount: 0,
+        transcribedDreamCount: 0,
         draftIncluded: true,
       },
       dreams: [{ id: 'dream-1', createdAt: 1, sleepDate: '2026-03-06', tags: [] }],
@@ -90,7 +91,16 @@ describe('data export service', () => {
     kv.set(APP_LOCALE_KEY, 'en');
     kv.set(
       DREAMS_STORAGE_KEY,
-      JSON.stringify([{ id: 'dream-2', createdAt: 2, sleepDate: '2026-03-05', tags: ['ocean'] }]),
+      JSON.stringify([
+        {
+          id: 'dream-2',
+          createdAt: 2,
+          sleepDate: '2026-03-05',
+          tags: ['ocean'],
+          audioUri: 'file:///dream.m4a',
+          transcript: 'Blue hallway and water',
+        },
+      ]),
     );
     kv.set(
       REMINDER_SETTINGS_KEY,
@@ -124,11 +134,24 @@ describe('data export service', () => {
     expect(result.payload.summary).toEqual({
       dreamCount: 1,
       archivedDreamCount: 0,
-      audioDreamCount: 0,
+      audioDreamCount: 1,
+      transcribedDreamCount: 1,
       draftIncluded: true,
     });
     expect(result.payload.dreams).toEqual([
-      { id: 'dream-2', createdAt: 2, sleepDate: '2026-03-05', tags: ['ocean'] },
+      {
+        id: 'dream-2',
+        createdAt: 2,
+        sleepDate: '2026-03-05',
+        title: undefined,
+        text: undefined,
+        tags: ['ocean'],
+        audioUri: 'file:///dream.m4a',
+        sleepContext: undefined,
+        transcript: 'Blue hallway and water',
+        transcriptStatus: 'ready',
+        transcriptUpdatedAt: undefined,
+      },
     ]);
     expect(result.payload.draft).toEqual({
       title: 'Half-remembered staircase',

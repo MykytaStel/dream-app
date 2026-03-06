@@ -54,6 +54,13 @@ function formatPreview(dream: Dream, copy: DreamCopy) {
       : text;
   }
 
+  const transcript = dream.transcript?.trim();
+  if (transcript) {
+    return transcript.length > DREAM_PREVIEW_MAX_LENGTH
+      ? `${transcript.slice(0, DREAM_PREVIEW_MAX_LENGTH - 3)}...`
+      : transcript;
+  }
+
   if (dream.audioUri) {
     return copy.audioOnlyPreview;
   }
@@ -890,6 +897,7 @@ export default function HomeScreen() {
                       {mood ? <TagChip label={mood} /> : null}
                       {archived ? <TagChip label={copy.archivedTag} /> : null}
                       {dream.audioUri ? <TagChip label={copy.audioTag} /> : null}
+                      {dream.transcript ? <TagChip label={copy.transcriptTag} /> : null}
                       {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
                     </View>
                   </View>

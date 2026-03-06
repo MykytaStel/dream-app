@@ -1,6 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { DREAMS_STORAGE_KEY } from '../../../services/storage/keys';
-import { Dream } from '../model/dream';
+import { Dream, DreamTranscriptStatus } from '../model/dream';
 import {
   sanitizeDream,
   sortDreamsStable,
@@ -25,6 +25,19 @@ export function listDreams(): Dream[] {
 
 function persistDreams(dreams: Dream[]) {
   kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(dreams.map(sanitizeDream))));
+}
+
+function updateDreamById(id: string, updater: (dream: Dream) => Dream) {
+  const all = listDreams();
+  const idx = all.findIndex(dream => dream.id === id);
+  if (idx < 0) {
+    throw new Error(`Dream not found: ${id}`);
+  }
+
+  const nextDream = sanitizeDream(updater(all[idx]));
+  all[idx] = nextDream;
+  persistDreams(all);
+  return nextDream;
 }
 
 export function saveDream(d: Dream) {
@@ -77,6 +90,29 @@ export function unarchiveDream(id: string) {
     return nextDream;
   });
   persistDreams(next);
+}
+
+export function updateDreamTranscriptState(
+  id: string,
+  input: {
+    transcriptStatus: DreamTranscriptStatus;
+    transcript?: string;
+    transcriptUpdatedAt?: number;
+  },
+) {
+  return updateDreamById(id, dream => {
+    const nextDream: Dream = {
+      ...dream,
+      transcriptStatus: input.transcriptStatus,
+      transcriptUpdatedAt: input.transcriptUpdatedAt ?? Date.now(),
+    };
+
+    if (typeof input.transcript === 'string') {
+      nextDream.transcript = input.transcript;
+    }
+
+    return nextDream;
+  });
 }
 
 export function ensurePreviewDream() {

@@ -153,6 +153,18 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
         : typeof record.audioPath === 'string'
           ? record.audioPath
           : undefined,
+    transcript: typeof record.transcript === 'string' ? record.transcript : undefined,
+    transcriptStatus:
+      record.transcriptStatus === 'idle' ||
+      record.transcriptStatus === 'processing' ||
+      record.transcriptStatus === 'ready' ||
+      record.transcriptStatus === 'error'
+        ? record.transcriptStatus
+        : undefined,
+    transcriptUpdatedAt:
+      typeof record.transcriptUpdatedAt === 'number' && Number.isFinite(record.transcriptUpdatedAt)
+        ? record.transcriptUpdatedAt
+        : undefined,
     tags: Array.isArray(record.tags)
       ? record.tags.filter((tag): tag is string => typeof tag === 'string')
       : [],
@@ -229,6 +241,30 @@ function migrateToV2() {
   migrateLocaleToV2();
 }
 
+function migrateDreamsToV3() {
+  const raw = kv.getString(DREAMS_STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+      return;
+    }
+
+    const migrated = parsed
+      .map(coerceLegacyDream)
+      .filter((dream): dream is Dream => Boolean(dream))
+      .map(sanitizeDream);
+
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
+  } catch {
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+  }
+}
+
 export function runStorageMigrations() {
   const currentVersion = kv.getNumber(STORAGE_SCHEMA_VERSION_KEY) ?? 1;
   if (currentVersion >= CURRENT_STORAGE_SCHEMA_VERSION) {
@@ -240,6 +276,11 @@ export function runStorageMigrations() {
   if (nextVersion < 2) {
     migrateToV2();
     nextVersion = 2;
+  }
+
+  if (nextVersion < 3) {
+    migrateDreamsToV3();
+    nextVersion = 3;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

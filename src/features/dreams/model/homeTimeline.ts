@@ -72,6 +72,7 @@ export function matchesDreamSearch(dream: Dream, query: string) {
   const searchableParts = [
     dream.title,
     dream.text,
+    dream.transcript,
     dream.sleepContext?.importantEvents,
     dream.sleepContext?.medications,
     dream.sleepContext?.healthNotes,

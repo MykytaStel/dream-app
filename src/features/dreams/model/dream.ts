@@ -1,5 +1,6 @@
 export type Mood = 'neutral' | 'positive' | 'negative';
 export type StressLevel = 0 | 1 | 2 | 3;
+export type DreamTranscriptStatus = 'idle' | 'processing' | 'ready' | 'error';
 
 export type SleepContext = {
   stressLevel?: StressLevel;
@@ -18,6 +19,9 @@ export type Dream = {
   title?: string;
   text?: string;
   audioUri?: string;
+  transcript?: string;
+  transcriptStatus?: DreamTranscriptStatus;
+  transcriptUpdatedAt?: number;
   tags: string[];
   mood?: Mood;
   sleepContext?: SleepContext;

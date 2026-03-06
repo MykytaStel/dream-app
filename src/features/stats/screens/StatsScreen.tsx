@@ -108,6 +108,7 @@ export default function StatsScreen() {
 
   const totalWords = dreams.reduce((sum, dream) => sum + countDreamWords(dream.text), 0);
   const voiceNotes = dreams.filter(dream => Boolean(dream.audioUri)).length;
+  const transcribedDreams = dreams.filter(dream => Boolean(dream.transcript?.trim())).length;
   const taggedEntries = dreams.filter(dream => dream.tags.length > 0).length;
   const moodEntries = dreams.filter(dream => Boolean(dream.mood)).length;
   const moodCounts = getMoodCounts(dreams);
@@ -293,6 +294,7 @@ export default function StatsScreen() {
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.entryStructure}</Text>
         <InfoRow label={copy.voiceNotes} value={voiceNotes} />
+        <InfoRow label={copy.transcribedDreams} value={transcribedDreams} />
         <InfoRow label={copy.taggedDreams} value={taggedEntries} />
       </Card>
 

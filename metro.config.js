@@ -1,3 +1,4 @@
+const path = require('path');
 const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 
 /**
@@ -6,6 +7,21 @@ const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
  *
  * @type {import('@react-native/metro-config').MetroConfig}
  */
-const config = {};
+const whisperEntryFile = path.resolve(__dirname, 'node_modules/whisper.rn/src/index.ts');
+
+const config = {
+  resolver: {
+    resolveRequest: (context, moduleName, platform) => {
+      if (moduleName === 'whisper.rn') {
+        return {
+          type: 'sourceFile',
+          filePath: whisperEntryFile,
+        };
+      }
+
+      return context.resolveRequest(context, moduleName, platform);
+    },
+  },
+};
 
 module.exports = mergeConfig(getDefaultConfig(__dirname), config);

@@ -5,17 +5,19 @@ export function createInfoRowStyles(theme: Theme) {
   return StyleSheet.create({
     row: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'flex-start',
       gap: 10,
+      width: '100%',
     },
     label: {
       color: theme.colors.textDim,
-      flex: 1,
+      width: '38%',
+      flexShrink: 0,
       lineHeight: 21,
     },
     value: {
-      flexShrink: 1,
+      flex: 1,
+      minWidth: 0,
       textAlign: 'right',
       lineHeight: 21,
     },

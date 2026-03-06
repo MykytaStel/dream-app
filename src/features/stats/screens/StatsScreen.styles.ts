@@ -36,6 +36,90 @@ export function createStatsScreenStyles(theme: Theme) {
       color: theme.colors.textDim,
       lineHeight: 22,
     },
+    weeklyGoalCard: {
+      gap: 12,
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadii.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    achievementsList: {
+      gap: 12,
+    },
+    milestoneSummaryCard: {
+      gap: 10,
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadii.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    achievementItem: {
+      gap: 10,
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadii.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    achievementItemUnlocked: {
+      borderColor: theme.colors.accent,
+    },
+    achievementItemHighlighted: {
+      backgroundColor: theme.colors.surfaceElevated,
+    },
+    achievementHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 12,
+    },
+    achievementCopy: {
+      flex: 1,
+      gap: 4,
+    },
+    achievementTitle: {
+      fontWeight: '700',
+    },
+    achievementDescription: {
+      color: theme.colors.textDim,
+      lineHeight: 20,
+    },
+    achievementBadge: {
+      borderRadius: theme.borderRadii.pill,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.background,
+    },
+    achievementBadgeUnlocked: {
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.accent,
+    },
+    achievementBadgeText: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    achievementBadgeTextUnlocked: {
+      color: theme.colors.background,
+    },
+    achievementProgressTrack: {
+      height: 8,
+      borderRadius: 999,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.background,
+    },
+    achievementProgressFill: {
+      height: '100%',
+      borderRadius: 999,
+      backgroundColor: theme.colors.primary,
+    },
+    achievementProgressFillUnlocked: {
+      backgroundColor: theme.colors.accent,
+    },
     moodRow: {
       flexDirection: 'row',
       alignItems: 'center',

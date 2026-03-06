@@ -38,7 +38,12 @@ export type TabRouteName = keyof typeof TAB_ROUTE_NAMES;
 
 export type TabParamList = {
   [TAB_ROUTE_NAMES.Home]: undefined;
-  [TAB_ROUTE_NAMES.New]: undefined;
+  [TAB_ROUTE_NAMES.New]:
+    | {
+        entryMode?: 'default' | 'voice';
+        launchKey?: number;
+      }
+    | undefined;
   [TAB_ROUTE_NAMES.Stats]: undefined;
   [TAB_ROUTE_NAMES.Settings]: undefined;
 };

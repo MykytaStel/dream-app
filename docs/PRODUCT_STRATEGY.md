@@ -174,3 +174,12 @@ Build a complete offline MVP around this loop:
 
 That milestone is small enough to ship, test with users, and use as the base for
 AI and monetization later.
+
+## Signature feature backlog
+
+- Dream Score (0-100) with weekly level progression and achievement badges
+- Constellation Timeline: animated nodes with size/color from dream intensity and mood
+- Wake Flow 30s: one-tap capture mode right after reminder/alarm
+- Archetypes cards: recurring symbols/characters/places extracted from entries
+- Night Experiments: 7-day challenges with before/after comparison
+- Dream Cards Share: generated visual cards for sharing without sensitive details

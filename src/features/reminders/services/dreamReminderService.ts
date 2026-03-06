@@ -9,6 +9,8 @@ import notifee, {
 } from '@notifee/react-native';
 import { Platform } from 'react-native';
 import { kv } from '../../../services/storage/mmkv';
+import { getStoredLocale } from '../../../i18n/localeStore';
+import { getSettingsCopy } from '../../../constants/copy/settings';
 
 const REMINDER_CHANNEL_ID = 'dream-reminders';
 const REMINDER_NOTIFICATION_ID = 'dream-record-reminder';
@@ -104,6 +106,7 @@ export async function scheduleDreamReminder(settings: DreamReminderSettings) {
   }
 
   await ensureReminderChannel();
+  const copy = getSettingsCopy(getStoredLocale());
 
   const trigger: TimestampTrigger = {
     type: TriggerType.TIMESTAMP,
@@ -114,8 +117,8 @@ export async function scheduleDreamReminder(settings: DreamReminderSettings) {
   await notifee.createTriggerNotification(
     {
       id: REMINDER_NOTIFICATION_ID,
-      title: 'Record your dream',
-      body: 'Capture it while details are still fresh.',
+      title: copy.reminderNotificationTitle,
+      body: copy.reminderNotificationBody,
       data: {
         target: REMINDER_TARGET_RECORD,
       },

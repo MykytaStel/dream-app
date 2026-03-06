@@ -3,20 +3,25 @@ import { Alert, Pressable, View } from 'react-native';
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { InfoRow } from '../../../components/ui/InfoRow';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
-import { DREAM_COPY, DREAM_MOOD_LABELS, DREAM_STRESS_LABELS } from '../../../constants/copy/dreams';
-import { Theme } from '../../../theme/theme';
+import {
+  getDreamCopy,
+  getDreamMoodLabels,
+  getDreamStressLabels,
+} from '../../../constants/copy/dreams';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import { useI18n } from '../../../i18n/I18nProvider';
+import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
 import { archiveDream, deleteDream, getDream, unarchiveDream } from '../repository/dreamsRepository';
 import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
-import { Button } from '../../../components/ui/Button';
 
 function moodColor(theme: Theme, mood?: Dream['mood']) {
   if (mood === 'positive') {
@@ -57,6 +62,10 @@ function hasSleepContext(dream: Dream) {
 
 export default function DreamDetailScreen() {
   const t = useTheme<Theme>();
+  const { locale } = useI18n();
+  const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
+  const stressLabels = React.useMemo(() => getDreamStressLabels(locale), [locale]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.DreamDetail>>();
   const styles = createDreamDetailScreenStyles(t);
@@ -73,11 +82,11 @@ export default function DreamDetailScreen() {
       <ScreenContainer scroll>
         <Card style={styles.heroCard}>
           <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backLabel}>{DREAM_COPY.detailBack}</Text>
+            <Text style={styles.backLabel}>{copy.detailBack}</Text>
           </Pressable>
           <SectionHeader
-            title={DREAM_COPY.detailMissingTitle}
-            subtitle={DREAM_COPY.detailMissingDescription}
+            title={copy.detailMissingTitle}
+            subtitle={copy.detailMissingDescription}
             large
           />
         </Card>
@@ -87,7 +96,7 @@ export default function DreamDetailScreen() {
 
   const dreamId = dream.id;
   const archived = typeof dream.archivedAt === 'number';
-  const moodLabel = dream.mood ? DREAM_MOOD_LABELS[dream.mood] : undefined;
+  const moodLabel = dream.mood ? moodLabels[dream.mood] : undefined;
   const wordsCount = countDreamWords(dream.text);
   const hasContext = hasSleepContext(dream);
 
@@ -102,15 +111,15 @@ export default function DreamDetailScreen() {
 
   function onDeleteDream() {
     Alert.alert(
-      DREAM_COPY.detailDeleteTitle,
-      DREAM_COPY.detailDeleteDescription,
+      copy.detailDeleteTitle,
+      copy.detailDeleteDescription,
       [
         {
-          text: DREAM_COPY.detailDeleteCancel,
+          text: copy.detailDeleteCancel,
           style: 'cancel',
         },
         {
-          text: DREAM_COPY.detailDeleteConfirm,
+          text: copy.detailDeleteConfirm,
           style: 'destructive',
           onPress: () => {
             deleteDream(dreamId);
@@ -125,13 +134,13 @@ export default function DreamDetailScreen() {
     <ScreenContainer scroll>
       <Card style={styles.heroCard}>
         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLabel}>{DREAM_COPY.detailBack}</Text>
+          <Text style={styles.backLabel}>{copy.detailBack}</Text>
         </Pressable>
 
         <View style={styles.heroHeader}>
-          <Text style={styles.heroEyebrow}>{DREAM_COPY.detailMetaTitle}</Text>
+          <Text style={styles.heroEyebrow}>{copy.detailMetaTitle}</Text>
           <View style={styles.heroTitleRow}>
-            <Text style={styles.heroTitle}>{dream.title || DREAM_COPY.untitled}</Text>
+            <Text style={styles.heroTitle}>{dream.title || copy.untitled}</Text>
             <View
               style={[
                 styles.moodDot,
@@ -146,25 +155,25 @@ export default function DreamDetailScreen() {
 
         <View style={styles.chipsRow}>
           <View style={styles.metaChip}>
-            <Text style={styles.metaChipLabel}>{DREAM_COPY.sleepDateLabel}</Text>
+            <Text style={styles.metaChipLabel}>{copy.sleepDateLabel}</Text>
             <Text style={styles.metaChipValue}>
               {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
             </Text>
           </View>
           <View style={styles.metaChip}>
-            <Text style={styles.metaChipLabel}>{DREAM_COPY.wordsUnit}</Text>
+            <Text style={styles.metaChipLabel}>{copy.wordsUnit}</Text>
             <Text style={styles.metaChipValue}>{wordsCount}</Text>
           </View>
           {moodLabel ? (
             <View style={styles.metaChip}>
-              <Text style={styles.metaChipLabel}>{DREAM_COPY.moodTitle}</Text>
+              <Text style={styles.metaChipLabel}>{copy.moodTitle}</Text>
               <Text style={styles.metaChipValue}>{moodLabel}</Text>
             </View>
           ) : null}
         </View>
 
         <Button
-          title={DREAM_COPY.detailEdit}
+          title={copy.detailEdit}
           variant="ghost"
           onPress={() =>
             navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
@@ -173,74 +182,74 @@ export default function DreamDetailScreen() {
           }
         />
         <Button
-          title={archived ? DREAM_COPY.detailUnarchive : DREAM_COPY.detailArchive}
+          title={archived ? copy.detailUnarchive : copy.detailArchive}
           variant="ghost"
           onPress={onToggleArchiveDream}
         />
         <Button
-          title={DREAM_COPY.detailDelete}
+          title={copy.detailDelete}
           variant="danger"
           onPress={onDeleteDream}
         />
       </Card>
 
       <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{DREAM_COPY.detailTranscriptTitle}</Text>
+        <Text style={styles.sectionTitle}>{copy.detailTranscriptTitle}</Text>
         <Text style={dream.text ? styles.bodyText : styles.mutedText}>
-          {dream.text || DREAM_COPY.detailTranscriptEmpty}
+          {dream.text || copy.detailTranscriptEmpty}
         </Text>
       </Card>
 
       <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{DREAM_COPY.tagsTitle}</Text>
+        <Text style={styles.sectionTitle}>{copy.tagsTitle}</Text>
         <View style={styles.tagsRow}>
           {dream.tags.length ? (
             dream.tags.map(tag => <TagChip key={tag} label={tag} />)
           ) : (
-            <Text style={styles.mutedText}>{DREAM_COPY.detailTagsEmpty}</Text>
+            <Text style={styles.mutedText}>{copy.detailTagsEmpty}</Text>
           )}
         </View>
       </Card>
 
       <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{DREAM_COPY.detailContextTitle}</Text>
+        <Text style={styles.sectionTitle}>{copy.detailContextTitle}</Text>
         {!hasContext ? (
-          <Text style={styles.mutedText}>{DREAM_COPY.detailContextEmpty}</Text>
+          <Text style={styles.mutedText}>{copy.detailContextEmpty}</Text>
         ) : (
           <View style={styles.contextRows}>
             {typeof dream.sleepContext?.stressLevel === 'number' ? (
               <InfoRow
-                label={DREAM_COPY.stressLabel}
-                value={DREAM_STRESS_LABELS[dream.sleepContext.stressLevel]}
+                label={copy.stressLabel}
+                value={stressLabels[dream.sleepContext.stressLevel]}
               />
             ) : null}
             {typeof dream.sleepContext?.alcoholTaken === 'boolean' ? (
               <InfoRow
-                label={DREAM_COPY.alcoholLabel}
-                value={dream.sleepContext.alcoholTaken ? DREAM_COPY.boolYes : DREAM_COPY.boolNo}
+                label={copy.alcoholLabel}
+                value={dream.sleepContext.alcoholTaken ? copy.boolYes : copy.boolNo}
               />
             ) : null}
             {typeof dream.sleepContext?.caffeineLate === 'boolean' ? (
               <InfoRow
-                label={DREAM_COPY.caffeineLabel}
-                value={dream.sleepContext.caffeineLate ? DREAM_COPY.boolYes : DREAM_COPY.boolNo}
+                label={copy.caffeineLabel}
+                value={dream.sleepContext.caffeineLate ? copy.boolYes : copy.boolNo}
               />
             ) : null}
             {dream.sleepContext?.medications ? (
               <InfoRow
-                label={DREAM_COPY.medicationsLabel}
+                label={copy.medicationsLabel}
                 value={dream.sleepContext.medications}
               />
             ) : null}
             {dream.sleepContext?.importantEvents ? (
               <InfoRow
-                label={DREAM_COPY.eventsLabel}
+                label={copy.eventsLabel}
                 value={dream.sleepContext.importantEvents}
               />
             ) : null}
             {dream.sleepContext?.healthNotes ? (
               <InfoRow
-                label={DREAM_COPY.healthNotesLabel}
+                label={copy.healthNotesLabel}
                 value={dream.sleepContext.healthNotes}
               />
             ) : null}
@@ -250,10 +259,10 @@ export default function DreamDetailScreen() {
 
       {dream.audioUri ? (
         <Card style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{DREAM_COPY.voiceTitle}</Text>
+          <Text style={styles.sectionTitle}>{copy.voiceTitle}</Text>
           <View style={styles.audioCard}>
-            <Text>{DREAM_COPY.detailAudioDescription}</Text>
-            <InfoRow label={DREAM_COPY.detailAudioPathLabel} value={dream.audioUri} />
+            <Text>{copy.detailAudioDescription}</Text>
+            <InfoRow label={copy.detailAudioPathLabel} value={dream.audioUri} />
           </View>
         </Card>
       ) : null}

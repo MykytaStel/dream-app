@@ -11,12 +11,15 @@ import StatsScreen from '../../features/stats/screens/StatsScreen';
 import SettingsScreen from '../../features/settings/screens/SettingsScreen';
 import { Theme } from '../../theme/theme';
 import { createTabsStyles } from './tabs.styles';
-import { TAB_ROUTE_LABELS, TAB_ROUTE_NAMES, type TabParamList } from './routes';
+import { getTabRouteLabels, TAB_ROUTE_NAMES, type TabParamList } from './routes';
+import { useI18n } from '../../i18n/I18nProvider';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 export default function Tabs() {
   const t = useTheme<Theme>();
+  const { locale } = useI18n();
   const insets = useSafeAreaInsets();
+  const labels = React.useMemo(() => getTabRouteLabels(locale), [locale]);
   const tabStyles = createTabsStyles(t, false, insets.bottom);
   return (
     <Tab.Navigator
@@ -61,22 +64,22 @@ export default function Tabs() {
       <Tab.Screen
         name={TAB_ROUTE_NAMES.Home}
         component={HomeScreen}
-        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.Home] }}
+        options={{ tabBarLabel: labels[TAB_ROUTE_NAMES.Home] }}
       />
       <Tab.Screen
         name={TAB_ROUTE_NAMES.New}
         component={NewDreamScreen}
-        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.New] }}
+        options={{ tabBarLabel: labels[TAB_ROUTE_NAMES.New] }}
       />
       <Tab.Screen
         name={TAB_ROUTE_NAMES.Stats}
         component={StatsScreen}
-        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.Stats] }}
+        options={{ tabBarLabel: labels[TAB_ROUTE_NAMES.Stats] }}
       />
       <Tab.Screen
         name={TAB_ROUTE_NAMES.Settings}
         component={SettingsScreen}
-        options={{ tabBarLabel: TAB_ROUTE_LABELS[TAB_ROUTE_NAMES.Settings] }}
+        options={{ tabBarLabel: labels[TAB_ROUTE_NAMES.Settings] }}
       />
     </Tab.Navigator>
   );

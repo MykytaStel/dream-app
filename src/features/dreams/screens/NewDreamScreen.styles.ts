@@ -90,12 +90,15 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     },
     contextOptionsRow: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 8,
     },
     contextOption: {
-      flex: 1,
-      paddingVertical: 10,
-      paddingHorizontal: 10,
+      flexGrow: 1,
+      flexBasis: 72,
+      minWidth: 72,
+      paddingVertical: 12,
+      paddingHorizontal: 8,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: selected ? theme.colors.primary : theme.colors.border,
@@ -104,7 +107,8 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     contextOptionLabel: {
       textAlign: 'center',
       fontWeight: '700',
-      fontSize: 12,
+      fontSize: 11,
+      lineHeight: 14,
       color: selected ? theme.colors.background : theme.colors.text,
     },
     contextTextInput: {

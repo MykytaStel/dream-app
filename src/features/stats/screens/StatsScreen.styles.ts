@@ -3,6 +3,9 @@ import { Theme } from '../../../theme/theme';
 
 export function createStatsScreenStyles(theme: Theme) {
   return StyleSheet.create({
+    emptyContainer: {
+      justifyContent: 'center',
+    },
     heroCard: {
       gap: 16,
     },
@@ -28,6 +31,10 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     sectionTitle: {
       fontWeight: '700',
+    },
+    sectionHint: {
+      color: theme.colors.textDim,
+      lineHeight: 22,
     },
     moodRow: {
       flexDirection: 'row',
@@ -59,6 +66,9 @@ export function createStatsScreenStyles(theme: Theme) {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 8,
+    },
+    mutedText: {
+      color: theme.colors.textDim,
     },
   });
 }

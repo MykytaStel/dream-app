@@ -2,7 +2,49 @@
 
 import 'react-native-gesture-handler/jestSetup';
 
-jest.mock('@notifee/react-native', () => require('@notifee/react-native/jest-mock'));
+jest.mock('@notifee/react-native', () => {
+  const AuthorizationStatus = {
+    NOT_DETERMINED: 0,
+    DENIED: 1,
+    AUTHORIZED: 2,
+    PROVISIONAL: 3,
+  };
+
+  const EventType = {
+    PRESS: 1,
+    ACTION_PRESS: 2,
+  };
+
+  const mock = {
+    AndroidImportance: {
+      HIGH: 4,
+    },
+    AuthorizationStatus,
+    EventType,
+    RepeatFrequency: {
+      DAILY: 'DAILY',
+    },
+    TriggerType: {
+      TIMESTAMP: 'TIMESTAMP',
+    },
+    createTriggerNotification: jest.fn(async notification => notification?.id || 'trigger-id'),
+    createChannel: jest.fn(async channel => channel?.id || 'channel-id'),
+    cancelNotification: jest.fn(async () => {}),
+    requestPermission: jest.fn(async () => ({
+      authorizationStatus: AuthorizationStatus.AUTHORIZED,
+    })),
+    getNotificationSettings: jest.fn(async () => ({
+      authorizationStatus: AuthorizationStatus.AUTHORIZED,
+    })),
+    getInitialNotification: jest.fn(async () => null),
+    onForegroundEvent: jest.fn(() => jest.fn()),
+  };
+
+  return {
+    ...mock,
+    default: mock,
+  };
+});
 
 jest.mock('react-native-reanimated', () => {
   const Reanimated = require('react-native-reanimated/mock');

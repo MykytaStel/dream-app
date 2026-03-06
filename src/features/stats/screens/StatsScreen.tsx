@@ -9,6 +9,7 @@ import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { StatCard } from '../../../components/ui/StatCard';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
+import { ScreenStateCard } from '../../dreams/components/ScreenStateCard';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
 import { getStatsCopy } from '../../../constants/copy/stats';
 import { Theme } from '../../../theme/theme';
@@ -78,6 +79,7 @@ export default function StatsScreen() {
   const totalWords = dreams.reduce((sum, dream) => sum + countDreamWords(dream.text), 0);
   const voiceNotes = dreams.filter(dream => Boolean(dream.audioUri)).length;
   const taggedEntries = dreams.filter(dream => dream.tags.length > 0).length;
+  const moodEntries = dreams.filter(dream => Boolean(dream.mood)).length;
   const moodCounts = getMoodCounts(dreams);
   const moodCorrelation = getMoodCorrelationStats(dreams);
   const streak = getCurrentStreak(dreams);
@@ -92,6 +94,20 @@ export default function StatsScreen() {
   ];
   const maxMoodCount = Math.max(...moodItems.map(item => item.count), 1);
   const baselineNegativeRate = moodCorrelation.overall.rate;
+  const showReadinessCard =
+    dreams.length > 0 && (dreams.length < 3 || moodEntries < 2 || sleepContextStats.withContext < 2);
+
+  if (!dreams.length) {
+    return (
+      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+        <ScreenStateCard
+          variant="empty"
+          title={copy.emptyTitle}
+          subtitle={copy.emptyDescription}
+        />
+      </ScreenContainer>
+    );
+  }
 
   return (
     <ScreenContainer scroll>
@@ -109,6 +125,17 @@ export default function StatsScreen() {
         </View>
       </Card>
 
+      {showReadinessCard ? (
+        <Card style={styles.sectionCard}>
+          <SectionHeader title={copy.readinessTitle} subtitle={copy.readinessDescription} />
+          <InfoRow label={copy.entries} value={dreams.length} />
+          <InfoRow label={copy.entriesWithMood} value={moodEntries} />
+          <InfoRow label={copy.entriesWithTags} value={taggedEntries} />
+          <InfoRow label={copy.entriesWithContext} value={sleepContextStats.withContext} />
+          <Text style={styles.sectionHint}>{copy.readinessHint}</Text>
+        </Card>
+      ) : null}
+
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.journalVolume}</Text>
         <InfoRow label={copy.entries} value={dreams.length} />
@@ -124,99 +151,131 @@ export default function StatsScreen() {
 
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.moodBreakdown}</Text>
-        {moodItems.map(item => (
-          <View key={item.label} style={styles.moodRow}>
-            <Text style={styles.moodLabel}>{item.label}</Text>
-            <View style={styles.moodTrack}>
-              <View
-                style={[
-                  styles.moodFill,
-                  {
-                    width: `${(item.count / maxMoodCount) * 100}%`,
-                    backgroundColor: item.color,
-                  },
-                ]}
-              />
+        {moodEntries > 0 ? (
+          moodItems.map(item => (
+            <View key={item.label} style={styles.moodRow}>
+              <Text style={styles.moodLabel}>{item.label}</Text>
+              <View style={styles.moodTrack}>
+                <View
+                  style={[
+                    styles.moodFill,
+                    {
+                      width: `${(item.count / maxMoodCount) * 100}%`,
+                      backgroundColor: item.color,
+                    },
+                  ]}
+                />
+              </View>
+              <Text style={styles.moodValue}>{item.count}</Text>
             </View>
-            <Text style={styles.moodValue}>{item.count}</Text>
-          </View>
-        ))}
+          ))
+        ) : (
+          <Text style={styles.mutedText}>{copy.moodBreakdownEmpty}</Text>
+        )}
       </Card>
 
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.sleepContextBreakdown}</Text>
-        <InfoRow
-          label={copy.entriesWithContext}
-          value={formatCountWithShare(sleepContextStats.withContext, dreams.length)}
-        />
-        <InfoRow
-          label={copy.averageStressLevel}
-          value={
-            typeof sleepContextStats.averageStress === 'number'
-              ? `${sleepContextStats.averageStress.toFixed(1)} / 3`
-              : copy.noData
-          }
-        />
-        <InfoRow
-          label={copy.alcoholBeforeSleep}
-          value={formatCountWithShare(sleepContextStats.alcoholTaken, dreams.length)}
-        />
-        <InfoRow
-          label={copy.lateCaffeine}
-          value={formatCountWithShare(sleepContextStats.caffeineLate, dreams.length)}
-        />
-        <InfoRow
-          label={copy.medicationsNoted}
-          value={formatCountWithShare(sleepContextStats.medications, dreams.length)}
-        />
-        <InfoRow
-          label={copy.importantEventsNoted}
-          value={formatCountWithShare(sleepContextStats.importantEvents, dreams.length)}
-        />
-        <InfoRow
-          label={copy.healthNotesNoted}
-          value={formatCountWithShare(sleepContextStats.healthNotes, dreams.length)}
-        />
+        {sleepContextStats.withContext > 0 ? (
+          <>
+            <InfoRow
+              label={copy.entriesWithContext}
+              value={formatCountWithShare(sleepContextStats.withContext, dreams.length)}
+            />
+            <InfoRow
+              label={copy.averageStressLevel}
+              value={
+                typeof sleepContextStats.averageStress === 'number'
+                  ? `${sleepContextStats.averageStress.toFixed(1)} / 3`
+                  : copy.noData
+              }
+            />
+            <InfoRow
+              label={copy.alcoholBeforeSleep}
+              value={formatCountWithShare(sleepContextStats.alcoholTaken, dreams.length)}
+            />
+            <InfoRow
+              label={copy.lateCaffeine}
+              value={formatCountWithShare(sleepContextStats.caffeineLate, dreams.length)}
+            />
+            <InfoRow
+              label={copy.medicationsNoted}
+              value={formatCountWithShare(sleepContextStats.medications, dreams.length)}
+            />
+            <InfoRow
+              label={copy.importantEventsNoted}
+              value={formatCountWithShare(sleepContextStats.importantEvents, dreams.length)}
+            />
+            <InfoRow
+              label={copy.healthNotesNoted}
+              value={formatCountWithShare(sleepContextStats.healthNotes, dreams.length)}
+            />
+          </>
+        ) : (
+          <Text style={styles.mutedText}>{copy.sleepContextEmpty}</Text>
+        )}
       </Card>
 
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.moodSignalTitle}</Text>
-        <InfoRow
-          label={copy.negativeMoodRate}
-          value={formatNegativeRate(moodCorrelation.overall, copy.noData)}
-        />
-        <InfoRow
-          label={copy.negativeWithAlcohol}
-          value={formatNegativeRate(moodCorrelation.alcoholTaken, copy.noData, baselineNegativeRate)}
-        />
-        <InfoRow
-          label={copy.negativeWithoutAlcohol}
-          value={formatNegativeRate(moodCorrelation.noAlcohol, copy.noData, baselineNegativeRate)}
-        />
-        <InfoRow
-          label={copy.negativeWithLateCaffeine}
-          value={formatNegativeRate(
-            moodCorrelation.caffeineLate,
-            copy.noData,
-            baselineNegativeRate,
-          )}
-        />
-        <InfoRow
-          label={copy.negativeWithoutLateCaffeine}
-          value={formatNegativeRate(
-            moodCorrelation.noLateCaffeine,
-            copy.noData,
-            baselineNegativeRate,
-          )}
-        />
-        <InfoRow
-          label={copy.negativeWithHighStress}
-          value={formatNegativeRate(moodCorrelation.highStress, copy.noData, baselineNegativeRate)}
-        />
-        <InfoRow
-          label={copy.negativeWithLowStress}
-          value={formatNegativeRate(moodCorrelation.lowStress, copy.noData, baselineNegativeRate)}
-        />
+        {moodCorrelation.overall.total > 0 ? (
+          <>
+            <InfoRow
+              label={copy.negativeMoodRate}
+              value={formatNegativeRate(moodCorrelation.overall, copy.noData)}
+            />
+            <InfoRow
+              label={copy.negativeWithAlcohol}
+              value={formatNegativeRate(
+                moodCorrelation.alcoholTaken,
+                copy.noData,
+                baselineNegativeRate,
+              )}
+            />
+            <InfoRow
+              label={copy.negativeWithoutAlcohol}
+              value={formatNegativeRate(
+                moodCorrelation.noAlcohol,
+                copy.noData,
+                baselineNegativeRate,
+              )}
+            />
+            <InfoRow
+              label={copy.negativeWithLateCaffeine}
+              value={formatNegativeRate(
+                moodCorrelation.caffeineLate,
+                copy.noData,
+                baselineNegativeRate,
+              )}
+            />
+            <InfoRow
+              label={copy.negativeWithoutLateCaffeine}
+              value={formatNegativeRate(
+                moodCorrelation.noLateCaffeine,
+                copy.noData,
+                baselineNegativeRate,
+              )}
+            />
+            <InfoRow
+              label={copy.negativeWithHighStress}
+              value={formatNegativeRate(
+                moodCorrelation.highStress,
+                copy.noData,
+                baselineNegativeRate,
+              )}
+            />
+            <InfoRow
+              label={copy.negativeWithLowStress}
+              value={formatNegativeRate(
+                moodCorrelation.lowStress,
+                copy.noData,
+                baselineNegativeRate,
+              )}
+            />
+          </>
+        ) : (
+          <Text style={styles.mutedText}>{copy.moodSignalEmpty}</Text>
+        )}
       </Card>
 
       <Card style={styles.sectionCard}>

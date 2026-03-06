@@ -140,4 +140,28 @@ describe('dream repository flows', () => {
       healthNotes: 'headache',
     });
   });
+
+  test('rejects invalid captures before writing to storage', () => {
+    expect(() =>
+      saveDream({
+        id: 'invalid-title-only',
+        createdAt: 1710000000000,
+        sleepDate: '2026-03-06',
+        title: 'Only title',
+        tags: [],
+      }),
+    ).toThrow('missing-content');
+
+    expect(() =>
+      saveDream({
+        id: 'invalid-date',
+        createdAt: 1710000000000,
+        sleepDate: '2026-02-30',
+        text: 'body',
+        tags: [],
+      }),
+    ).toThrow('invalid-sleep-date');
+
+    expect(listDreams()).toEqual([]);
+  });
 });

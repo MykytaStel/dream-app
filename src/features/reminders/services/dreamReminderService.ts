@@ -16,6 +16,9 @@ import { getSettingsCopy } from '../../../constants/copy/settings';
 const REMINDER_CHANNEL_ID = 'dream-reminders';
 const REMINDER_NOTIFICATION_ID = 'dream-record-reminder';
 const REMINDER_TARGET_RECORD = 'record';
+export const REMINDER_ERROR_CODES = {
+  permissionDenied: 'permission-denied',
+} as const;
 
 export type DreamReminderSettings = {
   enabled: boolean;
@@ -37,18 +40,30 @@ export const DEFAULT_REMINDER_SETTINGS: DreamReminderSettings = {
   minute: 30,
 };
 
+function normalizeReminderSettings(
+  settings: Partial<DreamReminderSettings> | DreamReminderSettings,
+): DreamReminderSettings {
+  const rawHour =
+    typeof settings.hour === 'number' ? Math.trunc(settings.hour) : DEFAULT_REMINDER_SETTINGS.hour;
+  const rawMinute =
+    typeof settings.minute === 'number'
+      ? Math.trunc(settings.minute)
+      : DEFAULT_REMINDER_SETTINGS.minute;
+
+  return {
+    enabled: Boolean(settings.enabled),
+    hour: Math.min(Math.max(rawHour, 0), 23),
+    minute: Math.min(Math.max(rawMinute, 0), 59),
+  };
+}
+
 function parseSettings(raw?: string): DreamReminderSettings {
   if (!raw) {
     return DEFAULT_REMINDER_SETTINGS;
   }
 
   try {
-    const parsed = JSON.parse(raw) as Partial<DreamReminderSettings>;
-    return {
-      enabled: Boolean(parsed.enabled),
-      hour: typeof parsed.hour === 'number' ? parsed.hour : DEFAULT_REMINDER_SETTINGS.hour,
-      minute: typeof parsed.minute === 'number' ? parsed.minute : DEFAULT_REMINDER_SETTINGS.minute,
-    };
+    return normalizeReminderSettings(JSON.parse(raw) as Partial<DreamReminderSettings>);
   } catch {
     return DEFAULT_REMINDER_SETTINGS;
   }
@@ -89,7 +104,7 @@ export function getDreamReminderSettings() {
 }
 
 export function saveDreamReminderSettings(settings: DreamReminderSettings) {
-  kv.set(REMINDER_SETTINGS_KEY, JSON.stringify(settings));
+  kv.set(REMINDER_SETTINGS_KEY, JSON.stringify(normalizeReminderSettings(settings)));
 }
 
 export async function requestReminderPermission() {
@@ -97,13 +112,16 @@ export async function requestReminderPermission() {
   return isAuthorized(settings.authorizationStatus);
 }
 
-export async function scheduleDreamReminder(settings: DreamReminderSettings) {
+export async function getDreamReminderPermissionGranted() {
+  const settings = await notifee.getNotificationSettings();
+  return isAuthorized(settings.authorizationStatus);
+}
+
+async function cancelDreamReminder() {
   await notifee.cancelNotification(REMINDER_NOTIFICATION_ID);
+}
 
-  if (!settings.enabled) {
-    return;
-  }
-
+async function scheduleAuthorizedDreamReminder(settings: DreamReminderSettings) {
   await ensureReminderChannel();
   const copy = getSettingsCopy(getStoredLocale());
 
@@ -141,9 +159,49 @@ export async function scheduleDreamReminder(settings: DreamReminderSettings) {
   );
 }
 
+export async function scheduleDreamReminder(settings: DreamReminderSettings) {
+  const normalized = normalizeReminderSettings(settings);
+  await cancelDreamReminder();
+
+  if (!normalized.enabled) {
+    return;
+  }
+
+  const permissionGranted = await getDreamReminderPermissionGranted();
+  if (!permissionGranted) {
+    throw new Error(REMINDER_ERROR_CODES.permissionDenied);
+  }
+
+  await scheduleAuthorizedDreamReminder(normalized);
+}
+
 export async function applyDreamReminderSettings(settings: DreamReminderSettings) {
-  saveDreamReminderSettings(settings);
-  await scheduleDreamReminder(settings);
+  const normalized = normalizeReminderSettings(settings);
+
+  if (!normalized.enabled) {
+    saveDreamReminderSettings(normalized);
+    await cancelDreamReminder();
+    return normalized;
+  }
+
+  const permissionGranted = await getDreamReminderPermissionGranted();
+  if (!permissionGranted) {
+    const next = {
+      ...normalized,
+      enabled: false,
+    };
+    saveDreamReminderSettings(next);
+    await cancelDreamReminder();
+    return next;
+  }
+
+  saveDreamReminderSettings(normalized);
+  await scheduleAuthorizedDreamReminder(normalized);
+  return normalized;
+}
+
+export async function syncDreamReminderState() {
+  return applyDreamReminderSettings(getDreamReminderSettings());
 }
 
 export function isReminderNotificationPress(eventType: EventType, detail?: EventDetail) {

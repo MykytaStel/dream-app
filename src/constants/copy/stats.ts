@@ -7,6 +7,16 @@ const STATS_COPY_EN = {
   currentStreak: 'Current streak',
   lastSevenDays: 'Last 7 days',
   monthChange: 'Local-first',
+  emptyTitle: 'No insights yet',
+  emptyDescription:
+    'Save a few dreams first. Stats will start filling in from your local entries automatically.',
+  readinessTitle: 'Insight readiness',
+  readinessDescription:
+    'The more mood, tags, and pre-sleep context you add, the more useful these patterns become.',
+  entriesWithMood: 'Entries with mood',
+  entriesWithTags: 'Entries with tags',
+  readinessHint:
+    'Small sample sizes can swing fast. Treat early patterns as directional, not final.',
   journalVolume: 'Journal volume',
   entries: 'Entries',
   wordsSaved: 'Words saved',
@@ -16,7 +26,9 @@ const STATS_COPY_EN = {
   voiceNotes: 'Voice notes',
   taggedDreams: 'Tagged dreams',
   moodBreakdown: 'Mood breakdown',
+  moodBreakdownEmpty: 'Add mood after waking to unlock this breakdown.',
   sleepContextBreakdown: 'Pre-sleep factors',
+  sleepContextEmpty: 'Add pre-sleep context to compare stress, caffeine, and other signals here.',
   entriesWithContext: 'Entries with context',
   averageStressLevel: 'Average stress',
   alcoholBeforeSleep: 'Alcohol before sleep',
@@ -25,6 +37,7 @@ const STATS_COPY_EN = {
   importantEventsNoted: 'Important events noted',
   healthNotesNoted: 'Health notes',
   moodSignalTitle: 'Mood signals (experimental)',
+  moodSignalEmpty: 'Negative mood signals appear after you log mood together with pre-sleep context.',
   negativeMoodRate: 'Negative mood rate',
   negativeWithAlcohol: 'Negative after alcohol',
   negativeWithoutAlcohol: 'Negative without alcohol',
@@ -47,6 +60,16 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   monthLabel: 'Поточний локальний стан',
   currentStreak: 'Поточний стрік',
   lastSevenDays: 'Останні 7 днів',
+  emptyTitle: 'Аналітики ще немає',
+  emptyDescription:
+    'Спочатку збережи кілька снів. Статистика почне автоматично заповнюватися з локальних записів.',
+  readinessTitle: 'Готовність аналітики',
+  readinessDescription:
+    'Що більше ти додаєш настрою, тегів і контексту перед сном, то кориснішими стають ці патерни.',
+  entriesWithMood: 'Записи з настроєм',
+  entriesWithTags: 'Записи з тегами',
+  readinessHint:
+    'На малому обсязі даних патерни легко коливаються. Сприймай ранні сигнали як орієнтир, а не як висновок.',
   journalVolume: 'Обсяг щоденника',
   entries: 'Записи',
   wordsSaved: 'Збережено слів',
@@ -56,7 +79,10 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   voiceNotes: 'Голосові нотатки',
   taggedDreams: 'Записи з тегами',
   moodBreakdown: 'Розподіл настрою',
+  moodBreakdownEmpty: 'Додай настрій після пробудження, щоб тут зʼявився розподіл.',
   sleepContextBreakdown: 'Фактори перед сном',
+  sleepContextEmpty:
+    'Додай контекст перед сном, щоб тут порівнювати стрес, кофеїн та інші сигнали.',
   entriesWithContext: 'Записи з контекстом',
   averageStressLevel: 'Середній стрес',
   alcoholBeforeSleep: 'Алкоголь перед сном',
@@ -65,6 +91,8 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   importantEventsNoted: 'Вказані важливі події',
   healthNotesNoted: 'Нотатки про здоровʼя',
   moodSignalTitle: 'Сигнали настрою (експериментально)',
+  moodSignalEmpty:
+    'Сигнали настрою зʼявляться, коли ти поєднаєш настрій і контекст перед сном у тих самих записах.',
   negativeMoodRate: 'Частка негативного настрою',
   negativeWithAlcohol: 'Негатив після алкоголю',
   negativeWithoutAlcohol: 'Негатив без алкоголю',

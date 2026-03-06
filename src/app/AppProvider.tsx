@@ -11,10 +11,17 @@ import {
 import { observability } from '../services/observability';
 import { OBS_EVENTS } from '../services/observability/events';
 import { I18nProvider } from '../i18n/I18nProvider';
+import { runStorageMigrations } from '../services/storage/migrations';
 
 const qc = new QueryClient();
 export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) => {
   React.useEffect(() => {
+    try {
+      runStorageMigrations();
+    } catch (error) {
+      observability.captureError(error, { event: 'storage_migration_failed' });
+    }
+
     ensurePreviewDream();
     observability.trackEvent(OBS_EVENTS.AppOpened);
     scheduleDreamReminder(getDreamReminderSettings()).catch(error => {

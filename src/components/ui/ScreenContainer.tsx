@@ -28,8 +28,11 @@ export function ScreenContainer(props: ScrollContainerProps | StaticContainerPro
   const styles = createScreenContainerStyles(t);
   const { padded = true, withTopInset = true, withBottomInset = true } = props;
   const insetStyle = {
-    paddingTop: padded && withTopInset ? insets.top : undefined,
-    paddingBottom: padded && withBottomInset ? getTabBarReservedSpace(insets.bottom) : undefined,
+    paddingTop: padded && withTopInset ? insets.top + t.spacing.xs : undefined,
+    paddingBottom:
+      padded && withBottomInset
+        ? getTabBarReservedSpace(insets.bottom) + t.spacing.xs
+        : undefined,
   };
 
   if (props.scroll) {

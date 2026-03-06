@@ -6,10 +6,14 @@ export const statCardStyles = StyleSheet.create({
   },
   label: {
     fontWeight: '700',
+    lineHeight: 20,
+    flexShrink: 1,
   },
   value: {
     marginTop: 6,
-    fontSize: 28,
+    fontSize: 24,
+    lineHeight: 30,
     fontWeight: '700',
+    includeFontPadding: false,
   },
 });

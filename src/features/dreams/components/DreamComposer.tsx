@@ -16,7 +16,9 @@ import {
 } from '../../../constants/copy/dreams';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
+import { ScreenStateCard } from './ScreenStateCard';
 import { Dream, Mood, SleepContext, StressLevel } from '../model/dream';
+import { isValidSleepDate, normalizeTag, normalizeTags } from '../model/dreamRules';
 import { saveDream } from '../repository/dreamsRepository';
 import { startRecording, stopRecording } from '../services/audioService';
 import { createDreamId } from '../utils/createDreamId';
@@ -26,10 +28,6 @@ function getTodayDate() {
   const now = new Date();
   const offset = now.getTimezoneOffset() * 60_000;
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
-
-function normalizeTag(value: string) {
-  return value.trim().toLowerCase().replace(/\s+/g, '-');
 }
 
 function hasSleepContextValues(context: SleepContext) {
@@ -83,12 +81,23 @@ export function DreamComposer({
   const [healthNotes, setHealthNotes] = React.useState(
     initialDream?.sleepContext?.healthNotes ?? '',
   );
-  const [tags, setTags] = React.useState<string[]>(initialDream?.tags ?? []);
+  const [tags, setTags] = React.useState<string[]>(normalizeTags(initialDream?.tags ?? []));
   const [tagInput, setTagInput] = React.useState('');
+  const [isBusy, setIsBusy] = React.useState(false);
+  const [lastActionError, setLastActionError] = React.useState<string | null>(null);
   const baseStyles = createNewDreamScreenStyles(t, false);
   const isEdit = mode === 'edit';
+  const isEntryEmpty =
+    !title.trim() &&
+    !text.trim() &&
+    !audioUri &&
+    tags.length === 0 &&
+    !mood;
 
   async function onToggleRecord() {
+    setIsBusy(true);
+    setLastActionError(null);
+
     try {
       if (!recording) {
         await startRecording();
@@ -101,7 +110,10 @@ export function DreamComposer({
       setRecording(false);
     } catch (e) {
       setRecording(false);
+      setLastActionError(String(e));
       Alert.alert(copy.audioErrorTitle, String(e));
+    } finally {
+      setIsBusy(false);
     }
   }
 
@@ -142,50 +154,65 @@ export function DreamComposer({
   }
 
   function onSave() {
-    const cleanTitle = title.trim();
-    const cleanText = text.trim();
-    const cleanMedications = medications.trim();
-    const cleanImportantEvents = importantEvents.trim();
-    const cleanHealthNotes = healthNotes.trim();
+    setIsBusy(true);
+    setLastActionError(null);
 
-    const sleepContext: SleepContext = {
-      stressLevel,
-      alcoholTaken,
-      caffeineLate,
-      medications: cleanMedications || undefined,
-      importantEvents: cleanImportantEvents || undefined,
-      healthNotes: cleanHealthNotes || undefined,
-    };
+    try {
+      const cleanTitle = title.trim();
+      const cleanText = text.trim();
+      const cleanSleepDate = sleepDate.trim();
+      const cleanMedications = medications.trim();
+      const cleanImportantEvents = importantEvents.trim();
+      const cleanHealthNotes = healthNotes.trim();
 
-    if (!cleanText && !audioUri && !cleanTitle) {
-      Alert.alert(copy.saveErrorTitle, copy.saveErrorDescription);
-      return;
+      const sleepContext: SleepContext = {
+        stressLevel,
+        alcoholTaken,
+        caffeineLate,
+        medications: cleanMedications || undefined,
+        importantEvents: cleanImportantEvents || undefined,
+        healthNotes: cleanHealthNotes || undefined,
+      };
+
+      if (!cleanText && !audioUri && !cleanTitle) {
+        setLastActionError(copy.saveErrorDescription);
+        Alert.alert(copy.saveErrorTitle, copy.saveErrorDescription);
+        return;
+      }
+
+      if (cleanSleepDate && !isValidSleepDate(cleanSleepDate)) {
+        setLastActionError(copy.sleepDateInvalidDescription);
+        Alert.alert(copy.sleepDateInvalidTitle, copy.sleepDateInvalidDescription);
+        return;
+      }
+
+      const dream: Dream = {
+        id: initialDream?.id ?? createDreamId(),
+        createdAt: initialDream?.createdAt ?? Date.now(),
+        archivedAt: initialDream?.archivedAt,
+        sleepDate: cleanSleepDate || getTodayDate(),
+        title: cleanTitle || undefined,
+        text: cleanText || undefined,
+        audioUri,
+        tags: normalizeTags(tags),
+        mood,
+        sleepContext: hasSleepContextValues(sleepContext) ? sleepContext : undefined,
+      };
+
+      saveDream(dream);
+
+      if (!isEdit) {
+        resetForm();
+      }
+
+      Alert.alert(
+        isEdit ? copy.updateSuccessTitle : copy.saveSuccessTitle,
+        isEdit ? copy.updateSuccessDescription : copy.saveSuccessDescription,
+      );
+      onSaved?.(dream);
+    } finally {
+      setIsBusy(false);
     }
-
-    const dream: Dream = {
-      id: initialDream?.id ?? createDreamId(),
-      createdAt: initialDream?.createdAt ?? Date.now(),
-      archivedAt: initialDream?.archivedAt,
-      sleepDate: sleepDate.trim() || getTodayDate(),
-      title: cleanTitle || undefined,
-      text: cleanText || undefined,
-      audioUri,
-      tags,
-      mood,
-      sleepContext: hasSleepContextValues(sleepContext) ? sleepContext : undefined,
-    };
-
-    saveDream(dream);
-
-    if (!isEdit) {
-      resetForm();
-    }
-
-    Alert.alert(
-      isEdit ? copy.updateSuccessTitle : copy.saveSuccessTitle,
-      isEdit ? copy.updateSuccessDescription : copy.saveSuccessDescription,
-    );
-    onSaved?.(dream);
   }
 
   return (
@@ -221,6 +248,32 @@ export function DreamComposer({
           </View>
         </View>
       </Card>
+
+      {isBusy ? (
+        <ScreenStateCard
+          variant="loading"
+          title={copy.recordLoadingTitle}
+          subtitle={copy.recordLoadingDescription}
+        />
+      ) : null}
+
+      {!isBusy && lastActionError ? (
+        <ScreenStateCard
+          variant="error"
+          title={copy.recordErrorTitle}
+          subtitle={lastActionError}
+          actionLabel={copy.clearErrorAction}
+          onAction={() => setLastActionError(null)}
+        />
+      ) : null}
+
+      {!isBusy && !lastActionError && isEntryEmpty ? (
+        <ScreenStateCard
+          variant="empty"
+          title={copy.recordEmptyTitle}
+          subtitle={copy.recordEmptyDescription}
+        />
+      ) : null}
 
       <Card style={baseStyles.card}>
         <SectionHeader

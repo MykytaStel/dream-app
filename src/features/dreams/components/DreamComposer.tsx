@@ -244,19 +244,19 @@ export function DreamComposer({
         healthNotes: cleanHealthNotes || undefined,
       };
 
-      const validationError = validateDreamForSave({
+      const saveValidationError = validateDreamForSave({
         text: cleanText,
         audioUri,
         sleepDate: cleanSleepDate,
       });
 
-      if (validationError === DREAM_SAVE_VALIDATION.missingContent) {
+      if (saveValidationError === DREAM_SAVE_VALIDATION.missingContent) {
         setLastActionError(copy.saveErrorDescription);
         Alert.alert(copy.saveErrorTitle, copy.saveErrorDescription);
         return;
       }
 
-      if (validationError === DREAM_SAVE_VALIDATION.invalidSleepDate) {
+      if (saveValidationError === DREAM_SAVE_VALIDATION.invalidSleepDate) {
         setLastActionError(copy.sleepDateInvalidDescription);
         Alert.alert(copy.sleepDateInvalidTitle, copy.sleepDateInvalidDescription);
         return;

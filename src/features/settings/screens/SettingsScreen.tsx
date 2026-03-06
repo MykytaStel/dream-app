@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
+import { InfoRow } from '../../../components/ui/InfoRow';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
@@ -222,6 +223,18 @@ export default function SettingsScreen() {
             );
           })}
         </View>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.title}>{copy.privacyTitle}</Text>
+        <Text style={styles.description}>{copy.privacyDescription}</Text>
+        <View style={styles.privacyRows}>
+          <InfoRow label={copy.privacyStorageLabel} value={copy.privacyStorageValue} />
+          <InfoRow label={copy.privacySyncLabel} value={copy.privacySyncValue} />
+          <InfoRow label={copy.privacyAccountLabel} value={copy.privacyAccountValue} />
+          <InfoRow label={copy.privacyReminderLabel} value={copy.privacyReminderValue} />
+        </View>
+        <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
       </Card>
 
       <Card style={styles.sectionCard}>

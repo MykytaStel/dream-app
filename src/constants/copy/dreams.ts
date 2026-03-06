@@ -76,6 +76,9 @@ const DREAM_COPY_EN = {
   recordEmptyTitle: 'Start with a quick capture',
   recordEmptyDescription:
     'Add a few written details or attach a voice note. Title, mood, and tags can come later.',
+  recordDraftRestoredTitle: 'Draft restored',
+  recordDraftRestoredDescription:
+    'Your unfinished capture is still here. Keep writing or save it when ready.',
   recordLoadingTitle: 'Working on it',
   recordLoadingDescription: 'Please wait while the action is completing.',
   recordErrorTitle: 'Action failed',
@@ -213,6 +216,9 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   recordEmptyTitle: 'Почни з короткого запису',
   recordEmptyDescription:
     'Додай трохи тексту або прикріпи голосову нотатку. Назву, настрій і теги можна додати пізніше.',
+  recordDraftRestoredTitle: 'Чернетку відновлено',
+  recordDraftRestoredDescription:
+    'Незавершений запис збережено локально. Продовжуй редагування або збережи, коли будеш готовий.',
   recordLoadingTitle: 'Виконується дія',
   recordLoadingDescription: 'Зачекай, поки операція завершиться.',
   recordErrorTitle: 'Дія не виконалась',

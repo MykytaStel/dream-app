@@ -40,6 +40,7 @@ import {
   hasActiveTimelineRefinements,
   isDreamArchived,
   type HomeSortOrder,
+  type HomeTranscriptFilter,
   type HomeTimelineFilters,
 } from '../model/homeTimeline';
 import { archiveDream, deleteDream, listDreams, unarchiveDream } from '../repository/dreamsRepository';
@@ -56,9 +57,16 @@ function formatPreview(dream: Dream, copy: DreamCopy) {
 
   const transcript = dream.transcript?.trim();
   if (transcript) {
-    return transcript.length > DREAM_PREVIEW_MAX_LENGTH
-      ? `${transcript.slice(0, DREAM_PREVIEW_MAX_LENGTH - 3)}...`
-      : transcript;
+    const prefix =
+      dream.transcriptSource === 'edited'
+        ? `${copy.editedTranscriptPreviewPrefix}: `
+        : `${copy.transcriptPreviewPrefix}: `;
+    const availableLength = Math.max(12, DREAM_PREVIEW_MAX_LENGTH - prefix.length);
+    const clippedTranscript =
+      transcript.length > availableLength
+        ? `${transcript.slice(0, availableLength - 3)}...`
+        : transcript;
+    return `${prefix}${clippedTranscript}`;
   }
 
   if (dream.audioUri) {
@@ -156,6 +164,15 @@ export default function HomeScreen() {
       { key: 'text', label: copy.homeTypeFilterText },
       { key: 'audio', label: copy.homeTypeFilterAudio },
       { key: 'mixed', label: copy.homeTypeFilterMixed },
+    ],
+    [copy],
+  );
+  const transcriptFilters = React.useMemo<Array<{ key: HomeTranscriptFilter; label: string }>>(
+    () => [
+      { key: 'all', label: copy.homeTranscriptFilterAll },
+      { key: 'with-transcript', label: copy.homeTranscriptFilterWithTranscript },
+      { key: 'audio-only', label: copy.homeTranscriptFilterAudioOnly },
+      { key: 'edited-transcript', label: copy.homeTranscriptFilterEdited },
     ],
     [copy],
   );
@@ -588,6 +605,14 @@ export default function HomeScreen() {
                 label={typeFilters.find(filter => filter.key === timelineFilters.entryType)?.label ?? timelineFilters.entryType}
               />
             ) : null}
+            {timelineFilters.transcript !== 'all' ? (
+              <TagChip
+                label={
+                  transcriptFilters.find(filter => filter.key === timelineFilters.transcript)?.label ??
+                  timelineFilters.transcript
+                }
+              />
+            ) : null}
             {timelineFilters.tags.map(tag => <TagChip key={tag} label={tag} />)}
             {timelineFilters.dateRange !== 'all' ? (
               <TagChip
@@ -672,6 +697,39 @@ export default function HomeScreen() {
                         updateTimelineFilters(current => ({
                           ...current,
                           entryType: filter.key,
+                        }))
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.filterButtonLabel,
+                          active ? styles.filterButtonLabelActive : null,
+                        ]}
+                      >
+                        {filter.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.filterGroup}>
+              <Text style={styles.filterGroupLabel}>{copy.homeTranscriptFilterLabel}</Text>
+              <View style={styles.filterRow}>
+                {transcriptFilters.map(filter => {
+                  const active = timelineFilters.transcript === filter.key;
+                  return (
+                    <Pressable
+                      key={filter.key}
+                      style={[
+                        styles.filterButton,
+                        active ? styles.filterButtonActive : null,
+                      ]}
+                      onPress={() =>
+                        updateTimelineFilters(current => ({
+                          ...current,
+                          transcript: filter.key,
                         }))
                       }
                     >
@@ -898,6 +956,9 @@ export default function HomeScreen() {
                       {archived ? <TagChip label={copy.archivedTag} /> : null}
                       {dream.audioUri ? <TagChip label={copy.audioTag} /> : null}
                       {dream.transcript ? <TagChip label={copy.transcriptTag} /> : null}
+                      {dream.transcriptSource === 'edited' ? (
+                        <TagChip label={copy.editedTranscriptTag} />
+                      ) : null}
                       {dream.tags.map(tag => <TagChip key={tag} label={tag} />)}
                     </View>
                   </View>

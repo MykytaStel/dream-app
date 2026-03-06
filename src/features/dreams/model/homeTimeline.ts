@@ -3,6 +3,11 @@ import { resolveDreamSleepDate } from './dreamRules';
 
 export type HomeArchiveFilter = 'all' | 'active' | 'archived';
 export type HomeEntryTypeFilter = 'all' | 'text' | 'audio' | 'mixed';
+export type HomeTranscriptFilter =
+  | 'all'
+  | 'with-transcript'
+  | 'audio-only'
+  | 'edited-transcript';
 export type HomeSortOrder = 'newest' | 'oldest';
 export type HomeDateRangeFilter = 'all' | '7d' | '30d' | '90d';
 
@@ -12,6 +17,7 @@ export type HomeTimelineFilters = {
   mood: 'all' | Mood;
   tags: string[];
   entryType: HomeEntryTypeFilter;
+  transcript: HomeTranscriptFilter;
   dateRange: HomeDateRangeFilter;
   sortOrder: HomeSortOrder;
 };
@@ -22,6 +28,7 @@ export const DEFAULT_HOME_TIMELINE_FILTERS: HomeTimelineFilters = {
   mood: 'all',
   tags: [],
   entryType: 'all',
+  transcript: 'all',
   dateRange: 'all',
   sortOrder: 'newest',
 };
@@ -82,6 +89,60 @@ export function matchesDreamSearch(dream: Dream, query: string) {
   return searchableParts.some(part => part?.toLowerCase().includes(normalizedQuery));
 }
 
+function countQueryMatches(value: string | undefined, query: string) {
+  const haystack = value?.trim().toLowerCase();
+  if (!haystack || !query) {
+    return 0;
+  }
+
+  let matches = 0;
+  let index = haystack.indexOf(query);
+
+  while (index !== -1) {
+    matches += 1;
+    index = haystack.indexOf(query, index + query.length);
+  }
+
+  return matches;
+}
+
+export function getDreamSearchScore(dream: Dream, query: string) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return 0;
+  }
+
+  return (
+    countQueryMatches(dream.title, normalizedQuery) * 6 +
+    countQueryMatches(dream.text, normalizedQuery) * 5 +
+    countQueryMatches(dream.transcript, normalizedQuery) * 4 +
+    countQueryMatches(dream.sleepContext?.importantEvents, normalizedQuery) * 3 +
+    countQueryMatches(dream.sleepContext?.medications, normalizedQuery) * 2 +
+    countQueryMatches(dream.sleepContext?.healthNotes, normalizedQuery) * 2 +
+    dream.tags.reduce((score, tag) => score + countQueryMatches(tag, normalizedQuery) * 4, 0)
+  );
+}
+
+export function matchesDreamTranscriptFilter(dream: Dream, filter: HomeTranscriptFilter) {
+  const hasAudio = Boolean(dream.audioUri?.trim());
+  const hasTranscript = Boolean(dream.transcript?.trim());
+  const hasText = Boolean(dream.text?.trim());
+
+  if (filter === 'all') {
+    return true;
+  }
+
+  if (filter === 'with-transcript') {
+    return hasTranscript;
+  }
+
+  if (filter === 'audio-only') {
+    return hasAudio && !hasTranscript && !hasText;
+  }
+
+  return hasTranscript && dream.transcriptSource === 'edited';
+}
+
 function compareDreamsNewestFirst(a: Dream, b: Dream) {
   const dateCompare = resolveDreamSleepDate(b.sleepDate, b.createdAt).localeCompare(
     resolveDreamSleepDate(a.sleepDate, a.createdAt),
@@ -135,6 +196,10 @@ export function applyHomeTimelineFilters(
       return false;
     }
 
+    if (!matchesDreamTranscriptFilter(dream, filters.transcript)) {
+      return false;
+    }
+
     if (dateRangeCutoff) {
       const dreamDate = resolveDreamSleepDate(dream.sleepDate, dream.createdAt);
       if (dreamDate < dateRangeCutoff) {
@@ -149,7 +214,21 @@ export function applyHomeTimelineFilters(
     return true;
   });
 
-  return sortDreamsForTimeline(filtered, filters.sortOrder);
+  const sorted = sortDreamsForTimeline(filtered, filters.sortOrder);
+  const normalizedQuery = filters.searchQuery.trim().toLowerCase();
+
+  if (!normalizedQuery) {
+    return sorted;
+  }
+
+  return [...sorted].sort((a, b) => {
+    const scoreDiff = getDreamSearchScore(b, normalizedQuery) - getDreamSearchScore(a, normalizedQuery);
+    if (scoreDiff !== 0) {
+      return scoreDiff;
+    }
+
+    return 0;
+  });
 }
 
 export function hasActiveTimelineRefinements(filters: HomeTimelineFilters) {
@@ -158,6 +237,7 @@ export function hasActiveTimelineRefinements(filters: HomeTimelineFilters) {
     filters.mood !== 'all' ||
     filters.tags.length > 0 ||
     filters.entryType !== 'all' ||
+    filters.transcript !== 'all' ||
     filters.dateRange !== 'all' ||
     filters.sortOrder !== DEFAULT_HOME_TIMELINE_FILTERS.sortOrder
   );

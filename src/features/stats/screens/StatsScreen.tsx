@@ -24,6 +24,11 @@ import {
   getSleepContextStats,
 } from '../../dreams/model/dreamAnalytics';
 import {
+  getRecurringReflectionSignals,
+  getTranscriptArchiveStats,
+  type DreamReflectionSignal,
+} from '../model/dreamReflection';
+import {
   getDreamAchievements,
   getDreamAchievementSummary,
   type DreamAchievementId,
@@ -31,26 +36,20 @@ import {
 import { createStatsScreenStyles } from './StatsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 
-function getRecurringTags(tags: string[]) {
-  const entries = Object.entries(
-    tags.reduce<Record<string, number>>((acc, tag) => {
-      acc[tag] = (acc[tag] ?? 0) + 1;
-      return acc;
-    }, {}),
-  );
-
-  return entries
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5)
-    .map(([tag]) => tag);
-}
-
 function formatCountWithShare(count: number, total: number) {
   if (total <= 0) {
     return '0 (0%)';
   }
 
   return `${count} (${Math.round((count / total) * 100)}%)`;
+}
+
+function formatReflectionSource(signal: DreamReflectionSignal, copy: ReturnType<typeof getStatsCopy>) {
+  if (signal.source === 'mixed') {
+    return copy.reflectionSourceMixed;
+  }
+
+  return signal.source === 'tag' ? copy.reflectionSourceTag : copy.reflectionSourceTranscript;
 }
 
 function formatNegativeRate(metric: NegativeMoodRate, noData: string, baselineRate?: number) {
@@ -117,7 +116,12 @@ export default function StatsScreen() {
   const lastSevenDays = getEntriesLastSevenDays(dreams);
   const averageWords = getAverageWords(dreams);
   const sleepContextStats = getSleepContextStats(dreams);
-  const recurringTags = getRecurringTags(dreams.flatMap(dream => dream.tags));
+  const transcriptArchiveStats = getTranscriptArchiveStats(dreams);
+  const recurringThemes = getRecurringReflectionSignals(dreams, { limit: 6 });
+  const recurringSymbols = getRecurringReflectionSignals(dreams, {
+    limit: 6,
+    transcriptOnly: true,
+  });
   const achievements = getDreamAchievements(dreams);
   const achievementSummary = getDreamAchievementSummary(achievements);
   const weeklyGoalTarget = 3;
@@ -295,6 +299,9 @@ export default function StatsScreen() {
         <Text style={styles.sectionTitle}>{copy.entryStructure}</Text>
         <InfoRow label={copy.voiceNotes} value={voiceNotes} />
         <InfoRow label={copy.transcribedDreams} value={transcribedDreams} />
+        <InfoRow label={copy.generatedTranscripts} value={transcriptArchiveStats.generatedTranscript} />
+        <InfoRow label={copy.editedTranscripts} value={transcriptArchiveStats.editedTranscript} />
+        <InfoRow label={copy.audioOnlyDreams} value={transcriptArchiveStats.audioOnly} />
         <InfoRow label={copy.taggedDreams} value={taggedEntries} />
       </Card>
 
@@ -428,12 +435,41 @@ export default function StatsScreen() {
       </Card>
 
       <Card style={styles.sectionCard}>
+        <SectionHeader
+          title={copy.localReflectionTitle}
+          subtitle={copy.localReflectionDescription}
+        />
+
         <Text style={styles.sectionTitle}>{copy.recurringThemes}</Text>
-        <View style={styles.tagsWrap}>
-          {recurringTags.length ? (
-            recurringTags.map(tag => <TagChip key={tag} label={tag} />)
+        <View style={styles.reflectionList}>
+          {recurringThemes.length ? (
+            recurringThemes.map(signal => (
+              <View key={`theme-${signal.label}`} style={styles.reflectionItem}>
+                <View style={styles.reflectionHeader}>
+                  <Text style={styles.reflectionLabel}>{signal.label}</Text>
+                  <TagChip label={formatReflectionSource(signal, copy)} />
+                </View>
+                <Text style={styles.reflectionMeta}>
+                  {signal.dreamCount} {copy.reflectionThemeCountLabel}
+                </Text>
+              </View>
+            ))
           ) : (
             <Text style={styles.monthLabel}>{copy.recurringThemesEmpty}</Text>
+          )}
+        </View>
+
+        <Text style={styles.sectionTitle}>{copy.recurringSymbols}</Text>
+        <View style={styles.tagsWrap}>
+          {recurringSymbols.length ? (
+            recurringSymbols.map(signal => (
+              <TagChip
+                key={`symbol-${signal.label}`}
+                label={`${signal.label} · ${signal.dreamCount}`}
+              />
+            ))
+          ) : (
+            <Text style={styles.monthLabel}>{copy.recurringSymbolsEmpty}</Text>
           )}
         </View>
       </Card>

@@ -151,6 +151,32 @@ export function createStatsScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 8,
     },
+    reflectionList: {
+      gap: 10,
+    },
+    reflectionItem: {
+      gap: 8,
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadii.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    reflectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12,
+    },
+    reflectionLabel: {
+      flex: 1,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+    reflectionMeta: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+    },
     mutedText: {
       color: theme.colors.textDim,
     },

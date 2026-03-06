@@ -8,6 +8,7 @@ jest.mock('react-native-fs', () => ({
 import RNFS from 'react-native-fs';
 import {
   APP_LOCALE_KEY,
+  DREAM_ANALYSIS_SETTINGS_KEY,
   DREAMS_STORAGE_KEY,
   DREAM_DRAFT_STORAGE_KEY,
   REMINDER_SETTINGS_KEY,
@@ -30,7 +31,7 @@ describe('data export service', () => {
     const payload = buildDreamExportSnapshot({
       exportedAt: '2026-03-06T08:00:00.000Z',
       appVersion: 'v0.0.5',
-      storageSchemaVersion: 4,
+      storageSchemaVersion: 5,
       locale: 'uk',
       platform: 'ios',
       dreams: [
@@ -41,6 +42,13 @@ describe('data export service', () => {
           tags: [],
           transcript: 'Edited transcript',
           transcriptSource: 'edited',
+          analysis: {
+            provider: 'manual',
+            status: 'ready',
+            summary: 'Pattern around unfinished travel',
+            themes: ['travel', 'delay'],
+            generatedAt: 2,
+          },
         },
       ],
       draft: {
@@ -57,6 +65,11 @@ describe('data export service', () => {
         hour: 7,
         minute: 30,
       },
+      analysisSettings: {
+        enabled: true,
+        provider: 'manual',
+        allowNetwork: false,
+      },
     });
 
     expect(payload).toEqual({
@@ -65,13 +78,14 @@ describe('data export service', () => {
       appVersion: 'v0.0.5',
       platform: 'ios',
       locale: 'uk',
-      storageSchemaVersion: 4,
+      storageSchemaVersion: 5,
       summary: {
         dreamCount: 1,
         archivedDreamCount: 0,
         audioDreamCount: 0,
         transcribedDreamCount: 1,
         editedTranscriptCount: 1,
+        analyzedDreamCount: 1,
         draftIncluded: true,
       },
       dreams: [
@@ -82,6 +96,13 @@ describe('data export service', () => {
           tags: [],
           transcript: 'Edited transcript',
           transcriptSource: 'edited',
+          analysis: {
+            provider: 'manual',
+            status: 'ready',
+            summary: 'Pattern around unfinished travel',
+            themes: ['travel', 'delay'],
+            generatedAt: 2,
+          },
         },
       ],
       draft: {
@@ -97,6 +118,11 @@ describe('data export service', () => {
         enabled: true,
         hour: 7,
         minute: 30,
+      },
+      analysisSettings: {
+        enabled: true,
+        provider: 'manual',
+        allowNetwork: false,
       },
     });
   });
@@ -119,6 +145,13 @@ describe('data export service', () => {
           tags: ['ocean'],
           audioUri: 'file:///dream.m4a',
           transcript: 'Blue hallway and water',
+          analysis: {
+            provider: 'manual',
+            status: 'ready',
+            summary: 'Recurring water corridor',
+            themes: ['water', 'corridor'],
+            generatedAt: 3,
+          },
         },
       ]),
     );
@@ -128,6 +161,14 @@ describe('data export service', () => {
         enabled: true,
         hour: 8,
         minute: 45,
+      }),
+    );
+    kv.set(
+      DREAM_ANALYSIS_SETTINGS_KEY,
+      JSON.stringify({
+        enabled: true,
+        provider: 'openai',
+        allowNetwork: false,
       }),
     );
     kv.set(
@@ -157,6 +198,7 @@ describe('data export service', () => {
       audioDreamCount: 1,
       transcribedDreamCount: 1,
       editedTranscriptCount: 0,
+      analyzedDreamCount: 1,
       draftIncluded: true,
     });
     expect(result.payload.dreams).toEqual([
@@ -173,6 +215,13 @@ describe('data export service', () => {
         transcriptStatus: 'ready',
         transcriptSource: 'generated',
         transcriptUpdatedAt: undefined,
+        analysis: {
+          provider: 'manual',
+          status: 'ready',
+          summary: 'Recurring water corridor',
+          themes: ['water', 'corridor'],
+          generatedAt: 3,
+        },
       },
     ]);
     expect(result.payload.draft).toEqual({
@@ -188,6 +237,11 @@ describe('data export service', () => {
       enabled: true,
       hour: 8,
       minute: 45,
+    });
+    expect(result.payload.analysisSettings).toEqual({
+      enabled: true,
+      provider: 'openai',
+      allowNetwork: false,
     });
   });
 });

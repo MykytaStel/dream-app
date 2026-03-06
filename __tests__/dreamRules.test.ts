@@ -55,6 +55,47 @@ describe('dreamRules', () => {
     });
   });
 
+  test('sanitizes analysis payload and removes unusable analysis states', () => {
+    const createdAt = new Date('2026-03-06T12:00:00.000Z').getTime();
+    const sanitized = sanitizeDream({
+      id: 'dream-analysis',
+      createdAt,
+      sleepDate: '2026-03-06',
+      text: 'Dream body',
+      tags: [],
+      analysis: {
+        provider: 'openai',
+        status: 'ready',
+        summary: '  A recurring fear of missed exits  ',
+        themes: ['  missed exits ', 'Missed Exits', ' commuting '],
+        generatedAt: createdAt + 1000,
+      },
+    });
+
+    expect(sanitized.analysis).toEqual({
+      provider: 'openai',
+      status: 'ready',
+      summary: 'A recurring fear of missed exits',
+      themes: ['missed exits', 'commuting'],
+      generatedAt: createdAt + 1000,
+      errorMessage: undefined,
+    });
+
+    expect(
+      sanitizeDream({
+        id: 'dream-analysis-empty',
+        createdAt,
+        sleepDate: '2026-03-06',
+        text: 'Dream body',
+        tags: [],
+        analysis: {
+          provider: 'manual',
+          status: 'ready',
+        },
+      }).analysis,
+    ).toBeUndefined();
+  });
+
   test('accepts text-only, audio-only, and mixed dream captures', () => {
     expect(hasDreamContent({ text: '  remembered hallway  ', audioUri: undefined })).toBe(true);
     expect(hasDreamContent({ text: '   ', audioUri: 'file:///dream.m4a' })).toBe(true);

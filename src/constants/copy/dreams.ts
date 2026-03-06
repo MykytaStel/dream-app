@@ -123,6 +123,21 @@ const DREAM_COPY_EN = {
   detailGeneratedTranscriptClearTitle: 'Clear transcript?',
   detailGeneratedTranscriptClearDescription:
     'This removes the saved transcript but keeps the original voice note on device.',
+  detailAnalysisTitle: 'Dream analysis',
+  detailAnalysisEmpty:
+    'No analysis is saved for this dream yet. This release only prepares the slot for future summaries and themes.',
+  detailAnalysisDisabled:
+    'The analysis layer is disabled in Settings, so no summary or themes are attached yet.',
+  detailAnalysisSummaryLabel: 'Summary',
+  detailAnalysisThemesLabel: 'Themes',
+  detailAnalysisProviderLabel: 'Provider',
+  detailAnalysisUpdatedLabel: 'Updated',
+  detailAnalysisStatusLabel: 'Status',
+  detailAnalysisStatusReady: 'Ready',
+  detailAnalysisStatusError: 'Error',
+  detailAnalysisStatusIdle: 'Not generated',
+  detailAnalysisProviderManual: 'Manual placeholder',
+  detailAnalysisProviderOpenAi: 'OpenAI (planned)',
   detailTranscribeAudio: 'Transcribe audio',
   detailTranscribeRetry: 'Retry transcription',
   detailTranscribePreparingModel: 'Preparing offline model',
@@ -333,6 +348,21 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailGeneratedTranscriptClearTitle: 'Очистити транскрипт?',
   detailGeneratedTranscriptClearDescription:
     'Це видалить збережений транскрипт, але залишить оригінальну голосову нотатку на пристрої.',
+  detailAnalysisTitle: 'Аналіз сну',
+  detailAnalysisEmpty:
+    'Для цього сну ще не збережено аналіз. Цей реліз лише готує слот для майбутніх summary і themes.',
+  detailAnalysisDisabled:
+    'Шар аналізу вимкнений у Settings, тому summary і themes поки не прикріплюються.',
+  detailAnalysisSummaryLabel: 'Summary',
+  detailAnalysisThemesLabel: 'Themes',
+  detailAnalysisProviderLabel: 'Провайдер',
+  detailAnalysisUpdatedLabel: 'Оновлено',
+  detailAnalysisStatusLabel: 'Статус',
+  detailAnalysisStatusReady: 'Готово',
+  detailAnalysisStatusError: 'Помилка',
+  detailAnalysisStatusIdle: 'Не згенеровано',
+  detailAnalysisProviderManual: 'Ручний placeholder',
+  detailAnalysisProviderOpenAi: 'OpenAI (заплановано)',
   detailTranscribeAudio: 'Транскрибувати аудіо',
   detailTranscribeRetry: 'Повторити транскрипцію',
   detailTranscribePreparingModel: 'Підготовка офлайн-моделі',

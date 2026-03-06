@@ -6,13 +6,15 @@ import { getStoredLocale } from '../../../i18n/localeStore';
 import { CURRENT_STORAGE_SCHEMA_VERSION } from '../../../services/storage/keys';
 import { Dream } from '../../dreams/model/dream';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
+import { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
+import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
 import { DreamDraft, getDreamDraft } from '../../dreams/services/dreamDraftService';
 import {
   DreamReminderSettings,
   getDreamReminderSettings,
 } from '../../reminders/services/dreamReminderService';
 
-export const DREAM_EXPORT_VERSION = 2;
+export const DREAM_EXPORT_VERSION = 3;
 const DREAM_EXPORT_DIRECTORY = 'exports';
 
 export type DreamExportV1 = {
@@ -28,11 +30,13 @@ export type DreamExportV1 = {
     audioDreamCount: number;
     transcribedDreamCount: number;
     editedTranscriptCount: number;
+    analyzedDreamCount: number;
     draftIncluded: boolean;
   };
   dreams: Dream[];
   draft: DreamDraft | null;
   reminderSettings: DreamReminderSettings;
+  analysisSettings: DreamAnalysisSettings;
 };
 
 export function buildDreamExportSnapshot(input: {
@@ -43,6 +47,7 @@ export function buildDreamExportSnapshot(input: {
   dreams: Dream[];
   draft: DreamDraft | null;
   reminderSettings: DreamReminderSettings;
+  analysisSettings: DreamAnalysisSettings;
   storageSchemaVersion?: number;
 }): DreamExportV1 {
   return {
@@ -59,11 +64,13 @@ export function buildDreamExportSnapshot(input: {
       transcribedDreamCount: input.dreams.filter(dream => Boolean(dream.transcript?.trim())).length,
       editedTranscriptCount: input.dreams.filter(dream => dream.transcriptSource === 'edited')
         .length,
+      analyzedDreamCount: input.dreams.filter(dream => dream.analysis?.status === 'ready').length,
       draftIncluded: Boolean(input.draft),
     },
     dreams: input.dreams,
     draft: input.draft,
     reminderSettings: input.reminderSettings,
+    analysisSettings: input.analysisSettings,
   };
 }
 
@@ -87,6 +94,7 @@ export async function exportDreamDataSnapshot() {
     dreams: listDreams(),
     draft: getDreamDraft(),
     reminderSettings: getDreamReminderSettings(),
+    analysisSettings: getDreamAnalysisSettings(),
   });
   const directoryPath = getExportDirectoryPath();
   const fileName = createDreamExportFileName(payload.exportedAt);

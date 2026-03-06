@@ -1,6 +1,7 @@
 import { kv } from '../../../services/storage/mmkv';
 import { DREAMS_STORAGE_KEY } from '../../../services/storage/keys';
 import { Dream, DreamTranscriptSource, DreamTranscriptStatus } from '../model/dream';
+import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
 import {
   sanitizeDream,
   sortDreamsStable,
@@ -148,6 +149,25 @@ export function clearDreamTranscript(id: string) {
       delete nextDream.transcriptStatus;
     }
 
+    return nextDream;
+  });
+}
+
+export function saveDreamAnalysis(id: string, analysis: DreamAnalysisRecord) {
+  return updateDreamById(id, dream => ({
+    ...dream,
+    analysis,
+  }));
+}
+
+export function clearDreamAnalysis(id: string) {
+  return updateDreamById(id, dream => {
+    const nextDream: Dream = {
+      ...dream,
+      analysis: undefined,
+    };
+
+    delete nextDream.analysis;
     return nextDream;
   });
 }

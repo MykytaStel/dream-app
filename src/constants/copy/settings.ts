@@ -48,9 +48,9 @@ const SETTINGS_COPY_EN = {
     'Create a versioned JSON snapshot of your local archive so the data is portable before sync exists.',
   exportIncludesLabel: 'Includes',
   exportIncludesValue:
-    'Dreams, transcript status/source metadata, draft, locale, reminder settings, and export metadata',
+    'Dreams, transcript and analysis metadata, draft, locale, reminder settings, analysis settings, and export metadata',
   exportFormatLabel: 'Format',
-  exportFormatValue: 'JSON v2',
+  exportFormatValue: 'JSON v3',
   exportLatestPathLabel: 'Latest file',
   exportFootnote:
     'Import and share sheet are not included yet. For now, export creates a local file path you can access later.',
@@ -79,9 +79,25 @@ const SETTINGS_COPY_EN = {
   transcriptionDeleteSuccessDescription:
     'The offline transcription model was removed from local storage.',
   transcriptionDeleteErrorTitle: 'Could not remove model',
+  analysisTitle: 'Future AI analysis',
+  analysisDescription:
+    'This release only prepares the provider, privacy, and storage layer for later AI summaries.',
+  analysisEnabledLabel: 'Analysis layer',
+  analysisEnabled: 'Enabled',
+  analysisDisabled: 'Disabled',
+  analysisProviderLabel: 'Provider',
+  analysisProviderManual: 'Manual placeholder',
+  analysisProviderOpenAi: 'OpenAI (planned)',
+  analysisNetworkLabel: 'Network',
+  analysisNetworkAllowed: 'Allowed',
+  analysisNetworkBlocked: 'Blocked',
+  analysisEnableButton: 'Enable analysis layer',
+  analysisDisableButton: 'Disable analysis layer',
+  analysisNetworkAllowButton: 'Allow network analysis later',
+  analysisNetworkBlockButton: 'Keep network blocked',
   architectureTitle: 'Foundation status',
   architectureDescription:
-    'Local-first data, feature-based structure, extracted styles, and an upcoming i18n layer.',
+    'Local-first data, feature-based structure, extracted styles, offline transcription, and an AI-ready analysis boundary.',
   plannedTitle: 'Planned controls',
   plannedDescription:
     'Notifications, privacy, export, AI preferences, and Health integrations should live here.',
@@ -135,9 +151,9 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Створи versioned JSON snapshot локального архіву, щоб дані були переносимими ще до появи sync.',
   exportIncludesLabel: 'Що входить',
   exportIncludesValue:
-    'Сни, metadata статусу й джерела транскрипту, чернетка, мова, нагадування і metadata експорту',
+    'Сни, metadata транскрипту й аналізу, чернетка, мова, нагадування, налаштування аналізу і metadata експорту',
   exportFormatLabel: 'Формат',
-  exportFormatValue: 'JSON v2',
+  exportFormatValue: 'JSON v3',
   exportLatestPathLabel: 'Останній файл',
   exportFootnote:
     'Імпорт і share sheet поки не додані. Наразі експорт створює локальний файл із шляхом, до якого можна повернутися.',
@@ -166,8 +182,24 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   transcriptionDeleteSuccessDescription:
     'Офлайн-модель транскрипції видалено з локального сховища.',
   transcriptionDeleteErrorTitle: 'Не вдалося видалити модель',
+  analysisTitle: 'Майбутній AI-аналіз',
+  analysisDescription:
+    'Цей реліз лише готує provider, privacy і storage шар для майбутніх AI summary.',
+  analysisEnabledLabel: 'Шар аналізу',
+  analysisEnabled: 'Увімкнений',
+  analysisDisabled: 'Вимкнений',
+  analysisProviderLabel: 'Провайдер',
+  analysisProviderManual: 'Ручний placeholder',
+  analysisProviderOpenAi: 'OpenAI (заплановано)',
+  analysisNetworkLabel: 'Мережа',
+  analysisNetworkAllowed: 'Дозволена',
+  analysisNetworkBlocked: 'Заблокована',
+  analysisEnableButton: 'Увімкнути шар аналізу',
+  analysisDisableButton: 'Вимкнути шар аналізу',
+  analysisNetworkAllowButton: 'Дозволити мережевий аналіз пізніше',
+  analysisNetworkBlockButton: 'Тримати мережу заблокованою',
   architectureDescription:
-    'Local-first дані, feature-структура, винесені стилі та базовий i18n-шар.',
+    'Local-first дані, feature-структура, винесені стилі, офлайн-транскрипція і AI-ready межа аналізу.',
   plannedTitle: 'Заплановані розділи',
   plannedDescription:
     'Сповіщення, приватність, експорт, AI-параметри та інтеграції зі Здоров’ям.',

@@ -1,8 +1,11 @@
 import { Dream, DreamTranscriptSource, DreamTranscriptStatus, SleepContext } from './dream';
+import { DreamAnalysisProvider, DreamAnalysisStatus } from '../../analysis/model/dreamAnalysis';
 
 const SLEEP_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = ['idle', 'processing', 'ready', 'error'];
 const TRANSCRIPT_SOURCE_VALUES: DreamTranscriptSource[] = ['generated', 'edited'];
+const ANALYSIS_PROVIDER_VALUES: DreamAnalysisProvider[] = ['manual', 'openai'];
+const ANALYSIS_STATUS_VALUES: DreamAnalysisStatus[] = ['idle', 'ready', 'error'];
 const STALE_TRANSCRIPT_PROCESSING_MS = 1000 * 60 * 15;
 export const DREAM_SAVE_VALIDATION = {
   missingContent: 'missing-content',
@@ -105,6 +108,59 @@ function normalizeTranscriptFields(input: Dream) {
   };
 }
 
+function normalizeAnalysisFields(input: Dream) {
+  const analysis = input.analysis;
+  if (!analysis) {
+    return undefined;
+  }
+
+  const provider = ANALYSIS_PROVIDER_VALUES.includes(analysis.provider)
+    ? analysis.provider
+    : undefined;
+  const status = ANALYSIS_STATUS_VALUES.includes(analysis.status) ? analysis.status : undefined;
+  const summary = normalizeOptionalText(analysis.summary);
+  const errorMessage = normalizeOptionalText(analysis.errorMessage);
+  const generatedAt =
+    typeof analysis.generatedAt === 'number' && Number.isFinite(analysis.generatedAt)
+      ? analysis.generatedAt
+      : undefined;
+  const themes = Array.isArray(analysis.themes)
+    ? Array.from(
+        new Set(
+          analysis.themes
+            .map(theme => normalizeOptionalText(theme))
+            .filter((theme): theme is string => Boolean(theme))
+            .map(theme => theme.toLowerCase()),
+        ),
+      )
+    : undefined;
+
+  if (!provider || !status) {
+    return undefined;
+  }
+
+  if (status === 'ready' && !summary && !themes?.length) {
+    return undefined;
+  }
+
+  if (status === 'error' && !errorMessage) {
+    return undefined;
+  }
+
+  if (status === 'idle' && !summary && !themes?.length && !errorMessage) {
+    return undefined;
+  }
+
+  return {
+    provider,
+    status,
+    summary,
+    themes: themes?.length ? themes : undefined,
+    generatedAt,
+    errorMessage,
+  };
+}
+
 export function normalizeTag(value: string) {
   return value
     .trim()
@@ -193,6 +249,7 @@ export function sanitizeDream(input: Dream): Dream {
     transcriptStatus: transcriptFields.transcriptStatus,
     transcriptSource: transcriptFields.transcriptSource,
     transcriptUpdatedAt: transcriptFields.transcriptUpdatedAt,
+    analysis: normalizeAnalysisFields(input),
     tags: normalizeTags(input.tags ?? []),
     sleepContext: normalizeSleepContext(input.sleepContext),
   };

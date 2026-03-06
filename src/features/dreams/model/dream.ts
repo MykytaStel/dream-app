@@ -1,3 +1,5 @@
+import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
+
 export type Mood = 'neutral' | 'positive' | 'negative';
 export type StressLevel = 0 | 1 | 2 | 3;
 export type DreamTranscriptStatus = 'idle' | 'processing' | 'ready' | 'error';
@@ -24,6 +26,7 @@ export type Dream = {
   transcriptStatus?: DreamTranscriptStatus;
   transcriptSource?: DreamTranscriptSource;
   transcriptUpdatedAt?: number;
+  analysis?: DreamAnalysisRecord;
   tags: string[];
   mood?: Mood;
   sleepContext?: SleepContext;

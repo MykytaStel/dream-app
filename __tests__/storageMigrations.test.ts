@@ -2,6 +2,7 @@ import { runStorageMigrations } from '../src/services/storage/migrations';
 import {
   APP_LOCALE_KEY,
   CURRENT_STORAGE_SCHEMA_VERSION,
+  DREAM_ANALYSIS_SETTINGS_KEY,
   DREAMS_STORAGE_KEY,
   REMINDER_SETTINGS_KEY,
   STORAGE_SCHEMA_VERSION_KEY,
@@ -160,6 +161,56 @@ describe('storage migrations', () => {
       id: 'text-edited',
       transcript: 'Manual transcript only',
       transcriptSource: 'edited',
+    });
+  });
+
+  test('migrates analysis record and analysis settings into schema v5', () => {
+    kv.set(
+      DREAMS_STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'analysis-legacy',
+          createdAt: 1710000000000,
+          sleepDate: '2026-03-05',
+          text: 'Dream body',
+          tags: [],
+          analysis: {
+            provider: 'openai',
+            status: 'ready',
+            summary: '  Repeating fear of missing the train  ',
+            themes: [' train ', 'Train', 'delay'],
+            generatedAt: 1710000005000,
+          },
+        },
+      ]),
+    );
+    kv.set(
+      DREAM_ANALYSIS_SETTINGS_KEY,
+      JSON.stringify({
+        enabled: 1,
+        provider: 'openai',
+        allowNetwork: 0,
+      }),
+    );
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 4);
+
+    runStorageMigrations();
+
+    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    expect(migrated[0]).toMatchObject({
+      id: 'analysis-legacy',
+      analysis: {
+        provider: 'openai',
+        status: 'ready',
+        summary: 'Repeating fear of missing the train',
+        themes: ['train', 'delay'],
+        generatedAt: 1710000005000,
+      },
+    });
+    expect(JSON.parse(kv.getString(DREAM_ANALYSIS_SETTINGS_KEY) ?? '{}')).toEqual({
+      enabled: true,
+      provider: 'openai',
+      allowNetwork: false,
     });
   });
 

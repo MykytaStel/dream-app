@@ -4,6 +4,7 @@ import { sanitizeDream, sortDreamsStable } from '../../features/dreams/model/dre
 import {
   APP_LOCALE_KEY,
   CURRENT_STORAGE_SCHEMA_VERSION,
+  DREAM_ANALYSIS_SETTINGS_KEY,
   DREAMS_STORAGE_KEY,
   REMINDER_SETTINGS_KEY,
   STORAGE_SCHEMA_VERSION_KEY,
@@ -129,6 +130,10 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
   }
 
   const record = entry as LegacyRecord;
+  const analysisRecord =
+    record.analysis && typeof record.analysis === 'object'
+      ? (record.analysis as LegacyRecord)
+      : undefined;
   const createdAt =
     typeof record.createdAt === 'number' && Number.isFinite(record.createdAt)
       ? record.createdAt
@@ -168,6 +173,32 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
     transcriptUpdatedAt:
       typeof record.transcriptUpdatedAt === 'number' && Number.isFinite(record.transcriptUpdatedAt)
         ? record.transcriptUpdatedAt
+        : undefined,
+    analysis: analysisRecord
+        ? {
+            provider: analysisRecord.provider === 'openai' ? 'openai' : 'manual',
+            status:
+              analysisRecord.status === 'ready'
+                ? 'ready'
+                : analysisRecord.status === 'error'
+                  ? 'error'
+                  : 'idle',
+            summary: typeof analysisRecord.summary === 'string' ? analysisRecord.summary : undefined,
+            themes: Array.isArray(analysisRecord.themes)
+              ? (analysisRecord.themes as unknown[]).filter(
+                  (theme): theme is string => typeof theme === 'string',
+                )
+              : undefined,
+            generatedAt:
+              typeof analysisRecord.generatedAt === 'number' &&
+              Number.isFinite(analysisRecord.generatedAt)
+                ? analysisRecord.generatedAt
+                : undefined,
+            errorMessage:
+              typeof analysisRecord.errorMessage === 'string'
+                ? analysisRecord.errorMessage
+                : undefined,
+          }
         : undefined,
     tags: Array.isArray(record.tags)
       ? record.tags.filter((tag): tag is string => typeof tag === 'string')
@@ -293,6 +324,51 @@ function migrateDreamsToV4() {
   }
 }
 
+function migrateDreamsToV5() {
+  const raw = kv.getString(DREAMS_STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+      return;
+    }
+
+    const migrated = parsed
+      .map(coerceLegacyDream)
+      .filter((dream): dream is Dream => Boolean(dream))
+      .map(sanitizeDream);
+
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
+  } catch {
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+  }
+}
+
+function migrateAnalysisSettingsToV5() {
+  const raw = kv.getString(DREAM_ANALYSIS_SETTINGS_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as LegacyRecord;
+    kv.set(
+      DREAM_ANALYSIS_SETTINGS_KEY,
+      JSON.stringify({
+        enabled: Boolean(parsed.enabled),
+        provider: parsed.provider === 'openai' ? 'openai' : 'manual',
+        allowNetwork: Boolean(parsed.allowNetwork),
+      }),
+    );
+  } catch {
+    kv.remove(DREAM_ANALYSIS_SETTINGS_KEY);
+  }
+}
+
 export function runStorageMigrations() {
   const currentVersion = kv.getNumber(STORAGE_SCHEMA_VERSION_KEY) ?? 1;
   if (currentVersion >= CURRENT_STORAGE_SCHEMA_VERSION) {
@@ -314,6 +390,12 @@ export function runStorageMigrations() {
   if (nextVersion < 4) {
     migrateDreamsToV4();
     nextVersion = 4;
+  }
+
+  if (nextVersion < 5) {
+    migrateDreamsToV5();
+    migrateAnalysisSettingsToV5();
+    nextVersion = 5;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

@@ -19,6 +19,8 @@ import {
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
+import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
+import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
 import {
@@ -97,6 +99,9 @@ export default function DreamDetailScreen() {
   const [isTranscribingAudio, setIsTranscribingAudio] = React.useState(false);
   const [isEditingTranscript, setIsEditingTranscript] = React.useState(false);
   const [transcriptDraft, setTranscriptDraft] = React.useState('');
+  const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
+    getDreamAnalysisSettings(),
+  );
   const [transcriptionProgress, setTranscriptionProgress] =
     React.useState<DreamTranscriptionProgress | null>(null);
 
@@ -104,6 +109,7 @@ export default function DreamDetailScreen() {
     React.useCallback(() => {
       const nextDream = getDream(route.params.dreamId);
       setDream(nextDream);
+      setAnalysisSettings(getDreamAnalysisSettings());
       setTranscriptDraft(nextDream?.transcript ?? '');
       setIsPlayingAudio(false);
       setIsTranscribingAudio(false);
@@ -143,6 +149,16 @@ export default function DreamDetailScreen() {
     dream.transcriptSource === 'edited'
       ? copy.detailGeneratedTranscriptSourceEdited
       : copy.detailGeneratedTranscriptSourceGenerated;
+  const analysisProviderLabel =
+    dream.analysis?.provider === 'openai'
+      ? copy.detailAnalysisProviderOpenAi
+      : copy.detailAnalysisProviderManual;
+  const analysisStatusLabel =
+    dream.analysis?.status === 'ready'
+      ? copy.detailAnalysisStatusReady
+      : dream.analysis?.status === 'error'
+        ? copy.detailAnalysisStatusError
+        : copy.detailAnalysisStatusIdle;
 
   function formatTranscriptionProgress(progress: DreamTranscriptionProgress | null) {
     if (!progress) {
@@ -492,6 +508,37 @@ export default function DreamDetailScreen() {
             <Text style={styles.mutedText}>{copy.detailTagsEmpty}</Text>
           )}
         </View>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>{copy.detailAnalysisTitle}</Text>
+        {dream.analysis?.summary ? (
+          <Text style={styles.bodyText}>{dream.analysis.summary}</Text>
+        ) : (
+          <Text style={styles.mutedText}>
+            {analysisSettings.enabled ? copy.detailAnalysisEmpty : copy.detailAnalysisDisabled}
+          </Text>
+        )}
+
+        <View style={styles.transcriptMetaCard}>
+          <InfoRow label={copy.detailAnalysisStatusLabel} value={analysisStatusLabel} />
+          <InfoRow label={copy.detailAnalysisProviderLabel} value={analysisProviderLabel} />
+          {dream.analysis?.generatedAt ? (
+            <InfoRow
+              label={copy.detailAnalysisUpdatedLabel}
+              value={formatMetaTimestamp(dream.analysis.generatedAt)}
+            />
+          ) : null}
+        </View>
+
+        {dream.analysis?.themes?.length ? (
+          <>
+            <Text style={styles.sectionTitle}>{copy.detailAnalysisThemesLabel}</Text>
+            <View style={styles.tagsRow}>
+              {dream.analysis.themes.map(theme => <TagChip key={theme} label={theme} />)}
+            </View>
+          </>
+        ) : null}
       </Card>
 
       <Card style={styles.sectionCard}>

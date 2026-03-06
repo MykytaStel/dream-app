@@ -13,6 +13,11 @@ import { APP_VERSION_LABEL } from '../../../config/app';
 import { Theme } from '../../../theme/theme';
 import { exportDreamDataSnapshot } from '../services/dataExportService';
 import {
+  getDreamAnalysisSettings,
+  saveDreamAnalysisSettings,
+} from '../../analysis/services/dreamAnalysisSettingsService';
+import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
+import {
   ensureDreamTranscriptionModelInstalled,
   deleteDreamTranscriptionModel,
   getDreamTranscriptionModelStatus,
@@ -45,6 +50,9 @@ export default function SettingsScreen() {
   const [isDownloadingTranscriptionModel, setIsDownloadingTranscriptionModel] =
     React.useState(false);
   const [isDeletingTranscriptionModel, setIsDeletingTranscriptionModel] = React.useState(false);
+  const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
+    getDreamAnalysisSettings(),
+  );
   const [lastExportPath, setLastExportPath] = React.useState<string | null>(null);
   const [transcriptionModelStatus, setTranscriptionModelStatus] =
     React.useState<DreamTranscriptionModelStatus | null>(null);
@@ -79,6 +87,7 @@ export default function SettingsScreen() {
 
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
+    setAnalysisSettings(getDreamAnalysisSettings());
     setPermissionGranted(await getDreamReminderPermissionGranted());
     setTranscriptionModelStatus(await getDreamTranscriptionModelStatus());
   }, []);
@@ -154,6 +163,33 @@ export default function SettingsScreen() {
     } catch (error) {
       Alert.alert(copy.reminderSaveErrorTitle, String(error));
     }
+  }
+
+  function onToggleAnalysisEnabled() {
+    setAnalysisSettings(current =>
+      saveDreamAnalysisSettings({
+        ...current,
+        enabled: !current.enabled,
+      }),
+    );
+  }
+
+  function onSelectAnalysisProvider(nextProvider: DreamAnalysisSettings['provider']) {
+    setAnalysisSettings(current =>
+      saveDreamAnalysisSettings({
+        ...current,
+        provider: nextProvider,
+      }),
+    );
+  }
+
+  function onToggleAnalysisNetwork() {
+    setAnalysisSettings(current =>
+      saveDreamAnalysisSettings({
+        ...current,
+        allowNetwork: !current.allowNetwork,
+      }),
+    );
   }
 
   async function onExportData() {
@@ -391,6 +427,75 @@ export default function SettingsScreen() {
           variant="ghost"
           onPress={onDeleteTranscriptionModel}
           disabled={isDeletingTranscriptionModel || !transcriptionModelStatus?.installed}
+        />
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.title}>{copy.analysisTitle}</Text>
+        <Text style={styles.description}>{copy.analysisDescription}</Text>
+        <View style={styles.privacyRows}>
+          <InfoRow
+            label={copy.analysisEnabledLabel}
+            value={analysisSettings.enabled ? copy.analysisEnabled : copy.analysisDisabled}
+          />
+          <InfoRow
+            label={copy.analysisProviderLabel}
+            value={
+              analysisSettings.provider === 'openai'
+                ? copy.analysisProviderOpenAi
+                : copy.analysisProviderManual
+            }
+          />
+          <InfoRow
+            label={copy.analysisNetworkLabel}
+            value={
+              analysisSettings.allowNetwork
+                ? copy.analysisNetworkAllowed
+                : copy.analysisNetworkBlocked
+            }
+          />
+        </View>
+        <View style={styles.reminderTimeRow}>
+          {([
+            { value: 'manual', label: copy.analysisProviderManual },
+            { value: 'openai', label: copy.analysisProviderOpenAi },
+          ] as Array<{ value: DreamAnalysisSettings['provider']; label: string }>).map(option => {
+            const selected = analysisSettings.provider === option.value;
+
+            return (
+              <Pressable
+                key={option.value}
+                style={[
+                  styles.reminderTimeChip,
+                  selected ? styles.reminderTimeChipActive : null,
+                ]}
+                onPress={() => onSelectAnalysisProvider(option.value)}
+              >
+                <Text
+                  style={[
+                    styles.reminderTimeChipText,
+                    selected ? styles.reminderTimeChipTextActive : null,
+                  ]}
+                >
+                  {option.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Button
+          title={analysisSettings.enabled ? copy.analysisDisableButton : copy.analysisEnableButton}
+          variant={analysisSettings.enabled ? 'ghost' : 'primary'}
+          onPress={onToggleAnalysisEnabled}
+        />
+        <Button
+          title={
+            analysisSettings.allowNetwork
+              ? copy.analysisNetworkBlockButton
+              : copy.analysisNetworkAllowButton
+          }
+          variant="ghost"
+          onPress={onToggleAnalysisNetwork}
         />
       </Card>
 

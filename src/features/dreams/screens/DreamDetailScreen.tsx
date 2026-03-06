@@ -21,6 +21,7 @@ import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
 import { archiveDream, deleteDream, getDream, unarchiveDream } from '../repository/dreamsRepository';
+import { play, stop } from '../services/audioService';
 import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
 
 function moodColor(theme: Theme, mood?: Dream['mood']) {
@@ -70,10 +71,16 @@ export default function DreamDetailScreen() {
   const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.DreamDetail>>();
   const styles = createDreamDetailScreenStyles(t);
   const [dream, setDream] = React.useState(() => getDream(route.params.dreamId));
+  const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
       setDream(getDream(route.params.dreamId));
+      setIsPlayingAudio(false);
+
+      return () => {
+        stop().catch(() => undefined);
+      };
     }, [route.params.dreamId]),
   );
 
@@ -128,6 +135,30 @@ export default function DreamDetailScreen() {
         },
       ],
     );
+  }
+
+  async function onToggleAudioPlayback() {
+    const audioUri = dream?.audioUri;
+    if (!audioUri) {
+      return;
+    }
+
+    try {
+      if (isPlayingAudio) {
+        await stop();
+        setIsPlayingAudio(false);
+        return;
+      }
+
+      await play(audioUri);
+      setIsPlayingAudio(true);
+    } catch (error) {
+      setIsPlayingAudio(false);
+      Alert.alert(
+        copy.detailAudioPlaybackErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    }
   }
 
   return (
@@ -262,7 +293,13 @@ export default function DreamDetailScreen() {
           <Text style={styles.sectionTitle}>{copy.voiceTitle}</Text>
           <View style={styles.audioCard}>
             <Text>{copy.detailAudioDescription}</Text>
+            <Text style={styles.mutedText}>{copy.detailAudioPlaybackHint}</Text>
             <InfoRow label={copy.detailAudioPathLabel} value={dream.audioUri} />
+            <Button
+              title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}
+              variant={isPlayingAudio ? 'ghost' : 'primary'}
+              onPress={onToggleAudioPlayback}
+            />
           </View>
         </Card>
       ) : null}

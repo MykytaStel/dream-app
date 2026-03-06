@@ -7,6 +7,7 @@ import ReanimatedSwipeable, {
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Card } from '../../../components/ui/Card';
+import { FormField } from '../../../components/ui/FormField';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { TagChip } from '../../../components/ui/TagChip';
@@ -71,6 +72,24 @@ function isDreamArchived(dream: Dream) {
   return typeof dream.archivedAt === 'number';
 }
 
+function matchesDreamSearch(dream: Dream, query: string) {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return true;
+  }
+
+  const searchableParts = [
+    dream.title,
+    dream.text,
+    dream.sleepContext?.importantEvents,
+    dream.sleepContext?.medications,
+    dream.sleepContext?.healthNotes,
+    ...dream.tags,
+  ];
+
+  return searchableParts.some(part => part?.toLowerCase().includes(normalizedQuery));
+}
+
 function SwipeActionButton({
   label,
   onPress,
@@ -104,6 +123,7 @@ export default function HomeScreen() {
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = React.useState<HomeFilter>('all');
+  const [searchQuery, setSearchQuery] = React.useState('');
   const styles = createHomeScreenStyles(t);
   const homeFilters = React.useMemo<Array<{ key: HomeFilter; label: string }>>(
     () => [
@@ -132,6 +152,10 @@ export default function HomeScreen() {
 
     return dreams;
   }, [activeDreams, archivedDreams, dreams, selectedFilter]);
+  const visibleDreams = React.useMemo(
+    () => filteredDreams.filter(dream => matchesDreamSearch(dream, searchQuery)),
+    [filteredDreams, searchQuery],
+  );
   const streak = getCurrentStreak(activeDreams);
   const averageWords = getAverageWords(activeDreams);
 
@@ -376,6 +400,14 @@ export default function HomeScreen() {
 
       <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
       <Text style={styles.sectionHint}>{copy.openDreamHint}</Text>
+      <FormField
+        label={copy.homeSearchLabel}
+        placeholder={copy.homeSearchPlaceholder}
+        value={searchQuery}
+        onChangeText={setSearchQuery}
+        autoCapitalize="none"
+        autoCorrect={false}
+      />
       <View style={styles.filterRow}>
         {homeFilters.map(filter => {
           const active = selectedFilter === filter.key;
@@ -421,7 +453,15 @@ export default function HomeScreen() {
         </Card>
       ) : null}
 
-      {filteredDreams.map(dream => {
+      {filteredDreams.length > 0 && !visibleDreams.length ? (
+        <ScreenStateCard
+          variant="empty"
+          title={copy.homeSearchEmptyTitle}
+          subtitle={copy.homeSearchEmptyDescription}
+        />
+      ) : null}
+
+      {visibleDreams.map(dream => {
         const mood = moodLabel(dream.mood, moodLabels);
         const dateParts = formatDateParts(dream);
         const archived = isDreamArchived(dream);

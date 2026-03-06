@@ -18,7 +18,13 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { ScreenStateCard } from './ScreenStateCard';
 import { Dream, Mood, SleepContext, StressLevel } from '../model/dream';
-import { isValidSleepDate, normalizeTag, normalizeTags } from '../model/dreamRules';
+import {
+  DREAM_SAVE_VALIDATION,
+  hasDreamContent,
+  normalizeTag,
+  normalizeTags,
+  validateDreamForSave,
+} from '../model/dreamRules';
 import { saveDream } from '../repository/dreamsRepository';
 import { startRecording, stopRecording } from '../services/audioService';
 import { createDreamId } from '../utils/createDreamId';
@@ -84,15 +90,25 @@ export function DreamComposer({
   const [tags, setTags] = React.useState<string[]>(normalizeTags(initialDream?.tags ?? []));
   const [tagInput, setTagInput] = React.useState('');
   const [isBusy, setIsBusy] = React.useState(false);
+  const [hasTriedSave, setHasTriedSave] = React.useState(false);
   const [lastActionError, setLastActionError] = React.useState<string | null>(null);
   const baseStyles = createNewDreamScreenStyles(t, false);
   const isEdit = mode === 'edit';
+  const validationError = validateDreamForSave({
+    text,
+    audioUri,
+    sleepDate,
+  });
+  const hasInvalidSleepDate =
+    Boolean(sleepDate.trim()) &&
+    validationError === DREAM_SAVE_VALIDATION.invalidSleepDate;
+  const hasMissingContent = validationError === DREAM_SAVE_VALIDATION.missingContent;
   const isEntryEmpty =
     !title.trim() &&
-    !text.trim() &&
-    !audioUri &&
+    !hasDreamContent({ text, audioUri }) &&
     tags.length === 0 &&
     !mood;
+  const saveDisabled = isBusy || recording || validationError !== null;
 
   async function onToggleRecord() {
     setIsBusy(true);
@@ -151,9 +167,11 @@ export function DreamComposer({
     setTags([]);
     setTagInput('');
     setRecording(false);
+    setHasTriedSave(false);
   }
 
   function onSave() {
+    setHasTriedSave(true);
     setIsBusy(true);
     setLastActionError(null);
 
@@ -174,13 +192,19 @@ export function DreamComposer({
         healthNotes: cleanHealthNotes || undefined,
       };
 
-      if (!cleanText && !audioUri && !cleanTitle) {
+      const validationError = validateDreamForSave({
+        text: cleanText,
+        audioUri,
+        sleepDate: cleanSleepDate,
+      });
+
+      if (validationError === DREAM_SAVE_VALIDATION.missingContent) {
         setLastActionError(copy.saveErrorDescription);
         Alert.alert(copy.saveErrorTitle, copy.saveErrorDescription);
         return;
       }
 
-      if (cleanSleepDate && !isValidSleepDate(cleanSleepDate)) {
+      if (validationError === DREAM_SAVE_VALIDATION.invalidSleepDate) {
         setLastActionError(copy.sleepDateInvalidDescription);
         Alert.alert(copy.sleepDateInvalidTitle, copy.sleepDateInvalidDescription);
         return;
@@ -210,6 +234,10 @@ export function DreamComposer({
         isEdit ? copy.updateSuccessDescription : copy.saveSuccessDescription,
       );
       onSaved?.(dream);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setLastActionError(message);
+      Alert.alert(copy.recordErrorTitle, message);
     } finally {
       setIsBusy(false);
     }
@@ -293,6 +321,9 @@ export function DreamComposer({
           onChangeText={setSleepDate}
           autoCapitalize="none"
           autoCorrect={false}
+          invalid={hasInvalidSleepDate}
+          helperText={hasInvalidSleepDate ? copy.sleepDateInvalidDescription : undefined}
+          helperTone={hasInvalidSleepDate ? 'error' : 'default'}
         />
         <FormField
           label={copy.textLabel}
@@ -302,10 +333,14 @@ export function DreamComposer({
           multiline
           inputStyle={baseStyles.textInput}
           helperText={
-            text.trim()
+            hasTriedSave && hasMissingContent
+              ? copy.saveErrorDescription
+              : text.trim()
               ? `${text.trim().split(/\s+/).length} ${copy.wordsUnit}`
               : `0 ${copy.wordsUnit}`
           }
+          helperTone={hasTriedSave && hasMissingContent ? 'error' : 'default'}
+          invalid={hasTriedSave && hasMissingContent}
         />
       </Card>
 
@@ -356,7 +391,14 @@ export function DreamComposer({
                   }
                   style={styles.contextOption}
                 >
-                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                  <Text
+                    style={styles.contextOptionLabel}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.85}
+                  >
+                    {option.label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -380,7 +422,9 @@ export function DreamComposer({
                   }
                   style={styles.contextOption}
                 >
-                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                  <Text style={styles.contextOptionLabel} numberOfLines={1}>
+                    {option.label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -404,7 +448,9 @@ export function DreamComposer({
                   }
                   style={styles.contextOption}
                 >
-                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                  <Text style={styles.contextOptionLabel} numberOfLines={1}>
+                    {option.label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -499,6 +545,7 @@ export function DreamComposer({
       <Button
         title={isEdit ? copy.updateDream : copy.saveDream}
         onPress={onSave}
+        disabled={saveDisabled}
       />
     </ScreenContainer>
   );

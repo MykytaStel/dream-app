@@ -28,6 +28,19 @@ const SETTINGS_COPY_EN = {
   languageDescription: 'Choose your app language.',
   languageEnglish: 'English',
   languageUkrainian: 'Українська',
+  privacyTitle: 'Privacy and storage',
+  privacyDescription:
+    'This MVP keeps dream data on your device and avoids account setup until the core journaling loop is stable.',
+  privacyStorageLabel: 'Dream data',
+  privacyStorageValue: 'Stored locally on device',
+  privacySyncLabel: 'Cloud sync',
+  privacySyncValue: 'Not enabled in v0.0.3',
+  privacyAccountLabel: 'Account',
+  privacyAccountValue: 'No sign-in required',
+  privacyReminderLabel: 'Reminders',
+  privacyReminderValue: 'Scheduled as local notifications',
+  privacyFootnote:
+    'If you delete the app, local entries and drafts may be removed with it until export or sync exists.',
   architectureTitle: 'Foundation status',
   architectureDescription:
     'Local-first data, feature-based structure, extracted styles, and an upcoming i18n layer.',
@@ -64,6 +77,19 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   languageTitle: 'Мова',
   languageDescription: 'Обери мову застосунку.',
   architectureTitle: 'Стан фундаменту',
+  privacyTitle: 'Приватність і зберігання',
+  privacyDescription:
+    'Цей MVP зберігає дані про сни на пристрої і не вимагає акаунта, доки базовий journaling loop ще стабілізується.',
+  privacyStorageLabel: 'Дані про сни',
+  privacyStorageValue: 'Зберігаються локально на пристрої',
+  privacySyncLabel: 'Хмарна синхронізація',
+  privacySyncValue: 'У v0.0.3 не ввімкнена',
+  privacyAccountLabel: 'Акаунт',
+  privacyAccountValue: 'Вхід не потрібен',
+  privacyReminderLabel: 'Нагадування',
+  privacyReminderValue: 'Працюють як локальні сповіщення',
+  privacyFootnote:
+    'Якщо видалити застосунок, локальні записи і чернетки можуть зникнути, доки не зʼявиться експорт або синхронізація.',
   architectureDescription:
     'Local-first дані, feature-структура, винесені стилі та базовий i18n-шар.',
   plannedTitle: 'Заплановані розділи',

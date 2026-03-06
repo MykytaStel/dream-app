@@ -80,5 +80,12 @@ export function createSettingsScreenStyles(theme: Theme) {
       lineHeight: 22,
       flexShrink: 1,
     },
+    privacyRows: {
+      gap: 10,
+    },
+    privacyFootnote: {
+      color: theme.colors.textDim,
+      lineHeight: 20,
+    },
   });
 }

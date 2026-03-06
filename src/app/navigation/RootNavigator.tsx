@@ -1,18 +1,72 @@
 import React from 'react';
 import { DarkTheme, NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import notifee from '@notifee/react-native';
 import DreamDetailScreen from '../../features/dreams/screens/DreamDetailScreen';
 import EditDreamScreen from '../../features/dreams/screens/EditDreamScreen';
+import {
+  consumePendingRecordOpenFromReminder,
+  isReminderInitialNotificationTarget,
+  isReminderNotificationPress,
+} from '../../features/reminders/services/dreamReminderService';
 import Tabs from './tabs';
 import { useTheme } from '@shopify/restyle';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from './routes';
+import { navigationRef, openRecordTab } from './navigationRef';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
   const t = useTheme<any>();
+
+  React.useEffect(() => {
+    const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
+      if (isReminderNotificationPress(type, detail)) {
+        openRecordTab();
+      }
+    });
+
+    return unsubscribe;
+  }, []);
+
+  React.useEffect(() => {
+    let cancelled = false;
+
+    async function openFromNotification() {
+      const initialNotification = await notifee.getInitialNotification();
+      const shouldOpen = consumePendingRecordOpenFromReminder() ||
+        isReminderInitialNotificationTarget(initialNotification);
+
+      if (!shouldOpen || cancelled) {
+        return;
+      }
+
+      const retryOpen = (attempt = 0) => {
+        if (cancelled) {
+          return;
+        }
+
+        const opened = openRecordTab();
+        if (opened || attempt >= 8) {
+          return;
+        }
+
+        setTimeout(() => retryOpen(attempt + 1), 150);
+      };
+
+      retryOpen();
+    }
+
+    openFromNotification();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <NavigationContainer
+      ref={navigationRef}
       theme={{
         ...DarkTheme,
         dark: true,

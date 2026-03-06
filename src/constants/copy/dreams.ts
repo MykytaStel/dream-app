@@ -14,6 +14,11 @@ const DREAM_COPY_EN = {
   homeFilterAll: 'All',
   homeFilterActive: 'Active',
   homeFilterArchived: 'Archived',
+  homeSearchLabel: 'Search dreams',
+  homeSearchPlaceholder: 'Title, text, or tag',
+  homeSearchEmptyTitle: 'Nothing matches this search',
+  homeSearchEmptyDescription:
+    'Try a simpler phrase or clear the search to see more dreams.',
   actionRetry: 'Retry',
   clearErrorAction: 'Dismiss',
   timelineLoadingTitle: 'Loading timeline',
@@ -58,6 +63,10 @@ const DREAM_COPY_EN = {
   detailTagsEmpty: 'No tags attached yet.',
   detailAudioDescription: 'An original voice note is attached to this dream.',
   detailAudioPathLabel: 'Local file',
+  detailAudioPlay: 'Play voice note',
+  detailAudioStop: 'Stop playback',
+  detailAudioPlaybackHint: 'Listen back to verify the original capture is still usable.',
+  detailAudioPlaybackErrorTitle: 'Playback error',
   createTitle: 'Capture a dream',
   createSubtitle:
     'Save the memory fast, keep the original voice note, and add just enough structure for future stats.',
@@ -66,7 +75,10 @@ const DREAM_COPY_EN = {
     'Write a few raw lines, keep the voice note, and shape the rest later.',
   recordEmptyTitle: 'Start with a quick capture',
   recordEmptyDescription:
-    'Add title, text, voice, or tags. Save once you have at least one signal.',
+    'Add a few written details or attach a voice note. Title, mood, and tags can come later.',
+  recordDraftRestoredTitle: 'Draft restored',
+  recordDraftRestoredDescription:
+    'Your unfinished capture is still here. Keep writing or save it when ready.',
   recordLoadingTitle: 'Working on it',
   recordLoadingDescription: 'Please wait while the action is completing.',
   recordErrorTitle: 'Action failed',
@@ -123,7 +135,7 @@ const DREAM_COPY_EN = {
   updateDream: 'Update dream',
   saveErrorTitle: 'Nothing to save',
   saveErrorDescription:
-    'Add a title, write what you remember, or attach a voice note first.',
+    'Write what you remember or attach a voice note first. Title alone is not enough.',
   saveSuccessTitle: 'Saved',
   saveSuccessDescription: 'Your dream was saved locally.',
   updateSuccessTitle: 'Updated',
@@ -145,6 +157,11 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeFilterAll: 'Усі',
   homeFilterActive: 'Активні',
   homeFilterArchived: 'Архів',
+  homeSearchLabel: 'Пошук снів',
+  homeSearchPlaceholder: 'Назва, текст або тег',
+  homeSearchEmptyTitle: 'Нічого не знайдено',
+  homeSearchEmptyDescription:
+    'Спробуй простіший запит або очисть пошук, щоб побачити більше записів.',
   actionRetry: 'Повторити',
   clearErrorAction: 'Закрити',
   timelineLoadingTitle: 'Завантаження таймлайну',
@@ -186,6 +203,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailTagsEmpty: 'Теги ще не додані.',
   detailAudioDescription: 'До цього сну прикріплена оригінальна голосова нотатка.',
   detailAudioPathLabel: 'Локальний файл',
+  detailAudioPlay: 'Відтворити голос',
+  detailAudioStop: 'Зупинити відтворення',
+  detailAudioPlaybackHint: 'Прослухай запис, щоб перевірити, що початкове захоплення збереглося.',
+  detailAudioPlaybackErrorTitle: 'Помилка відтворення',
   createTitle: 'Запис сну',
   createSubtitle:
     'Швидко збережи спогад, залиш голосову нотатку і додай мінімальну структуру.',
@@ -194,7 +215,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Додай кілька сирих рядків, збережи голос і доповниш деталі пізніше.',
   recordEmptyTitle: 'Почни з короткого запису',
   recordEmptyDescription:
-    'Додай назву, текст, голос або теги. Збережи, щойно є хоча б один сигнал.',
+    'Додай трохи тексту або прикріпи голосову нотатку. Назву, настрій і теги можна додати пізніше.',
+  recordDraftRestoredTitle: 'Чернетку відновлено',
+  recordDraftRestoredDescription:
+    'Незавершений запис збережено локально. Продовжуй редагування або збережи, коли будеш готовий.',
   recordLoadingTitle: 'Виконується дія',
   recordLoadingDescription: 'Зачекай, поки операція завершиться.',
   recordErrorTitle: 'Дія не виконалась',
@@ -247,7 +271,7 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   saveDream: 'Зберегти сон',
   updateDream: 'Оновити сон',
   saveErrorTitle: 'Немає що зберігати',
-  saveErrorDescription: 'Додай назву, текст або голосову нотатку.',
+  saveErrorDescription: 'Додай текст або голосову нотатку. Однієї назви недостатньо.',
   saveSuccessTitle: 'Збережено',
   saveSuccessDescription: 'Сон збережено локально.',
   updateSuccessTitle: 'Оновлено',

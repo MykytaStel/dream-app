@@ -18,9 +18,20 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { ScreenStateCard } from './ScreenStateCard';
 import { Dream, Mood, SleepContext, StressLevel } from '../model/dream';
-import { isValidSleepDate, normalizeTag, normalizeTags } from '../model/dreamRules';
+import {
+  DREAM_SAVE_VALIDATION,
+  hasDreamContent,
+  normalizeTag,
+  normalizeTags,
+  validateDreamForSave,
+} from '../model/dreamRules';
 import { saveDream } from '../repository/dreamsRepository';
 import { startRecording, stopRecording } from '../services/audioService';
+import {
+  clearDreamDraft,
+  getDreamDraft,
+  saveDreamDraft,
+} from '../services/dreamDraftService';
 import { createDreamId } from '../utils/createDreamId';
 import { createNewDreamScreenStyles } from '../screens/NewDreamScreen.styles';
 
@@ -52,47 +63,103 @@ export function DreamComposer({
   initialDream,
   onSaved,
 }: DreamComposerProps) {
+  const initialDraft = React.useMemo(
+    () => (mode === 'create' ? getDreamDraft() : null),
+    [mode],
+  );
   const t = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moods = React.useMemo(() => getDreamMoods(locale), [locale]);
   const stressLevels = React.useMemo(() => getDreamStressLevels(locale), [locale]);
-  const [title, setTitle] = React.useState(initialDream?.title ?? '');
-  const [text, setText] = React.useState(initialDream?.text ?? '');
-  const [sleepDate, setSleepDate] = React.useState(initialDream?.sleepDate ?? getTodayDate());
+  const [title, setTitle] = React.useState(initialDream?.title ?? initialDraft?.title ?? '');
+  const [text, setText] = React.useState(initialDream?.text ?? initialDraft?.text ?? '');
+  const [sleepDate, setSleepDate] = React.useState(
+    initialDream?.sleepDate ?? initialDraft?.sleepDate ?? getTodayDate(),
+  );
   const [recording, setRecording] = React.useState(false);
-  const [audioUri, setAudioUri] = React.useState<string | undefined>(initialDream?.audioUri);
-  const [mood, setMood] = React.useState<Mood | undefined>(initialDream?.mood);
+  const [audioUri, setAudioUri] = React.useState<string | undefined>(
+    initialDream?.audioUri ?? initialDraft?.audioUri,
+  );
+  const [mood, setMood] = React.useState<Mood | undefined>(initialDream?.mood ?? initialDraft?.mood);
   const [stressLevel, setStressLevel] = React.useState<StressLevel | undefined>(
-    initialDream?.sleepContext?.stressLevel,
+    initialDream?.sleepContext?.stressLevel ?? initialDraft?.stressLevel,
   );
   const [alcoholTaken, setAlcoholTaken] = React.useState<boolean | undefined>(
-    initialDream?.sleepContext?.alcoholTaken,
+    initialDream?.sleepContext?.alcoholTaken ?? initialDraft?.alcoholTaken,
   );
   const [caffeineLate, setCaffeineLate] = React.useState<boolean | undefined>(
-    initialDream?.sleepContext?.caffeineLate,
+    initialDream?.sleepContext?.caffeineLate ?? initialDraft?.caffeineLate,
   );
   const [medications, setMedications] = React.useState(
-    initialDream?.sleepContext?.medications ?? '',
+    initialDream?.sleepContext?.medications ?? initialDraft?.medications ?? '',
   );
   const [importantEvents, setImportantEvents] = React.useState(
-    initialDream?.sleepContext?.importantEvents ?? '',
+    initialDream?.sleepContext?.importantEvents ?? initialDraft?.importantEvents ?? '',
   );
   const [healthNotes, setHealthNotes] = React.useState(
-    initialDream?.sleepContext?.healthNotes ?? '',
+    initialDream?.sleepContext?.healthNotes ?? initialDraft?.healthNotes ?? '',
   );
-  const [tags, setTags] = React.useState<string[]>(normalizeTags(initialDream?.tags ?? []));
+  const [tags, setTags] = React.useState<string[]>(
+    normalizeTags(initialDream?.tags ?? initialDraft?.tags ?? []),
+  );
   const [tagInput, setTagInput] = React.useState('');
   const [isBusy, setIsBusy] = React.useState(false);
+  const [hasTriedSave, setHasTriedSave] = React.useState(false);
   const [lastActionError, setLastActionError] = React.useState<string | null>(null);
   const baseStyles = createNewDreamScreenStyles(t, false);
   const isEdit = mode === 'edit';
+  const validationError = validateDreamForSave({
+    text,
+    audioUri,
+    sleepDate,
+  });
+  const hasInvalidSleepDate =
+    Boolean(sleepDate.trim()) &&
+    validationError === DREAM_SAVE_VALIDATION.invalidSleepDate;
+  const hasMissingContent = validationError === DREAM_SAVE_VALIDATION.missingContent;
+  const hasRestoredDraft = mode === 'create' && Boolean(initialDraft);
   const isEntryEmpty =
     !title.trim() &&
-    !text.trim() &&
-    !audioUri &&
+    !hasDreamContent({ text, audioUri }) &&
     tags.length === 0 &&
     !mood;
+  const saveDisabled = isBusy || recording || validationError !== null;
+
+  React.useEffect(() => {
+    if (mode !== 'create') {
+      return;
+    }
+
+    saveDreamDraft({
+      title,
+      text,
+      sleepDate,
+      audioUri,
+      mood,
+      stressLevel,
+      alcoholTaken,
+      caffeineLate,
+      medications,
+      importantEvents,
+      healthNotes,
+      tags,
+    });
+  }, [
+    alcoholTaken,
+    audioUri,
+    caffeineLate,
+    healthNotes,
+    importantEvents,
+    medications,
+    mode,
+    mood,
+    sleepDate,
+    stressLevel,
+    tags,
+    text,
+    title,
+  ]);
 
   async function onToggleRecord() {
     setIsBusy(true);
@@ -151,9 +218,12 @@ export function DreamComposer({
     setTags([]);
     setTagInput('');
     setRecording(false);
+    setHasTriedSave(false);
+    clearDreamDraft();
   }
 
   function onSave() {
+    setHasTriedSave(true);
     setIsBusy(true);
     setLastActionError(null);
 
@@ -174,13 +244,19 @@ export function DreamComposer({
         healthNotes: cleanHealthNotes || undefined,
       };
 
-      if (!cleanText && !audioUri && !cleanTitle) {
+      const saveValidationError = validateDreamForSave({
+        text: cleanText,
+        audioUri,
+        sleepDate: cleanSleepDate,
+      });
+
+      if (saveValidationError === DREAM_SAVE_VALIDATION.missingContent) {
         setLastActionError(copy.saveErrorDescription);
         Alert.alert(copy.saveErrorTitle, copy.saveErrorDescription);
         return;
       }
 
-      if (cleanSleepDate && !isValidSleepDate(cleanSleepDate)) {
+      if (saveValidationError === DREAM_SAVE_VALIDATION.invalidSleepDate) {
         setLastActionError(copy.sleepDateInvalidDescription);
         Alert.alert(copy.sleepDateInvalidTitle, copy.sleepDateInvalidDescription);
         return;
@@ -210,6 +286,10 @@ export function DreamComposer({
         isEdit ? copy.updateSuccessDescription : copy.saveSuccessDescription,
       );
       onSaved?.(dream);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setLastActionError(message);
+      Alert.alert(copy.recordErrorTitle, message);
     } finally {
       setIsBusy(false);
     }
@@ -246,6 +326,11 @@ export function DreamComposer({
               {audioUri ? copy.attachedAudioTitle : copy.voiceIdleHint}
             </Text>
           </View>
+          {hasRestoredDraft ? (
+            <View style={baseStyles.helperChip}>
+              <Text style={baseStyles.helperChipLabel}>{copy.recordDraftRestoredTitle}</Text>
+            </View>
+          ) : null}
         </View>
       </Card>
 
@@ -270,8 +355,12 @@ export function DreamComposer({
       {!isBusy && !lastActionError && isEntryEmpty ? (
         <ScreenStateCard
           variant="empty"
-          title={copy.recordEmptyTitle}
-          subtitle={copy.recordEmptyDescription}
+          title={hasRestoredDraft ? copy.recordDraftRestoredTitle : copy.recordEmptyTitle}
+          subtitle={
+            hasRestoredDraft
+              ? copy.recordDraftRestoredDescription
+              : copy.recordEmptyDescription
+          }
         />
       ) : null}
 
@@ -293,6 +382,9 @@ export function DreamComposer({
           onChangeText={setSleepDate}
           autoCapitalize="none"
           autoCorrect={false}
+          invalid={hasInvalidSleepDate}
+          helperText={hasInvalidSleepDate ? copy.sleepDateInvalidDescription : undefined}
+          helperTone={hasInvalidSleepDate ? 'error' : 'default'}
         />
         <FormField
           label={copy.textLabel}
@@ -302,10 +394,14 @@ export function DreamComposer({
           multiline
           inputStyle={baseStyles.textInput}
           helperText={
-            text.trim()
+            hasTriedSave && hasMissingContent
+              ? copy.saveErrorDescription
+              : text.trim()
               ? `${text.trim().split(/\s+/).length} ${copy.wordsUnit}`
               : `0 ${copy.wordsUnit}`
           }
+          helperTone={hasTriedSave && hasMissingContent ? 'error' : 'default'}
+          invalid={hasTriedSave && hasMissingContent}
         />
       </Card>
 
@@ -356,7 +452,14 @@ export function DreamComposer({
                   }
                   style={styles.contextOption}
                 >
-                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                  <Text
+                    style={styles.contextOptionLabel}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.85}
+                  >
+                    {option.label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -380,7 +483,9 @@ export function DreamComposer({
                   }
                   style={styles.contextOption}
                 >
-                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                  <Text style={styles.contextOptionLabel} numberOfLines={1}>
+                    {option.label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -404,7 +509,9 @@ export function DreamComposer({
                   }
                   style={styles.contextOption}
                 >
-                  <Text style={styles.contextOptionLabel}>{option.label}</Text>
+                  <Text style={styles.contextOptionLabel} numberOfLines={1}>
+                    {option.label}
+                  </Text>
                 </Pressable>
               );
             })}
@@ -499,6 +606,7 @@ export function DreamComposer({
       <Button
         title={isEdit ? copy.updateDream : copy.saveDream}
         onPress={onSave}
+        disabled={saveDisabled}
       />
     </ScreenContainer>
   );

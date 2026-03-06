@@ -20,5 +20,11 @@ export function createFormFieldStyles(theme: Theme) {
     helper: {
       color: theme.colors.textDim,
     },
+    helperError: {
+      color: theme.colors.danger,
+    },
+    inputInvalid: {
+      borderColor: theme.colors.danger,
+    },
   });
 }

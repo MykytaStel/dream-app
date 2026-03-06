@@ -4,13 +4,15 @@ const SETTINGS_COPY_EN = {
   title: 'Settings',
   subtitle: 'Architecture and product controls will grow here.',
   versionTitle: 'Current release',
-  versionValue: 'v0.0.2',
   reminderTitle: 'Dream reminder',
   reminderDescription:
     'Schedule one daily reminder after waking so you can record dreams faster.',
   reminderStatusLabel: 'Status',
+  reminderPermissionLabel: 'Notifications',
   reminderEnabled: 'Enabled',
   reminderDisabled: 'Disabled',
+  reminderPermissionAllowed: 'Allowed',
+  reminderPermissionBlocked: 'Blocked',
   reminderEnableButton: 'Enable reminder',
   reminderDisableButton: 'Disable reminder',
   reminderTimeLabel: 'Reminder time',
@@ -18,12 +20,27 @@ const SETTINGS_COPY_EN = {
   reminderPermissionDeniedDescription:
     'Allow notifications in system settings to enable dream reminders.',
   reminderSaveErrorTitle: 'Reminder error',
+  reminderStateHint:
+    'Time is saved locally. If system notifications are blocked, the reminder stays off until permission is restored.',
   reminderNotificationTitle: 'Record your dream',
   reminderNotificationBody: 'Capture it while details are still fresh.',
   languageTitle: 'Language',
   languageDescription: 'Choose your app language.',
   languageEnglish: 'English',
   languageUkrainian: 'Українська',
+  privacyTitle: 'Privacy and storage',
+  privacyDescription:
+    'This MVP keeps dream data on your device and avoids account setup until the core journaling loop is stable.',
+  privacyStorageLabel: 'Dream data',
+  privacyStorageValue: 'Stored locally on device',
+  privacySyncLabel: 'Cloud sync',
+  privacySyncValue: 'Not enabled in v0.0.3',
+  privacyAccountLabel: 'Account',
+  privacyAccountValue: 'No sign-in required',
+  privacyReminderLabel: 'Reminders',
+  privacyReminderValue: 'Scheduled as local notifications',
+  privacyFootnote:
+    'If you delete the app, local entries and drafts may be removed with it until export or sync exists.',
   architectureTitle: 'Foundation status',
   architectureDescription:
     'Local-first data, feature-based structure, extracted styles, and an upcoming i18n layer.',
@@ -41,8 +58,11 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   reminderDescription:
     'Щоденне нагадування після пробудження, щоб швидко зафіксувати сон.',
   reminderStatusLabel: 'Статус',
+  reminderPermissionLabel: 'Сповіщення',
   reminderEnabled: 'Увімкнено',
   reminderDisabled: 'Вимкнено',
+  reminderPermissionAllowed: 'Дозволені',
+  reminderPermissionBlocked: 'Заблоковані',
   reminderEnableButton: 'Увімкнути нагадування',
   reminderDisableButton: 'Вимкнути нагадування',
   reminderTimeLabel: 'Час нагадування',
@@ -50,11 +70,26 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   reminderPermissionDeniedDescription:
     'Дозволь сповіщення в системних налаштуваннях, щоб увімкнути нагадування.',
   reminderSaveErrorTitle: 'Помилка нагадування',
+  reminderStateHint:
+    'Час зберігається локально. Якщо системні сповіщення заблоковані, нагадування лишається вимкненим, доки дозвіл не повернеться.',
   reminderNotificationTitle: 'Запиши свій сон',
   reminderNotificationBody: 'Зафіксуй його, поки деталі ще свіжі.',
   languageTitle: 'Мова',
   languageDescription: 'Обери мову застосунку.',
   architectureTitle: 'Стан фундаменту',
+  privacyTitle: 'Приватність і зберігання',
+  privacyDescription:
+    'Цей MVP зберігає дані про сни на пристрої і не вимагає акаунта, доки базовий journaling loop ще стабілізується.',
+  privacyStorageLabel: 'Дані про сни',
+  privacyStorageValue: 'Зберігаються локально на пристрої',
+  privacySyncLabel: 'Хмарна синхронізація',
+  privacySyncValue: 'У v0.0.3 не ввімкнена',
+  privacyAccountLabel: 'Акаунт',
+  privacyAccountValue: 'Вхід не потрібен',
+  privacyReminderLabel: 'Нагадування',
+  privacyReminderValue: 'Працюють як локальні сповіщення',
+  privacyFootnote:
+    'Якщо видалити застосунок, локальні записи і чернетки можуть зникнути, доки не зʼявиться експорт або синхронізація.',
   architectureDescription:
     'Local-first дані, feature-структура, винесені стилі та базовий i18n-шар.',
   plannedTitle: 'Заплановані розділи',

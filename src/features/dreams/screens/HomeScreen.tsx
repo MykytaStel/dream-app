@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Pressable, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
 import ReanimatedSwipeable, {
@@ -20,6 +20,8 @@ import { DREAM_PREVIEW_MAX_LENGTH } from '../../../constants/limits/dreams';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
+import { ScreenStateCard } from '../components/ScreenStateCard';
+import { getDreamLayout } from '../constants/layout';
 import { Dream, Mood } from '../model/dream';
 import { getAverageWords, getCurrentStreak, getDreamDate } from '../model/dreamAnalytics';
 import { archiveDream, deleteDream, listDreams, unarchiveDream } from '../repository/dreamsRepository';
@@ -69,6 +71,26 @@ function isDreamArchived(dream: Dream) {
   return typeof dream.archivedAt === 'number';
 }
 
+function SwipeActionButton({
+  label,
+  onPress,
+  actionStyle,
+  textStyle,
+  hitSlop,
+}: {
+  label: string;
+  onPress: () => void;
+  actionStyle: StyleProp<ViewStyle>;
+  textStyle: StyleProp<TextStyle>;
+  hitSlop: number;
+}) {
+  return (
+    <Pressable hitSlop={hitSlop} style={actionStyle} onPress={onPress}>
+      <Text style={textStyle}>{label}</Text>
+    </Pressable>
+  );
+}
+
 type HomeFilter = 'all' | 'active' | 'archived';
 
 export default function HomeScreen() {
@@ -76,8 +98,11 @@ export default function HomeScreen() {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
+  const layout = React.useMemo(() => getDreamLayout(t), [t]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [dreams, setDreams] = React.useState(() => listDreams());
+  const [dreams, setDreams] = React.useState<Dream[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedFilter, setSelectedFilter] = React.useState<HomeFilter>('all');
   const styles = createHomeScreenStyles(t);
   const homeFilters = React.useMemo<Array<{ key: HomeFilter; label: string }>>(
@@ -110,14 +135,31 @@ export default function HomeScreen() {
   const streak = getCurrentStreak(activeDreams);
   const averageWords = getAverageWords(activeDreams);
 
-  useFocusEffect(
-    React.useCallback(() => {
+  const refreshDreams = React.useCallback(() => {
+    setLoading(true);
+    setLoadError(null);
+
+    try {
       setDreams(listDreams());
-    }, []),
-  );
+    } catch (error) {
+      setLoadError(String(error));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   const swipeMethods = React.useRef<Record<string, SwipeableMethods>>({});
   const activeSwipeId = React.useRef<string | null>(null);
+
+  const closeActiveSwipe = React.useCallback(() => {
+    const activeId = activeSwipeId.current;
+    if (!activeId) {
+      return;
+    }
+
+    swipeMethods.current[activeId]?.close();
+    activeSwipeId.current = null;
+  }, []);
 
   const closeSwipe = React.useCallback((dreamId: string) => {
     swipeMethods.current[dreamId]?.close();
@@ -130,8 +172,44 @@ export default function HomeScreen() {
     if (activeSwipeId.current && activeSwipeId.current !== dreamId) {
       swipeMethods.current[activeSwipeId.current]?.close();
     }
+
     activeSwipeId.current = dreamId;
   }, []);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshDreams();
+      return () => {
+        closeActiveSwipe();
+      };
+    }, [closeActiveSwipe, refreshDreams]),
+  );
+
+  React.useEffect(() => {
+    const dreamIds = new Set(dreams.map(dream => dream.id));
+
+    Object.keys(swipeMethods.current).forEach(dreamId => {
+      if (dreamIds.has(dreamId)) {
+        return;
+      }
+
+      delete swipeMethods.current[dreamId];
+      if (activeSwipeId.current === dreamId) {
+        activeSwipeId.current = null;
+      }
+    });
+  }, [dreams]);
+
+  React.useEffect(() => {
+    if (!activeSwipeId.current) {
+      return;
+    }
+
+    const activeStillVisible = filteredDreams.some(dream => dream.id === activeSwipeId.current);
+    if (!activeStillVisible) {
+      activeSwipeId.current = null;
+    }
+  }, [filteredDreams]);
 
   const openDreamEditor = React.useCallback((dreamId: string) => {
     navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
@@ -145,8 +223,9 @@ export default function HomeScreen() {
     } else {
       archiveDream(dream.id);
     }
-    setDreams(listDreams());
-  }, []);
+
+    refreshDreams();
+  }, [refreshDreams]);
 
   const removeDreamFromList = React.useCallback((dreamId: string) => {
     Alert.alert(
@@ -162,12 +241,12 @@ export default function HomeScreen() {
           style: 'destructive',
           onPress: () => {
             deleteDream(dreamId);
-            setDreams(listDreams());
+            refreshDreams();
           },
         },
       ],
     );
-  }, [copy]);
+  }, [copy, refreshDreams]);
 
   const renderRightActions = (
     dream: Dream,
@@ -177,28 +256,26 @@ export default function HomeScreen() {
 
     return (
       <View style={[styles.swipeActionsContainer, styles.swipeRightActionsContainer]}>
-        <Pressable
-          style={[styles.swipeAction, styles.swipeEditAction]}
+        <SwipeActionButton
+          label={copy.swipeEdit}
+          hitSlop={layout.swipeActionHitSlop}
+          actionStyle={[styles.swipeAction, styles.swipeEditAction]}
+          textStyle={styles.swipeActionText}
           onPress={() => {
             closeSwipe(dream.id);
             openDreamEditor(dream.id);
           }}
-        >
-          <Text style={styles.swipeActionText}>{copy.swipeEdit}</Text>
-        </Pressable>
-        <Pressable
-          style={[styles.swipeAction, styles.swipeDeleteAction]}
+        />
+        <SwipeActionButton
+          label={copy.swipeDelete}
+          hitSlop={layout.swipeActionHitSlop}
+          actionStyle={[styles.swipeAction, styles.swipeDeleteAction]}
+          textStyle={[styles.swipeActionText, styles.swipeActionTextInverted]}
           onPress={() => {
             closeSwipe(dream.id);
             removeDreamFromList(dream.id);
           }}
-        >
-          <Text
-            style={[styles.swipeActionText, styles.swipeActionTextInverted]}
-          >
-            {copy.swipeDelete}
-          </Text>
-        </Pressable>
+        />
       </View>
     );
   };
@@ -217,29 +294,54 @@ export default function HomeScreen() {
 
     return (
       <View style={[styles.swipeActionsContainer, styles.swipeLeftActionsContainer]}>
-        <Pressable
-          style={[styles.swipeAction, archiveActionStyle]}
+        <SwipeActionButton
+          label={archiveLabel}
+          hitSlop={layout.swipeActionHitSlop}
+          actionStyle={[styles.swipeAction, archiveActionStyle]}
+          textStyle={[styles.swipeActionText, styles.swipeActionTextInverted]}
           onPress={() => {
             closeSwipe(dream.id);
             toggleArchiveFromList(dream);
           }}
-        >
-          <Text
-            style={[styles.swipeActionText, styles.swipeActionTextInverted]}
-          >
-            {archiveLabel}
-          </Text>
-        </Pressable>
+        />
       </View>
     );
   };
 
+  if (loading) {
+    return (
+      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+        <ScreenStateCard
+          variant="loading"
+          title={copy.timelineLoadingTitle}
+          subtitle={copy.timelineLoadingDescription}
+        />
+      </ScreenContainer>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+        <ScreenStateCard
+          variant="error"
+          title={copy.timelineErrorTitle}
+          subtitle={copy.timelineErrorDescription}
+          actionLabel={copy.actionRetry}
+          onAction={refreshDreams}
+        />
+      </ScreenContainer>
+    );
+  }
+
   if (!dreams.length) {
     return (
       <ScreenContainer scroll={false} style={styles.emptyContainer}>
-        <Card style={styles.emptyCard}>
-          <SectionHeader title={copy.emptyTitle} subtitle={copy.emptyDescription} />
-        </Card>
+        <ScreenStateCard
+          variant="empty"
+          title={copy.emptyTitle}
+          subtitle={copy.emptyDescription}
+        />
       </ScreenContainer>
     );
   }
@@ -284,7 +386,10 @@ export default function HomeScreen() {
                 styles.filterButton,
                 active ? styles.filterButtonActive : null,
               ]}
-              onPress={() => setSelectedFilter(filter.key)}
+              onPress={() => {
+                closeActiveSwipe();
+                setSelectedFilter(filter.key);
+              }}
             >
               <Text
                 style={[
@@ -326,15 +431,21 @@ export default function HomeScreen() {
             containerStyle={styles.swipeableContainer}
             overshootRight={false}
             overshootLeft={false}
-            leftThreshold={32}
-            rightThreshold={32}
+            leftThreshold={layout.swipeThreshold}
+            rightThreshold={layout.swipeThreshold}
+            dragOffsetFromLeftEdge={layout.swipeDragOffset}
+            dragOffsetFromRightEdge={layout.swipeDragOffset}
+            friction={1.9}
             renderLeftActions={(_, __, methods) =>
               renderLeftActions(dream, methods)
             }
             renderRightActions={(_, __, methods) =>
               renderRightActions(dream, methods)
             }
-            onSwipeableOpen={() => closePreviousSwipe(dream.id)}
+            onSwipeableWillOpen={() => closePreviousSwipe(dream.id)}
+            onSwipeableOpen={() => {
+              activeSwipeId.current = dream.id;
+            }}
             onSwipeableClose={() => {
               if (activeSwipeId.current === dream.id) {
                 activeSwipeId.current = null;
@@ -343,11 +454,12 @@ export default function HomeScreen() {
           >
             <Pressable
               style={styles.dreamPressable}
-              onPress={() =>
+              onPress={() => {
+                closeActiveSwipe();
                 navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
                   dreamId: dream.id,
-                })
-              }
+                });
+              }}
             >
               <Card style={styles.dreamCard}>
                 <View style={styles.dreamRow}>

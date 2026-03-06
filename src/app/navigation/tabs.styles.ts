@@ -6,7 +6,7 @@ import {
   getTabBarHeight,
 } from './tabBarLayout';
 
-export function createTabsStyles(theme: Theme, focused: boolean, bottomInset: number) {
+export function createTabsStyles(theme: Theme, _focused: boolean, bottomInset: number) {
   return StyleSheet.create({
     tabBar: {
       position: 'absolute',
@@ -27,24 +27,10 @@ export function createTabsStyles(theme: Theme, focused: boolean, bottomInset: nu
       elevation: 14,
     },
     tabBarLabel: {
-      fontSize: 10,
+      fontSize: 11,
+      lineHeight: 13,
       fontWeight: '600',
-    },
-    recordIconContainer: {
-      width: focused ? 56 : 44,
-      height: focused ? 56 : 44,
-      borderRadius: focused ? 18 : 14,
-      marginTop: focused ? -26 : -8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: focused ? theme.colors.primary : theme.colors.surface,
-      borderWidth: 1,
-      borderColor: focused ? theme.colors.primary : theme.colors.border,
-      shadowColor: focused ? theme.colors.glow : '#000',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: focused ? 0.22 : 0.04,
-      shadowRadius: focused ? 22 : 8,
-      elevation: focused ? 10 : 2,
+      includeFontPadding: false,
     },
   });
 }

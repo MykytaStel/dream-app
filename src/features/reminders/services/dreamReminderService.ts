@@ -9,13 +9,12 @@ import notifee, {
 } from '@notifee/react-native';
 import { Platform } from 'react-native';
 import { kv } from '../../../services/storage/mmkv';
+import { REMINDER_PENDING_OPEN_KEY, REMINDER_SETTINGS_KEY } from '../../../services/storage/keys';
 import { getStoredLocale } from '../../../i18n/localeStore';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 
 const REMINDER_CHANNEL_ID = 'dream-reminders';
 const REMINDER_NOTIFICATION_ID = 'dream-record-reminder';
-const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
-const REMINDER_PENDING_OPEN_KEY = 'dream-reminder-pending-open-record';
 const REMINDER_TARGET_RECORD = 'record';
 
 export type DreamReminderSettings = {

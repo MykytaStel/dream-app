@@ -1,7 +1,6 @@
 import { kv } from '../services/storage/mmkv';
+import { APP_LOCALE_KEY } from '../services/storage/keys';
 import { AppLocale, isAppLocale } from './types';
-
-const APP_LOCALE_KEY = 'app-locale';
 
 function getSystemDefaultLocale(): AppLocale {
   const locale = Intl.DateTimeFormat().resolvedOptions().locale.toLowerCase();

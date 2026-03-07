@@ -177,11 +177,17 @@ const DREAM_COPY_EN = {
     'This removes the saved transcript but keeps the original voice note on device.',
   detailAnalysisTitle: 'Dream analysis',
   detailAnalysisEmpty:
-    'No analysis is saved for this dream yet. This release only prepares the slot for future summaries and themes.',
+    'No analysis is saved for this dream yet. Generate one to turn this entry into a short local reflection.',
   detailAnalysisDisabled:
-    'The analysis layer is disabled in Settings, so no summary or themes are attached yet.',
+    'The analysis layer is disabled in Settings, so this dream stays as raw capture only.',
   detailAnalysisSummaryLabel: 'Summary',
   detailAnalysisThemesLabel: 'Themes',
+  detailAnalysisStateLabel: 'Analysis mode',
+  detailAnalysisStateLocalReady: 'Local analysis is on and ready for this dream.',
+  detailAnalysisStateDisabled: 'Analysis is off. Enable it in Settings when you want summaries and themes.',
+  detailAnalysisStateOpenAiPlanned:
+    'OpenAI is selected in Settings, but network analysis is still a planned path in this release.',
+  detailAnalysisStateManual: 'This dream can generate a local summary from saved text, transcript, tags, and context.',
   detailAnalysisProviderLabel: 'Provider',
   detailAnalysisUpdatedLabel: 'Updated',
   detailAnalysisStatusLabel: 'Status',
@@ -194,6 +200,7 @@ const DREAM_COPY_EN = {
   detailAnalysisRegenerate: 'Regenerate analysis',
   detailAnalysisClear: 'Clear analysis',
   detailAnalysisGenerating: 'Generating local analysis...',
+  detailAnalysisOpenSettings: 'Open Settings',
   detailAnalysisOpenAiUnavailable:
     'The OpenAI provider is configured in Settings, but it is still a planned path in this release.',
   detailAnalysisErrorTitle: 'Analysis failed',
@@ -479,11 +486,18 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Це видалить збережений транскрипт, але залишить оригінальну голосову нотатку на пристрої.',
   detailAnalysisTitle: 'Аналіз сну',
   detailAnalysisEmpty:
-    'Для цього сну ще не збережено аналіз. Цей реліз лише готує слот для майбутніх summary і themes.',
+    'Для цього сну ще не збережено аналіз. Згенеруй його, щоб перетворити запис на коротку локальну рефлексію.',
   detailAnalysisDisabled:
-    'Шар аналізу вимкнений у Settings, тому summary і themes поки не прикріплюються.',
+    'Шар аналізу вимкнений у Settings, тому цей сон поки лишається сирим записом без summary і themes.',
   detailAnalysisSummaryLabel: 'Summary',
   detailAnalysisThemesLabel: 'Themes',
+  detailAnalysisStateLabel: 'Режим аналізу',
+  detailAnalysisStateLocalReady: 'Локальний аналіз увімкнений і готовий для цього сну.',
+  detailAnalysisStateDisabled: 'Аналіз вимкнений. Увімкни його в Settings, коли захочеш summary і themes.',
+  detailAnalysisStateOpenAiPlanned:
+    'У Settings обрано OpenAI, але мережевий аналіз у цьому релізі ще лишається запланованим шляхом.',
+  detailAnalysisStateManual:
+    'Для цього сну можна згенерувати локальний summary зі збереженого тексту, транскрипту, тегів і context.',
   detailAnalysisProviderLabel: 'Провайдер',
   detailAnalysisUpdatedLabel: 'Оновлено',
   detailAnalysisStatusLabel: 'Статус',
@@ -496,6 +510,7 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailAnalysisRegenerate: 'Оновити аналіз',
   detailAnalysisClear: 'Очистити аналіз',
   detailAnalysisGenerating: 'Генерується локальний аналіз...',
+  detailAnalysisOpenSettings: 'Відкрити Settings',
   detailAnalysisOpenAiUnavailable:
     'Провайдер OpenAI уже обраний у Settings, але в цьому релізі це ще лише запланований шлях.',
   detailAnalysisErrorTitle: 'Помилка аналізу',

@@ -1,8 +1,9 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { FlatList, Pressable, View } from 'react-native';
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { ScreenStateCard } from '../../dreams/components/ScreenStateCard';
@@ -25,6 +26,7 @@ import {
   type PatternMatchSource,
 } from '../model/patternMatches';
 import { createPatternDetailScreenStyles } from './PatternDetailScreen.styles';
+import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 
 function formatPreview(dream: Dream, copy: DreamCopy) {
   const text = dream.text?.trim();
@@ -102,8 +104,75 @@ function formatRowMeta(dream: Dream, moodText?: string) {
   return moodText ? `${moodText} · ${dateLabel}` : dateLabel;
 }
 
+const PatternMatchRow = React.memo(function PatternMatchRow({
+  match,
+  dreamCopy,
+  statsCopy,
+  moodLabels,
+  navigation,
+  styles,
+}: {
+  match: ReturnType<typeof getPatternDreamMatches>[number];
+  dreamCopy: DreamCopy;
+  statsCopy: ReturnType<typeof getStatsCopy>;
+  moodLabels: Record<Mood, string>;
+  navigation: NativeStackNavigationProp<RootStackParamList>;
+  styles: ReturnType<typeof createPatternDetailScreenStyles>;
+}) {
+  const dateParts = formatDateParts(match.dream);
+  const mood = moodLabel(match.dream.mood, moodLabels);
+
+  return (
+    <Pressable
+      style={({ pressed }) => [
+        styles.rowPressable,
+        pressed ? styles.rowPressablePressed : null,
+      ]}
+      onPress={() =>
+        navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+          dreamId: match.dream.id,
+        })}
+    >
+      <Card style={styles.rowCard}>
+        <View style={styles.rowHeader}>
+          <View style={styles.dateBadge}>
+            <Text style={styles.weekday}>{dateParts.weekday}</Text>
+            <Text style={styles.dayNumber}>{dateParts.day}</Text>
+            <Text style={styles.month}>{dateParts.month}</Text>
+          </View>
+
+          <View style={styles.rowCopy}>
+            <Text style={styles.rowTitle}>
+              {match.dream.title?.trim() || dreamCopy.untitled}
+            </Text>
+            <Text style={styles.rowMeta}>
+              {formatRowMeta(match.dream, mood)}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.previewWrap}>
+          <View style={styles.previewAccent} />
+          <Text style={styles.preview}>{formatPreview(match.dream, dreamCopy)}</Text>
+        </View>
+
+        <View style={styles.sourcesRow}>
+          <Text style={styles.sourceLabel}>{statsCopy.patternDetailMatchedIn}</Text>
+          {match.sources.map(source => (
+            <TagChip
+              key={`${match.dream.id}-${source}`}
+              label={getSourceLabel(source, statsCopy)}
+            />
+          ))}
+        </View>
+      </Card>
+    </Pressable>
+  );
+});
+
 export default function PatternDetailScreen() {
   const t = useTheme<Theme>();
+  const insets = useSafeAreaInsets();
   const { locale } = useI18n();
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
@@ -126,8 +195,8 @@ export default function PatternDetailScreen() {
     [dreams, kind, signal],
   );
 
-  return (
-    <ScreenContainer scroll contentContainerStyle={styles.content}>
+  const listHeader = (
+    <View style={styles.listHeader}>
       <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
         <Text style={styles.backLabel}>{dreamCopy.detailBack}</Text>
       </Pressable>
@@ -160,63 +229,47 @@ export default function PatternDetailScreen() {
           />
         </View>
       ) : (
-        <>
-          <Text style={styles.sectionTitle}>{statsCopy.patternDetailMatchesTitle}</Text>
-          <View style={styles.matchList}>
-            {matches.map(match => {
-              const dateParts = formatDateParts(match.dream);
-              const mood = moodLabel(match.dream.mood, moodLabels);
-              return (
-                <Pressable
-                  key={match.dream.id}
-                  style={({ pressed }) => [
-                    styles.rowPressable,
-                    pressed ? styles.rowPressablePressed : null,
-                  ]}
-                  onPress={() =>
-                    navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
-                      dreamId: match.dream.id,
-                    })}
-                >
-                  <Card style={styles.rowCard}>
-                    <View style={styles.rowHeader}>
-                      <View style={styles.dateBadge}>
-                        <Text style={styles.weekday}>{dateParts.weekday}</Text>
-                        <Text style={styles.dayNumber}>{dateParts.day}</Text>
-                        <Text style={styles.month}>{dateParts.month}</Text>
-                      </View>
-
-                      <View style={styles.rowCopy}>
-                        <Text style={styles.rowTitle}>
-                          {match.dream.title?.trim() || dreamCopy.untitled}
-                        </Text>
-                        <Text style={styles.rowMeta}>
-                          {formatRowMeta(match.dream, mood)}
-                        </Text>
-                      </View>
-                    </View>
-
-                    <View style={styles.previewWrap}>
-                      <View style={styles.previewAccent} />
-                      <Text style={styles.preview}>{formatPreview(match.dream, dreamCopy)}</Text>
-                    </View>
-
-                    <View style={styles.sourcesRow}>
-                      <Text style={styles.sourceLabel}>{statsCopy.patternDetailMatchedIn}</Text>
-                      {match.sources.map(source => (
-                        <TagChip
-                          key={`${match.dream.id}-${source}`}
-                          label={getSourceLabel(source, statsCopy)}
-                        />
-                      ))}
-                    </View>
-                  </Card>
-                </Pressable>
-              );
-            })}
-          </View>
-        </>
+        <Text style={styles.sectionTitle}>{statsCopy.patternDetailMatchesTitle}</Text>
       )}
+    </View>
+  );
+
+  const renderMatchItem = React.useCallback(
+    ({ item }: { item: ReturnType<typeof getPatternDreamMatches>[number] }) => (
+      <PatternMatchRow
+        match={item}
+        dreamCopy={dreamCopy}
+        statsCopy={statsCopy}
+        moodLabels={moodLabels}
+        navigation={navigation}
+        styles={styles}
+      />
+    ),
+    [dreamCopy, moodLabels, navigation, statsCopy, styles],
+  );
+
+  return (
+    <ScreenContainer scroll={false} padded={false}>
+      <FlatList
+        data={matches}
+        keyExtractor={item => item.dream.id}
+        renderItem={renderMatchItem}
+        ListHeaderComponent={listHeader}
+        ItemSeparatorComponent={() => <View style={{ height: t.spacing.sm }} />}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews
+        initialNumToRender={8}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={40}
+        windowSize={8}
+        contentContainerStyle={[
+          styles.listContent,
+          {
+            paddingTop: insets.top + t.spacing.xs,
+            paddingBottom: getTabBarReservedSpace(insets.bottom) + t.spacing.xs,
+          },
+        ]}
+      />
     </ScreenContainer>
   );
 }

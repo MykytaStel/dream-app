@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../../theme/theme';
+import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 
 export function createStatsScreenStyles(theme: Theme) {
   return StyleSheet.create({
@@ -7,11 +8,11 @@ export function createStatsScreenStyles(theme: Theme) {
       justifyContent: 'center',
     },
     heroCard: {
-      gap: 14,
+      gap: 12,
       padding: 16,
     },
     heroHeader: {
-      gap: 6,
+      gap: 8,
     },
     heroEyebrow: {
       color: theme.colors.accent,
@@ -25,10 +26,15 @@ export function createStatsScreenStyles(theme: Theme) {
       gap: 8,
     },
     summaryCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
       flex: 1,
-      padding: 12,
-      gap: 2,
-      backgroundColor: theme.colors.surfaceAlt,
+      gap: 3,
+      minHeight: 74,
     },
     summaryLabel: {
       color: theme.colors.textDim,
@@ -55,12 +61,11 @@ export function createStatsScreenStyles(theme: Theme) {
       gap: 8,
     },
     rangeChip: {
-      borderRadius: theme.borderRadii.pill,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+      }),
     },
     rangeChipActive: {
       borderColor: theme.colors.primary,
@@ -75,7 +80,7 @@ export function createStatsScreenStyles(theme: Theme) {
       color: theme.colors.background,
     },
     sectionCard: {
-      gap: 14,
+      gap: 12,
     },
     sectionHint: {
       color: theme.colors.textDim,
@@ -84,17 +89,18 @@ export function createStatsScreenStyles(theme: Theme) {
     metricGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 10,
+      gap: 8,
     },
     metricTile: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
       flexGrow: 1,
       flexBasis: '47%',
       minWidth: 144,
-      padding: 12,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
       gap: 4,
     },
     metricLabel: {
@@ -113,22 +119,23 @@ export function createStatsScreenStyles(theme: Theme) {
     insightGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 10,
+      gap: 8,
     },
     insightCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
       flexGrow: 1,
       flexBasis: '47%',
       minWidth: 144,
-      padding: 12,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
       gap: 5,
     },
     insightCardInteractive: {
       borderColor: theme.colors.accent,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: theme.colors.surfaceAlt,
     },
     insightCardPressed: {
       opacity: 0.96,
@@ -179,7 +186,7 @@ export function createStatsScreenStyles(theme: Theme) {
       height: 10,
       borderRadius: 999,
       overflow: 'hidden',
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: theme.colors.surface,
     },
     coverageFill: {
       height: '100%',
@@ -189,17 +196,18 @@ export function createStatsScreenStyles(theme: Theme) {
     attentionRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 10,
+      gap: 8,
     },
     attentionCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
       flexGrow: 1,
       flexBasis: '31%',
       minWidth: 92,
-      padding: 12,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
       gap: 4,
     },
     attentionValue: {
@@ -271,12 +279,12 @@ export function createStatsScreenStyles(theme: Theme) {
       gap: 10,
     },
     reflectionItem: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: theme.borderRadii.lg,
+      }),
       gap: 8,
       padding: theme.spacing.md,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
     },
     reflectionHeader: {
       flexDirection: 'row',
@@ -295,16 +303,17 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     teaserRow: {
       flexDirection: 'row',
-      gap: 10,
+      gap: 8,
     },
     teaserCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
       flex: 1,
       gap: 4,
-      padding: 12,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
     },
     teaserCardAccent: {
       borderColor: theme.colors.accent,
@@ -328,12 +337,11 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     toggleButton: {
       alignSelf: 'flex-start',
-      borderRadius: theme.borderRadii.pill,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 12,
+        paddingVertical: 7,
+      }),
     },
     toggleButtonText: {
       color: theme.colors.text,
@@ -344,18 +352,18 @@ export function createStatsScreenStyles(theme: Theme) {
       gap: 12,
     },
     achievementItem: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: theme.borderRadii.lg,
+      }),
       gap: 10,
       padding: theme.spacing.md,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
     },
     achievementItemUnlocked: {
       borderColor: theme.colors.accent,
     },
     achievementItemHighlighted: {
-      backgroundColor: theme.colors.surfaceElevated,
+      backgroundColor: theme.colors.surfaceAlt,
     },
     achievementHeaderRow: {
       flexDirection: 'row',
@@ -375,12 +383,11 @@ export function createStatsScreenStyles(theme: Theme) {
       lineHeight: 20,
     },
     achievementBadge: {
-      borderRadius: theme.borderRadii.pill,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.background,
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }),
     },
     achievementBadgeUnlocked: {
       borderColor: theme.colors.accent,
@@ -398,7 +405,7 @@ export function createStatsScreenStyles(theme: Theme) {
       height: 8,
       borderRadius: 999,
       overflow: 'hidden',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surface,
     },
     achievementProgressFill: {
       height: '100%',

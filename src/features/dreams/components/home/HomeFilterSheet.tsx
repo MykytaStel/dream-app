@@ -1,0 +1,293 @@
+import React from 'react';
+import { Modal, Pressable, ScrollView, View } from 'react-native';
+import { Button } from '../../../../components/ui/Button';
+import { FormField } from '../../../../components/ui/FormField';
+import { SectionHeader } from '../../../../components/ui/SectionHeader';
+import { Text } from '../../../../components/ui/Text';
+import { type DreamCopy } from '../../../../constants/copy/dreams';
+import {
+  type HomeDateRangeFilter,
+  type HomeEntryTypeFilter,
+  type HomeSortOrder,
+  type HomeTimelineFilters,
+  type HomeTranscriptFilter,
+} from '../../model/homeTimeline';
+import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
+import { type HomeOption } from './homeTypes';
+
+type HomeFilterSheetProps = {
+  visible: boolean;
+  copy: DreamCopy;
+  styles: ReturnType<typeof createHomeScreenStyles>;
+  timelineFilters: HomeTimelineFilters;
+  moodFilters: Array<HomeOption<HomeTimelineFilters['mood']>>;
+  typeFilters: Array<HomeOption<HomeEntryTypeFilter>>;
+  transcriptFilters: Array<HomeOption<HomeTranscriptFilter>>;
+  availableTags: string[];
+  dateRangeFilters: Array<HomeOption<HomeDateRangeFilter>>;
+  sortOptions: Array<HomeOption<HomeSortOrder>>;
+  onClose: () => void;
+  updateTimelineFilters: (updater: (current: HomeTimelineFilters) => HomeTimelineFilters) => void;
+};
+
+type FilterOption<K extends string> = HomeOption<K>;
+
+type FilterGroupProps<K extends string> = {
+  label: string;
+  options: Array<FilterOption<K>>;
+  value: K;
+  onSelect: (value: K) => void;
+  styles: ReturnType<typeof createHomeScreenStyles>;
+};
+
+function FilterGroup<K extends string>({
+  label,
+  options,
+  value,
+  onSelect,
+  styles,
+}: FilterGroupProps<K>) {
+  return (
+    <View style={styles.filterGroup}>
+      <Text style={styles.filterGroupLabel}>{label}</Text>
+      <View style={styles.filterRow}>
+        {options.map(option => {
+          const active = value === option.key;
+
+          return (
+            <Pressable
+              key={option.key}
+              style={[styles.filterButton, active ? styles.filterButtonActive : null]}
+              onPress={() => onSelect(option.key)}
+            >
+              <Text
+                style={[styles.filterButtonLabel, active ? styles.filterButtonLabelActive : null]}
+              >
+                {option.label}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+export function HomeFilterSheet({
+  visible,
+  copy,
+  styles,
+  timelineFilters,
+  moodFilters,
+  typeFilters,
+  transcriptFilters,
+  availableTags,
+  dateRangeFilters,
+  sortOptions,
+  onClose,
+  updateTimelineFilters,
+}: HomeFilterSheetProps) {
+  const [tagQuery, setTagQuery] = React.useState('');
+  const [showAllTags, setShowAllTags] = React.useState(false);
+
+  React.useEffect(() => {
+    if (!visible) {
+      setTagQuery('');
+      setShowAllTags(false);
+    }
+  }, [visible]);
+
+  const normalizedTagQuery = tagQuery.trim().toLowerCase();
+  const filteredTags = React.useMemo(
+    () =>
+      availableTags.filter(tag =>
+        normalizedTagQuery ? tag.toLowerCase().includes(normalizedTagQuery) : true,
+      ),
+    [availableTags, normalizedTagQuery],
+  );
+  const selectedTags = React.useMemo(
+    () => filteredTags.filter(tag => timelineFilters.tags.includes(tag)),
+    [filteredTags, timelineFilters.tags],
+  );
+  const unselectedTags = React.useMemo(
+    () => filteredTags.filter(tag => !timelineFilters.tags.includes(tag)),
+    [filteredTags, timelineFilters.tags],
+  );
+  const visibleUnselectedTags = React.useMemo(
+    () => (showAllTags || normalizedTagQuery ? unselectedTags : unselectedTags.slice(0, 12)),
+    [normalizedTagQuery, showAllTags, unselectedTags],
+  );
+  const hiddenTagCount = Math.max(0, unselectedTags.length - visibleUnselectedTags.length);
+
+  return (
+    <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
+      <View style={styles.filterSheetRoot}>
+        <Pressable style={styles.filterSheetBackdrop} onPress={onClose} />
+        <View style={styles.filterSheetCard}>
+          <View style={styles.filterSheetHeader}>
+            <View style={styles.filterSheetHandle} />
+            <SectionHeader title={copy.homeRefineLabel} />
+            <Button title={copy.homeHideFilters} variant="ghost" size="sm" onPress={onClose} />
+          </View>
+
+          <ScrollView
+            style={styles.filterSheetScroll}
+            contentContainerStyle={styles.filterSheetBody}
+            showsVerticalScrollIndicator={false}
+          >
+            <FilterGroup
+              label={copy.homeMoodFilterLabel}
+              options={moodFilters}
+              value={timelineFilters.mood}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  mood: value,
+                }))
+              }
+            />
+
+            <FilterGroup
+              label={copy.homeTypeFilterLabel}
+              options={typeFilters}
+              value={timelineFilters.entryType}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  entryType: value,
+                }))
+              }
+            />
+
+            <FilterGroup
+              label={copy.homeTranscriptFilterLabel}
+              options={transcriptFilters}
+              value={timelineFilters.transcript}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  transcript: value,
+                }))
+              }
+            />
+
+            {availableTags.length > 0 ? (
+              <View style={styles.filterGroup}>
+                <Text style={styles.filterGroupLabel}>{copy.homeTagFilterLabel}</Text>
+                <FormField
+                  placeholder={copy.homeTagSearchPlaceholder}
+                  value={tagQuery}
+                  onChangeText={setTagQuery}
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                />
+                {selectedTags.length > 0 ? (
+                  <View style={styles.filterSelectionBlock}>
+                    <Text style={styles.filterGroupMetaLabel}>{copy.homeTagSelectedLabel}</Text>
+                    <View style={styles.filterRow}>
+                      {selectedTags.map(tag => (
+                        <Pressable
+                          key={`selected-${tag}`}
+                          style={[styles.filterButton, styles.filterButtonActive]}
+                          onPress={() =>
+                            updateTimelineFilters(current => ({
+                              ...current,
+                              tags: current.tags.filter(value => value !== tag),
+                            }))
+                          }
+                        >
+                          <Text style={[styles.filterButtonLabel, styles.filterButtonLabelActive]}>
+                            {tag}
+                          </Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  </View>
+                ) : null}
+                <View style={styles.filterRow}>
+                  {visibleUnselectedTags.map(tag => {
+                    const active = timelineFilters.tags.includes(tag);
+
+                    return (
+                      <Pressable
+                        key={tag}
+                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
+                        onPress={() =>
+                          updateTimelineFilters(current => ({
+                            ...current,
+                            tags: current.tags.includes(tag)
+                              ? current.tags.filter(value => value !== tag)
+                              : [...current.tags, tag],
+                          }))
+                        }
+                      >
+                        <Text
+                          style={[
+                            styles.filterButtonLabel,
+                            active ? styles.filterButtonLabelActive : null,
+                          ]}
+                        >
+                          {tag}
+                        </Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {!selectedTags.length && !visibleUnselectedTags.length ? (
+                  <Text style={styles.filterEmptyText}>{copy.homeTagsEmpty}</Text>
+                ) : null}
+                {hiddenTagCount > 0 && !normalizedTagQuery ? (
+                  <Pressable
+                    style={styles.filterMoreButton}
+                    onPress={() => setShowAllTags(true)}
+                  >
+                    <Text style={styles.filterMoreButtonText}>
+                      {`${copy.homeTagsShowMore} (${hiddenTagCount})`}
+                    </Text>
+                  </Pressable>
+                ) : null}
+                {showAllTags && unselectedTags.length > 12 && !normalizedTagQuery ? (
+                  <Pressable
+                    style={styles.filterMoreButton}
+                    onPress={() => setShowAllTags(false)}
+                  >
+                    <Text style={styles.filterMoreButtonText}>{copy.homeTagsShowLess}</Text>
+                  </Pressable>
+                ) : null}
+              </View>
+            ) : null}
+
+            <FilterGroup
+              label={copy.homeDateRangeFilterLabel}
+              options={dateRangeFilters}
+              value={timelineFilters.dateRange}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  dateRange: value,
+                }))
+              }
+            />
+
+            <FilterGroup
+              label={copy.homeSortFilterLabel}
+              options={sortOptions}
+              value={timelineFilters.sortOrder}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  sortOrder: value,
+                }))
+              }
+            />
+          </ScrollView>
+        </View>
+      </View>
+    </Modal>
+  );
+}

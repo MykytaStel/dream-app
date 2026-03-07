@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../../theme/theme';
+import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 
 export function createProgressScreenStyles(theme: Theme) {
   return StyleSheet.create({
@@ -15,20 +16,21 @@ export function createProgressScreenStyles(theme: Theme) {
       fontWeight: '600',
     },
     sectionCard: {
-      gap: 14,
+      gap: 12,
     },
     teaserRow: {
       flexDirection: 'row',
-      gap: 10,
+      gap: 8,
     },
     teaserCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
       flex: 1,
       gap: 4,
-      padding: 12,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
     },
     teaserCardAccent: {
       borderColor: theme.colors.accent,
@@ -54,18 +56,18 @@ export function createProgressScreenStyles(theme: Theme) {
       gap: 12,
     },
     achievementItem: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: theme.borderRadii.lg,
+      }),
       gap: 10,
       padding: theme.spacing.md,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
     },
     achievementItemUnlocked: {
       borderColor: theme.colors.accent,
     },
     achievementItemHighlighted: {
-      backgroundColor: theme.colors.surfaceElevated,
+      backgroundColor: theme.colors.surfaceAlt,
     },
     achievementHeaderRow: {
       flexDirection: 'row',
@@ -85,12 +87,11 @@ export function createProgressScreenStyles(theme: Theme) {
       lineHeight: 20,
     },
     achievementBadge: {
-      borderRadius: theme.borderRadii.pill,
-      paddingHorizontal: 10,
-      paddingVertical: 6,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.background,
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }),
     },
     achievementBadgeUnlocked: {
       borderColor: theme.colors.accent,
@@ -108,7 +109,7 @@ export function createProgressScreenStyles(theme: Theme) {
       height: 8,
       borderRadius: 999,
       overflow: 'hidden',
-      backgroundColor: theme.colors.background,
+      backgroundColor: theme.colors.surface,
     },
     achievementProgressFill: {
       height: '100%',

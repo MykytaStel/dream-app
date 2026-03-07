@@ -66,12 +66,19 @@ export default function ProgressScreen() {
   const weeklyGoalTarget = 3;
   const lastSevenDays = getEntriesLastSevenDays(dreams);
   const weeklyGoalComplete = lastSevenDays >= weeklyGoalTarget;
+  const highlightedAchievementTitle = achievementSummary.highlightedId
+    ? getAchievementContent(achievementSummary.highlightedId, copy).title
+    : null;
+  const milestoneSummaryHint =
+    achievementSummary.unlockedCount === achievementSummary.totalCount
+      ? copy.milestonesCompleteTitle
+      : highlightedAchievementTitle ?? copy.milestoneInProgress;
 
   return (
     <ScreenContainer scroll>
       <Card style={styles.heroCard}>
         <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLabel}>{copy.progressScreenTitle}</Text>
+          <Text style={styles.backLabel}>{copy.progressBackButton}</Text>
         </Pressable>
         <SectionHeader title={copy.progressScreenTitle} subtitle={copy.progressScreenSubtitle} large />
       </Card>
@@ -90,22 +97,9 @@ export default function ProgressScreen() {
             <Text style={styles.teaserValue}>
               {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
             </Text>
-            <Text style={styles.teaserHint}>
-              {achievementSummary.highlightedId
-                ? getAchievementContent(achievementSummary.highlightedId, copy).title
-                : copy.milestoneInProgress}
-            </Text>
+            <Text style={styles.teaserHint}>{milestoneSummaryHint}</Text>
           </View>
         </View>
-        <InfoRow label={copy.weeklyGoalProgressLabel} value={`${lastSevenDays}/${weeklyGoalTarget}`} />
-        <InfoRow
-          label={copy.milestoneHighlightLabel}
-          value={
-            achievementSummary.highlightedId
-              ? getAchievementContent(achievementSummary.highlightedId, copy).title
-              : copy.milestoneInProgress
-          }
-        />
       </Card>
 
       <Card style={styles.sectionCard}>

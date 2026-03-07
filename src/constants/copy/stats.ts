@@ -26,7 +26,13 @@ const STATS_COPY_EN = {
   patternsTitle: 'Patterns',
   patternsDescription:
     'Repeated tags, transcript symbols, and emotional signals that keep showing up.',
+  patternsMoreLabel: 'Also showing up',
+  recurringWordsDescription: 'Across titles, notes, and transcripts.',
+  recurringThemesDescription: 'From tags and transcript language.',
+  recurringSymbolsDescription: 'From transcript language only.',
+  preSleepEmotionsDescription: 'The feelings you log before sleep most often.',
   progressOpenButton: 'Open progress',
+  progressBackButton: 'Back',
   progressScreenTitle: 'Progress',
   progressScreenSubtitle:
     'Milestones and weekly momentum live here instead of crowding the insights feed.',
@@ -61,7 +67,7 @@ const STATS_COPY_EN = {
   milestoneThreeDayStreakTitle: 'Three days in a row',
   milestoneThreeDayStreakDescription:
     'Log dreams on three consecutive days to prove the habit is taking hold.',
-  milestoneTenDreamsTitle: 'Ten dreams recorded',
+  milestoneTenDreamsTitle: '10 dreams saved',
   milestoneTenDreamsDescription:
     'Reach ten saved dreams so trends and recurring themes start to become clearer.',
   milestoneFirstVoiceDreamTitle: 'First voice dream',
@@ -191,7 +197,13 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   patternsTitle: 'Патерни',
   patternsDescription:
     'Повторювані теги, символи з транскриптів і емоційні сигнали, які знову зʼявляються.',
+  patternsMoreLabel: 'Ще повторюються',
+  recurringWordsDescription: 'У назвах, нотатках і транскриптах.',
+  recurringThemesDescription: 'З тегів і мови транскриптів.',
+  recurringSymbolsDescription: 'Лише з мови транскриптів.',
+  preSleepEmotionsDescription: 'Емоції, які ти найчастіше відмічаєш перед сном.',
   progressOpenButton: 'Відкрити прогрес',
+  progressBackButton: 'Назад',
   progressScreenTitle: 'Прогрес',
   progressScreenSubtitle:
     'Майлстоуни і тижневий ритм живуть тут окремо, а не перевантажують аналітику.',
@@ -226,7 +238,7 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   milestoneThreeDayStreakTitle: 'Три дні поспіль',
   milestoneThreeDayStreakDescription:
     'Записуй сни три дні підряд, щоб закріпити звичку.',
-  milestoneTenDreamsTitle: 'Десять снів записано',
+  milestoneTenDreamsTitle: '10 збережених снів',
   milestoneTenDreamsDescription:
     'Дійди до десяти збережених снів, щоб тренди й повторювані теми стали помітнішими.',
   milestoneFirstVoiceDreamTitle: 'Перший голосовий сон',

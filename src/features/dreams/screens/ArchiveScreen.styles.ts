@@ -1,32 +1,23 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../../theme/theme';
+import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 
 export function createArchiveScreenStyles(theme: Theme) {
   return StyleSheet.create({
     content: {
       paddingTop: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.lg,
-      gap: theme.spacing.md,
+      paddingHorizontal: theme.spacing.md,
+      gap: theme.spacing.sm,
     },
     headerBlock: {
-      gap: theme.spacing.md,
+      gap: theme.spacing.sm,
     },
-    heroCard: {
-      gap: 12,
+    titleBlock: {
+      gap: 8,
+      paddingHorizontal: 2,
     },
-    backButton: {
-      alignSelf: 'flex-start',
-      borderRadius: theme.borderRadii.pill,
-      paddingVertical: 6,
-      paddingHorizontal: 10,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-    },
-    backLabel: {
-      color: theme.colors.text,
-      fontSize: 12,
-      fontWeight: '700',
+    controlsCard: {
+      gap: 10,
     },
     filtersRow: {
       flexDirection: 'row',
@@ -34,12 +25,11 @@ export function createArchiveScreenStyles(theme: Theme) {
       gap: 8,
     },
     filterChip: {
-      borderRadius: theme.borderRadii.pill,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 7,
-      paddingHorizontal: 12,
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+      }),
     },
     filterChipActive: {
       borderColor: theme.colors.primary,
@@ -54,12 +44,16 @@ export function createArchiveScreenStyles(theme: Theme) {
       color: theme.colors.background,
     },
     calendarCard: {
-      gap: 12,
+      gap: 10,
     },
-    calendarHeader: {
-      gap: 12,
+    calendarTopRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 8,
     },
     calendarCopy: {
+      flex: 1,
       gap: 4,
     },
     calendarTitle: {
@@ -68,21 +62,32 @@ export function createArchiveScreenStyles(theme: Theme) {
     calendarSubtitle: {
       color: theme.colors.textDim,
       fontSize: 12,
-      lineHeight: 18,
+      lineHeight: 17,
     },
-    monthPager: {
+    calendarToggleButton: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+      }),
+    },
+    calendarToggleButtonText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    monthToolbar: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
     },
     monthPagerButton: {
-      borderRadius: theme.borderRadii.pill,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 7,
-      paddingHorizontal: 10,
-      minWidth: 72,
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+      }),
+      minWidth: 70,
       alignItems: 'center',
     },
     monthPagerButtonDisabled: {
@@ -98,22 +103,34 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     monthLabelBlock: {
       flex: 1,
-      gap: 2,
+      gap: 5,
       alignItems: 'center',
     },
     monthLabel: {
       fontWeight: '700',
       textTransform: 'capitalize',
     },
-    monthMeta: {
+    monthMetaRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'center',
+      gap: 6,
+    },
+    monthMetaChip: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+      }),
+    },
+    monthMetaChipText: {
       color: theme.colors.textDim,
       fontSize: 11,
-      lineHeight: 15,
-      textAlign: 'center',
+      fontWeight: '600',
     },
     weekdayRow: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 4,
     },
     weekdayLabel: {
       flex: 1,
@@ -123,23 +140,25 @@ export function createArchiveScreenStyles(theme: Theme) {
       textAlign: 'center',
       textTransform: 'uppercase',
     },
-    calendarGrid: {
+    calendarRows: {
+      gap: 4,
+    },
+    calendarWeekRow: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
+      gap: 4,
     },
     calendarCell: {
-      width: '12.57%',
-      minHeight: 56,
-      borderRadius: 14,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 12,
+        paddingVertical: 5,
+        paddingHorizontal: 4,
+      }),
+      flex: 1,
+      minHeight: 40,
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 4,
-      paddingVertical: 6,
-      paddingHorizontal: 4,
+      gap: 2,
     },
     calendarCellPlaceholder: {
       opacity: 0,
@@ -149,27 +168,28 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     calendarCellSelected: {
       borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.primary,
+      borderWidth: 2,
+      backgroundColor: theme.colors.surface,
     },
     calendarCellDay: {
       color: theme.colors.text,
-      fontSize: 13,
+      fontSize: 12,
       fontWeight: '700',
     },
     calendarCellDaySelected: {
-      color: theme.colors.background,
+      color: theme.colors.primary,
     },
     calendarCellDayMuted: {
       color: theme.colors.textDim,
     },
     calendarCellCount: {
       color: theme.colors.textDim,
-      fontSize: 10,
+      fontSize: 9,
       fontWeight: '700',
     },
     calendarCellCountSelected: {
-      color: theme.colors.background,
-      opacity: 0.8,
+      color: theme.colors.primary,
+      opacity: 0.9,
     },
     selectedDateRow: {
       flexDirection: 'row',
@@ -178,12 +198,11 @@ export function createArchiveScreenStyles(theme: Theme) {
       alignItems: 'center',
     },
     selectedDateChip: {
-      borderRadius: theme.borderRadii.pill,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 7,
-      paddingHorizontal: 10,
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+      }),
     },
     selectedDateText: {
       color: theme.colors.text,
@@ -191,12 +210,11 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontWeight: '600',
     },
     clearDateChip: {
-      borderRadius: theme.borderRadii.pill,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.background,
-      paddingVertical: 7,
-      paddingHorizontal: 10,
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+      }),
     },
     clearDateChipText: {
       color: theme.colors.textDim,
@@ -207,7 +225,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingTop: theme.spacing.sm,
+      paddingTop: theme.spacing.xs,
       paddingBottom: 6,
       paddingHorizontal: 2,
     },
@@ -252,15 +270,15 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 12,
     },
     rowPreviewWrap: {
+      ...createSoftTile(theme, {
+        tone: 'alt',
+        radius: 12,
+        paddingVertical: 9,
+        paddingHorizontal: 10,
+      }),
       flexDirection: 'row',
       gap: 8,
       alignItems: 'stretch',
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 9,
-      paddingHorizontal: 10,
     },
     rowPreviewAccent: {
       width: 3,
@@ -274,15 +292,15 @@ export function createArchiveScreenStyles(theme: Theme) {
       lineHeight: 18,
     },
     dayChip: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 8,
+        paddingHorizontal: 6,
+      }),
       minWidth: 48,
       alignItems: 'center',
       justifyContent: 'center',
-      paddingVertical: 8,
-      paddingHorizontal: 6,
-      borderRadius: 14,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
     },
     dayNumber: {
       fontSize: 18,
@@ -301,12 +319,11 @@ export function createArchiveScreenStyles(theme: Theme) {
       gap: 6,
     },
     pill: {
-      borderRadius: theme.borderRadii.pill,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surface,
-      paddingVertical: 4,
-      paddingHorizontal: 8,
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+      }),
     },
     pillText: {
       color: theme.colors.textDim,

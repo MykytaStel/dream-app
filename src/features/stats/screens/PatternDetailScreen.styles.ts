@@ -3,7 +3,11 @@ import { Theme } from '../../../theme/theme';
 
 export function createPatternDetailScreenStyles(theme: Theme) {
   return StyleSheet.create({
-    content: {
+    listContent: {
+      padding: theme.spacing.md,
+      gap: theme.spacing.md,
+    },
+    listHeader: {
       gap: theme.spacing.md,
     },
     backButton: {

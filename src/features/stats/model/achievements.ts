@@ -90,7 +90,11 @@ export function getDreamAchievementSummary(
   achievements: DreamAchievementProgress[],
 ): DreamAchievementSummary {
   const unlocked = achievements.filter(achievement => achievement.unlocked);
+  const locked = achievements.filter(achievement => !achievement.unlocked);
   const highlighted =
+    locked
+      .slice()
+      .sort((a, b) => b.current / b.target - a.current / a.target)[0]?.id ??
     unlocked.at(-1)?.id ??
     achievements
       .slice()

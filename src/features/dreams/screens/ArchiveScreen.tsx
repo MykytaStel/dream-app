@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, SectionList, View } from 'react-native';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@shopify/restyle';
@@ -12,6 +12,7 @@ import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { getDreamCopy, getDreamMoodLabels, type DreamCopy } from '../../../constants/copy/dreams';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { Dream, Mood } from '../model/dream';
@@ -24,6 +25,7 @@ import {
 } from '../model/homeTimeline';
 import { listDreams } from '../repository/dreamsRepository';
 import { createArchiveScreenStyles } from './ArchiveScreen.styles';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 
 type ArchiveFilter = 'all' | 'active' | 'archived' | 'starred';
 
@@ -164,6 +166,16 @@ function buildCalendarCells(monthKey: string, dreams: Dream[]) {
   return cells;
 }
 
+function buildCalendarRows(cells: ArchiveCalendarCell[]) {
+  const rows: ArchiveCalendarCell[][] = [];
+
+  for (let index = 0; index < cells.length; index += 7) {
+    rows.push(cells.slice(index, index + 7));
+  }
+
+  return rows;
+}
+
 function buildArchiveSections(
   dreams: Dream[],
   selectedMonthKey: string | null,
@@ -183,6 +195,76 @@ function buildArchiveSections(
   ];
 }
 
+const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
+  dream,
+  copy,
+  localeKey,
+  moodLabels,
+  navigation,
+  styles,
+}: {
+  dream: Dream;
+  copy: DreamCopy;
+  localeKey: string;
+  moodLabels: Record<Mood, string>;
+  navigation: NativeStackNavigationProp<RootStackParamList>;
+  styles: ReturnType<typeof createArchiveScreenStyles>;
+}) {
+  const date = getDreamDate(dream);
+  const mood = moodLabel(dream.mood, moodLabels);
+  const pills = getArchivePills(dream, copy, mood);
+
+  return (
+    <Pressable
+      onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: dream.id })}
+      style={({ pressed }) => [
+        styles.listRowPressable,
+        pressed ? styles.listRowPressed : null,
+      ]}
+    >
+      <Card style={styles.listRowCard}>
+        <View style={styles.rowTop}>
+          <View style={styles.rowCopy}>
+            <Text style={styles.rowTitle}>{dream.title || copy.untitled}</Text>
+            <Text style={styles.rowMeta}>
+              {date.toLocaleDateString(localeKey, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+              })}
+            </Text>
+          </View>
+          <View style={styles.dayChip}>
+            <Text style={styles.dayNumber}>{date.getDate()}</Text>
+            <Text style={styles.dayWeek}>
+              {date.toLocaleDateString(localeKey, {
+                weekday: 'short',
+              })}
+            </Text>
+          </View>
+        </View>
+
+        <View style={styles.rowPreviewWrap}>
+          <View style={styles.rowPreviewAccent} />
+          <Text style={styles.rowPreview} numberOfLines={2}>
+            {formatArchivePreview(dream, copy)}
+          </Text>
+        </View>
+
+        {pills.length ? (
+          <View style={styles.pillsRow}>
+            {pills.map(label => (
+              <View key={`${dream.id}-${label}`} style={styles.pill}>
+                <Text style={styles.pillText}>{label}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
+      </Card>
+    </Pressable>
+  );
+});
+
 export default function ArchiveScreen() {
   const t = useTheme<Theme>();
   const { locale } = useI18n();
@@ -191,19 +273,24 @@ export default function ArchiveScreen() {
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = createArchiveScreenStyles(t);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.Archive>>();
   const insets = useSafeAreaInsets();
   const [dreams, setDreams] = React.useState(() => listDreams());
   const [filter, setFilter] = React.useState<ArchiveFilter>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
+  const [isCalendarExpanded, setIsCalendarExpanded] = React.useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
       setDreams(listDreams());
     }, []),
   );
+
+  const debouncedSearchQuery = useDebouncedValue(searchQuery, 160);
+  const deferredSearchQuery = React.useDeferredValue(debouncedSearchQuery);
+  const isSearchPending =
+    searchQuery !== debouncedSearchQuery || deferredSearchQuery !== debouncedSearchQuery;
 
   const statusScopedDreams = React.useMemo(() => {
     switch (filter) {
@@ -251,7 +338,7 @@ export default function ArchiveScreen() {
   );
 
   const searchedMonthDreams = React.useMemo(() => {
-    const normalizedQuery = searchQuery.trim().toLowerCase();
+    const normalizedQuery = deferredSearchQuery.trim().toLowerCase();
     const sortedDreams = sortDreamsForTimeline(monthDreams, 'newest');
 
     if (!normalizedQuery) {
@@ -266,7 +353,7 @@ export default function ArchiveScreen() {
       .filter(entry => entry.score > 0)
       .sort((a, b) => b.score - a.score)
       .map(entry => entry.dream);
-  }, [monthDreams, searchQuery]);
+  }, [deferredSearchQuery, monthDreams]);
 
   const visibleDreams = React.useMemo(
     () =>
@@ -285,6 +372,7 @@ export default function ArchiveScreen() {
     () => (selectedMonthKey ? buildCalendarCells(selectedMonthKey, searchedMonthDreams) : []),
     [selectedMonthKey, searchedMonthDreams],
   );
+  const calendarRows = React.useMemo(() => buildCalendarRows(calendarCells), [calendarCells]);
 
   const monthEntryCount = searchedMonthDreams.length;
   const monthActiveDays = getDistinctDayCount(searchedMonthDreams);
@@ -303,9 +391,23 @@ export default function ArchiveScreen() {
   const archiveFilters = [
     { key: 'all' as const, label: copy.archiveFilterAll },
     { key: 'active' as const, label: copy.archiveFilterActive },
-    { key: 'archived' as const, label: copy.archiveFilterArchived },
     { key: 'starred' as const, label: copy.archiveFilterStarred },
+    { key: 'archived' as const, label: copy.archiveFilterArchived },
   ];
+
+  const renderArchiveItem = React.useCallback(
+    ({ item }: { item: Dream }) => (
+      <ArchiveDreamRow
+        dream={item}
+        copy={copy}
+        localeKey={localeKey}
+        moodLabels={moodLabels}
+        navigation={navigation}
+        styles={styles}
+      />
+    ),
+    [copy, localeKey, moodLabels, navigation, styles],
+  );
 
   function moveMonth(direction: 'older' | 'newer') {
     if (selectedMonthIndex < 0) {
@@ -341,20 +443,25 @@ export default function ArchiveScreen() {
         keyExtractor={item => item.id}
         stickySectionHeadersEnabled={false}
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews
+        initialNumToRender={8}
+        maxToRenderPerBatch={10}
+        updateCellsBatchingPeriod={40}
+        windowSize={8}
         contentContainerStyle={[
           styles.content,
           {
             paddingTop: insets.top + t.spacing.xs,
-            paddingBottom: insets.bottom + t.spacing.xl * 4,
+            paddingBottom: getTabBarReservedSpace(insets.bottom) + t.spacing.xs,
           },
         ]}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <Card style={styles.heroCard}>
-              <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Text style={styles.backLabel}>{copy.detailBack}</Text>
-              </Pressable>
+            <View style={styles.titleBlock}>
               <SectionHeader title={copy.archiveTitle} subtitle={copy.archiveSubtitle} large />
+            </View>
+
+            <Card style={styles.controlsCard}>
               <View style={styles.filtersRow}>
                 {archiveFilters.map(option => {
                   const active = filter === option.key;
@@ -385,108 +492,139 @@ export default function ArchiveScreen() {
                 onChangeText={setSearchQuery}
                 autoCapitalize="none"
                 autoCorrect={false}
+                helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
               />
             </Card>
 
             {selectedMonthKey ? (
               <Card style={styles.calendarCard}>
-                <View style={styles.calendarHeader}>
+                <View style={styles.calendarTopRow}>
                   <View style={styles.calendarCopy}>
                     <Text style={styles.calendarTitle}>{copy.archiveCalendarTitle}</Text>
                     <Text style={styles.calendarSubtitle}>{copy.archiveCalendarSubtitle}</Text>
                   </View>
-                  <View style={styles.monthPager}>
-                    <Pressable
-                      style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
-                      disabled={!canGoOlder}
-                      onPress={() => moveMonth('older')}
-                    >
-                      <Text
-                        style={[
-                          styles.monthPagerButtonText,
-                          !canGoOlder ? styles.monthPagerButtonTextDisabled : null,
-                        ]}
-                      >
-                        {copy.archivePreviousMonth}
-                      </Text>
-                    </Pressable>
-                    <View style={styles.monthLabelBlock}>
-                      <Text style={styles.monthLabel}>
-                        {getMonthLabel(selectedMonthKey, localeKey)}
-                      </Text>
-                      <Text style={styles.monthMeta}>
-                        {`${monthEntryCount} ${copy.archiveMonthEntriesLabel} · ${monthActiveDays} ${copy.archiveMonthActiveDaysLabel}`}
-                      </Text>
-                    </View>
-                    <Pressable
-                      style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
-                      disabled={!canGoNewer}
-                      onPress={() => moveMonth('newer')}
-                    >
-                      <Text
-                        style={[
-                          styles.monthPagerButtonText,
-                          !canGoNewer ? styles.monthPagerButtonTextDisabled : null,
-                        ]}
-                      >
-                        {copy.archiveNextMonth}
-                      </Text>
-                    </Pressable>
-                  </View>
-                </View>
-
-                <View style={styles.weekdayRow}>
-                  {weekdayLabels.map(label => (
-                    <Text key={label} style={styles.weekdayLabel}>
-                      {label}
+                  <Pressable
+                    style={styles.calendarToggleButton}
+                    onPress={() => setIsCalendarExpanded(current => !current)}
+                  >
+                    <Text style={styles.calendarToggleButtonText}>
+                      {isCalendarExpanded
+                        ? copy.archiveCalendarHideGrid
+                        : copy.archiveCalendarShowGrid}
                     </Text>
-                  ))}
+                  </Pressable>
                 </View>
 
-                <View style={styles.calendarGrid}>
-                  {calendarCells.map(cell => {
-                    const isSelected = cell.date === selectedDate;
-                    const isInteractive = Boolean(cell.date && cell.count > 0);
+                <View style={styles.monthToolbar}>
+                  <Pressable
+                    style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
+                    disabled={!canGoOlder}
+                    onPress={() => moveMonth('older')}
+                  >
+                    <Text
+                      style={[
+                        styles.monthPagerButtonText,
+                        !canGoOlder ? styles.monthPagerButtonTextDisabled : null,
+                      ]}
+                    >
+                      {copy.archivePreviousMonth}
+                    </Text>
+                  </Pressable>
+                  <View style={styles.monthLabelBlock}>
+                    <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
+                    <View style={styles.monthMetaRow}>
+                      <View style={styles.monthMetaChip}>
+                        <Text style={styles.monthMetaChipText}>
+                          {`${monthEntryCount} ${copy.archiveMonthEntriesLabel}`}
+                        </Text>
+                      </View>
+                      <View style={styles.monthMetaChip}>
+                        <Text style={styles.monthMetaChipText}>
+                          {`${monthActiveDays} ${copy.archiveMonthActiveDaysLabel}`}
+                        </Text>
+                      </View>
+                    </View>
+                  </View>
+                  <Pressable
+                    style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
+                    disabled={!canGoNewer}
+                    onPress={() => moveMonth('newer')}
+                  >
+                    <Text
+                      style={[
+                        styles.monthPagerButtonText,
+                        !canGoNewer ? styles.monthPagerButtonTextDisabled : null,
+                      ]}
+                    >
+                      {copy.archiveNextMonth}
+                    </Text>
+                  </Pressable>
+                </View>
 
-                    return (
-                      <Pressable
-                        key={cell.key}
-                        style={[
-                          styles.calendarCell,
-                          !cell.date ? styles.calendarCellPlaceholder : null,
-                          isSelected ? styles.calendarCellSelected : null,
-                          isInteractive ? styles.calendarCellActive : null,
-                        ]}
-                        disabled={!isInteractive}
-                        onPress={() => setSelectedDate(current => (current === cell.date ? null : cell.date))}
-                      >
-                        {cell.dayNumber ? (
-                          <>
-                            <Text
-                              style={[
-                                styles.calendarCellDay,
-                                isSelected ? styles.calendarCellDaySelected : null,
-                                cell.count === 0 ? styles.calendarCellDayMuted : null,
-                              ]}
-                            >
-                              {cell.dayNumber}
-                            </Text>
-                            {cell.count > 0 ? (
-                              <Text
+                {isCalendarExpanded ? (
+                  <>
+                    <View style={styles.weekdayRow}>
+                      {weekdayLabels.map(label => (
+                        <Text key={label} style={styles.weekdayLabel}>
+                          {label}
+                        </Text>
+                      ))}
+                    </View>
+
+                    <View style={styles.calendarRows}>
+                      {calendarRows.map((row, rowIndex) => (
+                        <View key={`calendar-row-${rowIndex}`} style={styles.calendarWeekRow}>
+                          {row.map(cell => {
+                            const isSelected = cell.date === selectedDate;
+                            const isInteractive = Boolean(cell.date && cell.count > 0);
+
+                            return (
+                              <Pressable
+                                key={cell.key}
                                 style={[
-                                  styles.calendarCellCount,
-                                  isSelected ? styles.calendarCellCountSelected : null,
+                                  styles.calendarCell,
+                                  !cell.date ? styles.calendarCellPlaceholder : null,
+                                  isSelected ? styles.calendarCellSelected : null,
+                                  isInteractive ? styles.calendarCellActive : null,
                                 ]}
+                                disabled={!isInteractive}
+                                onPress={() =>
+                                  setSelectedDate(current =>
+                                    current === cell.date ? null : cell.date,
+                                  )
+                                }
                               >
-                                {cell.count}
-                              </Text>
-                            ) : null}
-                          </>
-                        ) : null}
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                                {cell.dayNumber ? (
+                                  <>
+                                    <Text
+                                      style={[
+                                        styles.calendarCellDay,
+                                        isSelected ? styles.calendarCellDaySelected : null,
+                                        cell.count === 0 ? styles.calendarCellDayMuted : null,
+                                      ]}
+                                    >
+                                      {cell.dayNumber}
+                                    </Text>
+                                    {cell.count > 0 ? (
+                                      <Text
+                                        style={[
+                                          styles.calendarCellCount,
+                                          isSelected ? styles.calendarCellCountSelected : null,
+                                        ]}
+                                      >
+                                        {cell.count}
+                                      </Text>
+                                    ) : null}
+                                  </>
+                                ) : null}
+                              </Pressable>
+                            );
+                          })}
+                        </View>
+                      ))}
+                    </View>
+                  </>
+                ) : null}
 
                 {selectedDate ? (
                   <View style={styles.selectedDateRow}>
@@ -522,60 +660,7 @@ export default function ArchiveScreen() {
             </View>
           ) : null
         }
-        renderItem={({ item }) => {
-          const date = getDreamDate(item);
-          const mood = moodLabel(item.mood, moodLabels);
-          const pills = getArchivePills(item, copy, mood);
-          return (
-            <Pressable
-              onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: item.id })}
-              style={({ pressed }) => [
-                styles.listRowPressable,
-                pressed ? styles.listRowPressed : null,
-              ]}
-            >
-              <Card style={styles.listRowCard}>
-                <View style={styles.rowTop}>
-                  <View style={styles.rowCopy}>
-                    <Text style={styles.rowTitle}>{item.title || copy.untitled}</Text>
-                    <Text style={styles.rowMeta}>
-                      {date.toLocaleDateString(localeKey, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
-                    </Text>
-                  </View>
-                  <View style={styles.dayChip}>
-                    <Text style={styles.dayNumber}>{date.getDate()}</Text>
-                    <Text style={styles.dayWeek}>
-                      {date.toLocaleDateString(localeKey, {
-                        weekday: 'short',
-                      })}
-                    </Text>
-                  </View>
-                </View>
-
-                <View style={styles.rowPreviewWrap}>
-                  <View style={styles.rowPreviewAccent} />
-                  <Text style={styles.rowPreview} numberOfLines={2}>
-                    {formatArchivePreview(item, copy)}
-                  </Text>
-                </View>
-
-                {pills.length ? (
-                  <View style={styles.pillsRow}>
-                    {pills.map(label => (
-                      <View key={`${item.id}-${label}`} style={styles.pill}>
-                        <Text style={styles.pillText}>{label}</Text>
-                      </View>
-                    ))}
-                  </View>
-                ) : null}
-              </Card>
-            </Pressable>
-          );
-        }}
+        renderItem={renderArchiveItem}
       />
     </ScreenContainer>
   );

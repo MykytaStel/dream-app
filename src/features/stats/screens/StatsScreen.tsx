@@ -8,7 +8,6 @@ import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
-import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
 import {
   ROOT_ROUTE_NAMES,
@@ -32,6 +31,8 @@ import {
   getTopPreSleepEmotionSignals,
 } from '../../dreams/model/dreamAnalytics';
 import {
+  type DreamReflectionSignal,
+  type DreamWordSignal,
   getRecurringReflectionSignals,
   getRecurringWordSignals,
   getTranscriptArchiveStats,
@@ -44,13 +45,10 @@ import {
 import { createStatsScreenStyles } from './StatsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Dream } from '../../dreams/model/dream';
+import { PatternGroupCard, type PatternGroupCardItem } from '../components/PatternGroupCard';
+import { AppLocale } from '../../../i18n/types';
 
 type InsightRange = 'all' | '30d' | '7d';
-type PatternChipItem = {
-  key: string;
-  label: string;
-  onPress?: () => void;
-};
 
 function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof getStatsCopy>) {
   switch (id) {
@@ -93,6 +91,97 @@ function formatCoverageValue(value: number, total: number) {
   return `${value}/${Math.max(total, 0)}`;
 }
 
+function formatCountUnit(
+  count: number,
+  locale: AppLocale,
+  forms: {
+    en: { one: string; other: string };
+    uk: { one: string; few: string; many: string };
+  },
+) {
+  if (locale === 'uk') {
+    const absolute = Math.abs(count);
+    const lastTwo = absolute % 100;
+    const last = absolute % 10;
+
+    if (lastTwo >= 11 && lastTwo <= 14) {
+      return forms.uk.many;
+    }
+
+    if (last === 1) {
+      return forms.uk.one;
+    }
+
+    if (last >= 2 && last <= 4) {
+      return forms.uk.few;
+    }
+
+    return forms.uk.many;
+  }
+
+  return Math.abs(count) === 1 ? forms.en.one : forms.en.other;
+}
+
+function formatDreamCountLabel(count: number, locale: AppLocale) {
+  return `${count} ${formatCountUnit(count, locale, {
+    en: { one: 'dream', other: 'dreams' },
+    uk: { one: 'сон', few: 'сни', many: 'снів' },
+  })}`;
+}
+
+function formatEntryCountLabel(count: number, locale: AppLocale) {
+  return `${count} ${formatCountUnit(count, locale, {
+    en: { one: 'entry', other: 'entries' },
+    uk: { one: 'запис', few: 'записи', many: 'записів' },
+  })}`;
+}
+
+function getReflectionSourceLabel(
+  source: DreamReflectionSignal['source'],
+  copy: ReturnType<typeof getStatsCopy>,
+) {
+  switch (source) {
+    case 'tag':
+      return copy.reflectionSourceTag;
+    case 'mixed':
+      return copy.reflectionSourceMixed;
+    case 'transcript':
+    default:
+      return copy.reflectionSourceTranscript;
+  }
+}
+
+function createWordPatternItems(
+  values: DreamWordSignal[],
+  locale: AppLocale,
+  onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void,
+): PatternGroupCardItem[] {
+  return values.map(signal => ({
+    key: signal.label,
+    label: signal.label,
+    countLabel: formatDreamCountLabel(signal.dreamCount, locale),
+    countBadge: String(signal.dreamCount),
+    onPress: () => onOpenPatternDetail(signal.label, 'word'),
+  }));
+}
+
+function createReflectionPatternItems(
+  values: DreamReflectionSignal[],
+  locale: AppLocale,
+  kind: Extract<PatternDetailKind, 'theme' | 'symbol'>,
+  copy: ReturnType<typeof getStatsCopy>,
+  onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void,
+): PatternGroupCardItem[] {
+  return values.map(signal => ({
+    key: signal.label,
+    label: signal.label,
+    countLabel: formatDreamCountLabel(signal.dreamCount, locale),
+    countBadge: String(signal.dreamCount),
+    sourceLabel: getReflectionSourceLabel(signal.source, copy),
+    onPress: () => onOpenPatternDetail(signal.label, kind),
+  }));
+}
+
 export default function StatsScreen() {
   const t = useTheme<Theme>();
   const { locale } = useI18n();
@@ -123,11 +212,41 @@ export default function StatsScreen() {
     () => filterDreamsByRange(dreams, selectedRange),
     [dreams, selectedRange],
   );
-  const totalWords = scopedDreams.reduce((sum, dream) => sum + countDreamWords(dream.text), 0);
-  const voiceNotes = scopedDreams.filter(dream => Boolean(dream.audioUri)).length;
-  const transcribedDreams = scopedDreams.filter(dream => Boolean(dream.transcript?.trim())).length;
-  const taggedEntries = scopedDreams.filter(dream => dream.tags.length > 0).length;
-  const moodEntries = scopedDreams.filter(dream => Boolean(dream.mood)).length;
+  const scopedSummary = React.useMemo(() => {
+    let totalWords = 0;
+    let voiceNotes = 0;
+    let transcribedDreams = 0;
+    let taggedEntries = 0;
+    let moodEntries = 0;
+
+    scopedDreams.forEach(dream => {
+      totalWords += countDreamWords(dream.text);
+
+      if (dream.audioUri) {
+        voiceNotes += 1;
+      }
+
+      if (dream.transcript?.trim()) {
+        transcribedDreams += 1;
+      }
+
+      if (dream.tags.length > 0) {
+        taggedEntries += 1;
+      }
+
+      if (dream.mood) {
+        moodEntries += 1;
+      }
+    });
+
+    return {
+      totalWords,
+      voiceNotes,
+      transcribedDreams,
+      taggedEntries,
+      moodEntries,
+    };
+  }, [scopedDreams]);
   const overallStreak = getCurrentStreak(dreams);
   const overallLastSevenDays = getEntriesLastSevenDays(dreams);
   const averageWords = getAverageWords(scopedDreams);
@@ -146,7 +265,7 @@ export default function StatsScreen() {
   const weeklyGoalComplete = overallLastSevenDays >= weeklyGoalTarget;
   const topTheme = recurringThemes[0];
   const topWord = recurringWords[0];
-  const entriesWithoutMood = Math.max(scopedDreams.length - moodEntries, 0);
+  const entriesWithoutMood = Math.max(scopedDreams.length - scopedSummary.moodEntries, 0);
   const entriesWithoutContext = Math.max(scopedDreams.length - sleepContextStats.withContext, 0);
   const rangeOptions = [
     { key: 'all' as const, label: copy.rangeAll },
@@ -155,9 +274,9 @@ export default function StatsScreen() {
   ];
   const summaryTiles = [
     { label: copy.entries, value: scopedDreams.length },
-    { label: copy.wordsSaved, value: totalWords },
-    { label: copy.voiceNotes, value: voiceNotes },
-    { label: copy.transcribedDreams, value: transcribedDreams },
+    { label: copy.wordsSaved, value: scopedSummary.totalWords },
+    { label: copy.voiceNotes, value: scopedSummary.voiceNotes },
+    { label: copy.transcribedDreams, value: scopedSummary.transcribedDreams },
   ];
   const coverageGap =
     [
@@ -195,12 +314,12 @@ export default function StatsScreen() {
   const coverageItems = [
     {
       label: copy.transcribedDreams,
-      value: transcribedDreams,
+      value: scopedSummary.transcribedDreams,
       total: scopedDreams.length,
     },
     {
       label: copy.taggedDreams,
-      value: taggedEntries,
+      value: scopedSummary.taggedEntries,
       total: scopedDreams.length,
     },
     {
@@ -223,43 +342,61 @@ export default function StatsScreen() {
       value: entriesWithoutContext,
     },
   ];
-  const patternGroups: Array<{ label: string; values: PatternChipItem[]; empty: string }> = [
+  const patternGroups: Array<{
+    label: string;
+    description: string;
+    values: PatternGroupCardItem[];
+    empty: string;
+  }> = [
     {
       label: copy.recurringWords,
-      values: recurringWords.map(signal => ({
-        key: signal.label,
-        label: `${signal.label} · ${signal.dreamCount}`,
-        onPress: () => openPatternDetail(signal.label, 'word'),
-      })),
+      description: copy.recurringWordsDescription,
+      values: createWordPatternItems(recurringWords, locale, openPatternDetail),
       empty: copy.recurringWordsEmpty,
     },
     {
       label: copy.recurringThemes,
-      values: recurringThemes.map(signal => ({
-        key: signal.label,
-        label: `${signal.label} · ${signal.dreamCount}`,
-        onPress: () => openPatternDetail(signal.label, 'theme'),
-      })),
+      description: copy.recurringThemesDescription,
+      values: createReflectionPatternItems(
+        recurringThemes,
+        locale,
+        'theme',
+        copy,
+        openPatternDetail,
+      ),
       empty: copy.recurringThemesEmpty,
     },
     {
       label: copy.recurringSymbols,
-      values: recurringSymbols.map(signal => ({
-        key: signal.label,
-        label: `${signal.label} · ${signal.dreamCount}`,
-        onPress: () => openPatternDetail(signal.label, 'symbol'),
-      })),
+      description: copy.recurringSymbolsDescription,
+      values: createReflectionPatternItems(
+        recurringSymbols,
+        locale,
+        'symbol',
+        copy,
+        openPatternDetail,
+      ),
       empty: copy.recurringSymbolsEmpty,
     },
     {
       label: copy.preSleepEmotions,
+      description: copy.preSleepEmotionsDescription,
       values: preSleepEmotionSignals.map(signal => ({
         key: signal.emotion,
-        label: `${preSleepEmotionLabels[signal.emotion]} · ${signal.count}`,
+        label: preSleepEmotionLabels[signal.emotion],
+        countLabel: formatEntryCountLabel(signal.count, locale),
+        countBadge: String(signal.count),
       })),
       empty: copy.emotionPatternsEmpty,
     },
   ];
+  const highlightedAchievementTitle = achievementSummary.highlightedId
+    ? getAchievementContent(achievementSummary.highlightedId, copy).title
+    : null;
+  const milestoneSummaryHint =
+    achievementSummary.unlockedCount === achievementSummary.totalCount
+      ? copy.milestonesCompleteTitle
+      : highlightedAchievementTitle ?? copy.milestoneInProgress;
 
   if (!dreams.length) {
     return (
@@ -282,18 +419,18 @@ export default function StatsScreen() {
         </View>
 
         <View style={styles.summaryRow}>
-          <Card style={styles.summaryCard}>
+          <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>{copy.currentStreak}</Text>
             <Text style={styles.summaryValue}>{overallStreak}</Text>
-          </Card>
-          <Card style={styles.summaryCard}>
+          </View>
+          <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>{copy.lastSevenDays}</Text>
             <Text style={styles.summaryValue}>{overallLastSevenDays}</Text>
-          </Card>
-          <Card style={styles.summaryCard}>
+          </View>
+          <View style={styles.summaryCard}>
             <Text style={styles.summaryLabel}>{copy.averageWordsShort}</Text>
             <Text style={styles.summaryValue}>{averageWords}</Text>
-          </Card>
+          </View>
         </View>
 
         <View style={styles.rangeHeader}>
@@ -405,22 +542,14 @@ export default function StatsScreen() {
             <SectionHeader title={copy.patternsTitle} subtitle={copy.patternsDescription} />
             <View style={styles.patternGroupList}>
               {patternGroups.map(group => (
-                <View key={group.label} style={styles.patternGroup}>
-                  <Text style={styles.patternGroupLabel}>{group.label}</Text>
-                  {group.values.length ? (
-                    <View style={styles.tagsWrap}>
-                      {group.values.slice(0, 6).map(value => (
-                        <TagChip
-                          key={`${group.label}-${value.key}`}
-                          label={value.label}
-                          onPress={value.onPress}
-                        />
-                      ))}
-                    </View>
-                  ) : (
-                    <Text style={styles.mutedText}>{group.empty}</Text>
-                  )}
-                </View>
+                <PatternGroupCard
+                  key={group.label}
+                  title={group.label}
+                  description={group.description}
+                  items={group.values}
+                  emptyLabel={group.empty}
+                  moreLabel={copy.patternsMoreLabel}
+                />
               ))}
             </View>
           </Card>
@@ -443,11 +572,7 @@ export default function StatsScreen() {
             <Text style={styles.teaserValue}>
               {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
             </Text>
-            <Text style={styles.teaserHint}>
-              {achievementSummary.highlightedId
-                ? getAchievementContent(achievementSummary.highlightedId, copy).title
-                : copy.milestoneInProgress}
-            </Text>
+            <Text style={styles.teaserHint}>{milestoneSummaryHint}</Text>
           </View>
         </View>
 

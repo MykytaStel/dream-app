@@ -8,7 +8,6 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
-import { InfoRow } from '../../../components/ui/InfoRow';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
@@ -44,6 +43,9 @@ import {
   getDreamAnalysisSettings,
   saveDreamAnalysisSettings,
 } from '../../analysis/services/dreamAnalysisSettingsService';
+import { SettingsActionRow } from '../components/SettingsActionRow';
+import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
+import { SettingsSectionHeader } from '../components/SettingsSectionHeader';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { AppLocale } from '../../../i18n/types';
 import { useI18n } from '../../../i18n/I18nProvider';
@@ -74,6 +76,90 @@ export default function SettingsScreen() {
   const [isUpdatingSeedDreams, setIsUpdatingSeedDreams] = React.useState(false);
   const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
     getDreamAnalysisSettings(),
+  );
+  const privacyHighlights = React.useMemo(
+    () => [
+      {
+        label: copy.privacyStorageLabel,
+        value: copy.privacyStorageValue,
+      },
+      {
+        label: copy.privacySyncLabel,
+        value: copy.privacySyncValue,
+      },
+      {
+        label: copy.privacyAccountLabel,
+        value: copy.privacyAccountValue,
+      },
+      {
+        label: copy.privacyReminderLabel,
+        value: copy.privacyReminderValue,
+      },
+      {
+        label: copy.privacyTranscriptionLabel,
+        value: copy.privacyTranscriptionValue,
+        wide: true,
+      },
+    ],
+    [copy],
+  );
+  const analysisHighlights = React.useMemo(
+    () => [
+      {
+        label: copy.analysisProviderLabel,
+        value:
+          analysisSettings.provider === 'openai'
+            ? copy.analysisProviderOpenAi
+            : copy.analysisProviderManual,
+      },
+      {
+        label: copy.analysisNetworkLabel,
+        value:
+          analysisSettings.allowNetwork
+            ? copy.analysisNetworkAllowed
+            : copy.analysisNetworkBlocked,
+      },
+    ],
+    [analysisSettings.allowNetwork, analysisSettings.provider, copy],
+  );
+  const transcriptionHighlights = React.useMemo(
+    () => [
+      {
+        label: copy.transcriptionStatusLabel,
+        value:
+          transcriptionModelStatus?.installed
+            ? copy.transcriptionStatusInstalled
+            : copy.transcriptionStatusMissing,
+      },
+      {
+        label: copy.transcriptionSizeLabel,
+        value: formatModelSize(transcriptionModelStatus?.sizeBytes ?? null),
+      },
+      ...(transcriptionModelStatus?.installed && transcriptionModelStatus.filePath
+        ? [
+            {
+              label: copy.transcriptionPathLabel,
+              value: formatModelFileName(transcriptionModelStatus.filePath) ?? '...',
+              wide: true,
+            },
+          ]
+        : []),
+    ],
+    [copy, transcriptionModelStatus],
+  );
+  const exportHighlights = React.useMemo(
+    () => [
+      {
+        label: copy.exportIncludesLabel,
+        value: copy.exportIncludesValue,
+        wide: true,
+      },
+      {
+        label: copy.exportFormatLabel,
+        value: copy.exportFormatValue,
+      },
+    ],
+    [copy],
   );
 
   function getReminderDate(settings: DreamReminderSettings) {
@@ -397,24 +483,19 @@ export default function SettingsScreen() {
       </View>
 
       <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.reminderTitle}</Text>
-        <Text style={styles.description}>{copy.reminderDescription}</Text>
-
-        <View style={styles.toggleRow}>
-          <View style={styles.toggleCopy}>
-            <Text style={styles.toggleTitle}>{copy.reminderStatusLabel}</Text>
-            <Text style={styles.toggleMeta}>
-              {reminderSettings.enabled ? copy.reminderEnabled : copy.reminderDisabled}
-            </Text>
-          </View>
-          <Switch
-            value={reminderSettings.enabled}
-            onValueChange={() => onToggleReminder().catch(() => undefined)}
-            disabled={isApplyingReminder}
-            trackColor={{ false: t.colors.border, true: t.colors.primary }}
-            thumbColor={t.colors.background}
-          />
-        </View>
+        <SettingsSectionHeader
+          title={copy.reminderTitle}
+          description={copy.reminderDescription}
+          trailing={
+            <Switch
+              value={reminderSettings.enabled}
+              onValueChange={() => onToggleReminder().catch(() => undefined)}
+              disabled={isApplyingReminder}
+              trackColor={{ false: t.colors.border, true: t.colors.primary }}
+              thumbColor={t.colors.background}
+            />
+          }
+        />
 
         {!permissionGranted ? (
           <Text style={styles.reminderHint}>
@@ -424,17 +505,13 @@ export default function SettingsScreen() {
 
         {reminderSettings.enabled ? (
           <>
-            <Pressable
-              style={styles.settingRow}
+            <SettingsActionRow
+              title={copy.reminderTimeLabel}
+              meta={copy.reminderTimeHint}
+              value={formatReminderTime(reminderSettings)}
               disabled={isApplyingReminder}
               onPress={onOpenReminderTimePicker}
-            >
-              <View style={styles.settingRowCopy}>
-                <Text style={styles.settingRowLabel}>{copy.reminderTimeLabel}</Text>
-                <Text style={styles.settingRowMeta}>{copy.reminderTimeHint}</Text>
-              </View>
-              <Text style={styles.settingRowValue}>{formatReminderTime(reminderSettings)}</Text>
-            </Pressable>
+            />
 
             {Platform.OS === 'ios' && showIosTimePicker ? (
               <View style={styles.iosPickerWrap}>
@@ -453,77 +530,45 @@ export default function SettingsScreen() {
       </Card>
 
       <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.privacyTitle}</Text>
-        <Text style={styles.description}>{copy.privacyDescription}</Text>
-        <View style={styles.privacyRows}>
-          <InfoRow label={copy.privacyStorageLabel} value={copy.privacyStorageValue} />
-          <InfoRow label={copy.privacySyncLabel} value={copy.privacySyncValue} />
-          <InfoRow label={copy.privacyAccountLabel} value={copy.privacyAccountValue} />
-          <InfoRow label={copy.privacyReminderLabel} value={copy.privacyReminderValue} />
-          <InfoRow
-            label={copy.privacyTranscriptionLabel}
-            value={copy.privacyTranscriptionValue}
-          />
-        </View>
+        <SettingsSectionHeader
+          title={copy.privacyTitle}
+          description={copy.privacyDescription}
+        />
+        <SettingsMetaGrid items={privacyHighlights} />
         <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
       </Card>
 
-      <Pressable
-        style={styles.advancedToggleRow}
-        onPress={() => setShowAdvanced(current => !current)}
-      >
-        <View style={styles.settingRowCopy}>
-          <Text style={styles.settingRowLabel}>{copy.advancedTitle}</Text>
-          <Text style={styles.settingRowMeta}>{copy.advancedDescription}</Text>
-        </View>
-        <Text style={styles.settingRowValue}>
-          {showAdvanced ? copy.advancedHide : copy.advancedShow}
-        </Text>
-      </Pressable>
+      <View style={styles.advancedToggleWrap}>
+        <SettingsActionRow
+          title={copy.advancedTitle}
+          meta={copy.advancedDescription}
+          value={showAdvanced ? copy.advancedHide : copy.advancedShow}
+          onPress={() => setShowAdvanced(current => !current)}
+        />
+      </View>
 
       {showAdvanced ? (
         <>
           <Card style={styles.sectionCard}>
-            <Text style={styles.title}>{copy.analysisTitle}</Text>
-            <Text style={styles.description}>{copy.analysisDescription}</Text>
-            <View style={styles.toggleRow}>
-              <View style={styles.toggleCopy}>
-                <Text style={styles.toggleTitle}>{copy.analysisEnabledLabel}</Text>
-                <Text style={styles.toggleMeta}>
-                  {analysisSettings.enabled ? copy.analysisEnabled : copy.analysisDisabled}
-                </Text>
-              </View>
-              <Switch
-                value={analysisSettings.enabled}
-                onValueChange={enabled => {
-                  saveNextAnalysisSettings({
-                    ...analysisSettings,
-                    enabled,
-                  });
-                }}
-                trackColor={{ false: t.colors.border, true: t.colors.primary }}
-                thumbColor={t.colors.background}
-              />
-            </View>
-            <View style={styles.privacyRows}>
-              <InfoRow
-                label={copy.analysisProviderLabel}
-                value={
-                  analysisSettings.provider === 'openai'
-                    ? copy.analysisProviderOpenAi
-                    : copy.analysisProviderManual
-                }
-              />
-              <InfoRow
-                label={copy.analysisNetworkLabel}
-                value={
-                  analysisSettings.allowNetwork
-                    ? copy.analysisNetworkAllowed
-                    : copy.analysisNetworkBlocked
-                }
-              />
-            </View>
-            <View style={styles.devActionRow}>
+            <SettingsSectionHeader
+              title={copy.analysisTitle}
+              description={copy.analysisDescription}
+              trailing={
+                <Switch
+                  value={analysisSettings.enabled}
+                  onValueChange={enabled => {
+                    saveNextAnalysisSettings({
+                      ...analysisSettings,
+                      enabled,
+                    });
+                  }}
+                  trackColor={{ false: t.colors.border, true: t.colors.primary }}
+                  thumbColor={t.colors.background}
+                />
+              }
+            />
+            <SettingsMetaGrid items={analysisHighlights} />
+            <View style={styles.buttonRow}>
               <Button
                 title={copy.analysisUseManualButton}
                 variant={analysisSettings.provider === 'manual' ? 'primary' : 'ghost'}
@@ -548,105 +593,96 @@ export default function SettingsScreen() {
                 }
               />
             </View>
-            <Button
-              title={
-                analysisSettings.allowNetwork
-                  ? copy.analysisNetworkBlockButton
-                  : copy.analysisNetworkAllowButton
-              }
-              variant="ghost"
-              size="sm"
-              onPress={() =>
-                saveNextAnalysisSettings({
-                  ...analysisSettings,
-                  allowNetwork: !analysisSettings.allowNetwork,
-                })
-              }
-            />
-          </Card>
-
-          <Card style={styles.sectionCard}>
-            <Text style={styles.title}>{copy.transcriptionTitle}</Text>
-            <Text style={styles.description}>{copy.transcriptionDescription}</Text>
-            <View style={styles.privacyRows}>
-              <InfoRow
-                label={copy.transcriptionStatusLabel}
-                value={
-                  transcriptionModelStatus?.installed
-                    ? copy.transcriptionStatusInstalled
-                    : copy.transcriptionStatusMissing
+            <View style={styles.buttonStack}>
+              <Button
+                title={
+                  analysisSettings.allowNetwork
+                    ? copy.analysisNetworkBlockButton
+                    : copy.analysisNetworkAllowButton
+                }
+                variant="ghost"
+                size="sm"
+                onPress={() =>
+                  saveNextAnalysisSettings({
+                    ...analysisSettings,
+                    allowNetwork: !analysisSettings.allowNetwork,
+                  })
                 }
               />
-              <InfoRow
-                label={copy.transcriptionSizeLabel}
-                value={formatModelSize(transcriptionModelStatus?.sizeBytes ?? null)}
-              />
-              {transcriptionModelStatus?.installed && transcriptionModelStatus.filePath ? (
-                <InfoRow
-                  label={copy.transcriptionPathLabel}
-                  value={formatModelFileName(transcriptionModelStatus.filePath) ?? '...'}
-                />
-              ) : null}
             </View>
-            <Button
-              title={
-                isDownloadingTranscriptionModel
-                  ? formatDownloadProgress(transcriptionDownloadProgress) ??
-                    copy.transcriptionDownloadButtonBusy
-                  : copy.transcriptionDownloadButton
-              }
-              variant="primary"
-              size="sm"
-              onPress={onDownloadTranscriptionModel}
-              disabled={
-                isDownloadingTranscriptionModel || Boolean(transcriptionModelStatus?.installed)
-              }
-            />
-            <Button
-              title={
-                isDeletingTranscriptionModel
-                  ? copy.transcriptionDeleteButtonBusy
-                  : copy.transcriptionDeleteButton
-              }
-              variant="ghost"
-              size="sm"
-              onPress={onDeleteTranscriptionModel}
-              disabled={isDeletingTranscriptionModel || !transcriptionModelStatus?.installed}
-            />
           </Card>
 
           <Card style={styles.sectionCard}>
-            <Text style={styles.title}>{copy.exportTitle}</Text>
-            <Text style={styles.description}>{copy.exportDescription}</Text>
-            <View style={styles.privacyRows}>
-              <InfoRow label={copy.exportIncludesLabel} value={copy.exportIncludesValue} />
-              <InfoRow label={copy.exportFormatLabel} value={copy.exportFormatValue} />
+            <SettingsSectionHeader
+              title={copy.transcriptionTitle}
+              description={copy.transcriptionDescription}
+            />
+            <SettingsMetaGrid items={transcriptionHighlights} />
+            <View style={styles.buttonStack}>
+              <Button
+                title={
+                  isDownloadingTranscriptionModel
+                    ? formatDownloadProgress(transcriptionDownloadProgress) ??
+                      copy.transcriptionDownloadButtonBusy
+                    : copy.transcriptionDownloadButton
+                }
+                variant="primary"
+                size="sm"
+                onPress={onDownloadTranscriptionModel}
+                disabled={
+                  isDownloadingTranscriptionModel || Boolean(transcriptionModelStatus?.installed)
+                }
+              />
+              <Button
+                title={
+                  isDeletingTranscriptionModel
+                    ? copy.transcriptionDeleteButtonBusy
+                    : copy.transcriptionDeleteButton
+                }
+                variant="ghost"
+                size="sm"
+                onPress={onDeleteTranscriptionModel}
+                disabled={isDeletingTranscriptionModel || !transcriptionModelStatus?.installed}
+              />
             </View>
+          </Card>
+
+          <Card style={styles.sectionCard}>
+            <SettingsSectionHeader title={copy.exportTitle} description={copy.exportDescription} />
+            <SettingsMetaGrid items={exportHighlights} />
             {lastExportPath ? (
               <View style={styles.exportPathBlock}>
                 <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
                 <Text style={styles.exportPathValue}>{lastExportPath}</Text>
               </View>
             ) : null}
-            <Button
-              title={isExporting ? copy.exportButtonBusy : copy.exportButton}
-              variant="primary"
-              size="sm"
-              onPress={onExportData}
-              disabled={isExporting}
-            />
+            <View style={styles.buttonStack}>
+              <Button
+                title={isExporting ? copy.exportButtonBusy : copy.exportButton}
+                variant="primary"
+                size="sm"
+                onPress={onExportData}
+                disabled={isExporting}
+              />
+            </View>
             <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
           </Card>
 
           {__DEV__ ? (
             <Card style={styles.sectionCard}>
-              <Text style={styles.title}>{copy.scaleTestTitle}</Text>
-              <Text style={styles.description}>{copy.scaleTestDescription}</Text>
-              <InfoRow
-                label={copy.scaleTestSeededLabel}
-                value={String(seedDreamCount)}
+              <SettingsSectionHeader
+                title={copy.scaleTestTitle}
+                description={copy.scaleTestDescription}
               />
-              <View style={styles.devActionRow}>
+              <SettingsMetaGrid
+                items={[
+                  {
+                    label: copy.scaleTestSeededLabel,
+                    value: String(seedDreamCount),
+                  },
+                ]}
+              />
+              <View style={styles.buttonRow}>
                 <Button
                   title={isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd250}
                   variant="ghost"
@@ -662,13 +698,15 @@ export default function SettingsScreen() {
                   disabled={isUpdatingSeedDreams}
                 />
               </View>
-              <Button
-                title={copy.scaleTestClear}
-                variant="ghost"
-                size="sm"
-                onPress={onClearSeedDreams}
-                disabled={isUpdatingSeedDreams || seedDreamCount === 0}
-              />
+              <View style={styles.buttonStack}>
+                <Button
+                  title={copy.scaleTestClear}
+                  variant="ghost"
+                  size="sm"
+                  onPress={onClearSeedDreams}
+                  disabled={isUpdatingSeedDreams || seedDreamCount === 0}
+                />
+              </View>
             </Card>
           ) : null}
         </>

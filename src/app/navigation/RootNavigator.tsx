@@ -4,7 +4,6 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import notifee from '@notifee/react-native';
 import DreamDetailScreen from '../../features/dreams/screens/DreamDetailScreen';
 import EditDreamScreen from '../../features/dreams/screens/EditDreamScreen';
-import ArchiveScreen from '../../features/dreams/screens/ArchiveScreen';
 import PatternDetailScreen from '../../features/stats/screens/PatternDetailScreen';
 import ProgressScreen from '../../features/stats/screens/ProgressScreen';
 import {
@@ -101,10 +100,6 @@ export default function RootNavigator() {
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.Progress}
           component={ProgressScreen}
-        />
-        <Stack.Screen
-          name={ROOT_ROUTE_NAMES.Archive}
-          component={ArchiveScreen}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.PatternDetail}

@@ -15,8 +15,10 @@ import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { APP_VERSION_LABEL } from '../../../config/app';
 import { Theme } from '../../../theme/theme';
+import { CURRENT_STORAGE_SCHEMA_VERSION } from '../../../services/storage/keys';
 import {
   exportDreamDataSnapshot,
+  DREAM_EXPORT_VERSION,
 } from '../services/dataExportService';
 import {
   ensureDreamTranscriptionModelInstalled,
@@ -37,6 +39,11 @@ import {
   countSeedDreams,
   seedDreamSamples,
 } from '../../dreams/services/dreamSeedService';
+import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
+import {
+  getDreamAnalysisSettings,
+  saveDreamAnalysisSettings,
+} from '../../analysis/services/dreamAnalysisSettingsService';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { AppLocale } from '../../../i18n/types';
 import { useI18n } from '../../../i18n/I18nProvider';
@@ -46,6 +53,7 @@ export default function SettingsScreen() {
   const { locale, setLocale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const styles = createSettingsScreenStyles(t);
+  const footerMeta = `${copy.footerStorageMetaPrefix} ${CURRENT_STORAGE_SCHEMA_VERSION} • ${copy.footerExportMetaPrefix} v${DREAM_EXPORT_VERSION}`;
   const [reminderSettings, setReminderSettings] = React.useState<DreamReminderSettings>(() =>
     getDreamReminderSettings(),
   );
@@ -64,6 +72,9 @@ export default function SettingsScreen() {
   const [showAdvanced, setShowAdvanced] = React.useState(false);
   const [seedDreamCount, setSeedDreamCount] = React.useState(0);
   const [isUpdatingSeedDreams, setIsUpdatingSeedDreams] = React.useState(false);
+  const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
+    getDreamAnalysisSettings(),
+  );
 
   function getReminderDate(settings: DreamReminderSettings) {
     const date = new Date();
@@ -118,12 +129,19 @@ export default function SettingsScreen() {
 
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
+    setAnalysisSettings(getDreamAnalysisSettings());
     setPermissionGranted(await getDreamReminderPermissionGranted());
     setTranscriptionModelStatus(await getDreamTranscriptionModelStatus());
     if (__DEV__) {
       setSeedDreamCount(countSeedDreams());
     }
   }, []);
+
+  function saveNextAnalysisSettings(next: DreamAnalysisSettings) {
+    const saved = saveDreamAnalysisSettings(next);
+    setAnalysisSettings(saved);
+    return saved;
+  }
 
   useFocusEffect(
     React.useCallback(() => {
@@ -466,6 +484,88 @@ export default function SettingsScreen() {
       {showAdvanced ? (
         <>
           <Card style={styles.sectionCard}>
+            <Text style={styles.title}>{copy.analysisTitle}</Text>
+            <Text style={styles.description}>{copy.analysisDescription}</Text>
+            <View style={styles.toggleRow}>
+              <View style={styles.toggleCopy}>
+                <Text style={styles.toggleTitle}>{copy.analysisEnabledLabel}</Text>
+                <Text style={styles.toggleMeta}>
+                  {analysisSettings.enabled ? copy.analysisEnabled : copy.analysisDisabled}
+                </Text>
+              </View>
+              <Switch
+                value={analysisSettings.enabled}
+                onValueChange={enabled => {
+                  saveNextAnalysisSettings({
+                    ...analysisSettings,
+                    enabled,
+                  });
+                }}
+                trackColor={{ false: t.colors.border, true: t.colors.primary }}
+                thumbColor={t.colors.background}
+              />
+            </View>
+            <View style={styles.privacyRows}>
+              <InfoRow
+                label={copy.analysisProviderLabel}
+                value={
+                  analysisSettings.provider === 'openai'
+                    ? copy.analysisProviderOpenAi
+                    : copy.analysisProviderManual
+                }
+              />
+              <InfoRow
+                label={copy.analysisNetworkLabel}
+                value={
+                  analysisSettings.allowNetwork
+                    ? copy.analysisNetworkAllowed
+                    : copy.analysisNetworkBlocked
+                }
+              />
+            </View>
+            <View style={styles.devActionRow}>
+              <Button
+                title={copy.analysisUseManualButton}
+                variant={analysisSettings.provider === 'manual' ? 'primary' : 'ghost'}
+                size="sm"
+                onPress={() =>
+                  saveNextAnalysisSettings({
+                    ...analysisSettings,
+                    provider: 'manual',
+                    allowNetwork: false,
+                  })
+                }
+              />
+              <Button
+                title={copy.analysisUseOpenAiButton}
+                variant={analysisSettings.provider === 'openai' ? 'primary' : 'ghost'}
+                size="sm"
+                onPress={() =>
+                  saveNextAnalysisSettings({
+                    ...analysisSettings,
+                    provider: 'openai',
+                  })
+                }
+              />
+            </View>
+            <Button
+              title={
+                analysisSettings.allowNetwork
+                  ? copy.analysisNetworkBlockButton
+                  : copy.analysisNetworkAllowButton
+              }
+              variant="ghost"
+              size="sm"
+              onPress={() =>
+                saveNextAnalysisSettings({
+                  ...analysisSettings,
+                  allowNetwork: !analysisSettings.allowNetwork,
+                })
+              }
+            />
+          </Card>
+
+          <Card style={styles.sectionCard}>
             <Text style={styles.title}>{copy.transcriptionTitle}</Text>
             <Text style={styles.description}>{copy.transcriptionDescription}</Text>
             <View style={styles.privacyRows}>
@@ -578,6 +678,7 @@ export default function SettingsScreen() {
         <Text style={styles.footerVersion}>
           {`${copy.footerBuildLabel} ${APP_VERSION_LABEL}`}
         </Text>
+        <Text style={styles.footerMeta}>{footerMeta}</Text>
       </View>
     </ScreenContainer>
   );

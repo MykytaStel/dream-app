@@ -3,6 +3,7 @@ import { AppLocale } from '../../i18n/types';
 
 export const TAB_ROUTE_NAMES = {
   Home: 'Home',
+  Archive: 'Archive',
   New: 'New',
   Stats: 'Stats',
   Settings: 'Settings',
@@ -13,22 +14,23 @@ export const ROOT_ROUTE_NAMES = {
   DreamDetail: 'DreamDetail',
   DreamEditor: 'DreamEditor',
   Progress: 'Progress',
-  Archive: 'Archive',
   PatternDetail: 'PatternDetail',
 } as const;
 
 type TabRouteLabelMap = Record<(typeof TAB_ROUTE_NAMES)[keyof typeof TAB_ROUTE_NAMES], string>;
 
 const TAB_ROUTE_LABELS_EN: TabRouteLabelMap = {
-  [TAB_ROUTE_NAMES.Home]: 'Timeline',
-  [TAB_ROUTE_NAMES.New]: 'Record',
+  [TAB_ROUTE_NAMES.Home]: 'Home',
+  [TAB_ROUTE_NAMES.Archive]: 'Archive',
+  [TAB_ROUTE_NAMES.New]: 'Add',
   [TAB_ROUTE_NAMES.Stats]: 'Insights',
   [TAB_ROUTE_NAMES.Settings]: 'Settings',
 };
 
 const TAB_ROUTE_LABELS_UK: TabRouteLabelMap = {
   [TAB_ROUTE_NAMES.Home]: 'Стрічка',
-  [TAB_ROUTE_NAMES.New]: 'Запис',
+  [TAB_ROUTE_NAMES.Archive]: 'Архів',
+  [TAB_ROUTE_NAMES.New]: 'Додати',
   [TAB_ROUTE_NAMES.Stats]: 'Аналітика',
   [TAB_ROUTE_NAMES.Settings]: 'Опції',
 };
@@ -42,6 +44,7 @@ export type PatternDetailKind = 'word' | 'theme' | 'symbol';
 
 export type TabParamList = {
   [TAB_ROUTE_NAMES.Home]: undefined;
+  [TAB_ROUTE_NAMES.Archive]: undefined;
   [TAB_ROUTE_NAMES.New]:
     | {
         entryMode?: 'default' | 'voice';
@@ -62,7 +65,6 @@ export type RootStackParamList = {
     dreamId: string;
   };
   [ROOT_ROUTE_NAMES.Progress]: undefined;
-  [ROOT_ROUTE_NAMES.Archive]: undefined;
   [ROOT_ROUTE_NAMES.PatternDetail]: {
     signal: string;
     kind: PatternDetailKind;

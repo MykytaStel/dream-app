@@ -433,11 +433,11 @@ export function DreamComposer({
           <View style={baseStyles.helperChip}>
             <Text style={baseStyles.helperChipLabel}>{sleepDate}</Text>
           </View>
-          <View style={baseStyles.helperChip}>
-            <Text style={baseStyles.helperChipLabel}>
-              {audioUri ? copy.attachedAudioTitle : copy.voiceIdleHint}
-            </Text>
-          </View>
+          {audioUri ? (
+            <View style={baseStyles.helperChip}>
+              <Text style={baseStyles.helperChipLabel}>{copy.attachedAudioTitle}</Text>
+            </View>
+          ) : null}
           {hasRestoredDraft ? (
             <View style={baseStyles.helperChip}>
               <Text style={baseStyles.helperChipLabel}>{copy.recordDraftRestoredTitle}</Text>
@@ -464,18 +464,6 @@ export function DreamComposer({
         />
       ) : null}
 
-      {!isBusy && !lastActionError && isEntryEmpty ? (
-        <ScreenStateCard
-          variant="empty"
-          title={hasRestoredDraft ? copy.recordDraftRestoredTitle : copy.recordEmptyTitle}
-          subtitle={
-            hasRestoredDraft
-              ? copy.recordDraftRestoredDescription
-              : copy.recordEmptyDescription
-          }
-        />
-      ) : null}
-
       <Card style={baseStyles.card}>
         <View style={baseStyles.sectionAccentRow}>
           <View style={baseStyles.sectionAccentPrimary} />
@@ -483,7 +471,7 @@ export function DreamComposer({
         </View>
         <SectionHeader
           title={copy.voiceTitle}
-          subtitle={copy.voiceDescription}
+          subtitle={audioUri ? undefined : copy.voiceDescription}
         />
 
         <View style={baseStyles.voiceStatusRow}>
@@ -525,7 +513,9 @@ export function DreamComposer({
       <Card style={baseStyles.card}>
         <SectionHeader
           title={copy.coreTitle}
-          subtitle={copy.coreDescription}
+          subtitle={
+            isEntryEmpty && !hasRestoredDraft ? copy.recordEmptyDescription : copy.coreDescription
+          }
         />
         <FormField
           label={copy.titleLabel}

@@ -2,49 +2,44 @@ import React from 'react';
 import {
   ActionSheetIOS,
   Alert,
-  Modal,
+  Animated,
+  FlatList,
   Platform,
-  Pressable,
-  ScrollView,
-  StyleProp,
-  TextStyle,
+  RefreshControl,
   View,
-  ViewStyle,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
-import ReanimatedSwipeable, {
-  type SwipeableMethods,
-} from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { type SwipeableMethods } from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
-import { FormField } from '../../../components/ui/FormField';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
-import { SectionHeader } from '../../../components/ui/SectionHeader';
-import { TagChip } from '../../../components/ui/TagChip';
-import { Text } from '../../../components/ui/Text';
+import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import {
   getDreamCopy,
   getDreamMoodLabels,
   type DreamCopy,
 } from '../../../constants/copy/dreams';
-import { DREAM_PREVIEW_MAX_LENGTH } from '../../../constants/limits/dreams';
 import {
   ROOT_ROUTE_NAMES,
-  TAB_ROUTE_NAMES,
   type PatternDetailKind,
   type RootStackParamList,
 } from '../../../app/navigation/routes';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
+import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { ScreenStateCard } from '../components/ScreenStateCard';
+import { HomeDreamRow } from '../components/home/HomeDreamRow';
+import { HomeFilterSheet } from '../components/home/HomeFilterSheet';
+import { HomeHero } from '../components/home/HomeHero';
+import { HomeListHeader } from '../components/home/HomeListHeader';
+import { type HomeFilterChip, type HomeOption } from '../components/home/homeTypes';
 import { getDreamLayout } from '../constants/layout';
 import { Dream, Mood } from '../model/dream';
 import {
   getAverageWords,
   getCurrentStreak,
-  getDreamDate,
   getEntriesLastSevenDays,
 } from '../model/dreamAnalytics';
 import {
@@ -70,6 +65,7 @@ import {
   unstarDream,
 } from '../repository/dreamsRepository';
 import { getDreamDraft, type DreamDraft } from '../services/dreamDraftService';
+import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import {
   getRecurringReflectionSignals,
   getRecurringWordSignals,
@@ -78,34 +74,25 @@ import {
 import { createHomeScreenStyles } from './HomeScreen.styles';
 
 const HOME_RECENT_LIMIT = 12;
+const SEARCH_DEBOUNCE_MS = 160;
+const HERO_COLLAPSE_DISTANCE = 132;
 
-function formatPreview(dream: Dream, copy: DreamCopy) {
-  const text = dream.text?.trim();
-  if (text) {
-    return text.length > DREAM_PREVIEW_MAX_LENGTH
-      ? `${text.slice(0, DREAM_PREVIEW_MAX_LENGTH - 3)}...`
-      : text;
+function getContextGreeting(copy: DreamCopy, now = new Date()) {
+  const hour = now.getHours();
+
+  if (hour < 5) {
+    return copy.homeGreetingNight;
   }
 
-  const transcript = dream.transcript?.trim();
-  if (transcript) {
-    const prefix =
-      dream.transcriptSource === 'edited'
-        ? `${copy.editedTranscriptPreviewPrefix}: `
-        : `${copy.transcriptPreviewPrefix}: `;
-    const availableLength = Math.max(12, DREAM_PREVIEW_MAX_LENGTH - prefix.length);
-    const clippedTranscript =
-      transcript.length > availableLength
-        ? `${transcript.slice(0, availableLength - 3)}...`
-        : transcript;
-    return `${prefix}${clippedTranscript}`;
+  if (hour < 12) {
+    return copy.homeGreetingMorning;
   }
 
-  if (dream.audioUri) {
-    return copy.audioOnlyPreview;
+  if (hour < 18) {
+    return copy.homeGreetingAfternoon;
   }
 
-  return copy.noDetailsPreview;
+  return copy.homeGreetingEvening;
 }
 
 function formatResultCount(count: number, copy: DreamCopy) {
@@ -116,86 +103,34 @@ function moodLabel(mood: Dream['mood'] | undefined, moodLabels: Record<Mood, str
   return mood ? moodLabels[mood] : undefined;
 }
 
-function moodColor(theme: Theme, mood?: Dream['mood']) {
-  if (mood === 'positive') {
-    return theme.colors.accent;
-  }
-
-  if (mood === 'negative') {
-    return theme.colors.primaryAlt;
-  }
-
-  return theme.colors.primary;
-}
-
-function formatDateParts(dream: Dream) {
-  const date = getDreamDate(dream);
-  return {
-    weekday: date.toLocaleDateString([], { weekday: 'short' }),
-    day: date.getDate(),
-    month: date.toLocaleDateString([], { month: 'short' }),
-  };
-}
-
-function getDreamStateLabels(dream: Dream, copy: DreamCopy, starred: boolean, archived: boolean) {
-  return [
-    starred ? copy.starredTag : null,
-    archived ? copy.archivedTag : null,
-    dream.transcriptSource === 'edited'
-      ? copy.editedTranscriptTag
-      : dream.transcript
-        ? copy.transcriptTag
-        : dream.audioUri
-          ? copy.audioTag
-          : null,
-  ].filter((value): value is string => Boolean(value));
-}
-
-function SwipeActionButton({
-  label,
-  onPress,
-  actionStyle,
-  textStyle,
-  hitSlop,
-}: {
-  label: string;
-  onPress: () => void;
-  actionStyle: StyleProp<ViewStyle>;
-  textStyle: StyleProp<TextStyle>;
-  hitSlop: number;
-}) {
-  return (
-    <Pressable hitSlop={hitSlop} style={actionStyle} onPress={onPress}>
-      <Text style={textStyle}>{label}</Text>
-    </Pressable>
-  );
-}
-
 export default function HomeScreen() {
   const t = useTheme<Theme>();
+  const insets = useSafeAreaInsets();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const layout = React.useMemo(() => getDreamLayout(t), [t]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const scrollY = React.useRef(new Animated.Value(0)).current;
   const [dreams, setDreams] = React.useState<Dream[]>([]);
   const [draft, setDraft] = React.useState<DreamDraft | null>(null);
   const [loading, setLoading] = React.useState(true);
+  const [refreshing, setRefreshing] = React.useState(false);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [timelineFilters, setTimelineFilters] = React.useState<HomeTimelineFilters>(
     DEFAULT_HOME_TIMELINE_FILTERS,
   );
   const [isFilterSheetOpen, setIsFilterSheetOpen] = React.useState(false);
   const styles = createHomeScreenStyles(t);
-  const homeFilters = React.useMemo<Array<{ key: HomeArchiveFilter; label: string }>>(
+  const homeFilters = React.useMemo<Array<HomeOption<HomeArchiveFilter>>>(
     () => [
       { key: 'all', label: copy.homeFilterAll },
       { key: 'active', label: copy.homeFilterActive },
-      { key: 'archived', label: copy.homeFilterArchived },
     ],
     [copy],
   );
-  const moodFilters = React.useMemo<Array<{ key: HomeTimelineFilters['mood']; label: string }>>(
+  const moodFilters = React.useMemo<Array<HomeOption<HomeTimelineFilters['mood']>>>(
     () => [
       { key: 'all', label: copy.homeMoodFilterAll },
       { key: 'positive', label: moodLabels.positive },
@@ -204,7 +139,7 @@ export default function HomeScreen() {
     ],
     [copy, moodLabels],
   );
-  const typeFilters = React.useMemo<Array<{ key: HomeEntryTypeFilter; label: string }>>(
+  const typeFilters = React.useMemo<Array<HomeOption<HomeEntryTypeFilter>>>(
     () => [
       { key: 'all', label: copy.homeTypeFilterAll },
       { key: 'text', label: copy.homeTypeFilterText },
@@ -213,7 +148,7 @@ export default function HomeScreen() {
     ],
     [copy],
   );
-  const transcriptFilters = React.useMemo<Array<{ key: HomeTranscriptFilter; label: string }>>(
+  const transcriptFilters = React.useMemo<Array<HomeOption<HomeTranscriptFilter>>>(
     () => [
       { key: 'all', label: copy.homeTranscriptFilterAll },
       { key: 'with-transcript', label: copy.homeTranscriptFilterWithTranscript },
@@ -222,7 +157,7 @@ export default function HomeScreen() {
     ],
     [copy],
   );
-  const dateRangeFilters = React.useMemo<Array<{ key: HomeDateRangeFilter; label: string }>>(
+  const dateRangeFilters = React.useMemo<Array<HomeOption<HomeDateRangeFilter>>>(
     () => [
       { key: 'all', label: copy.homeDateRangeAll },
       { key: '7d', label: copy.homeDateRange7d },
@@ -231,7 +166,7 @@ export default function HomeScreen() {
     ],
     [copy],
   );
-  const sortOptions = React.useMemo<Array<{ key: HomeSortOrder; label: string }>>(
+  const sortOptions = React.useMemo<Array<HomeOption<HomeSortOrder>>>(
     () => [
       { key: 'newest', label: copy.homeSortFilterNewest },
       { key: 'oldest', label: copy.homeSortFilterOldest },
@@ -261,10 +196,22 @@ export default function HomeScreen() {
     () => getAvailableTimelineTags(archiveScopedDreams),
     [archiveScopedDreams],
   );
-  const visibleDreams = React.useMemo(
-    () => applyHomeTimelineFilters(dreams, timelineFilters),
-    [dreams, timelineFilters],
+  const debouncedSearchQuery = useDebouncedValue(timelineFilters.searchQuery, SEARCH_DEBOUNCE_MS);
+  const effectiveTimelineFilters = React.useMemo(
+    () => ({
+      ...timelineFilters,
+      searchQuery: debouncedSearchQuery,
+    }),
+    [debouncedSearchQuery, timelineFilters],
   );
+  const deferredTimelineFilters = React.useDeferredValue(effectiveTimelineFilters);
+  const visibleDreams = React.useMemo(
+    () => applyHomeTimelineFilters(dreams, deferredTimelineFilters),
+    [deferredTimelineFilters, dreams],
+  );
+  const isSearchPending =
+    timelineFilters.searchQuery !== debouncedSearchQuery ||
+    deferredTimelineFilters.searchQuery !== debouncedSearchQuery;
   const hasActiveRefinements = React.useMemo(
     () => hasActiveTimelineRefinements(timelineFilters),
     [timelineFilters],
@@ -290,6 +237,16 @@ export default function HomeScreen() {
     () => activeDreams.filter(dream => !dream.mood).length,
     [activeDreams],
   );
+  const heroGreeting = React.useMemo(() => getContextGreeting(copy), [copy]);
+  const heroDateLabel = React.useMemo(
+    () =>
+      new Date().toLocaleDateString(localeKey, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+      }),
+    [localeKey],
+  );
   const backlogValue = transcriptArchiveStats.audioOnly || moodBacklogCount;
   const spotlightPattern = spotlightWord?.label ?? spotlightTheme?.label ?? copy.homeSpotlightNoPattern;
   const spotlightPatternKind: PatternDetailKind | null = spotlightWord
@@ -297,20 +254,127 @@ export default function HomeScreen() {
     : spotlightTheme
       ? 'theme'
       : null;
+  const searchResultsLabel = React.useMemo(
+    () => formatResultCount(visibleDreams.length, copy),
+    [copy, visibleDreams.length],
+  );
+  const spotlightCountLabel = React.useMemo(
+    () =>
+      formatResultCount((spotlightWord?.dreamCount ?? spotlightTheme?.dreamCount) || 0, copy),
+    [copy, spotlightTheme?.dreamCount, spotlightWord?.dreamCount],
+  );
+  const weeklyValue = `${weeklyEntries}/3`;
+  const weeklyHint =
+    weeklyEntries >= 3 ? copy.homeSpotlightWeeklyOnTrack : copy.homeSpotlightWeeklyOffTrack;
+  const backlogDisplayValue = backlogValue ? String(backlogValue) : copy.homeSpotlightNoBacklog;
+  const backlogHint =
+    transcriptArchiveStats.audioOnly > 0
+      ? copy.homeSpotlightBacklogAudio
+      : moodBacklogCount > 0
+        ? copy.homeSpotlightBacklogMood
+        : copy.homeSpotlightNoBacklog;
+  const activeFilterChips = React.useMemo<HomeFilterChip[]>(() => {
+    const chips: HomeFilterChip[] = [];
 
-  const refreshDreams = React.useCallback(() => {
-    setLoading(true);
-    setLoadError(null);
-
-    try {
-      setDreams(listDreams());
-      setDraft(getDreamDraft());
-    } catch (error) {
-      setLoadError(String(error));
-    } finally {
-      setLoading(false);
+    if (timelineFilters.mood !== 'all') {
+      chips.push({
+        key: `mood:${timelineFilters.mood}`,
+        label: moodLabel(timelineFilters.mood, moodLabels) ?? copy.homeMoodFilterAll,
+      });
     }
-  }, []);
+
+    if (timelineFilters.starredOnly) {
+      chips.push({
+        key: 'starred',
+        label: copy.homeFilterStarred,
+      });
+    }
+
+    if (timelineFilters.entryType !== 'all') {
+      chips.push({
+        key: `entry:${timelineFilters.entryType}`,
+        label:
+          typeFilters.find(filter => filter.key === timelineFilters.entryType)?.label ??
+          timelineFilters.entryType,
+      });
+    }
+
+    if (timelineFilters.transcript !== 'all') {
+      chips.push({
+        key: `transcript:${timelineFilters.transcript}`,
+        label:
+          transcriptFilters.find(filter => filter.key === timelineFilters.transcript)?.label ??
+          timelineFilters.transcript,
+      });
+    }
+
+    timelineFilters.tags.forEach(tag => {
+      chips.push({
+        key: `tag:${tag}`,
+        label: tag,
+      });
+    });
+
+    if (timelineFilters.dateRange !== 'all') {
+      chips.push({
+        key: `date:${timelineFilters.dateRange}`,
+        label:
+          dateRangeFilters.find(filter => filter.key === timelineFilters.dateRange)?.label ??
+          timelineFilters.dateRange,
+      });
+    }
+
+    if (timelineFilters.sortOrder !== 'newest') {
+      chips.push({
+        key: `sort:${timelineFilters.sortOrder}`,
+        label:
+          sortOptions.find(option => option.key === timelineFilters.sortOrder)?.label ??
+          timelineFilters.sortOrder,
+      });
+    }
+
+    if (timelineFilters.searchQuery.trim()) {
+      chips.push({
+        key: 'search',
+        label: timelineFilters.searchQuery.trim(),
+      });
+    }
+
+    return chips;
+  }, [copy.homeFilterStarred, copy.homeMoodFilterAll, dateRangeFilters, moodLabels, sortOptions, timelineFilters, transcriptFilters, typeFilters]);
+  const heroInsetTop = insets.top + t.spacing.sm;
+  const heroExpandedHeight = 214;
+  const heroCollapsedHeight = 104;
+
+  const refreshDreams = React.useCallback(
+    (mode: 'initial' | 'refresh' | 'silent' = 'initial') => {
+      if (mode === 'initial') {
+        setLoading(true);
+      }
+
+      if (mode === 'refresh') {
+        setRefreshing(true);
+      }
+
+      setLoadError(null);
+
+      try {
+        setDreams(listDreams());
+        setDraft(getDreamDraft());
+      } catch (error) {
+        setLoadError(String(error));
+      } finally {
+        if (mode === 'initial') {
+          setLoading(false);
+        }
+
+        if (mode === 'refresh') {
+          setRefreshing(false);
+        }
+      }
+    },
+    [],
+  );
 
   const swipeMethods = React.useRef<Record<string, SwipeableMethods>>({});
   const activeSwipeId = React.useRef<string | null>(null);
@@ -340,13 +404,27 @@ export default function HomeScreen() {
     activeSwipeId.current = dreamId;
   }, []);
 
+  const bindSwipeMethods = React.useCallback((dreamId: string, methods: SwipeableMethods) => {
+    swipeMethods.current[dreamId] = methods;
+  }, []);
+
+  const onSwipeOpened = React.useCallback((dreamId: string) => {
+    activeSwipeId.current = dreamId;
+  }, []);
+
+  const onSwipeClosed = React.useCallback((dreamId: string) => {
+    if (activeSwipeId.current === dreamId) {
+      activeSwipeId.current = null;
+    }
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
-      refreshDreams();
+      refreshDreams(loading ? 'initial' : 'silent');
       return () => {
         closeActiveSwipe();
       };
-    }, [closeActiveSwipe, refreshDreams]),
+    }, [closeActiveSwipe, loading, refreshDreams]),
   );
 
   React.useEffect(() => {
@@ -521,31 +599,10 @@ export default function HomeScreen() {
     toggleStarFromList,
   ]);
 
-  const openContinueDraft = React.useCallback(() => {
+  const onPullToRefresh = React.useCallback(() => {
     closeActiveSwipe();
-    navigation.navigate(ROOT_ROUTE_NAMES.Tabs, {
-      screen: TAB_ROUTE_NAMES.New,
-      params: {
-        entryMode: 'default',
-      },
-    });
-  }, [closeActiveSwipe, navigation]);
-
-  const openQuickVoiceCapture = React.useCallback(() => {
-    closeActiveSwipe();
-    navigation.navigate(ROOT_ROUTE_NAMES.Tabs, {
-      screen: TAB_ROUTE_NAMES.New,
-      params: {
-        entryMode: 'voice',
-        launchKey: Date.now(),
-      },
-    });
-  }, [closeActiveSwipe, navigation]);
-
-  const openArchive = React.useCallback(() => {
-    closeActiveSwipe();
-    navigation.navigate(ROOT_ROUTE_NAMES.Archive);
-  }, [closeActiveSwipe, navigation]);
+    refreshDreams('refresh');
+  }, [closeActiveSwipe, refreshDreams]);
 
   const openPatternDetail = React.useCallback((signal: string, kind: PatternDetailKind) => {
     closeActiveSwipe();
@@ -562,75 +619,47 @@ export default function HomeScreen() {
     },
     [closeActiveSwipe],
   );
-
-  const renderRightActions = (
-    dream: Dream,
-    swipeableMethods: SwipeableMethods,
-  ) => {
-    swipeMethods.current[dream.id] = swipeableMethods;
-
-    return (
-      <View style={[styles.swipeActionsContainer, styles.swipeRightActionsContainer]}>
-        <SwipeActionButton
-          label={copy.swipeEdit}
-          hitSlop={layout.swipeActionHitSlop}
-          actionStyle={[styles.swipeAction, styles.swipeEditAction]}
-          textStyle={styles.swipeActionText}
-          onPress={() => {
-            closeSwipe(dream.id);
-            openDreamEditor(dream.id);
-          }}
-        />
-        <SwipeActionButton
-          label={copy.swipeDelete}
-          hitSlop={layout.swipeActionHitSlop}
-          actionStyle={[styles.swipeAction, styles.swipeDeleteAction]}
-          textStyle={[styles.swipeActionText, styles.swipeActionTextInverted]}
-          onPress={() => {
-            closeSwipe(dream.id);
-            removeDreamFromList(dream.id);
-          }}
-        />
-      </View>
-    );
-  };
-
-  const renderLeftActions = (
-    dream: Dream,
-    swipeableMethods: SwipeableMethods,
-  ) => {
-    swipeMethods.current[dream.id] = swipeableMethods;
-    const archiveLabel = isDreamArchived(dream)
-      ? copy.swipeUnarchive
-      : copy.swipeArchive;
-    const archiveActionStyle = isDreamArchived(dream)
-      ? styles.swipeUnarchiveAction
-      : styles.swipeArchiveAction;
-
-    return (
-      <View style={[styles.swipeActionsContainer, styles.swipeLeftActionsContainer]}>
-        <SwipeActionButton
-          label={archiveLabel}
-          hitSlop={layout.swipeActionHitSlop}
-          actionStyle={[styles.swipeAction, archiveActionStyle]}
-          textStyle={[styles.swipeActionText, styles.swipeActionTextInverted]}
-          onPress={() => {
-            closeSwipe(dream.id);
-            toggleArchiveFromList(dream);
-          }}
-        />
-      </View>
-    );
-  };
+  const clearTimelineFilters = React.useCallback(() => {
+    closeActiveSwipe();
+    setTimelineFilters(current => ({
+      ...DEFAULT_HOME_TIMELINE_FILTERS,
+      archive: current.archive,
+    }));
+  }, [closeActiveSwipe]);
 
   if (loading) {
     return (
-      <ScreenContainer scroll={false} style={styles.emptyContainer}>
-        <ScreenStateCard
-          variant="loading"
-          title={copy.timelineLoadingTitle}
-          subtitle={copy.timelineLoadingDescription}
-        />
+      <ScreenContainer scroll={false}>
+        <Card style={styles.heroCard}>
+          <SkeletonBlock width="26%" height={12} />
+          <SkeletonBlock width="52%" height={26} />
+          <SkeletonBlock width="72%" height={16} />
+          <View style={styles.statsRow}>
+            <SkeletonBlock width="31%" height={56} />
+            <SkeletonBlock width="31%" height={56} />
+            <SkeletonBlock width="31%" height={56} />
+          </View>
+        </Card>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Card key={`home-skeleton-${index}`} style={styles.skeletonCard}>
+            <View style={styles.skeletonHeaderRow}>
+              <SkeletonBlock style={styles.skeletonDateBadge} />
+              <View style={styles.skeletonHeaderCopy}>
+                <SkeletonBlock width="72%" height={16} />
+                <SkeletonBlock width="48%" height={12} />
+              </View>
+            </View>
+            <View style={styles.skeletonPreviewBlock}>
+              <SkeletonBlock width="92%" height={12} />
+              <SkeletonBlock width="84%" height={12} />
+              <SkeletonBlock width="66%" height={12} />
+            </View>
+            <View style={styles.skeletonFooterRow}>
+              <SkeletonBlock width="34%" height={24} />
+              <SkeletonBlock width="26%" height={24} />
+            </View>
+          </Card>
+        ))}
       </ScreenContainer>
     );
   }
@@ -662,657 +691,115 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScreenContainer scroll>
-      <Card style={styles.heroCard}>
-        <View pointerEvents="none" style={styles.heroGlowLarge} />
-        <View pointerEvents="none" style={styles.heroGlowSmall} />
-        <View style={styles.heroTopRow}>
-          <View style={styles.heroCopy}>
-            <Text style={styles.heroEyebrow}>{copy.homeGreeting}</Text>
-            <Text style={styles.heroTitle}>{copy.homeTitle}</Text>
-            <Text style={styles.heroSubtitle}>{copy.homeSubtitle}</Text>
-          </View>
-          <View style={styles.heroVisualShell}>
-            <View style={[styles.heroFacet, styles.heroFacetPrimary]} />
-            <View style={[styles.heroFacet, styles.heroFacetAccent]} />
-            <View style={[styles.heroFacet, styles.heroFacetAlt]} />
-          </View>
-        </View>
-
-        <View style={styles.heroFooter}>
-          <View style={styles.statsRow}>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
-              <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
-            </View>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
-              <Text style={styles.statValue}>{activeDreams.length}</Text>
-            </View>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
-              <Text style={styles.statValue}>{averageWords}</Text>
-            </View>
-          </View>
-
-          <View style={styles.heroActionsRow}>
-            <Button
-              title={copy.homeRecordNow}
-              onPress={openQuickVoiceCapture}
-              style={styles.heroPrimaryAction}
-              icon="mic"
-              size="md"
-            />
-            {draft ? (
-              <Button
-                title={copy.homeContinueDraft}
-                variant="ghost"
-                onPress={openContinueDraft}
-                style={styles.heroSecondaryAction}
-                icon="create-outline"
-                size="sm"
-              />
-            ) : null}
-          </View>
-
-          {draft ? (
-            <Text style={styles.heroActionHint}>{copy.homeDraftShortcutHint}</Text>
-          ) : null}
-        </View>
-      </Card>
-
-      <Card style={styles.spotlightCard}>
-        <View style={styles.spotlightHeader}>
-          <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
-          <Text style={styles.spotlightSubtitle}>{copy.homeSpotlightSubtitle}</Text>
-        </View>
-
-        <View style={styles.spotlightRow}>
-          {spotlightPatternKind ? (
-            <Pressable
-              style={({ pressed }) => [
-                styles.spotlightTile,
-                styles.spotlightTileFeatured,
-                pressed ? styles.spotlightTilePressed : null,
-              ]}
-              onPress={() => openPatternDetail(spotlightPattern, spotlightPatternKind)}
-            >
-              <Text style={styles.spotlightLabel}>{copy.homeSpotlightPatternLabel}</Text>
-              <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
-              <Text style={styles.spotlightHint}>
-                {formatResultCount(
-                  (spotlightWord?.dreamCount ?? spotlightTheme?.dreamCount) || 0,
-                  copy,
-                )}
-              </Text>
-            </Pressable>
-          ) : (
-            <View style={[styles.spotlightTile, styles.spotlightTileFeatured]}>
-              <Text style={styles.spotlightLabel}>{copy.homeSpotlightPatternLabel}</Text>
-              <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
-              <Text style={styles.spotlightHint}>{copy.homeSpotlightNoPattern}</Text>
-            </View>
-          )}
-
-          <View style={styles.spotlightTile}>
-            <Text style={styles.spotlightLabel}>{copy.homeSpotlightWeeklyLabel}</Text>
-            <Text style={styles.spotlightValue}>{`${weeklyEntries}/3`}</Text>
-            <Text style={styles.spotlightHint}>
-              {weeklyEntries >= 3 ? copy.homeSpotlightWeeklyOnTrack : copy.homeSpotlightWeeklyOffTrack}
-            </Text>
-          </View>
-
-          <View style={styles.spotlightTile}>
-            <Text style={styles.spotlightLabel}>{copy.homeSpotlightBacklogLabel}</Text>
-            <Text style={styles.spotlightValue}>
-              {backlogValue ? String(backlogValue) : copy.homeSpotlightNoBacklog}
-            </Text>
-            <Text style={styles.spotlightHint}>
-              {transcriptArchiveStats.audioOnly > 0
-                ? copy.homeSpotlightBacklogAudio
-                : moodBacklogCount > 0
-                  ? copy.homeSpotlightBacklogMood
-                  : copy.homeSpotlightNoBacklog}
-            </Text>
-          </View>
-        </View>
-      </Card>
-
-      <View style={styles.timelineHeaderRow}>
-        <View style={styles.timelineHeaderCopy}>
-          <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
-          <Text style={styles.sectionHint}>{copy.openDreamHint}</Text>
-        </View>
-        <View style={styles.timelineHeaderActions}>
-          <View style={styles.timelineCountPill}>
-            <Text style={styles.timelineCountLabel}>
-              {formatResultCount(visibleDreams.length, copy)}
-            </Text>
-          </View>
-          <Button
-            title={copy.homeOpenArchive}
-            variant="ghost"
-            size="sm"
-            icon="albums-outline"
-            onPress={openArchive}
+    <ScreenContainer scroll={false} padded={false}>
+      <HomeHero
+        copy={copy}
+        styles={styles}
+        scrollY={scrollY}
+        insetTop={heroInsetTop}
+        expandedHeight={heroExpandedHeight}
+        collapsedHeight={heroCollapsedHeight}
+        collapseDistance={HERO_COLLAPSE_DISTANCE}
+        greeting={heroGreeting}
+        dateLabel={heroDateLabel}
+        streak={streak}
+        totalDreams={activeDreams.length}
+        averageWords={averageWords}
+      />
+      <FlatList
+        data={displayedDreams}
+        keyExtractor={item => item.id}
+        renderItem={({ item }) => (
+          <HomeDreamRow
+            dream={item}
+            copy={copy}
+            moodLabels={moodLabels}
+            theme={t}
+            styles={styles}
+            layout={layout}
+            closeActiveSwipe={closeActiveSwipe}
+            closePreviousSwipe={closePreviousSwipe}
+            closeSwipe={closeSwipe}
+            bindSwipeMethods={bindSwipeMethods}
+            onSwipeClosed={onSwipeClosed}
+            onSwipeOpened={onSwipeOpened}
+            openDreamDetail={openDreamDetail}
+            openDreamEditor={openDreamEditor}
+            openDreamQuickActions={openDreamQuickActions}
+            toggleArchiveFromList={toggleArchiveFromList}
+            removeDreamFromList={removeDreamFromList}
           />
-        </View>
-      </View>
-      <Card style={styles.searchCard}>
-        <FormField
-          placeholder={copy.homeSearchPlaceholder}
-          value={timelineFilters.searchQuery}
-          onChangeText={value =>
-            updateTimelineFilters(current => ({
-              ...current,
-              searchQuery: value,
-            }))
-          }
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        )}
+        ListHeaderComponent={
+          <HomeListHeader
+            copy={copy}
+            styles={styles}
+            timelineFilters={timelineFilters}
+            homeFilters={homeFilters}
+            activeFilterChips={activeFilterChips}
+            visibleDreamCount={visibleDreams.length}
+            archiveScopedCount={archiveScopedDreams.length}
+            displayedDreamCount={displayedDreams.length}
+            searchResultsLabel={searchResultsLabel}
+            isSearchPending={isSearchPending}
+            spotlightPattern={spotlightPattern}
+            spotlightPatternKind={spotlightPatternKind}
+            spotlightCountLabel={spotlightCountLabel}
+            weeklyValue={weeklyValue}
+            weeklyHint={weeklyHint}
+            backlogValue={backlogDisplayValue}
+            backlogHint={backlogHint}
+            onOpenPatternDetail={openPatternDetail}
+            onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
+            onClearFilters={clearTimelineFilters}
+            updateTimelineFilters={updateTimelineFilters}
+          />
+        }
+        ItemSeparatorComponent={() => <View style={{ height: t.spacing.sm }} />}
+        showsVerticalScrollIndicator={false}
+        removeClippedSubviews={Platform.OS === 'android'}
+        initialNumToRender={6}
+        maxToRenderPerBatch={8}
+        updateCellsBatchingPeriod={40}
+        windowSize={7}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onPullToRefresh}
+            tintColor={t.colors.primary}
+            colors={[t.colors.primary, t.colors.accent]}
+            progressBackgroundColor={t.colors.surface}
+            progressViewOffset={heroCollapsedHeight + heroInsetTop - 8}
+          />
+        }
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false },
+        )}
+        contentContainerStyle={[
+          styles.listContent,
+          {
+            paddingTop: heroExpandedHeight + heroInsetTop + t.spacing.md,
+            paddingBottom: getTabBarReservedSpace(insets.bottom) + t.spacing.xs,
+          },
+        ]}
+      />
 
-        <View style={styles.primaryControlsRow}>
-          <View style={styles.filterRow}>
-            {homeFilters.map(filter => {
-              const active = timelineFilters.archive === filter.key;
-              return (
-                <Pressable
-                  key={filter.key}
-                  style={[
-                    styles.filterButton,
-                    active ? styles.filterButtonActive : null,
-                  ]}
-                  onPress={() =>
-                    updateTimelineFilters(current => ({
-                      ...current,
-                      archive: filter.key,
-                    }))
-                  }
-                >
-                  <Text
-                    style={[
-                      styles.filterButtonLabel,
-                      active ? styles.filterButtonLabelActive : null,
-                    ]}
-                  >
-                    {filter.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </View>
-
-          <View style={styles.primaryActionsRow}>
-            <Pressable
-              style={[
-                styles.inlineActionButton,
-                timelineFilters.starredOnly ? styles.inlineActionButtonActive : null,
-              ]}
-              onPress={() =>
-                updateTimelineFilters(current => ({
-                  ...current,
-                  starredOnly: !current.starredOnly,
-                }))
-              }
-            >
-              <Text
-                style={[
-                  styles.inlineActionButtonText,
-                  timelineFilters.starredOnly ? styles.inlineActionButtonTextActive : null,
-                ]}
-              >
-                {copy.homeFilterStarred}
-              </Text>
-            </Pressable>
-            <Pressable
-              style={styles.inlineActionButton}
-              onPress={() => setIsFilterSheetOpen(true)}
-            >
-              <Text style={styles.inlineActionButtonText}>{copy.homeShowFilters}</Text>
-            </Pressable>
-          </View>
-        </View>
-
-        {hasActiveRefinements ? (
-          <View style={styles.activeFiltersRow}>
-            {timelineFilters.mood !== 'all' ? (
-              <TagChip label={moodLabel(timelineFilters.mood, moodLabels) ?? copy.homeMoodFilterAll} />
-            ) : null}
-            {timelineFilters.starredOnly ? <TagChip label={copy.homeFilterStarred} /> : null}
-            {timelineFilters.entryType !== 'all' ? (
-              <TagChip
-                label={typeFilters.find(filter => filter.key === timelineFilters.entryType)?.label ?? timelineFilters.entryType}
-              />
-            ) : null}
-            {timelineFilters.transcript !== 'all' ? (
-              <TagChip
-                label={
-                  transcriptFilters.find(filter => filter.key === timelineFilters.transcript)?.label ??
-                  timelineFilters.transcript
-                }
-              />
-            ) : null}
-            {timelineFilters.tags.map(tag => <TagChip key={tag} label={tag} />)}
-            {timelineFilters.dateRange !== 'all' ? (
-              <TagChip
-                label={
-                  dateRangeFilters.find(filter => filter.key === timelineFilters.dateRange)?.label ??
-                  timelineFilters.dateRange
-                }
-              />
-            ) : null}
-            {timelineFilters.sortOrder !== 'newest' ? (
-              <TagChip
-                label={
-                  sortOptions.find(option => option.key === timelineFilters.sortOrder)?.label ??
-                  timelineFilters.sortOrder
-                }
-              />
-            ) : null}
-            {timelineFilters.searchQuery.trim() ? <TagChip label={timelineFilters.searchQuery.trim()} /> : null}
-            <Pressable
-              style={styles.clearFiltersButton}
-              onPress={() => {
-                closeActiveSwipe();
-                setTimelineFilters(current => ({
-                  ...DEFAULT_HOME_TIMELINE_FILTERS,
-                  archive: current.archive,
-                }));
-              }}
-            >
-              <Text style={styles.clearFiltersButtonText}>{copy.homeClearFilters}</Text>
-            </Pressable>
-          </View>
-        ) : null}
-      </Card>
-
-      <Modal
-        transparent
-        animationType="slide"
+      <HomeFilterSheet
         visible={isFilterSheetOpen}
-        onRequestClose={() => setIsFilterSheetOpen(false)}
-      >
-        <View style={styles.filterSheetRoot}>
-          <Pressable style={styles.filterSheetBackdrop} onPress={() => setIsFilterSheetOpen(false)} />
-          <View style={styles.filterSheetCard}>
-            <View style={styles.filterSheetHeader}>
-              <View style={styles.filterSheetHandle} />
-              <SectionHeader title={copy.homeRefineLabel} />
-              <Button
-                title={copy.homeHideFilters}
-                variant="ghost"
-                size="sm"
-                onPress={() => setIsFilterSheetOpen(false)}
-              />
-            </View>
-
-            <ScrollView
-              style={styles.filterSheetScroll}
-              contentContainerStyle={styles.filterSheetBody}
-              showsVerticalScrollIndicator={false}
-            >
-              <View style={styles.filterGroup}>
-                <Text style={styles.filterGroupLabel}>{copy.homeMoodFilterLabel}</Text>
-                <View style={styles.filterRow}>
-                  {moodFilters.map(filter => {
-                    const active = timelineFilters.mood === filter.key;
-                    return (
-                      <Pressable
-                        key={filter.key}
-                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
-                        onPress={() =>
-                          updateTimelineFilters(current => ({
-                            ...current,
-                            mood: filter.key,
-                          }))
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.filterButtonLabel,
-                            active ? styles.filterButtonLabelActive : null,
-                          ]}
-                        >
-                          {filter.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-
-              <View style={styles.filterGroup}>
-                <Text style={styles.filterGroupLabel}>{copy.homeTypeFilterLabel}</Text>
-                <View style={styles.filterRow}>
-                  {typeFilters.map(filter => {
-                    const active = timelineFilters.entryType === filter.key;
-                    return (
-                      <Pressable
-                        key={filter.key}
-                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
-                        onPress={() =>
-                          updateTimelineFilters(current => ({
-                            ...current,
-                            entryType: filter.key,
-                          }))
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.filterButtonLabel,
-                            active ? styles.filterButtonLabelActive : null,
-                          ]}
-                        >
-                          {filter.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-
-              <View style={styles.filterGroup}>
-                <Text style={styles.filterGroupLabel}>{copy.homeTranscriptFilterLabel}</Text>
-                <View style={styles.filterRow}>
-                  {transcriptFilters.map(filter => {
-                    const active = timelineFilters.transcript === filter.key;
-                    return (
-                      <Pressable
-                        key={filter.key}
-                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
-                        onPress={() =>
-                          updateTimelineFilters(current => ({
-                            ...current,
-                            transcript: filter.key,
-                          }))
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.filterButtonLabel,
-                            active ? styles.filterButtonLabelActive : null,
-                          ]}
-                        >
-                          {filter.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-
-              {availableTags.length > 0 ? (
-                <View style={styles.filterGroup}>
-                  <Text style={styles.filterGroupLabel}>{copy.homeTagFilterLabel}</Text>
-                  <View style={styles.filterRow}>
-                    {availableTags.map(tag => {
-                      const active = timelineFilters.tags.includes(tag);
-                      return (
-                        <Pressable
-                          key={tag}
-                          style={[styles.filterButton, active ? styles.filterButtonActive : null]}
-                          onPress={() =>
-                            updateTimelineFilters(current => ({
-                              ...current,
-                              tags: current.tags.includes(tag)
-                                ? current.tags.filter(value => value !== tag)
-                                : [...current.tags, tag],
-                            }))
-                          }
-                        >
-                          <Text
-                            style={[
-                              styles.filterButtonLabel,
-                              active ? styles.filterButtonLabelActive : null,
-                            ]}
-                          >
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </View>
-              ) : null}
-
-              <View style={styles.filterGroup}>
-                <Text style={styles.filterGroupLabel}>{copy.homeDateRangeFilterLabel}</Text>
-                <View style={styles.filterRow}>
-                  {dateRangeFilters.map(filter => {
-                    const active = timelineFilters.dateRange === filter.key;
-                    return (
-                      <Pressable
-                        key={filter.key}
-                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
-                        onPress={() =>
-                          updateTimelineFilters(current => ({
-                            ...current,
-                            dateRange: filter.key,
-                          }))
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.filterButtonLabel,
-                            active ? styles.filterButtonLabelActive : null,
-                          ]}
-                        >
-                          {filter.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-
-              <View style={styles.filterGroup}>
-                <Text style={styles.filterGroupLabel}>{copy.homeSortFilterLabel}</Text>
-                <View style={styles.filterRow}>
-                  {sortOptions.map(option => {
-                    const active = timelineFilters.sortOrder === option.key;
-                    return (
-                      <Pressable
-                        key={option.key}
-                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
-                        onPress={() =>
-                          updateTimelineFilters(current => ({
-                            ...current,
-                            sortOrder: option.key,
-                          }))
-                        }
-                      >
-                        <Text
-                          style={[
-                            styles.filterButtonLabel,
-                            active ? styles.filterButtonLabelActive : null,
-                          ]}
-                        >
-                          {option.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {!archiveScopedDreams.length ? (
-        <Card style={styles.emptyCard}>
-          <SectionHeader
-            title={
-              timelineFilters.archive === 'archived'
-                ? copy.emptyArchivedTitle
-                : copy.emptyActiveTitle
-            }
-            subtitle={
-              timelineFilters.archive === 'archived'
-                ? copy.emptyArchivedDescription
-                : copy.emptyActiveDescription
-            }
-          />
-        </Card>
-      ) : null}
-
-      {archiveScopedDreams.length > 0 && !visibleDreams.length ? (
-        <ScreenStateCard
-          variant="empty"
-          title={copy.homeSearchEmptyTitle}
-          subtitle={copy.homeSearchEmptyDescription}
-        />
-      ) : null}
-
-      {visibleDreams.length > displayedDreams.length ? (
-        <Text style={styles.recentLimitHint}>{copy.homeRecentLimitHint}</Text>
-      ) : null}
-
-      {displayedDreams.map(dream => {
-        const mood = moodLabel(dream.mood, moodLabels);
-        const dateParts = formatDateParts(dream);
-        const archived = isDreamArchived(dream);
-        const starred = isDreamStarred(dream);
-        const stateLabels = getDreamStateLabels(dream, copy, starred, archived).slice(0, 2);
-        const visibleTags = dream.tags.slice(0, 2);
-        const hiddenTagCount = Math.max(0, dream.tags.length - visibleTags.length);
-        const accentColor = starred ? t.colors.accent : moodColor(t, dream.mood);
-        return (
-          <ReanimatedSwipeable
-            key={dream.id}
-            containerStyle={styles.swipeableContainer}
-            overshootRight={false}
-            overshootLeft={false}
-            leftThreshold={layout.swipeThreshold}
-            rightThreshold={layout.swipeThreshold}
-            dragOffsetFromLeftEdge={layout.swipeDragOffset}
-            dragOffsetFromRightEdge={layout.swipeDragOffset}
-            friction={1.9}
-            renderLeftActions={(_, __, methods) =>
-              renderLeftActions(dream, methods)
-            }
-            renderRightActions={(_, __, methods) =>
-              renderRightActions(dream, methods)
-            }
-            onSwipeableWillOpen={() => closePreviousSwipe(dream.id)}
-            onSwipeableOpen={() => {
-              activeSwipeId.current = dream.id;
-            }}
-            onSwipeableClose={() => {
-              if (activeSwipeId.current === dream.id) {
-                activeSwipeId.current = null;
-              }
-            }}
-          >
-            <Pressable
-              style={({ pressed }) => [
-                styles.dreamPressable,
-                pressed ? styles.dreamPressablePressed : null,
-              ]}
-              onPress={() => {
-                closeActiveSwipe();
-                openDreamDetail(dream.id);
-              }}
-              onLongPress={() => openDreamQuickActions(dream)}
-              delayLongPress={220}
-            >
-              <Card style={styles.dreamCard}>
-                <View style={styles.dreamHeaderRow}>
-                  <View
-                    style={[
-                      styles.dateBadge,
-                      starred ? styles.dateBadgeFeatured : null,
-                    ]}
-                  >
-                    <Text style={styles.weekday}>{dateParts.weekday}</Text>
-                    <Text style={styles.dayNumber}>{dateParts.day}</Text>
-                    <Text style={styles.month}>{dateParts.month}</Text>
-                  </View>
-
-                  <View style={styles.dreamHeaderCopy}>
-                    <View style={styles.titleRow}>
-                      <Text style={styles.title} numberOfLines={1}>
-                        {dream.title || copy.untitled}
-                      </Text>
-                      {!mood ? (
-                        <View
-                          style={[
-                            styles.moodDot,
-                            { backgroundColor: accentColor },
-                          ]}
-                        />
-                      ) : null}
-                    </View>
-                    <View style={styles.timestampRow}>
-                      {mood ? (
-                        <View style={styles.moodPill}>
-                          <View
-                            style={[
-                              styles.moodDot,
-                              { backgroundColor: accentColor },
-                            ]}
-                          />
-                          <Text style={styles.moodPillText}>{mood}</Text>
-                        </View>
-                      ) : null}
-                      <Text style={styles.timestamp}>
-                        {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
-                        {' · '}
-                        {new Date(dream.createdAt).toLocaleTimeString([], {
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-
-                <View style={styles.previewPanel}>
-                  <View
-                    style={[
-                      styles.previewAccent,
-                      { backgroundColor: accentColor },
-                    ]}
-                  />
-                  <Text style={styles.preview} numberOfLines={3}>
-                    {formatPreview(dream, copy)}
-                  </Text>
-                </View>
-
-                <View style={styles.dreamFooterRow}>
-                  {stateLabels.length ? (
-                    <View style={styles.statePills}>
-                      {stateLabels.map(label => (
-                        <View key={label} style={styles.statePill}>
-                          <Text style={styles.statePillText}>{label}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  ) : (
-                    <View />
-                  )}
-
-                  {visibleTags.length || hiddenTagCount ? (
-                    <View style={styles.tags}>
-                      {visibleTags.map(tag => (
-                        <View key={tag} style={styles.tagPill}>
-                          <Text style={styles.tagPillText}>{tag}</Text>
-                        </View>
-                      ))}
-                      {hiddenTagCount ? (
-                        <View style={[styles.tagPill, styles.tagOverflowPill]}>
-                          <Text style={styles.tagPillText}>{`+${hiddenTagCount}`}</Text>
-                        </View>
-                      ) : null}
-                    </View>
-                  ) : null}
-                </View>
-              </Card>
-            </Pressable>
-          </ReanimatedSwipeable>
-        );
-      })}
+        copy={copy}
+        styles={styles}
+        timelineFilters={timelineFilters}
+        moodFilters={moodFilters}
+        typeFilters={typeFilters}
+        transcriptFilters={transcriptFilters}
+        availableTags={availableTags}
+        dateRangeFilters={dateRangeFilters}
+        sortOptions={sortOptions}
+        onClose={() => setIsFilterSheetOpen(false)}
+        updateTimelineFilters={updateTimelineFilters}
+      />
     </ScreenContainer>
   );
 }

@@ -1,24 +1,25 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../theme/theme';
+import { createFieldSurface } from '../../theme/surfaces';
 
 export function createFormFieldStyles(theme: Theme) {
   return StyleSheet.create({
     container: {
-      gap: 8,
+      gap: 6,
     },
     label: {
       color: theme.colors.textDim,
     },
     input: {
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: 12,
-      padding: 12,
+      ...createFieldSurface(theme),
       color: theme.colors.text,
-      backgroundColor: theme.colors.surfaceAlt,
+      fontSize: 14,
+      lineHeight: 20,
     },
     helper: {
       color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
     helperError: {
       color: theme.colors.danger,

@@ -18,7 +18,11 @@ import {
   getDreamStressLabels,
   getDreamWakeEmotionLabels,
 } from '../../../constants/copy/dreams';
-import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  TAB_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
@@ -192,6 +196,13 @@ export default function DreamDetailScreen() {
       : dream.analysis?.status === 'error'
         ? copy.detailAnalysisStatusError
         : copy.detailAnalysisStatusIdle;
+  const analysisStateText = !analysisSettings.enabled
+    ? copy.detailAnalysisStateDisabled
+    : analysisSettings.provider === 'openai'
+      ? copy.detailAnalysisStateOpenAiPlanned
+      : dream.analysis?.status === 'ready'
+        ? copy.detailAnalysisStateLocalReady
+        : copy.detailAnalysisStateManual;
   const strongestSignal =
     relatedDreams[0]?.sharedSignals[0] ?? dream.tags[0] ?? dream.wakeEmotions?.[0] ?? null;
 
@@ -389,6 +400,12 @@ export default function DreamDetailScreen() {
   function onClearAnalysis() {
     const nextDream = clearDreamAnalysis(dreamId);
     setDream(nextDream);
+  }
+
+  function onOpenSettingsForAnalysis() {
+    navigation.navigate(ROOT_ROUTE_NAMES.Tabs, {
+      screen: TAB_ROUTE_NAMES.Settings,
+    });
   }
 
   return (
@@ -711,6 +728,20 @@ export default function DreamDetailScreen() {
 
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.detailAnalysisTitle}</Text>
+        <View style={styles.analysisStateCard}>
+          <Text style={styles.analysisStateLabel}>{copy.detailAnalysisStateLabel}</Text>
+          <Text style={styles.analysisStateText}>{analysisStateText}</Text>
+          {!analysisSettings.enabled || analysisSettings.provider === 'openai' ? (
+            <Button
+              title={copy.detailAnalysisOpenSettings}
+              variant="ghost"
+              size="sm"
+              icon="settings-outline"
+              onPress={onOpenSettingsForAnalysis}
+            />
+          ) : null}
+        </View>
+
         {dream.analysis?.summary ? (
           <>
             <Text style={styles.sectionTitle}>{copy.detailAnalysisSummaryLabel}</Text>
@@ -747,7 +778,7 @@ export default function DreamDetailScreen() {
         ) : null}
 
         {analysisSettings.enabled ? (
-          <View style={styles.transcriptActions}>
+          <View style={styles.analysisActionsRow}>
             <Button
               title={
                 isGeneratingAnalysis

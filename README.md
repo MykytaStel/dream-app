@@ -22,11 +22,12 @@ This project is being developed by Mykyta Stelmashenko.
 
 ## Status
 
-Version: `0.0.15`
+Version: `0.0.16`
 
-This is an early MVP focused on the core journaling flow with local reminders
-and offline transcription. Future iterations may add AI summaries and richer
-dream analytics.
+This is an early MVP focused on the core journaling flow with local reminders,
+offline transcription, and local dream analysis. See
+[docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
+for the current release scope and notes.
 
 ## Infrastructure
 

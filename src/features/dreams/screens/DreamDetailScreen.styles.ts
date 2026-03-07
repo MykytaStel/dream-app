@@ -236,6 +236,27 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       backgroundColor: theme.colors.surfaceAlt,
       padding: 12,
     },
+    analysisStateCard: {
+      gap: 8,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      padding: 12,
+    },
+    analysisStateLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+    },
+    analysisStateText: {
+      lineHeight: 20,
+      color: theme.colors.text,
+    },
+    analysisActionsRow: {
+      gap: 10,
+    },
     transcriptEditorInput: {
       minHeight: 168,
     },

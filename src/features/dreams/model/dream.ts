@@ -4,9 +4,24 @@ export type Mood = 'neutral' | 'positive' | 'negative';
 export type StressLevel = 0 | 1 | 2 | 3;
 export type DreamTranscriptStatus = 'idle' | 'processing' | 'ready' | 'error';
 export type DreamTranscriptSource = 'generated' | 'edited';
+export type WakeEmotion =
+  | 'calm'
+  | 'uneasy'
+  | 'curious'
+  | 'heavy'
+  | 'inspired'
+  | 'disoriented';
+export type PreSleepEmotion =
+  | 'peaceful'
+  | 'anxious'
+  | 'restless'
+  | 'hopeful'
+  | 'drained'
+  | 'lonely';
 
 export type SleepContext = {
   stressLevel?: StressLevel;
+  preSleepEmotions?: PreSleepEmotion[];
   alcoholTaken?: boolean;
   caffeineLate?: boolean;
   medications?: string;
@@ -18,6 +33,7 @@ export type Dream = {
   id: string;
   createdAt: number;      // epoch
   archivedAt?: number;    // epoch (soft archive)
+  starredAt?: number;     // epoch
   sleepDate?: string;     // YYYY-MM-DD
   title?: string;
   text?: string;
@@ -29,6 +45,7 @@ export type Dream = {
   analysis?: DreamAnalysisRecord;
   tags: string[];
   mood?: Mood;
+  wakeEmotions?: WakeEmotion[];
   sleepContext?: SleepContext;
   lucidity?: 0 | 1 | 2 | 3;
   // later: embedding: number[];

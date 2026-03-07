@@ -33,7 +33,9 @@ describe('dreamRules', () => {
       text: '  Text body  ',
       tags: ['  Portal ', 'portal', ' lucid dream '],
       mood: 'positive',
+      wakeEmotions: ['calm', 'curious', 'calm'],
       sleepContext: {
+        preSleepEmotions: ['restless', 'hopeful', 'restless'],
         alcoholTaken: false,
         medications: '  melatonin  ',
         importantEvents: '   ',
@@ -44,8 +46,10 @@ describe('dreamRules', () => {
     expect(sanitized.title).toBe('Night Run');
     expect(sanitized.text).toBe('Text body');
     expect(sanitized.tags).toEqual(['portal', 'lucid-dream']);
+    expect(sanitized.wakeEmotions).toEqual(['calm', 'curious']);
     expect(sanitized.sleepDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(sanitized.sleepContext).toEqual({
+      preSleepEmotions: ['restless', 'hopeful'],
       alcoholTaken: false,
       medications: 'melatonin',
       importantEvents: undefined,

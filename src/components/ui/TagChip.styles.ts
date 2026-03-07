@@ -1,18 +1,29 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../theme/theme';
 
-export function createTagChipStyles(theme: Theme) {
+export function createTagChipStyles(theme: Theme, selected = false) {
   return StyleSheet.create({
+    pressable: {
+      borderRadius: 999,
+    },
     chip: {
       borderRadius: 999,
-      backgroundColor: theme.colors.surfaceAlt,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: selected ? theme.colors.primary : theme.colors.surfaceElevated,
       borderWidth: 1,
-      borderColor: theme.colors.border,
-      paddingVertical: 6,
-      paddingHorizontal: 10,
+      borderColor: selected ? theme.colors.primary : theme.colors.border,
+      paddingVertical: 7,
+      paddingHorizontal: 11,
     },
     label: {
+      color: selected ? theme.colors.background : theme.colors.text,
+      fontSize: 12,
       fontWeight: '600',
+    },
+    icon: {
+      marginRight: -1,
     },
   });
 }

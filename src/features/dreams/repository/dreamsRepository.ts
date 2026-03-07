@@ -9,23 +9,44 @@ import {
 } from '../model/dreamRules';
 
 const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
+let dreamCache: Dream[] | null = null;
+let dreamCacheRaw: string | null = null;
 
 export function listDreams(): Dream[] {
   const raw = kv.getString(DREAMS_STORAGE_KEY);
   if (!raw) {
+    dreamCache = [];
+    dreamCacheRaw = null;
     return [];
+  }
+
+  if (dreamCache && dreamCacheRaw === raw) {
+    return dreamCache;
   }
 
   try {
     const parsed = JSON.parse(raw) as Dream[];
-    return sortDreamsStable(parsed.map(sanitizeDream));
+    const normalized = sortDreamsStable(parsed.map(sanitizeDream));
+    dreamCache = normalized;
+    dreamCacheRaw = raw;
+    return normalized;
   } catch {
+    dreamCache = [];
+    dreamCacheRaw = raw;
     return [];
   }
 }
 
 function persistDreams(dreams: Dream[]) {
-  kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(dreams.map(sanitizeDream))));
+  const normalized = sortDreamsStable(dreams.map(sanitizeDream));
+  const raw = JSON.stringify(normalized);
+  kv.set(DREAMS_STORAGE_KEY, raw);
+  dreamCache = normalized;
+  dreamCacheRaw = raw;
+}
+
+export function replaceAllDreams(dreams: Dream[]) {
+  persistDreams(dreams);
 }
 
 function updateDreamById(id: string, updater: (dream: Dream) => Dream) {
@@ -78,6 +99,21 @@ export function archiveDream(id: string) {
       : dream,
   );
   persistDreams(next);
+}
+
+export function starDream(id: string) {
+  return updateDreamById(id, dream => ({
+    ...dream,
+    starredAt: Date.now(),
+  }));
+}
+
+export function unstarDream(id: string) {
+  return updateDreamById(id, dream => {
+    const nextDream: Dream = { ...dream, starredAt: undefined };
+    delete nextDream.starredAt;
+    return nextDream;
+  });
 }
 
 export function unarchiveDream(id: string) {

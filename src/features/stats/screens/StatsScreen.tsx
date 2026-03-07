@@ -1,32 +1,40 @@
 import React from 'react';
-import { View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
-import { InfoRow } from '../../../components/ui/InfoRow';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
-import { StatCard } from '../../../components/ui/StatCard';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
+import {
+  ROOT_ROUTE_NAMES,
+  type PatternDetailKind,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { ScreenStateCard } from '../../dreams/components/ScreenStateCard';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
+import {
+  getDreamPreSleepEmotionLabels,
+} from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
 import { Theme } from '../../../theme/theme';
 import {
   countDreamWords,
   getAverageWords,
   getCurrentStreak,
+  getDreamDate,
   getEntriesLastSevenDays,
-  getMoodCorrelationStats,
-  getMoodCounts,
-  type NegativeMoodRate,
   getSleepContextStats,
+  getTopPreSleepEmotionSignals,
 } from '../../dreams/model/dreamAnalytics';
 import {
   getRecurringReflectionSignals,
+  getRecurringWordSignals,
   getTranscriptArchiveStats,
-  type DreamReflectionSignal,
 } from '../model/dreamReflection';
 import {
   getDreamAchievements,
@@ -35,37 +43,14 @@ import {
 } from '../model/achievements';
 import { createStatsScreenStyles } from './StatsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
+import { Dream } from '../../dreams/model/dream';
 
-function formatCountWithShare(count: number, total: number) {
-  if (total <= 0) {
-    return '0 (0%)';
-  }
-
-  return `${count} (${Math.round((count / total) * 100)}%)`;
-}
-
-function formatReflectionSource(signal: DreamReflectionSignal, copy: ReturnType<typeof getStatsCopy>) {
-  if (signal.source === 'mixed') {
-    return copy.reflectionSourceMixed;
-  }
-
-  return signal.source === 'tag' ? copy.reflectionSourceTag : copy.reflectionSourceTranscript;
-}
-
-function formatNegativeRate(metric: NegativeMoodRate, noData: string, baselineRate?: number) {
-  if (typeof metric.rate !== 'number') {
-    return noData;
-  }
-
-  const delta =
-    typeof baselineRate === 'number'
-      ? `${metric.rate - baselineRate >= 0 ? '+' : ''}${metric.rate - baselineRate}pp`
-      : undefined;
-
-  return `${metric.rate}% (${metric.negativeCount}/${metric.total}${
-    delta ? `, ${delta}` : ''
-  })`;
-}
+type InsightRange = 'all' | '30d' | '7d';
+type PatternChipItem = {
+  key: string;
+  label: string;
+  onPress?: () => void;
+};
 
 function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof getStatsCopy>) {
   switch (id) {
@@ -92,12 +77,41 @@ function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof g
   }
 }
 
+function filterDreamsByRange(dreams: Dream[], range: InsightRange) {
+  if (range === 'all') {
+    return dreams;
+  }
+
+  const cutoff = new Date();
+  cutoff.setHours(0, 0, 0, 0);
+  cutoff.setDate(cutoff.getDate() - (range === '7d' ? 6 : 29));
+
+  return dreams.filter(dream => getDreamDate(dream) >= cutoff);
+}
+
+function formatCoverageValue(value: number, total: number) {
+  return `${value}/${Math.max(total, 0)}`;
+}
+
 export default function StatsScreen() {
   const t = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
+  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const preSleepEmotionLabels = React.useMemo(
+    () => getDreamPreSleepEmotionLabels(locale),
+    [locale],
+  );
   const [dreams, setDreams] = React.useState(() => listDreams());
+  const [selectedRange, setSelectedRange] = React.useState<InsightRange>('all');
   const styles = createStatsScreenStyles(t);
+
+  const openPatternDetail = React.useCallback((signal: string, kind: PatternDetailKind) => {
+    navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
+      signal,
+      kind,
+    });
+  }, [navigation]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -105,36 +119,147 @@ export default function StatsScreen() {
     }, []),
   );
 
-  const totalWords = dreams.reduce((sum, dream) => sum + countDreamWords(dream.text), 0);
-  const voiceNotes = dreams.filter(dream => Boolean(dream.audioUri)).length;
-  const transcribedDreams = dreams.filter(dream => Boolean(dream.transcript?.trim())).length;
-  const taggedEntries = dreams.filter(dream => dream.tags.length > 0).length;
-  const moodEntries = dreams.filter(dream => Boolean(dream.mood)).length;
-  const moodCounts = getMoodCounts(dreams);
-  const moodCorrelation = getMoodCorrelationStats(dreams);
-  const streak = getCurrentStreak(dreams);
-  const lastSevenDays = getEntriesLastSevenDays(dreams);
-  const averageWords = getAverageWords(dreams);
-  const sleepContextStats = getSleepContextStats(dreams);
-  const transcriptArchiveStats = getTranscriptArchiveStats(dreams);
-  const recurringThemes = getRecurringReflectionSignals(dreams, { limit: 6 });
-  const recurringSymbols = getRecurringReflectionSignals(dreams, {
+  const scopedDreams = React.useMemo(
+    () => filterDreamsByRange(dreams, selectedRange),
+    [dreams, selectedRange],
+  );
+  const totalWords = scopedDreams.reduce((sum, dream) => sum + countDreamWords(dream.text), 0);
+  const voiceNotes = scopedDreams.filter(dream => Boolean(dream.audioUri)).length;
+  const transcribedDreams = scopedDreams.filter(dream => Boolean(dream.transcript?.trim())).length;
+  const taggedEntries = scopedDreams.filter(dream => dream.tags.length > 0).length;
+  const moodEntries = scopedDreams.filter(dream => Boolean(dream.mood)).length;
+  const overallStreak = getCurrentStreak(dreams);
+  const overallLastSevenDays = getEntriesLastSevenDays(dreams);
+  const averageWords = getAverageWords(scopedDreams);
+  const sleepContextStats = getSleepContextStats(scopedDreams);
+  const preSleepEmotionSignals = getTopPreSleepEmotionSignals(scopedDreams, 6);
+  const transcriptArchiveStats = getTranscriptArchiveStats(scopedDreams);
+  const recurringThemes = getRecurringReflectionSignals(scopedDreams, { limit: 6 });
+  const recurringSymbols = getRecurringReflectionSignals(scopedDreams, {
     limit: 6,
     transcriptOnly: true,
   });
+  const recurringWords = getRecurringWordSignals(scopedDreams, 6);
   const achievements = getDreamAchievements(dreams);
   const achievementSummary = getDreamAchievementSummary(achievements);
   const weeklyGoalTarget = 3;
-  const weeklyGoalComplete = lastSevenDays >= weeklyGoalTarget;
-  const moodItems = [
-    { label: copy.bright, count: moodCounts.positive, color: t.colors.accent },
-    { label: copy.calm, count: moodCounts.neutral, color: t.colors.primary },
-    { label: copy.heavy, count: moodCounts.negative, color: t.colors.primaryAlt },
+  const weeklyGoalComplete = overallLastSevenDays >= weeklyGoalTarget;
+  const topTheme = recurringThemes[0];
+  const topWord = recurringWords[0];
+  const entriesWithoutMood = Math.max(scopedDreams.length - moodEntries, 0);
+  const entriesWithoutContext = Math.max(scopedDreams.length - sleepContextStats.withContext, 0);
+  const rangeOptions = [
+    { key: 'all' as const, label: copy.rangeAll },
+    { key: '30d' as const, label: copy.range30Days },
+    { key: '7d' as const, label: copy.range7Days },
   ];
-  const maxMoodCount = Math.max(...moodItems.map(item => item.count), 1);
-  const baselineNegativeRate = moodCorrelation.overall.rate;
-  const showReadinessCard =
-    dreams.length > 0 && (dreams.length < 3 || moodEntries < 2 || sleepContextStats.withContext < 2);
+  const summaryTiles = [
+    { label: copy.entries, value: scopedDreams.length },
+    { label: copy.wordsSaved, value: totalWords },
+    { label: copy.voiceNotes, value: voiceNotes },
+    { label: copy.transcribedDreams, value: transcribedDreams },
+  ];
+  const coverageGap =
+    [
+      { label: copy.takeawayGapAudioOnly, value: transcriptArchiveStats.audioOnly },
+      { label: copy.takeawayGapMood, value: entriesWithoutMood },
+      { label: copy.takeawayGapContext, value: entriesWithoutContext },
+    ].sort((a, b) => b.value - a.value)[0] ?? null;
+  const takeawayItems = [
+    {
+      label: copy.takeawayWordsLabel,
+      value: topWord?.label ?? copy.noData,
+      hint: topWord
+        ? `${topWord.dreamCount} ${copy.reflectionThemeCountLabel}`
+        : copy.takeawayWordsEmpty,
+      onPress: topWord ? () => openPatternDetail(topWord.label, 'word') : undefined,
+    },
+    {
+      label: copy.takeawayThemesLabel,
+      value: topTheme?.label ?? copy.noData,
+      hint: topTheme
+        ? `${topTheme.dreamCount} ${copy.reflectionThemeCountLabel}`
+        : copy.takeawayThemesEmpty,
+      onPress: topTheme ? () => openPatternDetail(topTheme.label, 'theme') : undefined,
+    },
+    {
+      label: copy.takeawayGapsLabel,
+      value: coverageGap?.value ? coverageGap.label : copy.noData,
+      hint:
+        coverageGap && coverageGap.value > 0
+          ? `${coverageGap.value} ${copy.entries}`
+          : copy.takeawayGapsEmpty,
+      onPress: undefined,
+    },
+  ];
+  const coverageItems = [
+    {
+      label: copy.transcribedDreams,
+      value: transcribedDreams,
+      total: scopedDreams.length,
+    },
+    {
+      label: copy.taggedDreams,
+      value: taggedEntries,
+      total: scopedDreams.length,
+    },
+    {
+      label: copy.entriesWithContext,
+      value: sleepContextStats.withContext,
+      total: scopedDreams.length,
+    },
+  ];
+  const attentionItems = [
+    {
+      label: copy.audioOnlyDreams,
+      value: transcriptArchiveStats.audioOnly,
+    },
+    {
+      label: copy.entriesWithoutMood,
+      value: entriesWithoutMood,
+    },
+    {
+      label: copy.entriesWithoutContext,
+      value: entriesWithoutContext,
+    },
+  ];
+  const patternGroups: Array<{ label: string; values: PatternChipItem[]; empty: string }> = [
+    {
+      label: copy.recurringWords,
+      values: recurringWords.map(signal => ({
+        key: signal.label,
+        label: `${signal.label} · ${signal.dreamCount}`,
+        onPress: () => openPatternDetail(signal.label, 'word'),
+      })),
+      empty: copy.recurringWordsEmpty,
+    },
+    {
+      label: copy.recurringThemes,
+      values: recurringThemes.map(signal => ({
+        key: signal.label,
+        label: `${signal.label} · ${signal.dreamCount}`,
+        onPress: () => openPatternDetail(signal.label, 'theme'),
+      })),
+      empty: copy.recurringThemesEmpty,
+    },
+    {
+      label: copy.recurringSymbols,
+      values: recurringSymbols.map(signal => ({
+        key: signal.label,
+        label: `${signal.label} · ${signal.dreamCount}`,
+        onPress: () => openPatternDetail(signal.label, 'symbol'),
+      })),
+      empty: copy.recurringSymbolsEmpty,
+    },
+    {
+      label: copy.preSleepEmotions,
+      values: preSleepEmotionSignals.map(signal => ({
+        key: signal.emotion,
+        label: `${preSleepEmotionLabels[signal.emotion]} · ${signal.count}`,
+      })),
+      empty: copy.emotionPatternsEmpty,
+    },
+  ];
 
   if (!dreams.length) {
     return (
@@ -152,326 +277,188 @@ export default function StatsScreen() {
     <ScreenContainer scroll>
       <Card style={styles.heroCard}>
         <View style={styles.heroHeader}>
-          <Text style={styles.heroEyebrow}>{copy.title}</Text>
+          <Text style={styles.heroEyebrow}>{copy.monthLabel}</Text>
           <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
-          <Text style={styles.monthLabel}>{copy.monthLabel}</Text>
         </View>
 
         <View style={styles.summaryRow}>
-          <StatCard label={copy.currentStreak} value={streak} />
-          <StatCard label={copy.lastSevenDays} value={lastSevenDays} />
-          <StatCard label={copy.averageWordsShort} value={averageWords} />
+          <Card style={styles.summaryCard}>
+            <Text style={styles.summaryLabel}>{copy.currentStreak}</Text>
+            <Text style={styles.summaryValue}>{overallStreak}</Text>
+          </Card>
+          <Card style={styles.summaryCard}>
+            <Text style={styles.summaryLabel}>{copy.lastSevenDays}</Text>
+            <Text style={styles.summaryValue}>{overallLastSevenDays}</Text>
+          </Card>
+          <Card style={styles.summaryCard}>
+            <Text style={styles.summaryLabel}>{copy.averageWordsShort}</Text>
+            <Text style={styles.summaryValue}>{averageWords}</Text>
+          </Card>
+        </View>
+
+        <View style={styles.rangeHeader}>
+          <Text style={styles.rangeLabel}>{copy.rangeLabel}</Text>
+          <View style={styles.rangeRow}>
+            {rangeOptions.map(option => {
+              const active = selectedRange === option.key;
+              return (
+                <Pressable
+                  key={option.key}
+                  style={[styles.rangeChip, active ? styles.rangeChipActive : null]}
+                  onPress={() => setSelectedRange(option.key)}
+                >
+                  <Text
+                    style={[styles.rangeChipText, active ? styles.rangeChipTextActive : null]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
       </Card>
 
-      {showReadinessCard ? (
-        <Card style={styles.sectionCard}>
-          <SectionHeader title={copy.readinessTitle} subtitle={copy.readinessDescription} />
-          <InfoRow label={copy.entries} value={dreams.length} />
-          <InfoRow label={copy.entriesWithMood} value={moodEntries} />
-          <InfoRow label={copy.entriesWithTags} value={taggedEntries} />
-          <InfoRow label={copy.entriesWithContext} value={sleepContextStats.withContext} />
-          <Text style={styles.sectionHint}>{copy.readinessHint}</Text>
-        </Card>
-      ) : null}
+      {!scopedDreams.length ? (
+        <ScreenStateCard
+          variant="empty"
+          title={copy.emptyTitle}
+          subtitle={copy.emptyDescription}
+        />
+      ) : (
+        <>
+          <Card style={styles.sectionCard}>
+            <SectionHeader title={copy.snapshotTitle} subtitle={copy.snapshotDescription} />
+            <View style={styles.metricGrid}>
+              {summaryTiles.map(tile => (
+                <View key={tile.label} style={styles.metricTile}>
+                  <Text style={styles.metricLabel}>{tile.label}</Text>
+                  <Text style={styles.metricValue}>{tile.value}</Text>
+                </View>
+              ))}
+            </View>
+          </Card>
+
+          <Card style={styles.sectionCard}>
+            <SectionHeader title={copy.takeawaysTitle} subtitle={copy.takeawaysDescription} />
+            <View style={styles.insightGrid}>
+              {takeawayItems.map(item => (
+                <Pressable
+                  key={item.label}
+                  disabled={!item.onPress}
+                  onPress={item.onPress}
+                  style={({ pressed }) => [
+                    styles.insightCard,
+                    item.onPress ? styles.insightCardInteractive : null,
+                    pressed && item.onPress ? styles.insightCardPressed : null,
+                  ]}
+                >
+                  <Text style={styles.insightLabel}>{item.label}</Text>
+                  <Text style={styles.insightValue} numberOfLines={2}>
+                    {item.value}
+                  </Text>
+                  <Text style={styles.insightHint} numberOfLines={2}>
+                    {item.hint}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </Card>
+
+          <Card style={styles.sectionCard}>
+            <SectionHeader title={copy.coverageTitle} subtitle={copy.coverageDescription} />
+            <View style={styles.coverageList}>
+              {coverageItems.map(item => (
+                <View key={item.label} style={styles.coverageItem}>
+                  <View style={styles.coverageHeader}>
+                    <Text style={styles.coverageLabel}>{item.label}</Text>
+                    <Text style={styles.coverageValue}>
+                      {formatCoverageValue(item.value, item.total)}
+                    </Text>
+                  </View>
+                  <View style={styles.coverageTrack}>
+                    <View
+                      style={[
+                        styles.coverageFill,
+                        { width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%` },
+                      ]}
+                    />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </Card>
+
+          <Card style={styles.sectionCard}>
+            <SectionHeader title={copy.attentionTitle} subtitle={copy.attentionDescription} />
+            <View style={styles.attentionRow}>
+              {attentionItems.map(item => (
+                <View key={item.label} style={styles.attentionCard}>
+                  <Text style={styles.attentionValue}>{item.value}</Text>
+                  <Text style={styles.attentionLabel}>{item.label}</Text>
+                </View>
+              ))}
+            </View>
+          </Card>
+
+          <Card style={styles.sectionCard}>
+            <SectionHeader title={copy.patternsTitle} subtitle={copy.patternsDescription} />
+            <View style={styles.patternGroupList}>
+              {patternGroups.map(group => (
+                <View key={group.label} style={styles.patternGroup}>
+                  <Text style={styles.patternGroupLabel}>{group.label}</Text>
+                  {group.values.length ? (
+                    <View style={styles.tagsWrap}>
+                      {group.values.slice(0, 6).map(value => (
+                        <TagChip
+                          key={`${group.label}-${value.key}`}
+                          label={value.label}
+                          onPress={value.onPress}
+                        />
+                      ))}
+                    </View>
+                  ) : (
+                    <Text style={styles.mutedText}>{group.empty}</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+          </Card>
+        </>
+      )}
 
       <Card style={styles.sectionCard}>
         <SectionHeader title={copy.milestonesTitle} subtitle={copy.milestonesDescription} />
-        <View style={styles.weeklyGoalCard}>
-          <View style={styles.achievementHeaderRow}>
-            <View style={styles.achievementCopy}>
-              <Text style={styles.achievementTitle}>{copy.weeklyGoalTitle}</Text>
-              <Text style={styles.achievementDescription}>{copy.weeklyGoalDescription}</Text>
-            </View>
-            <View
-              style={[
-                styles.achievementBadge,
-                weeklyGoalComplete ? styles.achievementBadgeUnlocked : null,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.achievementBadgeText,
-                  weeklyGoalComplete ? styles.achievementBadgeTextUnlocked : null,
-                ]}
-              >
-                {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
-              </Text>
-            </View>
+
+        <View style={styles.teaserRow}>
+          <View style={styles.teaserCard}>
+            <Text style={styles.teaserLabel}>{copy.weeklyGoalTitle}</Text>
+            <Text style={styles.teaserValue}>{`${overallLastSevenDays}/${weeklyGoalTarget}`}</Text>
+            <Text style={styles.teaserHint}>
+              {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
+            </Text>
           </View>
-          <InfoRow label={copy.weeklyGoalProgressLabel} value={`${lastSevenDays}/${weeklyGoalTarget}`} />
-          <InfoRow label={copy.weeklyGoalTargetLabel} value={weeklyGoalTarget} />
-        </View>
-
-        <View style={styles.milestoneSummaryCard}>
-          <View style={styles.achievementHeaderRow}>
-            <View style={styles.achievementCopy}>
-              <Text style={styles.achievementTitle}>
-                {achievementSummary.unlockedCount === achievementSummary.totalCount
-                  ? copy.milestonesCompleteTitle
-                  : copy.milestonesTitle}
-              </Text>
-              <Text style={styles.achievementDescription}>
-                {achievementSummary.unlockedCount === achievementSummary.totalCount
-                  ? copy.milestonesCompleteDescription
-                  : copy.milestonesDescription}
-              </Text>
-            </View>
-            <View style={[styles.achievementBadge, styles.achievementBadgeUnlocked]}>
-              <Text style={[styles.achievementBadgeText, styles.achievementBadgeTextUnlocked]}>
-                {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
-              </Text>
-            </View>
+          <View style={[styles.teaserCard, styles.teaserCardAccent]}>
+            <Text style={styles.teaserLabel}>{copy.milestonesUnlockedLabel}</Text>
+            <Text style={styles.teaserValue}>
+              {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
+            </Text>
+            <Text style={styles.teaserHint}>
+              {achievementSummary.highlightedId
+                ? getAchievementContent(achievementSummary.highlightedId, copy).title
+                : copy.milestoneInProgress}
+            </Text>
           </View>
-          <InfoRow
-            label={copy.milestonesUnlockedLabel}
-            value={`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
-          />
-          {achievementSummary.highlightedId ? (
-            <InfoRow
-              label={copy.milestoneHighlightLabel}
-              value={getAchievementContent(achievementSummary.highlightedId, copy).title}
-            />
-          ) : null}
         </View>
 
-        <View style={styles.achievementsList}>
-          {achievements.map(achievement => {
-            const content = getAchievementContent(achievement.id, copy);
-            const progressValue = `${Math.min(achievement.current, achievement.target)}/${achievement.target}`;
-            const progressRatio = Math.min(achievement.current / achievement.target, 1);
-            const isHighlighted = achievement.id === achievementSummary.highlightedId;
-
-            return (
-              <View
-                key={achievement.id}
-                style={[
-                  styles.achievementItem,
-                  achievement.unlocked ? styles.achievementItemUnlocked : null,
-                  isHighlighted ? styles.achievementItemHighlighted : null,
-                ]}
-              >
-                <View style={styles.achievementHeaderRow}>
-                  <View style={styles.achievementCopy}>
-                    <Text style={styles.achievementTitle}>{content.title}</Text>
-                    <Text style={styles.achievementDescription}>{content.description}</Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.achievementBadge,
-                      achievement.unlocked ? styles.achievementBadgeUnlocked : null,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.achievementBadgeText,
-                        achievement.unlocked ? styles.achievementBadgeTextUnlocked : null,
-                      ]}
-                    >
-                      {achievement.unlocked ? copy.milestoneUnlocked : copy.milestoneInProgress}
-                    </Text>
-                  </View>
-                </View>
-                <InfoRow label={copy.milestoneProgressLabel} value={progressValue} />
-                <View style={styles.achievementProgressTrack}>
-                  <View
-                    style={[
-                      styles.achievementProgressFill,
-                      achievement.unlocked ? styles.achievementProgressFillUnlocked : null,
-                      { width: `${progressRatio * 100}%` },
-                    ]}
-                  />
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.journalVolume}</Text>
-        <InfoRow label={copy.entries} value={dreams.length} />
-        <InfoRow label={copy.wordsSaved} value={totalWords} />
-        <InfoRow label={copy.averageWords} value={averageWords} />
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.entryStructure}</Text>
-        <InfoRow label={copy.voiceNotes} value={voiceNotes} />
-        <InfoRow label={copy.transcribedDreams} value={transcribedDreams} />
-        <InfoRow label={copy.generatedTranscripts} value={transcriptArchiveStats.generatedTranscript} />
-        <InfoRow label={copy.editedTranscripts} value={transcriptArchiveStats.editedTranscript} />
-        <InfoRow label={copy.audioOnlyDreams} value={transcriptArchiveStats.audioOnly} />
-        <InfoRow label={copy.taggedDreams} value={taggedEntries} />
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.moodBreakdown}</Text>
-        {moodEntries > 0 ? (
-          moodItems.map(item => (
-            <View key={item.label} style={styles.moodRow}>
-              <Text style={styles.moodLabel}>{item.label}</Text>
-              <View style={styles.moodTrack}>
-                <View
-                  style={[
-                    styles.moodFill,
-                    {
-                      width: `${(item.count / maxMoodCount) * 100}%`,
-                      backgroundColor: item.color,
-                    },
-                  ]}
-                />
-              </View>
-              <Text style={styles.moodValue}>{item.count}</Text>
-            </View>
-          ))
-        ) : (
-          <Text style={styles.mutedText}>{copy.moodBreakdownEmpty}</Text>
-        )}
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.sleepContextBreakdown}</Text>
-        {sleepContextStats.withContext > 0 ? (
-          <>
-            <InfoRow
-              label={copy.entriesWithContext}
-              value={formatCountWithShare(sleepContextStats.withContext, dreams.length)}
-            />
-            <InfoRow
-              label={copy.averageStressLevel}
-              value={
-                typeof sleepContextStats.averageStress === 'number'
-                  ? `${sleepContextStats.averageStress.toFixed(1)} / 3`
-                  : copy.noData
-              }
-            />
-            <InfoRow
-              label={copy.alcoholBeforeSleep}
-              value={formatCountWithShare(sleepContextStats.alcoholTaken, dreams.length)}
-            />
-            <InfoRow
-              label={copy.lateCaffeine}
-              value={formatCountWithShare(sleepContextStats.caffeineLate, dreams.length)}
-            />
-            <InfoRow
-              label={copy.medicationsNoted}
-              value={formatCountWithShare(sleepContextStats.medications, dreams.length)}
-            />
-            <InfoRow
-              label={copy.importantEventsNoted}
-              value={formatCountWithShare(sleepContextStats.importantEvents, dreams.length)}
-            />
-            <InfoRow
-              label={copy.healthNotesNoted}
-              value={formatCountWithShare(sleepContextStats.healthNotes, dreams.length)}
-            />
-          </>
-        ) : (
-          <Text style={styles.mutedText}>{copy.sleepContextEmpty}</Text>
-        )}
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.moodSignalTitle}</Text>
-        {moodCorrelation.overall.total > 0 ? (
-          <>
-            <InfoRow
-              label={copy.negativeMoodRate}
-              value={formatNegativeRate(moodCorrelation.overall, copy.noData)}
-            />
-            <InfoRow
-              label={copy.negativeWithAlcohol}
-              value={formatNegativeRate(
-                moodCorrelation.alcoholTaken,
-                copy.noData,
-                baselineNegativeRate,
-              )}
-            />
-            <InfoRow
-              label={copy.negativeWithoutAlcohol}
-              value={formatNegativeRate(
-                moodCorrelation.noAlcohol,
-                copy.noData,
-                baselineNegativeRate,
-              )}
-            />
-            <InfoRow
-              label={copy.negativeWithLateCaffeine}
-              value={formatNegativeRate(
-                moodCorrelation.caffeineLate,
-                copy.noData,
-                baselineNegativeRate,
-              )}
-            />
-            <InfoRow
-              label={copy.negativeWithoutLateCaffeine}
-              value={formatNegativeRate(
-                moodCorrelation.noLateCaffeine,
-                copy.noData,
-                baselineNegativeRate,
-              )}
-            />
-            <InfoRow
-              label={copy.negativeWithHighStress}
-              value={formatNegativeRate(
-                moodCorrelation.highStress,
-                copy.noData,
-                baselineNegativeRate,
-              )}
-            />
-            <InfoRow
-              label={copy.negativeWithLowStress}
-              value={formatNegativeRate(
-                moodCorrelation.lowStress,
-                copy.noData,
-                baselineNegativeRate,
-              )}
-            />
-          </>
-        ) : (
-          <Text style={styles.mutedText}>{copy.moodSignalEmpty}</Text>
-        )}
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <SectionHeader
-          title={copy.localReflectionTitle}
-          subtitle={copy.localReflectionDescription}
+        <Button
+          title={copy.progressOpenButton}
+          variant="ghost"
+          size="sm"
+          icon="chevron-forward"
+          iconPosition="right"
+          onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.Progress)}
         />
-
-        <Text style={styles.sectionTitle}>{copy.recurringThemes}</Text>
-        <View style={styles.reflectionList}>
-          {recurringThemes.length ? (
-            recurringThemes.map(signal => (
-              <View key={`theme-${signal.label}`} style={styles.reflectionItem}>
-                <View style={styles.reflectionHeader}>
-                  <Text style={styles.reflectionLabel}>{signal.label}</Text>
-                  <TagChip label={formatReflectionSource(signal, copy)} />
-                </View>
-                <Text style={styles.reflectionMeta}>
-                  {signal.dreamCount} {copy.reflectionThemeCountLabel}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <Text style={styles.monthLabel}>{copy.recurringThemesEmpty}</Text>
-          )}
-        </View>
-
-        <Text style={styles.sectionTitle}>{copy.recurringSymbols}</Text>
-        <View style={styles.tagsWrap}>
-          {recurringSymbols.length ? (
-            recurringSymbols.map(signal => (
-              <TagChip
-                key={`symbol-${signal.label}`}
-                label={`${signal.label} · ${signal.dreamCount}`}
-              />
-            ))
-          ) : (
-            <Text style={styles.monthLabel}>{copy.recurringSymbolsEmpty}</Text>
-          )}
-        </View>
       </Card>
     </ScreenContainer>
   );

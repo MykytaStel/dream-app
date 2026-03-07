@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextInput, TextInputProps, View } from 'react-native';
+import { StyleProp, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../theme/theme';
 import { Text } from './Text';
@@ -11,6 +11,7 @@ export function FormField({
   helperText,
   helperTone = 'default',
   inputStyle,
+  containerStyle,
   invalid = false,
   ...props
 }: TextInputProps & {
@@ -18,13 +19,14 @@ export function FormField({
   helperText?: string;
   helperTone?: 'default' | 'error';
   inputStyle?: TextInputProps['style'];
+  containerStyle?: StyleProp<ViewStyle>;
   invalid?: boolean;
 }) {
   const t = useTheme<Theme>();
   const styles = createFormFieldStyles(t);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, containerStyle]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <TextInput
         placeholderTextColor="#777"

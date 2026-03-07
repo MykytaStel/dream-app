@@ -1,4 +1,11 @@
-import { Dream, DreamTranscriptSource, DreamTranscriptStatus, SleepContext } from './dream';
+import {
+  Dream,
+  DreamTranscriptSource,
+  DreamTranscriptStatus,
+  PreSleepEmotion,
+  SleepContext,
+  WakeEmotion,
+} from './dream';
 import { DreamAnalysisProvider, DreamAnalysisStatus } from '../../analysis/model/dreamAnalysis';
 
 const SLEEP_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
@@ -6,6 +13,22 @@ const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = ['idle', 'processing',
 const TRANSCRIPT_SOURCE_VALUES: DreamTranscriptSource[] = ['generated', 'edited'];
 const ANALYSIS_PROVIDER_VALUES: DreamAnalysisProvider[] = ['manual', 'openai'];
 const ANALYSIS_STATUS_VALUES: DreamAnalysisStatus[] = ['idle', 'ready', 'error'];
+const WAKE_EMOTION_VALUES: WakeEmotion[] = [
+  'calm',
+  'uneasy',
+  'curious',
+  'heavy',
+  'inspired',
+  'disoriented',
+];
+const PRE_SLEEP_EMOTION_VALUES: PreSleepEmotion[] = [
+  'peaceful',
+  'anxious',
+  'restless',
+  'hopeful',
+  'drained',
+  'lonely',
+];
 const STALE_TRANSCRIPT_PROCESSING_MS = 1000 * 60 * 15;
 export const DREAM_SAVE_VALIDATION = {
   missingContent: 'missing-content',
@@ -42,6 +65,21 @@ function formatLocalDate(epoch: number) {
 function normalizeOptionalText(value?: string) {
   const normalized = value?.trim();
   return normalized ? normalized : undefined;
+}
+
+function normalizeEmotionSelection<T extends string>(values: unknown, allowedValues: readonly T[]) {
+  if (!Array.isArray(values)) {
+    return undefined;
+  }
+
+  const allowed = new Set(allowedValues);
+  const normalized = Array.from(
+    new Set(
+      values.filter((value): value is T => typeof value === 'string' && allowed.has(value as T)),
+    ),
+  );
+
+  return normalized.length ? normalized : undefined;
 }
 
 function normalizeTranscriptStatus(rawStatus: Dream['transcriptStatus']) {
@@ -193,6 +231,10 @@ function normalizeSleepContext(context?: SleepContext): SleepContext | undefined
 
   const normalized: SleepContext = {
     stressLevel: context.stressLevel,
+    preSleepEmotions: normalizeEmotionSelection(
+      context.preSleepEmotions,
+      PRE_SLEEP_EMOTION_VALUES,
+    ),
     alcoholTaken: context.alcoholTaken,
     caffeineLate: context.caffeineLate,
     medications: normalizeOptionalText(context.medications),
@@ -202,6 +244,7 @@ function normalizeSleepContext(context?: SleepContext): SleepContext | undefined
 
   const hasValues =
     typeof normalized.stressLevel === 'number' ||
+    Boolean(normalized.preSleepEmotions?.length) ||
     typeof normalized.alcoholTaken === 'boolean' ||
     typeof normalized.caffeineLate === 'boolean' ||
     Boolean(normalized.medications) ||
@@ -242,6 +285,10 @@ export function sanitizeDream(input: Dream): Dream {
 
   return {
     ...input,
+    starredAt:
+      typeof input.starredAt === 'number' && Number.isFinite(input.starredAt)
+        ? input.starredAt
+        : undefined,
     sleepDate: resolveDreamSleepDate(input.sleepDate, input.createdAt),
     title: normalizeOptionalText(input.title),
     text: normalizeOptionalText(input.text),
@@ -251,6 +298,7 @@ export function sanitizeDream(input: Dream): Dream {
     transcriptUpdatedAt: transcriptFields.transcriptUpdatedAt,
     analysis: normalizeAnalysisFields(input),
     tags: normalizeTags(input.tags ?? []),
+    wakeEmotions: normalizeEmotionSelection(input.wakeEmotions, WAKE_EMOTION_VALUES),
     sleepContext: normalizeSleepContext(input.sleepContext),
   };
 }

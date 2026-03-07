@@ -1,6 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { DREAM_DRAFT_STORAGE_KEY } from '../../../services/storage/keys';
-import { Mood, StressLevel } from '../model/dream';
+import { Mood, PreSleepEmotion, StressLevel, WakeEmotion } from '../model/dream';
 import { normalizeTags } from '../model/dreamRules';
 
 export type DreamDraft = {
@@ -9,7 +9,9 @@ export type DreamDraft = {
   sleepDate: string;
   audioUri?: string;
   mood?: Mood;
+  wakeEmotions?: WakeEmotion[];
   stressLevel?: StressLevel;
+  preSleepEmotions?: PreSleepEmotion[];
   alcoholTaken?: boolean;
   caffeineLate?: boolean;
   medications: string;
@@ -25,7 +27,13 @@ function normalizeDraft(raw?: Partial<DreamDraft>): DreamDraft {
     sleepDate: raw?.sleepDate ?? '',
     audioUri: raw?.audioUri?.trim() || undefined,
     mood: raw?.mood,
+    wakeEmotions: Array.isArray(raw?.wakeEmotions)
+      ? Array.from(new Set(raw.wakeEmotions))
+      : undefined,
     stressLevel: raw?.stressLevel,
+    preSleepEmotions: Array.isArray(raw?.preSleepEmotions)
+      ? Array.from(new Set(raw.preSleepEmotions))
+      : undefined,
     alcoholTaken: raw?.alcoholTaken,
     caffeineLate: raw?.caffeineLate,
     medications: raw?.medications ?? '',
@@ -41,11 +49,13 @@ function hasDraftContent(draft: DreamDraft) {
       draft.text.trim() ||
       draft.audioUri ||
       draft.mood ||
+      draft.wakeEmotions?.length ||
       draft.tags.length ||
       draft.medications.trim() ||
       draft.importantEvents.trim() ||
       draft.healthNotes.trim() ||
       typeof draft.stressLevel === 'number' ||
+      draft.preSleepEmotions?.length ||
       typeof draft.alcoholTaken === 'boolean' ||
       typeof draft.caffeineLate === 'boolean',
   );

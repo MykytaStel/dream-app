@@ -14,7 +14,7 @@ import {
   getDreamReminderSettings,
 } from '../../reminders/services/dreamReminderService';
 
-export const DREAM_EXPORT_VERSION = 3;
+export const DREAM_EXPORT_VERSION = 5;
 const DREAM_EXPORT_DIRECTORY = 'exports';
 
 export type DreamExportV1 = {
@@ -31,6 +31,7 @@ export type DreamExportV1 = {
     transcribedDreamCount: number;
     editedTranscriptCount: number;
     analyzedDreamCount: number;
+    starredDreamCount: number;
     draftIncluded: boolean;
   };
   dreams: Dream[];
@@ -65,6 +66,7 @@ export function buildDreamExportSnapshot(input: {
       editedTranscriptCount: input.dreams.filter(dream => dream.transcriptSource === 'edited')
         .length,
       analyzedDreamCount: input.dreams.filter(dream => dream.analysis?.status === 'ready').length,
+      starredDreamCount: input.dreams.filter(dream => typeof dream.starredAt === 'number').length,
       draftIncluded: Boolean(input.draft),
     },
     dreams: input.dreams,

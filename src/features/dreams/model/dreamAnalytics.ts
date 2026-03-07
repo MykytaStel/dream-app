@@ -1,4 +1,4 @@
-import { Dream, Mood } from './dream';
+import { Dream, Mood, PreSleepEmotion, WakeEmotion } from './dream';
 
 export function getDreamDate(dream: Dream) {
   const value = dream.sleepDate ?? new Date(dream.createdAt).toISOString().slice(0, 10);
@@ -106,6 +106,11 @@ export type MoodCorrelationStats = {
   lowStress: NegativeMoodRate;
 };
 
+export type EmotionSignal<T extends string = string> = {
+  emotion: T;
+  count: number;
+};
+
 function hasText(value?: string) {
   return Boolean(value?.trim());
 }
@@ -116,6 +121,39 @@ function toNegativeMoodRate(negativeCount: number, total: number): NegativeMoodR
     total,
     rate: total > 0 ? Math.round((negativeCount / total) * 100) : undefined,
   };
+}
+
+function buildTopEmotionSignals<T extends string>(values: T[], limit: number) {
+  const counts = new Map<T, number>();
+
+  values.forEach(value => {
+    counts.set(value, (counts.get(value) ?? 0) + 1);
+  });
+
+  return Array.from(counts.entries())
+    .sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(String(b[0])))
+    .slice(0, limit)
+    .map(([emotion, count]) => ({ emotion, count }));
+}
+
+export function getTopWakeEmotionSignals(
+  dreams: Dream[],
+  limit = 6,
+): EmotionSignal<WakeEmotion>[] {
+  return buildTopEmotionSignals(
+    dreams.flatMap(dream => dream.wakeEmotions ?? []),
+    limit,
+  );
+}
+
+export function getTopPreSleepEmotionSignals(
+  dreams: Dream[],
+  limit = 6,
+): EmotionSignal<PreSleepEmotion>[] {
+  return buildTopEmotionSignals(
+    dreams.flatMap(dream => dream.sleepContext?.preSleepEmotions ?? []),
+    limit,
+  );
 }
 
 export function getSleepContextStats(dreams: Dream[]): SleepContextStats {

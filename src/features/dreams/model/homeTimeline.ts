@@ -13,6 +13,7 @@ export type HomeDateRangeFilter = 'all' | '7d' | '30d' | '90d';
 
 export type HomeTimelineFilters = {
   archive: HomeArchiveFilter;
+  starredOnly: boolean;
   searchQuery: string;
   mood: 'all' | Mood;
   tags: string[];
@@ -24,6 +25,7 @@ export type HomeTimelineFilters = {
 
 export const DEFAULT_HOME_TIMELINE_FILTERS: HomeTimelineFilters = {
   archive: 'all',
+  starredOnly: false,
   searchQuery: '',
   mood: 'all',
   tags: [],
@@ -53,6 +55,10 @@ function getDateRangeCutoff(range: HomeDateRangeFilter, now: Date) {
 
 export function isDreamArchived(dream: Dream) {
   return typeof dream.archivedAt === 'number';
+}
+
+export function isDreamStarred(dream: Dream) {
+  return typeof dream.starredAt === 'number';
 }
 
 export function getDreamEntryType(dream: Dream): HomeEntryTypeFilter {
@@ -184,6 +190,10 @@ export function applyHomeTimelineFilters(
       return false;
     }
 
+    if (filters.starredOnly && !isDreamStarred(dream)) {
+      return false;
+    }
+
     if (filters.mood !== 'all' && dream.mood !== filters.mood) {
       return false;
     }
@@ -234,6 +244,7 @@ export function applyHomeTimelineFilters(
 export function hasActiveTimelineRefinements(filters: HomeTimelineFilters) {
   return (
     Boolean(filters.searchQuery.trim()) ||
+    filters.starredOnly ||
     filters.mood !== 'all' ||
     filters.tags.length > 0 ||
     filters.entryType !== 'all' ||

@@ -214,6 +214,62 @@ describe('storage migrations', () => {
     });
   });
 
+  test('migrates starred dreams into schema v6', () => {
+    kv.set(
+      DREAMS_STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'starred-legacy',
+          createdAt: 1710000000000,
+          sleepDate: '2026-03-05',
+          text: 'Saved dream',
+          starredAt: 1710000005000,
+          tags: [],
+        },
+      ]),
+    );
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 5);
+
+    runStorageMigrations();
+
+    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    expect(migrated[0]).toMatchObject({
+      id: 'starred-legacy',
+      starredAt: 1710000005000,
+    });
+  });
+
+  test('migrates wake and pre-sleep emotions into schema v7', () => {
+    kv.set(
+      DREAMS_STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'emotion-legacy',
+          createdAt: 1710000000000,
+          sleepDate: '2026-03-05',
+          text: 'Saved dream',
+          wakeEmotions: ['calm', 'calm', 'curious', 'unknown'],
+          sleepContext: {
+            preSleepEmotions: ['restless', 'hopeful', 'restless', 'invalid'],
+          },
+          tags: [],
+        },
+      ]),
+    );
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 6);
+
+    runStorageMigrations();
+
+    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    expect(migrated[0]).toMatchObject({
+      id: 'emotion-legacy',
+      wakeEmotions: ['calm', 'curious'],
+      sleepContext: {
+        preSleepEmotions: ['restless', 'hopeful'],
+      },
+    });
+  });
+
   test('is idempotent when already on latest schema version', () => {
     kv.set(STORAGE_SCHEMA_VERSION_KEY, CURRENT_STORAGE_SCHEMA_VERSION);
     kv.set(APP_LOCALE_KEY, 'en');

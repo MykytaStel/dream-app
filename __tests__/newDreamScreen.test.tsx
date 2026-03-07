@@ -1,10 +1,11 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
-import { useRoute } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import NewDreamScreen from '../src/features/dreams/screens/NewDreamScreen';
 
 jest.mock('@react-navigation/native', () => ({
   useRoute: jest.fn(),
+  useNavigation: jest.fn(),
 }));
 
 jest.mock('../src/features/dreams/components/DreamComposer', () => ({
@@ -12,6 +13,7 @@ jest.mock('../src/features/dreams/components/DreamComposer', () => ({
 }));
 
 const mockedUseRoute = useRoute as jest.Mock;
+const mockedUseNavigation = useNavigation as jest.Mock;
 const mockedDreamComposer = jest.requireMock(
   '../src/features/dreams/components/DreamComposer',
 ).DreamComposer as jest.Mock;
@@ -19,6 +21,9 @@ const mockedDreamComposer = jest.requireMock(
 describe('NewDreamScreen', () => {
   beforeEach(() => {
     mockedDreamComposer.mockClear();
+    mockedUseNavigation.mockReturnValue({
+      navigate: jest.fn(),
+    });
   });
 
   test('passes autoStartRecordingKey when opened in voice mode', async () => {

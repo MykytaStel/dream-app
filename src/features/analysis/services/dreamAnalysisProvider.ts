@@ -1,12 +1,17 @@
 import { Dream } from '../../dreams/model/dream';
-import { DreamAnalysisProvider, DreamAnalysisSettings } from '../model/dreamAnalysis';
+import {
+  DreamAnalysisProvider,
+  DreamAnalysisResult,
+  DreamAnalysisSettings,
+} from '../model/dreamAnalysis';
+import { analyzeDreamLocally } from './manualDreamAnalysisProvider';
 
 export type DreamAnalysisProviderDefinition = {
   id: DreamAnalysisProvider;
   transport: 'local' | 'network';
   enabledByDefault: boolean;
   canRun: (settings: DreamAnalysisSettings) => boolean;
-  analyze: (_dream: Dream) => Promise<never>;
+  analyze: (_dream: Dream) => Promise<DreamAnalysisResult>;
 };
 
 const manualProvider: DreamAnalysisProviderDefinition = {
@@ -14,9 +19,7 @@ const manualProvider: DreamAnalysisProviderDefinition = {
   transport: 'local',
   enabledByDefault: true,
   canRun: settings => settings.enabled && settings.provider === 'manual',
-  analyze: async () => {
-    throw new Error('manual-analysis-provider-not-implemented');
-  },
+  analyze: async dream => analyzeDreamLocally(dream),
 };
 
 const openAiProvider: DreamAnalysisProviderDefinition = {
@@ -38,4 +41,3 @@ export const DREAM_ANALYSIS_PROVIDERS: DreamAnalysisProviderDefinition[] = [
 export function getDreamAnalysisProvider(providerId: DreamAnalysisProvider) {
   return DREAM_ANALYSIS_PROVIDERS.find(provider => provider.id === providerId) ?? manualProvider;
 }
-

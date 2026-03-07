@@ -7,7 +7,9 @@ import {
   listDreams,
   saveDreamTranscriptEdit,
   saveDream,
+  starDream,
   updateDreamTranscriptState,
+  unstarDream,
   unarchiveDream,
 } from '../src/features/dreams/repository/dreamsRepository';
 
@@ -90,6 +92,22 @@ describe('dream repository flows', () => {
     deleteDream('b');
     all = listDreams();
     expect(all.map(dream => dream.id)).toEqual(['a']);
+  });
+
+  test('supports starring and unstarring dreams', () => {
+    saveDream({
+      id: 'fav',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      text: 'Favorite dream',
+      tags: [],
+    });
+
+    expect(typeof starDream('fav').starredAt).toBe('number');
+    expect(typeof getDream('fav')?.starredAt).toBe('number');
+
+    unstarDream('fav');
+    expect(getDream('fav')?.starredAt).toBeUndefined();
   });
 
   test('keeps stable sort by sleepDate desc then createdAt desc', () => {

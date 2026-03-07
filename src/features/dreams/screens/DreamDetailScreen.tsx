@@ -14,7 +14,9 @@ import { Text } from '../../../components/ui/Text';
 import {
   getDreamCopy,
   getDreamMoodLabels,
+  getDreamPreSleepEmotionLabels,
   getDreamStressLabels,
+  getDreamWakeEmotionLabels,
 } from '../../../constants/copy/dreams';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { useI18n } from '../../../i18n/I18nProvider';
@@ -23,14 +25,20 @@ import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisS
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import { Dream } from '../model/dream';
 import { countDreamWords } from '../model/dreamAnalytics';
+import { getRelatedDreams } from '../model/relatedDreams';
 import {
   archiveDream,
+  clearDreamAnalysis,
   clearDreamTranscript,
   deleteDream,
   getDream,
+  listDreams,
   saveDreamTranscriptEdit,
+  starDream,
+  unstarDream,
   unarchiveDream,
 } from '../repository/dreamsRepository';
+import { generateDreamAnalysis } from '../../analysis/services/dreamAnalysisService';
 import { play, stop } from '../services/audioService';
 import {
   DreamTranscriptionProgress,
@@ -85,16 +93,26 @@ function hasSleepContext(dream: Dream) {
   );
 }
 
+function hasEmotionSnapshot(dream: Dream) {
+  return Boolean(dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length);
+}
+
 export default function DreamDetailScreen() {
   const t = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const stressLabels = React.useMemo(() => getDreamStressLabels(locale), [locale]);
+  const wakeEmotionLabels = React.useMemo(() => getDreamWakeEmotionLabels(locale), [locale]);
+  const preSleepEmotionLabels = React.useMemo(
+    () => getDreamPreSleepEmotionLabels(locale),
+    [locale],
+  );
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.DreamDetail>>();
   const styles = createDreamDetailScreenStyles(t);
   const [dream, setDream] = React.useState(() => getDream(route.params.dreamId));
+  const [showSavedHighlight, setShowSavedHighlight] = React.useState(Boolean(route.params.justSaved));
   const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
   const [isTranscribingAudio, setIsTranscribingAudio] = React.useState(false);
   const [isEditingTranscript, setIsEditingTranscript] = React.useState(false);
@@ -102,6 +120,7 @@ export default function DreamDetailScreen() {
   const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
     getDreamAnalysisSettings(),
   );
+  const [isGeneratingAnalysis, setIsGeneratingAnalysis] = React.useState(false);
   const [transcriptionProgress, setTranscriptionProgress] =
     React.useState<DreamTranscriptionProgress | null>(null);
 
@@ -115,11 +134,23 @@ export default function DreamDetailScreen() {
       setIsTranscribingAudio(false);
       setIsEditingTranscript(false);
       setTranscriptionProgress(null);
+      setShowSavedHighlight(Boolean(route.params.justSaved));
+
+      if (route.params.justSaved) {
+        navigation.setParams({
+          justSaved: false,
+        });
+      }
 
       return () => {
         stop().catch(() => undefined);
       };
-    }, [route.params.dreamId]),
+    }, [navigation, route.params.dreamId, route.params.justSaved]),
+  );
+
+  const relatedDreams = React.useMemo(
+    () => (dream ? getRelatedDreams(dream, listDreams()) : []),
+    [dream],
   );
 
   if (!dream) {
@@ -141,9 +172,11 @@ export default function DreamDetailScreen() {
 
   const dreamId = dream.id;
   const archived = typeof dream.archivedAt === 'number';
+  const starred = typeof dream.starredAt === 'number';
   const moodLabel = dream.mood ? moodLabels[dream.mood] : undefined;
   const wordsCount = countDreamWords(dream.text);
   const hasContext = hasSleepContext(dream);
+  const hasEmotions = hasEmotionSnapshot(dream);
   const transcriptStatus = dream.transcriptStatus ?? (dream.transcript ? 'ready' : 'idle');
   const transcriptSourceLabel =
     dream.transcriptSource === 'edited'
@@ -159,6 +192,8 @@ export default function DreamDetailScreen() {
       : dream.analysis?.status === 'error'
         ? copy.detailAnalysisStatusError
         : copy.detailAnalysisStatusIdle;
+  const strongestSignal =
+    relatedDreams[0]?.sharedSignals[0] ?? dream.tags[0] ?? dream.wakeEmotions?.[0] ?? null;
 
   function formatTranscriptionProgress(progress: DreamTranscriptionProgress | null) {
     if (!progress) {
@@ -184,6 +219,11 @@ export default function DreamDetailScreen() {
       archiveDream(dreamId);
     }
     navigation.goBack();
+  }
+
+  function onToggleStarDream() {
+    const nextDream = starred ? unstarDream(dreamId) : starDream(dreamId);
+    setDream(nextDream);
   }
 
   function onDeleteDream() {
@@ -319,6 +359,38 @@ export default function DreamDetailScreen() {
     );
   }
 
+  async function onGenerateAnalysis() {
+    if (isGeneratingAnalysis || !analysisSettings.enabled) {
+      return;
+    }
+
+    if (analysisSettings.provider === 'openai') {
+      Alert.alert(copy.detailAnalysisErrorTitle, copy.detailAnalysisOpenAiUnavailable);
+      return;
+    }
+
+    setIsGeneratingAnalysis(true);
+
+    try {
+      await generateDreamAnalysis(dreamId);
+      setDream(getDream(dreamId));
+    } catch (error) {
+      setDream(getDream(dreamId));
+      const message = error instanceof Error ? error.message : String(error);
+      Alert.alert(
+        copy.detailAnalysisErrorTitle,
+        `${copy.detailAnalysisGenerateErrorDescription}\n${message}`,
+      );
+    } finally {
+      setIsGeneratingAnalysis(false);
+    }
+  }
+
+  function onClearAnalysis() {
+    const nextDream = clearDreamAnalysis(dreamId);
+    setDream(nextDream);
+  }
+
   return (
     <ScreenContainer scroll>
       <Card style={styles.heroCard}>
@@ -364,6 +436,8 @@ export default function DreamDetailScreen() {
         <Button
           title={copy.detailEdit}
           variant="ghost"
+          icon="create-outline"
+          size="sm"
           onPress={() =>
             navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
               dreamId,
@@ -371,22 +445,94 @@ export default function DreamDetailScreen() {
           }
         />
         <Button
+          title={starred ? copy.detailUnstar : copy.detailStar}
+          variant="ghost"
+          icon={starred ? 'star' : 'star-outline'}
+          size="sm"
+          onPress={onToggleStarDream}
+        />
+        <Button
           title={archived ? copy.detailUnarchive : copy.detailArchive}
           variant="ghost"
+          icon={archived ? 'archive' : 'archive-outline'}
+          size="sm"
           onPress={onToggleArchiveDream}
         />
         <Button
           title={copy.detailDelete}
           variant="danger"
+          icon="trash-outline"
+          size="sm"
           onPress={onDeleteDream}
         />
       </Card>
+
+      {showSavedHighlight ? (
+        <Card style={styles.savedCard}>
+          <View style={styles.savedHeader}>
+            <View style={styles.savedCopy}>
+              <Text style={styles.savedTitle}>{copy.detailSavedTitle}</Text>
+              <Text style={styles.savedDescription}>{copy.detailSavedDescription}</Text>
+            </View>
+            <Pressable style={styles.savedDismiss} onPress={() => setShowSavedHighlight(false)}>
+              <Text style={styles.savedDismissLabel}>{copy.clearErrorAction}</Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.savedStatsRow}>
+            <View style={styles.savedStatTile}>
+              <Text style={styles.savedStatLabel}>{copy.detailSavedPatternLabel}</Text>
+              <Text style={styles.savedStatValue}>{strongestSignal ?? copy.homeSpotlightNoPattern}</Text>
+            </View>
+            <View style={styles.savedStatTile}>
+              <Text style={styles.savedStatLabel}>{copy.detailSavedRelatedLabel}</Text>
+              <Text style={styles.savedStatValue}>{relatedDreams.length}</Text>
+            </View>
+          </View>
+        </Card>
+      ) : null}
 
       <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.detailTranscriptTitle}</Text>
         <Text style={dream.text ? styles.bodyText : styles.mutedText}>
           {dream.text || copy.detailTranscriptEmpty}
         </Text>
+      </Card>
+
+      <Card style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>{copy.detailEmotionTitle}</Text>
+        {hasEmotions ? (
+          <View style={styles.contextRows}>
+            {dream.wakeEmotions?.length ? (
+              <>
+                <Text style={styles.sectionTitle}>{copy.detailWakeEmotionsLabel}</Text>
+                <View style={styles.tagsRow}>
+                  {dream.wakeEmotions.map(emotion => (
+                    <TagChip
+                      key={emotion}
+                      label={wakeEmotionLabels[emotion]}
+                    />
+                  ))}
+                </View>
+              </>
+            ) : null}
+            {dream.sleepContext?.preSleepEmotions?.length ? (
+              <>
+                <Text style={styles.sectionTitle}>{copy.detailPreSleepEmotionsLabel}</Text>
+                <View style={styles.tagsRow}>
+                  {dream.sleepContext.preSleepEmotions.map(emotion => (
+                    <TagChip
+                      key={emotion}
+                      label={preSleepEmotionLabels[emotion]}
+                    />
+                  ))}
+                </View>
+              </>
+            ) : null}
+          </View>
+        ) : (
+          <Text style={styles.mutedText}>{copy.detailEmotionEmpty}</Text>
+        )}
       </Card>
 
       {dream.audioUri || dream.transcript || transcriptStatus === 'error' ? (
@@ -450,10 +596,14 @@ export default function DreamDetailScreen() {
                 <Button
                   title={copy.detailGeneratedTranscriptSave}
                   onPress={onSaveTranscriptEdit}
+                  icon="save-outline"
+                  size="sm"
                 />
                 <Button
                   title={copy.detailGeneratedTranscriptCancel}
                   variant="ghost"
+                  icon="close-outline"
+                  size="sm"
                   onPress={onCancelTranscriptEdit}
                 />
               </>
@@ -464,11 +614,15 @@ export default function DreamDetailScreen() {
                     <Button
                       title={copy.detailGeneratedTranscriptEdit}
                       variant="ghost"
+                      icon="create-outline"
+                      size="sm"
                       onPress={onStartTranscriptEdit}
                     />
                     <Button
                       title={copy.detailGeneratedTranscriptClear}
                       variant="danger"
+                      icon="close-circle-outline"
+                      size="sm"
                       onPress={onClearTranscript}
                     />
                   </>
@@ -491,6 +645,7 @@ export default function DreamDetailScreen() {
                     }
                     onPress={onTranscribeAudio}
                     disabled={isTranscribingAudio}
+                    icon={dream.transcript ? 'refresh-outline' : 'sparkles-outline'}
                   />
                 ) : null}
               </>
@@ -511,9 +666,56 @@ export default function DreamDetailScreen() {
       </Card>
 
       <Card style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>{copy.detailRelatedTitle}</Text>
+        <Text style={styles.mutedText}>{copy.detailRelatedDescription}</Text>
+        {relatedDreams.length ? (
+          <View style={styles.relatedList}>
+            {relatedDreams.map(item => (
+              <Pressable
+                key={item.dream.id}
+                style={({ pressed }) => [
+                  styles.relatedCard,
+                  pressed ? styles.relatedCardPressed : null,
+                ]}
+                onPress={() =>
+                  navigation.push(ROOT_ROUTE_NAMES.DreamDetail, {
+                    dreamId: item.dream.id,
+                  })
+                }
+              >
+                <View style={styles.relatedHeader}>
+                  <View style={styles.relatedCopy}>
+                    <Text style={styles.relatedTitle}>{item.dream.title || copy.untitled}</Text>
+                    <Text style={styles.relatedMeta}>
+                      {item.dream.sleepDate || new Date(item.dream.createdAt).toISOString().slice(0, 10)}
+                    </Text>
+                  </View>
+                </View>
+
+                {item.sharedSignals.length ? (
+                  <View style={styles.tagsRow}>
+                    {item.sharedSignals.map(signal => (
+                      <TagChip key={`${item.dream.id}-${signal}`} label={signal} />
+                    ))}
+                  </View>
+                ) : null}
+
+                <Text style={styles.relatedSharedLabel}>{copy.detailRelatedSharedLabel}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.mutedText}>{copy.detailRelatedEmpty}</Text>
+        )}
+      </Card>
+
+      <Card style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>{copy.detailAnalysisTitle}</Text>
         {dream.analysis?.summary ? (
-          <Text style={styles.bodyText}>{dream.analysis.summary}</Text>
+          <>
+            <Text style={styles.sectionTitle}>{copy.detailAnalysisSummaryLabel}</Text>
+            <Text style={styles.bodyText}>{dream.analysis.summary}</Text>
+          </>
         ) : (
           <Text style={styles.mutedText}>
             {analysisSettings.enabled ? copy.detailAnalysisEmpty : copy.detailAnalysisDisabled}
@@ -538,6 +740,38 @@ export default function DreamDetailScreen() {
               {dream.analysis.themes.map(theme => <TagChip key={theme} label={theme} />)}
             </View>
           </>
+        ) : null}
+
+        {dream.analysis?.status === 'error' && dream.analysis.errorMessage ? (
+          <Text style={styles.statusErrorText}>{dream.analysis.errorMessage}</Text>
+        ) : null}
+
+        {analysisSettings.enabled ? (
+          <View style={styles.transcriptActions}>
+            <Button
+              title={
+                isGeneratingAnalysis
+                  ? copy.detailAnalysisGenerating
+                  : dream.analysis?.status === 'ready'
+                    ? copy.detailAnalysisRegenerate
+                    : copy.detailAnalysisGenerate
+              }
+              variant={dream.analysis?.status === 'ready' ? 'ghost' : 'primary'}
+              onPress={onGenerateAnalysis}
+              disabled={isGeneratingAnalysis}
+              icon={dream.analysis?.status === 'ready' ? 'refresh-outline' : 'sparkles-outline'}
+            />
+            {dream.analysis ? (
+              <Button
+                title={copy.detailAnalysisClear}
+                variant="danger"
+                onPress={onClearAnalysis}
+                disabled={isGeneratingAnalysis}
+                icon="trash-outline"
+                size="sm"
+              />
+            ) : null}
+          </View>
         ) : null}
       </Card>
 
@@ -598,6 +832,8 @@ export default function DreamDetailScreen() {
               title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}
               variant={isPlayingAudio ? 'ghost' : 'primary'}
               onPress={onToggleAudioPlayback}
+              icon={isPlayingAudio ? 'stop-circle-outline' : 'play-outline'}
+              size="sm"
             />
           </View>
         </Card>

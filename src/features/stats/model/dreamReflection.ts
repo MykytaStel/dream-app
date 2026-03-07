@@ -57,6 +57,12 @@ export type TranscriptArchiveStats = {
   audioOnly: number;
 };
 
+export type DreamWordSignal = {
+  label: string;
+  dreamCount: number;
+  hitCount: number;
+};
+
 function formatTagLabel(tag: string) {
   return tag.replace(/-/g, ' ');
 }
@@ -82,6 +88,12 @@ function tokenizeTranscript(text: string) {
 
       return !TRANSCRIPT_STOPWORDS.has(token);
     });
+}
+
+function tokenizeNarrativeParts(dream: Dream) {
+  return [dream.text, dream.transcript]
+    .filter((value): value is string => Boolean(value?.trim()))
+    .flatMap(tokenizeTranscript);
 }
 
 function buildSignalSource(tagHits: number, transcriptHits: number): DreamReflectionSignal['source'] {
@@ -207,3 +219,47 @@ export function getRecurringReflectionSignals(
     .slice(0, limit);
 }
 
+export function getRecurringWordSignals(dreams: Dream[], limit = 6) {
+  const signalMap = new Map<
+    string,
+    {
+      dreamIds: Set<string>;
+      hitCount: number;
+    }
+  >();
+
+  dreams.forEach(dream => {
+    const tokens = tokenizeNarrativeParts(dream);
+    const uniqueTokens = new Set(tokens);
+
+    uniqueTokens.forEach(token => {
+      const current = signalMap.get(token) ?? {
+        dreamIds: new Set<string>(),
+        hitCount: 0,
+      };
+      current.dreamIds.add(dream.id);
+      current.hitCount += tokens.filter(value => value === token).length;
+      signalMap.set(token, current);
+    });
+  });
+
+  return Array.from(signalMap.entries())
+    .map<DreamWordSignal>(([label, entry]) => ({
+      label,
+      dreamCount: entry.dreamIds.size,
+      hitCount: entry.hitCount,
+    }))
+    .filter(entry => entry.dreamCount >= 2)
+    .sort((a, b) => {
+      if (b.dreamCount !== a.dreamCount) {
+        return b.dreamCount - a.dreamCount;
+      }
+
+      if (b.hitCount !== a.hitCount) {
+        return b.hitCount - a.hitCount;
+      }
+
+      return a.label.localeCompare(b.label);
+    })
+    .slice(0, limit);
+}

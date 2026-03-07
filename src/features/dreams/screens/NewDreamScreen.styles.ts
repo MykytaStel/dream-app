@@ -8,12 +8,34 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
   return StyleSheet.create({
     heroCard: {
       gap: layout.heroGap,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    heroGlowLarge: {
+      position: 'absolute',
+      width: 180,
+      height: 180,
+      borderRadius: 999,
+      backgroundColor: theme.colors.auroraMid,
+      opacity: 0.08,
+      top: -54,
+      right: -42,
+    },
+    heroGlowSmall: {
+      position: 'absolute',
+      width: 136,
+      height: 136,
+      borderRadius: 999,
+      backgroundColor: theme.colors.accent,
+      opacity: 0.08,
+      bottom: -36,
+      left: -28,
     },
     heroTopRow: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       justifyContent: 'space-between',
-      gap: 16,
+      gap: 12,
     },
     heroCopy: {
       flex: 1,
@@ -21,23 +43,41 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     },
     heroEyebrow: {
       color: theme.colors.accent,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '700',
-      letterSpacing: 0.8,
+      letterSpacing: 0.7,
       textTransform: 'uppercase',
     },
-    heroDescription: {
-      color: theme.colors.textDim,
-    },
-    pulseShell: {
-      width: 76,
-      height: 76,
+    kaleidoscopeShell: {
+      width: 88,
+      height: 88,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 24,
+      borderRadius: 26,
       backgroundColor: theme.colors.surfaceAlt,
       borderWidth: 1,
       borderColor: theme.colors.border,
+    },
+    kaleidoscopeFacet: {
+      position: 'absolute',
+      width: 26,
+      height: 26,
+      borderRadius: 9,
+      transform: [{ rotate: '45deg' }],
+    },
+    kaleidoscopeFacetPrimary: {
+      backgroundColor: theme.colors.primary,
+      top: 18,
+    },
+    kaleidoscopeFacetAccent: {
+      backgroundColor: theme.colors.accent,
+      left: 21,
+      bottom: 22,
+    },
+    kaleidoscopeFacetAlt: {
+      backgroundColor: theme.colors.auroraMid,
+      right: 21,
+      bottom: 22,
     },
     helperChipsRow: {
       flexDirection: 'row',
@@ -45,19 +85,73 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       gap: 8,
     },
     helperChip: {
-      borderRadius: 12,
+      borderRadius: 16,
       borderWidth: 1,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 8,
+      backgroundColor: theme.colors.surface,
+      paddingVertical: 7,
       paddingHorizontal: 12,
     },
     helperChipLabel: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
     },
     card: {
       gap: layout.sectionGap + 2,
+    },
+    refineActionsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    refineActionChip: {
+      borderRadius: theme.borderRadii.pill,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    refineActionChipActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    refineActionLabel: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    refineActionLabelActive: {
+      color: theme.colors.background,
+    },
+    refineHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    sectionAccentRow: {
+      flexDirection: 'row',
+      gap: 6,
+      marginBottom: -2,
+    },
+    sectionAccentPrimary: {
+      width: 28,
+      height: 4,
+      borderRadius: 999,
+      backgroundColor: theme.colors.primary,
+    },
+    sectionAccentSecondary: {
+      width: 12,
+      height: 4,
+      borderRadius: 999,
+      backgroundColor: theme.colors.accent,
+    },
+    sectionAccentAlt: {
+      backgroundColor: theme.colors.auroraMid,
+    },
+    sectionAccentMuted: {
+      backgroundColor: theme.colors.textDim,
+      opacity: 0.45,
     },
     textInput: {
       minHeight: 180,
@@ -88,6 +182,11 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       fontSize: 12,
       fontWeight: '600',
     },
+    contextHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
     contextOptionsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -116,13 +215,18 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     },
     tagsInputRow: {
       flexDirection: 'row',
+      alignItems: 'flex-end',
       gap: 8,
     },
-    tagInput: {
+    tagField: {
       flex: 1,
     },
+    tagInput: {
+      minHeight: 0,
+    },
     tagButton: {
-      minWidth: 92,
+      minWidth: 70,
+      marginBottom: 1,
     },
     tagsWrap: {
       flexDirection: 'row',
@@ -132,12 +236,38 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     emptyTags: {
       color: theme.colors.textDim,
     },
+    voiceStatusRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12,
+      flexWrap: 'wrap',
+    },
+    voiceStatusPill: {
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 8,
+      paddingHorizontal: 12,
+      flexGrow: 1,
+    },
+    voiceStatusLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    voiceFileLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '600',
+    },
     recordingHint: {
       color: theme.colors.accent,
     },
     attachedAudioCard: {
       gap: layout.rowGap + 2,
-      borderRadius: 12,
+      borderRadius: 14,
       borderWidth: 1,
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.surfaceAlt,

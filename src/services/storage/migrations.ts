@@ -1,5 +1,10 @@
 import { AppLocale } from '../../i18n/types';
-import { Dream, SleepContext } from '../../features/dreams/model/dream';
+import {
+  Dream,
+  PreSleepEmotion,
+  SleepContext,
+  WakeEmotion,
+} from '../../features/dreams/model/dream';
 import { sanitizeDream, sortDreamsStable } from '../../features/dreams/model/dreamRules';
 import {
   APP_LOCALE_KEY,
@@ -96,6 +101,17 @@ function pickSleepContextFromLegacy(record: LegacyRecord): SleepContext | undefi
 
   return {
     stressLevel: stressLevel as SleepContext['stressLevel'],
+    preSleepEmotions: Array.isArray(source.preSleepEmotions)
+      ? source.preSleepEmotions.filter(
+          (emotion): emotion is PreSleepEmotion =>
+            emotion === 'peaceful' ||
+            emotion === 'anxious' ||
+            emotion === 'restless' ||
+            emotion === 'hopeful' ||
+            emotion === 'drained' ||
+            emotion === 'lonely',
+        )
+      : undefined,
     alcoholTaken:
       typeof source.alcoholTaken === 'boolean'
         ? source.alcoholTaken
@@ -148,6 +164,10 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
     archivedAt:
       typeof record.archivedAt === 'number' && Number.isFinite(record.archivedAt)
         ? record.archivedAt
+        : undefined,
+    starredAt:
+      typeof record.starredAt === 'number' && Number.isFinite(record.starredAt)
+        ? record.starredAt
         : undefined,
     sleepDate: typeof record.sleepDate === 'string' ? record.sleepDate : undefined,
     title: typeof record.title === 'string' ? record.title : undefined,
@@ -203,6 +223,17 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
     tags: Array.isArray(record.tags)
       ? record.tags.filter((tag): tag is string => typeof tag === 'string')
       : [],
+    wakeEmotions: Array.isArray(record.wakeEmotions)
+      ? record.wakeEmotions.filter(
+          (emotion): emotion is WakeEmotion =>
+            emotion === 'calm' ||
+            emotion === 'uneasy' ||
+            emotion === 'curious' ||
+            emotion === 'heavy' ||
+            emotion === 'inspired' ||
+            emotion === 'disoriented',
+        )
+      : undefined,
     mood:
       record.mood === 'positive' || record.mood === 'negative' || record.mood === 'neutral'
         ? record.mood
@@ -348,6 +379,54 @@ function migrateDreamsToV5() {
   }
 }
 
+function migrateDreamsToV6() {
+  const raw = kv.getString(DREAMS_STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+      return;
+    }
+
+    const migrated = parsed
+      .map(coerceLegacyDream)
+      .filter((dream): dream is Dream => Boolean(dream))
+      .map(sanitizeDream);
+
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
+  } catch {
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+  }
+}
+
+function migrateDreamsToV7() {
+  const raw = kv.getString(DREAMS_STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+      return;
+    }
+
+    const migrated = parsed
+      .map(coerceLegacyDream)
+      .filter((dream): dream is Dream => Boolean(dream))
+      .map(sanitizeDream);
+
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
+  } catch {
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+  }
+}
+
 function migrateAnalysisSettingsToV5() {
   const raw = kv.getString(DREAM_ANALYSIS_SETTINGS_KEY);
   if (!raw) {
@@ -396,6 +475,16 @@ export function runStorageMigrations() {
     migrateDreamsToV5();
     migrateAnalysisSettingsToV5();
     nextVersion = 5;
+  }
+
+  if (nextVersion < 6) {
+    migrateDreamsToV6();
+    nextVersion = 6;
+  }
+
+  if (nextVersion < 7) {
+    migrateDreamsToV7();
+    nextVersion = 7;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

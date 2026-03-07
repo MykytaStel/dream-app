@@ -1,7 +1,11 @@
 import React from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Platform, Pressable, Switch, View } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
+import DateTimePicker, {
+  DateTimePickerAndroid,
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { InfoRow } from '../../../components/ui/InfoRow';
@@ -11,12 +15,9 @@ import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { APP_VERSION_LABEL } from '../../../config/app';
 import { Theme } from '../../../theme/theme';
-import { exportDreamDataSnapshot } from '../services/dataExportService';
 import {
-  getDreamAnalysisSettings,
-  saveDreamAnalysisSettings,
-} from '../../analysis/services/dreamAnalysisSettingsService';
-import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
+  exportDreamDataSnapshot,
+} from '../services/dataExportService';
 import {
   ensureDreamTranscriptionModelInstalled,
   deleteDreamTranscriptionModel,
@@ -28,10 +29,14 @@ import {
   applyDreamReminderSettings,
   getDreamReminderPermissionGranted,
   getDreamReminderSettings,
-  REMINDER_TIME_OPTIONS,
   requestReminderPermission,
   type DreamReminderSettings,
 } from '../../reminders/services/dreamReminderService';
+import {
+  clearSeedDreams,
+  countSeedDreams,
+  seedDreamSamples,
+} from '../../dreams/services/dreamSeedService';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { AppLocale } from '../../../i18n/types';
 import { useI18n } from '../../../i18n/I18nProvider';
@@ -50,14 +55,32 @@ export default function SettingsScreen() {
   const [isDownloadingTranscriptionModel, setIsDownloadingTranscriptionModel] =
     React.useState(false);
   const [isDeletingTranscriptionModel, setIsDeletingTranscriptionModel] = React.useState(false);
-  const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
-    getDreamAnalysisSettings(),
-  );
   const [lastExportPath, setLastExportPath] = React.useState<string | null>(null);
   const [transcriptionModelStatus, setTranscriptionModelStatus] =
     React.useState<DreamTranscriptionModelStatus | null>(null);
   const [transcriptionDownloadProgress, setTranscriptionDownloadProgress] =
     React.useState<DreamTranscriptionProgress | null>(null);
+  const [showIosTimePicker, setShowIosTimePicker] = React.useState(false);
+  const [showAdvanced, setShowAdvanced] = React.useState(false);
+  const [seedDreamCount, setSeedDreamCount] = React.useState(0);
+  const [isUpdatingSeedDreams, setIsUpdatingSeedDreams] = React.useState(false);
+
+  function getReminderDate(settings: DreamReminderSettings) {
+    const date = new Date();
+    date.setHours(settings.hour, settings.minute, 0, 0);
+    return date;
+  }
+
+  function getPickerLocale(currentLocale: AppLocale) {
+    return currentLocale === 'uk' ? 'uk-UA' : 'en-US';
+  }
+
+  function formatReminderTime(settings: DreamReminderSettings) {
+    return getReminderDate(settings).toLocaleTimeString(getPickerLocale(locale), {
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
 
   function formatModelSize(sizeBytes: number | null) {
     if (typeof sizeBytes !== 'number' || Number.isNaN(sizeBytes)) {
@@ -66,6 +89,14 @@ export default function SettingsScreen() {
 
     const sizeMiB = sizeBytes / (1024 * 1024);
     return `${sizeMiB.toFixed(sizeMiB >= 100 ? 0 : 1)} MiB`;
+  }
+
+  function formatModelFileName(filePath?: string | null) {
+    if (!filePath?.trim()) {
+      return null;
+    }
+
+    return filePath.split('/').filter(Boolean).pop() ?? filePath;
   }
 
   function formatDownloadProgress(progress: DreamTranscriptionProgress | null) {
@@ -87,9 +118,11 @@ export default function SettingsScreen() {
 
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
-    setAnalysisSettings(getDreamAnalysisSettings());
     setPermissionGranted(await getDreamReminderPermissionGranted());
     setTranscriptionModelStatus(await getDreamTranscriptionModelStatus());
+    if (__DEV__) {
+      setSeedDreamCount(countSeedDreams());
+    }
   }, []);
 
   useFocusEffect(
@@ -145,12 +178,47 @@ export default function SettingsScreen() {
     });
   }
 
+  React.useEffect(() => {
+    if (!reminderSettings.enabled && showIosTimePicker) {
+      setShowIosTimePicker(false);
+    }
+  }, [reminderSettings.enabled, showIosTimePicker]);
+
   async function onSelectTime(hour: number, minute: number) {
     await updateReminderSettings({
       ...reminderSettings,
       hour,
       minute,
     });
+  }
+
+  function onNativeTimePickerChange(event: DateTimePickerEvent, selectedDate?: Date) {
+    if (event.type !== 'set' || !selectedDate) {
+      return;
+    }
+
+    onSelectTime(selectedDate.getHours(), selectedDate.getMinutes()).catch(() => undefined);
+  }
+
+  function onOpenReminderTimePicker() {
+    if (!reminderSettings.enabled || isApplyingReminder) {
+      return;
+    }
+
+    const currentDate = getReminderDate(reminderSettings);
+
+    if (Platform.OS === 'android') {
+      DateTimePickerAndroid.open({
+        value: currentDate,
+        mode: 'time',
+        display: 'clock',
+        is24Hour: locale === 'uk',
+        onChange: onNativeTimePickerChange,
+      });
+      return;
+    }
+
+    setShowIosTimePicker(current => !current);
   }
 
   async function onSelectLocale(nextLocale: AppLocale) {
@@ -163,33 +231,6 @@ export default function SettingsScreen() {
     } catch (error) {
       Alert.alert(copy.reminderSaveErrorTitle, String(error));
     }
-  }
-
-  function onToggleAnalysisEnabled() {
-    setAnalysisSettings(current =>
-      saveDreamAnalysisSettings({
-        ...current,
-        enabled: !current.enabled,
-      }),
-    );
-  }
-
-  function onSelectAnalysisProvider(nextProvider: DreamAnalysisSettings['provider']) {
-    setAnalysisSettings(current =>
-      saveDreamAnalysisSettings({
-        ...current,
-        provider: nextProvider,
-      }),
-    );
-  }
-
-  function onToggleAnalysisNetwork() {
-    setAnalysisSettings(current =>
-      saveDreamAnalysisSettings({
-        ...current,
-        allowNetwork: !current.allowNetwork,
-      }),
-    );
   }
 
   async function onExportData() {
@@ -230,6 +271,48 @@ export default function SettingsScreen() {
     }
   }
 
+  async function onSeedDreams(targetCount: number) {
+    setIsUpdatingSeedDreams(true);
+
+    try {
+      const nextSeedCount = seedDreamSamples(targetCount);
+      setSeedDreamCount(nextSeedCount);
+      Alert.alert(copy.scaleTestSeededTitle, copy.scaleTestSeededDescription);
+    } catch (error) {
+      Alert.alert(copy.scaleTestErrorTitle, error instanceof Error ? error.message : String(error));
+    } finally {
+      setIsUpdatingSeedDreams(false);
+    }
+  }
+
+  function onClearSeedDreams() {
+    Alert.alert(copy.scaleTestClearTitle, copy.scaleTestClearDescription, [
+      {
+        text: copy.actionCancel,
+        style: 'cancel',
+      },
+      {
+        text: copy.scaleTestClear,
+        style: 'destructive',
+        onPress: () => {
+          setIsUpdatingSeedDreams(true);
+
+          try {
+            clearSeedDreams();
+            setSeedDreamCount(0);
+          } catch (error) {
+            Alert.alert(
+              copy.scaleTestErrorTitle,
+              error instanceof Error ? error.message : String(error),
+            );
+          } finally {
+            setIsUpdatingSeedDreams(false);
+          }
+        },
+      },
+    ]);
+  }
+
   async function onDownloadTranscriptionModel() {
     setIsDownloadingTranscriptionModel(true);
     setTranscriptionDownloadProgress({
@@ -259,115 +342,96 @@ export default function SettingsScreen() {
 
   return (
     <ScreenContainer scroll>
-      <Card style={styles.heroCard}>
-        <Text style={styles.heroEyebrow}>{copy.title}</Text>
-        <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
-      </Card>
+      <View style={styles.heroHeader}>
+        <SectionHeader title={copy.title} large />
+        <View style={styles.inlineLanguageRow}>
+          <Text style={styles.inlineLanguageLabel}>{copy.languageTitle}</Text>
+          <View style={styles.inlineLanguageControls}>
+            {([
+              { value: 'en', label: copy.languageEnglish },
+              { value: 'uk', label: copy.languageUkrainian },
+            ] as Array<{ value: AppLocale; label: string }>).map(option => {
+              const selected = locale === option.value;
 
-      <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.versionTitle}</Text>
-        <Text style={styles.description}>{APP_VERSION_LABEL}</Text>
-      </Card>
+              return (
+                <Pressable
+                  key={option.value}
+                  style={[
+                    styles.inlineLanguageChip,
+                    selected ? styles.inlineLanguageChipActive : null,
+                  ]}
+                  disabled={isApplyingReminder}
+                  onPress={() => onSelectLocale(option.value)}
+                >
+                  <Text
+                    style={[
+                      styles.inlineLanguageChipText,
+                      selected ? styles.inlineLanguageChipTextActive : null,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+        </View>
+      </View>
 
       <Card style={styles.sectionCard}>
         <Text style={styles.title}>{copy.reminderTitle}</Text>
         <Text style={styles.description}>{copy.reminderDescription}</Text>
 
-        <View style={styles.reminderMetaStack}>
-          <View style={styles.reminderRow}>
-            <Text style={styles.reminderLabel}>{copy.reminderStatusLabel}</Text>
-            <Text style={styles.reminderValue}>
-              {reminderSettings.enabled
-                ? copy.reminderEnabled
-                : copy.reminderDisabled}
+        <View style={styles.toggleRow}>
+          <View style={styles.toggleCopy}>
+            <Text style={styles.toggleTitle}>{copy.reminderStatusLabel}</Text>
+            <Text style={styles.toggleMeta}>
+              {reminderSettings.enabled ? copy.reminderEnabled : copy.reminderDisabled}
             </Text>
           </View>
-
-          <View style={styles.reminderRow}>
-            <Text style={styles.reminderLabel}>{copy.reminderPermissionLabel}</Text>
-            <Text style={styles.reminderValue}>
-              {permissionGranted
-                ? copy.reminderPermissionAllowed
-                : copy.reminderPermissionBlocked}
-            </Text>
-          </View>
+          <Switch
+            value={reminderSettings.enabled}
+            onValueChange={() => onToggleReminder().catch(() => undefined)}
+            disabled={isApplyingReminder}
+            trackColor={{ false: t.colors.border, true: t.colors.primary }}
+            thumbColor={t.colors.background}
+          />
         </View>
 
-        <Text style={styles.reminderHint}>{copy.reminderStateHint}</Text>
+        {!permissionGranted ? (
+          <Text style={styles.reminderHint}>
+            {`${copy.reminderPermissionLabel}: ${copy.reminderPermissionBlocked}.`}
+          </Text>
+        ) : null}
 
-        <Text style={styles.reminderLabel}>{copy.reminderTimeLabel}</Text>
-        <View style={styles.reminderTimeRow}>
-          {REMINDER_TIME_OPTIONS.map(option => {
-            const active =
-              reminderSettings.hour === option.hour &&
-              reminderSettings.minute === option.minute;
-            return (
-              <Pressable
-                key={option.label}
-                style={[
-                  styles.reminderTimeChip,
-                  active ? styles.reminderTimeChipActive : null,
-                ]}
-                disabled={isApplyingReminder}
-                onPress={() => onSelectTime(option.hour, option.minute)}
-              >
-                <Text
-                  style={[
-                    styles.reminderTimeChipText,
-                    active ? styles.reminderTimeChipTextActive : null,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        {reminderSettings.enabled ? (
+          <>
+            <Pressable
+              style={styles.settingRow}
+              disabled={isApplyingReminder}
+              onPress={onOpenReminderTimePicker}
+            >
+              <View style={styles.settingRowCopy}>
+                <Text style={styles.settingRowLabel}>{copy.reminderTimeLabel}</Text>
+                <Text style={styles.settingRowMeta}>{copy.reminderTimeHint}</Text>
+              </View>
+              <Text style={styles.settingRowValue}>{formatReminderTime(reminderSettings)}</Text>
+            </Pressable>
 
-        <Button
-          title={
-            reminderSettings.enabled
-              ? copy.reminderDisableButton
-              : copy.reminderEnableButton
-          }
-          variant={reminderSettings.enabled ? 'ghost' : 'primary'}
-          onPress={onToggleReminder}
-          disabled={isApplyingReminder}
-        />
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.languageTitle}</Text>
-        <Text style={styles.description}>{copy.languageDescription}</Text>
-        <View style={styles.reminderTimeRow}>
-          {([
-            { value: 'en', label: copy.languageEnglish },
-            { value: 'uk', label: copy.languageUkrainian },
-          ] as Array<{ value: AppLocale; label: string }>).map(option => {
-            const selected = locale === option.value;
-
-            return (
-              <Pressable
-                key={option.value}
-                style={[
-                  styles.reminderTimeChip,
-                  selected ? styles.reminderTimeChipActive : null,
-                ]}
-                disabled={isApplyingReminder}
-                onPress={() => onSelectLocale(option.value)}
-              >
-                <Text
-                  style={[
-                    styles.reminderTimeChipText,
-                    selected ? styles.reminderTimeChipTextActive : null,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+            {Platform.OS === 'ios' && showIosTimePicker ? (
+              <View style={styles.iosPickerWrap}>
+                <DateTimePicker
+                  value={getReminderDate(reminderSettings)}
+                  mode="time"
+                  display="spinner"
+                  locale={getPickerLocale(locale)}
+                  themeVariant="dark"
+                  onChange={onNativeTimePickerChange}
+                />
+              </View>
+            ) : null}
+          </>
+        ) : null}
       </Card>
 
       <Card style={styles.sectionCard}>
@@ -386,152 +450,135 @@ export default function SettingsScreen() {
         <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
       </Card>
 
-      <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.transcriptionTitle}</Text>
-        <Text style={styles.description}>{copy.transcriptionDescription}</Text>
-        <View style={styles.privacyRows}>
-          <InfoRow
-            label={copy.transcriptionStatusLabel}
-            value={
-              transcriptionModelStatus?.installed
-                ? copy.transcriptionStatusInstalled
-                : copy.transcriptionStatusMissing
-            }
-          />
-          <InfoRow
-            label={copy.transcriptionSizeLabel}
-            value={formatModelSize(transcriptionModelStatus?.sizeBytes ?? null)}
-          />
-          <InfoRow
-            label={copy.transcriptionPathLabel}
-            value={transcriptionModelStatus?.filePath ?? '...'}
-          />
+      <Pressable
+        style={styles.advancedToggleRow}
+        onPress={() => setShowAdvanced(current => !current)}
+      >
+        <View style={styles.settingRowCopy}>
+          <Text style={styles.settingRowLabel}>{copy.advancedTitle}</Text>
+          <Text style={styles.settingRowMeta}>{copy.advancedDescription}</Text>
         </View>
-        <Button
-          title={
-            isDownloadingTranscriptionModel
-              ? formatDownloadProgress(transcriptionDownloadProgress) ??
-                copy.transcriptionDownloadButtonBusy
-              : copy.transcriptionDownloadButton
-          }
-          variant="primary"
-          onPress={onDownloadTranscriptionModel}
-          disabled={isDownloadingTranscriptionModel || Boolean(transcriptionModelStatus?.installed)}
-        />
-        <Button
-          title={
-            isDeletingTranscriptionModel
-              ? copy.transcriptionDeleteButtonBusy
-              : copy.transcriptionDeleteButton
-          }
-          variant="ghost"
-          onPress={onDeleteTranscriptionModel}
-          disabled={isDeletingTranscriptionModel || !transcriptionModelStatus?.installed}
-        />
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.analysisTitle}</Text>
-        <Text style={styles.description}>{copy.analysisDescription}</Text>
-        <View style={styles.privacyRows}>
-          <InfoRow
-            label={copy.analysisEnabledLabel}
-            value={analysisSettings.enabled ? copy.analysisEnabled : copy.analysisDisabled}
-          />
-          <InfoRow
-            label={copy.analysisProviderLabel}
-            value={
-              analysisSettings.provider === 'openai'
-                ? copy.analysisProviderOpenAi
-                : copy.analysisProviderManual
-            }
-          />
-          <InfoRow
-            label={copy.analysisNetworkLabel}
-            value={
-              analysisSettings.allowNetwork
-                ? copy.analysisNetworkAllowed
-                : copy.analysisNetworkBlocked
-            }
-          />
-        </View>
-        <View style={styles.reminderTimeRow}>
-          {([
-            { value: 'manual', label: copy.analysisProviderManual },
-            { value: 'openai', label: copy.analysisProviderOpenAi },
-          ] as Array<{ value: DreamAnalysisSettings['provider']; label: string }>).map(option => {
-            const selected = analysisSettings.provider === option.value;
-
-            return (
-              <Pressable
-                key={option.value}
-                style={[
-                  styles.reminderTimeChip,
-                  selected ? styles.reminderTimeChipActive : null,
-                ]}
-                onPress={() => onSelectAnalysisProvider(option.value)}
-              >
-                <Text
-                  style={[
-                    styles.reminderTimeChipText,
-                    selected ? styles.reminderTimeChipTextActive : null,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-        <Button
-          title={analysisSettings.enabled ? copy.analysisDisableButton : copy.analysisEnableButton}
-          variant={analysisSettings.enabled ? 'ghost' : 'primary'}
-          onPress={onToggleAnalysisEnabled}
-        />
-        <Button
-          title={
-            analysisSettings.allowNetwork
-              ? copy.analysisNetworkBlockButton
-              : copy.analysisNetworkAllowButton
-          }
-          variant="ghost"
-          onPress={onToggleAnalysisNetwork}
-        />
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.exportTitle}</Text>
-        <Text style={styles.description}>{copy.exportDescription}</Text>
-        <View style={styles.privacyRows}>
-          <InfoRow label={copy.exportIncludesLabel} value={copy.exportIncludesValue} />
-          <InfoRow label={copy.exportFormatLabel} value={copy.exportFormatValue} />
-        </View>
-        {lastExportPath ? (
-          <View style={styles.exportPathBlock}>
-            <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
-            <Text style={styles.exportPathValue}>{lastExportPath}</Text>
-          </View>
-        ) : null}
-        <Button
-          title={isExporting ? copy.exportButtonBusy : copy.exportButton}
-          variant="primary"
-          onPress={onExportData}
-          disabled={isExporting}
-        />
-        <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.architectureTitle}</Text>
-        <Text style={styles.description}>{copy.architectureDescription}</Text>
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.title}>{copy.plannedTitle}</Text>
-        <Text style={styles.description}>
-          {copy.plannedDescription}
+        <Text style={styles.settingRowValue}>
+          {showAdvanced ? copy.advancedHide : copy.advancedShow}
         </Text>
-      </Card>
+      </Pressable>
+
+      {showAdvanced ? (
+        <>
+          <Card style={styles.sectionCard}>
+            <Text style={styles.title}>{copy.transcriptionTitle}</Text>
+            <Text style={styles.description}>{copy.transcriptionDescription}</Text>
+            <View style={styles.privacyRows}>
+              <InfoRow
+                label={copy.transcriptionStatusLabel}
+                value={
+                  transcriptionModelStatus?.installed
+                    ? copy.transcriptionStatusInstalled
+                    : copy.transcriptionStatusMissing
+                }
+              />
+              <InfoRow
+                label={copy.transcriptionSizeLabel}
+                value={formatModelSize(transcriptionModelStatus?.sizeBytes ?? null)}
+              />
+              {transcriptionModelStatus?.installed && transcriptionModelStatus.filePath ? (
+                <InfoRow
+                  label={copy.transcriptionPathLabel}
+                  value={formatModelFileName(transcriptionModelStatus.filePath) ?? '...'}
+                />
+              ) : null}
+            </View>
+            <Button
+              title={
+                isDownloadingTranscriptionModel
+                  ? formatDownloadProgress(transcriptionDownloadProgress) ??
+                    copy.transcriptionDownloadButtonBusy
+                  : copy.transcriptionDownloadButton
+              }
+              variant="primary"
+              size="sm"
+              onPress={onDownloadTranscriptionModel}
+              disabled={
+                isDownloadingTranscriptionModel || Boolean(transcriptionModelStatus?.installed)
+              }
+            />
+            <Button
+              title={
+                isDeletingTranscriptionModel
+                  ? copy.transcriptionDeleteButtonBusy
+                  : copy.transcriptionDeleteButton
+              }
+              variant="ghost"
+              size="sm"
+              onPress={onDeleteTranscriptionModel}
+              disabled={isDeletingTranscriptionModel || !transcriptionModelStatus?.installed}
+            />
+          </Card>
+
+          <Card style={styles.sectionCard}>
+            <Text style={styles.title}>{copy.exportTitle}</Text>
+            <Text style={styles.description}>{copy.exportDescription}</Text>
+            <View style={styles.privacyRows}>
+              <InfoRow label={copy.exportIncludesLabel} value={copy.exportIncludesValue} />
+              <InfoRow label={copy.exportFormatLabel} value={copy.exportFormatValue} />
+            </View>
+            {lastExportPath ? (
+              <View style={styles.exportPathBlock}>
+                <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
+                <Text style={styles.exportPathValue}>{lastExportPath}</Text>
+              </View>
+            ) : null}
+            <Button
+              title={isExporting ? copy.exportButtonBusy : copy.exportButton}
+              variant="primary"
+              size="sm"
+              onPress={onExportData}
+              disabled={isExporting}
+            />
+            <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
+          </Card>
+
+          {__DEV__ ? (
+            <Card style={styles.sectionCard}>
+              <Text style={styles.title}>{copy.scaleTestTitle}</Text>
+              <Text style={styles.description}>{copy.scaleTestDescription}</Text>
+              <InfoRow
+                label={copy.scaleTestSeededLabel}
+                value={String(seedDreamCount)}
+              />
+              <View style={styles.devActionRow}>
+                <Button
+                  title={isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd250}
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => onSeedDreams(250).catch(() => undefined)}
+                  disabled={isUpdatingSeedDreams}
+                />
+                <Button
+                  title={isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd1000}
+                  variant="primary"
+                  size="sm"
+                  onPress={() => onSeedDreams(1000).catch(() => undefined)}
+                  disabled={isUpdatingSeedDreams}
+                />
+              </View>
+              <Button
+                title={copy.scaleTestClear}
+                variant="ghost"
+                size="sm"
+                onPress={onClearSeedDreams}
+                disabled={isUpdatingSeedDreams || seedDreamCount === 0}
+              />
+            </Card>
+          ) : null}
+        </>
+      ) : null}
+
+      <View style={styles.footerBlock}>
+        <Text style={styles.footerVersion}>
+          {`${copy.footerBuildLabel} ${APP_VERSION_LABEL}`}
+        </Text>
+      </View>
     </ScreenContainer>
   );
 }

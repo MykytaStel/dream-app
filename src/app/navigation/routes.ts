@@ -12,6 +12,9 @@ export const ROOT_ROUTE_NAMES = {
   Tabs: 'Tabs',
   DreamDetail: 'DreamDetail',
   DreamEditor: 'DreamEditor',
+  Progress: 'Progress',
+  Archive: 'Archive',
+  PatternDetail: 'PatternDetail',
 } as const;
 
 type TabRouteLabelMap = Record<(typeof TAB_ROUTE_NAMES)[keyof typeof TAB_ROUTE_NAMES], string>;
@@ -35,6 +38,7 @@ export function getTabRouteLabels(locale: AppLocale) {
 }
 
 export type TabRouteName = keyof typeof TAB_ROUTE_NAMES;
+export type PatternDetailKind = 'word' | 'theme' | 'symbol';
 
 export type TabParamList = {
   [TAB_ROUTE_NAMES.Home]: undefined;
@@ -52,8 +56,15 @@ export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.Tabs]: NavigatorScreenParams<TabParamList> | undefined;
   [ROOT_ROUTE_NAMES.DreamDetail]: {
     dreamId: string;
+    justSaved?: boolean;
   };
   [ROOT_ROUTE_NAMES.DreamEditor]: {
     dreamId: string;
+  };
+  [ROOT_ROUTE_NAMES.Progress]: undefined;
+  [ROOT_ROUTE_NAMES.Archive]: undefined;
+  [ROOT_ROUTE_NAMES.PatternDetail]: {
+    signal: string;
+    kind: PatternDetailKind;
   };
 };

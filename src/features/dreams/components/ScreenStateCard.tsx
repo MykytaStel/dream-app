@@ -1,10 +1,8 @@
 import React from 'react';
-import { View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
-import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import { createScreenStateCardStyles } from './ScreenStateCard.styles';
 
@@ -28,18 +26,6 @@ export function ScreenStateCard({
 
   return (
     <Card style={styles.card}>
-      <View
-        style={[
-          styles.pill,
-          variant === 'loading' ? styles.pillLoading : null,
-          variant === 'error' ? styles.pillError : null,
-        ]}
-      >
-        <Text style={styles.pillText}>
-          {variant === 'loading' ? '...' : variant === 'error' ? '!' : '+'}
-        </Text>
-      </View>
-
       <SectionHeader title={title} subtitle={subtitle} />
 
       {actionLabel && onAction ? (

@@ -6,6 +6,7 @@ import {
   getDreamEntryType,
   getDreamSearchScore,
   hasActiveTimelineRefinements,
+  isDreamStarred,
   matchesDreamTranscriptFilter,
 } from '../src/features/dreams/model/homeTimeline';
 
@@ -17,6 +18,7 @@ describe('homeTimeline', () => {
       sleepDate: '2026-03-06',
       title: 'Blue room',
       text: 'I found a blue door near the ocean.',
+      starredAt: new Date('2026-03-06T09:00:00.000Z').getTime(),
       tags: ['ocean', 'door'],
       mood: 'positive',
     },
@@ -68,6 +70,8 @@ describe('homeTimeline', () => {
     expect(getDreamEntryType(dreams[0])).toBe('text');
     expect(getDreamEntryType(dreams[1])).toBe('audio');
     expect(getDreamEntryType(dreams[2])).toBe('mixed');
+    expect(isDreamStarred(dreams[0])).toBe(true);
+    expect(isDreamStarred(dreams[1])).toBe(false);
   });
 
   test('matches transcript-aware filters', () => {
@@ -85,6 +89,13 @@ describe('homeTimeline', () => {
         archive: 'active',
       }).map(dream => dream.id),
     ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5']);
+
+    expect(
+      applyHomeTimelineFilters(dreams, {
+        ...DEFAULT_HOME_TIMELINE_FILTERS,
+        starredOnly: true,
+      }).map(dream => dream.id),
+    ).toEqual(['dream-1']);
 
     expect(
       applyHomeTimelineFilters(dreams, {
@@ -229,6 +240,7 @@ describe('homeTimeline', () => {
     expect(
       hasActiveTimelineRefinements({
         ...DEFAULT_HOME_TIMELINE_FILTERS,
+        starredOnly: true,
         transcript: 'with-transcript',
         dateRange: '7d',
       }),

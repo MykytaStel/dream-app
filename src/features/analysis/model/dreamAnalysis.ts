@@ -10,6 +10,11 @@ export type DreamAnalysisRecord = {
   errorMessage?: string;
 };
 
+export type DreamAnalysisResult = {
+  summary: string;
+  themes: string[];
+};
+
 export type DreamAnalysisSettings = {
   enabled: boolean;
   provider: DreamAnalysisProvider;
@@ -21,4 +26,3 @@ export const DEFAULT_DREAM_ANALYSIS_SETTINGS: DreamAnalysisSettings = {
   provider: 'manual',
   allowNetwork: false,
 };
-

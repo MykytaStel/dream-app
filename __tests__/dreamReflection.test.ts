@@ -1,6 +1,7 @@
 import { Dream } from '../src/features/dreams/model/dream';
 import {
   getRecurringReflectionSignals,
+  getRecurringWordSignals,
   getTranscriptArchiveStats,
 } from '../src/features/stats/model/dreamReflection';
 
@@ -19,6 +20,7 @@ describe('dreamReflection', () => {
       id: 'dream-2',
       createdAt: 2,
       sleepDate: '2026-03-06',
+      text: 'Lantern light near the bridge and quiet water',
       audioUri: 'file:///two.m4a',
       transcript: 'Lantern room with water below the bridge',
       transcriptSource: 'edited',
@@ -79,5 +81,19 @@ describe('dreamReflection', () => {
       },
     ]);
   });
-});
 
+  test('returns recurring words across text and transcript', () => {
+    expect(getRecurringWordSignals(dreams)).toEqual([
+      {
+        label: 'lantern',
+        dreamCount: 2,
+        hitCount: 3,
+      },
+      {
+        label: 'water',
+        dreamCount: 2,
+        hitCount: 3,
+      },
+    ]);
+  });
+});

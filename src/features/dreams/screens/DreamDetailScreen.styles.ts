@@ -74,6 +74,67 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     metaChipValue: {
       fontWeight: '700',
     },
+    savedCard: {
+      gap: 12,
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surface,
+    },
+    savedHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 12,
+    },
+    savedCopy: {
+      flex: 1,
+      gap: 4,
+    },
+    savedTitle: {
+      fontWeight: '700',
+      fontSize: 18,
+    },
+    savedDescription: {
+      color: theme.colors.textDim,
+      lineHeight: 20,
+    },
+    savedDismiss: {
+      borderRadius: theme.borderRadii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 6,
+      paddingHorizontal: 10,
+    },
+    savedDismissLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    savedStatsRow: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    savedStatTile: {
+      flex: 1,
+      gap: 4,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    savedStatLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    savedStatValue: {
+      fontWeight: '700',
+      fontSize: 16,
+      lineHeight: 20,
+    },
     sectionCard: {
       gap: 12,
     },
@@ -102,6 +163,44 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     contextRows: {
       gap: 10,
+    },
+    relatedList: {
+      gap: 10,
+    },
+    relatedCard: {
+      gap: 10,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      padding: 12,
+    },
+    relatedCardPressed: {
+      opacity: 0.96,
+      transform: [{ scale: 0.994 }],
+    },
+    relatedHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 12,
+    },
+    relatedCopy: {
+      flex: 1,
+      gap: 4,
+    },
+    relatedTitle: {
+      fontWeight: '700',
+    },
+    relatedMeta: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+    },
+    relatedSharedLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     audioCard: {
       gap: 8,

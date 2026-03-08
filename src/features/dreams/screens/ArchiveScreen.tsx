@@ -4,6 +4,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@shopify/restyle';
+import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { FormField } from '../../../components/ui/FormField';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
@@ -14,6 +15,7 @@ import { getDreamCopy, getDreamMoodLabels, type DreamCopy } from '../../../const
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { useI18n } from '../../../i18n/I18nProvider';
+import { AppLocale } from '../../../i18n/types';
 import { Theme } from '../../../theme/theme';
 import { Dream, Mood } from '../model/dream';
 import { getDreamDate } from '../model/dreamAnalytics';
@@ -28,6 +30,7 @@ import { createArchiveScreenStyles } from './ArchiveScreen.styles';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 
 type ArchiveFilter = 'all' | 'active' | 'archived' | 'starred';
+type ArchiveViewMode = 'comfortable' | 'compact';
 
 type ArchiveSection = {
   title: string;
@@ -41,6 +44,10 @@ type ArchiveCalendarCell = {
   dayNumber: number | null;
   count: number;
 };
+
+const archiveLayoutTransition = LinearTransition.springify()
+  .damping(18)
+  .stiffness(180);
 
 function moodLabel(mood: Dream['mood'] | undefined, moodLabels: Record<Mood, string>) {
   return mood ? moodLabels[mood] : undefined;
@@ -79,6 +86,93 @@ function getAvailableMonthKeys(dreams: Dream[]) {
 
 function getDistinctDayCount(dreams: Dream[]) {
   return new Set(dreams.map(dream => toLocalDateKey(getDreamDate(dream)))).size;
+}
+
+function getCountWord(
+  count: number,
+  locale: AppLocale,
+  forms: {
+    en: { one: string; other: string };
+    uk: { one: string; few: string; many: string };
+  },
+) {
+  if (locale === 'uk') {
+    const absolute = Math.abs(count);
+    const lastTwo = absolute % 100;
+    const last = absolute % 10;
+
+    if (lastTwo >= 11 && lastTwo <= 14) {
+      return forms.uk.many;
+    }
+
+    if (last === 1) {
+      return forms.uk.one;
+    }
+
+    if (last >= 2 && last <= 4) {
+      return forms.uk.few;
+    }
+
+    return forms.uk.many;
+  }
+
+  return Math.abs(count) === 1 ? forms.en.one : forms.en.other;
+}
+
+function formatArchiveEntryCount(count: number, locale: AppLocale) {
+  return `${count} ${getCountWord(count, locale, {
+    en: { one: 'entry', other: 'entries' },
+    uk: { one: 'запис', few: 'записи', many: 'записів' },
+  })}`;
+}
+
+function formatArchiveActiveDaysCount(count: number, locale: AppLocale) {
+  return `${count} ${getCountWord(count, locale, {
+    en: { one: 'active day', other: 'active days' },
+    uk: { one: 'активний день', few: 'активні дні', many: 'активних днів' },
+  })}`;
+}
+
+function getArchiveEmptyContent(
+  copy: DreamCopy,
+  filter: ArchiveFilter,
+  hasScopedDreams: boolean,
+  hasVisibleDreams: boolean,
+) {
+  if (!hasScopedDreams) {
+    switch (filter) {
+      case 'active':
+        return {
+          title: copy.archiveEmptyCurrentTitle,
+          subtitle: copy.archiveEmptyCurrentDescription,
+        };
+      case 'archived':
+        return {
+          title: copy.archiveEmptyArchivedTitle,
+          subtitle: copy.archiveEmptyArchivedDescription,
+        };
+      case 'starred':
+        return {
+          title: copy.archiveEmptyImportantTitle,
+          subtitle: copy.archiveEmptyImportantDescription,
+        };
+      case 'all':
+      default:
+        return {
+          title: copy.archiveEmptyTitle,
+          subtitle: copy.archiveEmptyDescription,
+        };
+    }
+  }
+
+  if (!hasVisibleDreams) {
+    return {
+      title: copy.archiveNoResultsTitle,
+      subtitle: copy.archiveNoResultsDescription,
+    };
+  }
+
+  return null;
 }
 
 function getArchivePills(dream: Dream, copy: DreamCopy, mood?: string) {
@@ -202,6 +296,7 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   moodLabels,
   navigation,
   styles,
+  viewMode,
 }: {
   dream: Dream;
   copy: DreamCopy;
@@ -209,10 +304,12 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   moodLabels: Record<Mood, string>;
   navigation: NativeStackNavigationProp<RootStackParamList>;
   styles: ReturnType<typeof createArchiveScreenStyles>;
+  viewMode: ArchiveViewMode;
 }) {
   const date = getDreamDate(dream);
   const mood = moodLabel(dream.mood, moodLabels);
-  const pills = getArchivePills(dream, copy, mood);
+  const isCompact = viewMode === 'compact';
+  const pills = getArchivePills(dream, copy, mood).slice(0, isCompact ? 2 : 4);
 
   return (
     <Pressable
@@ -222,11 +319,13 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
         pressed ? styles.listRowPressed : null,
       ]}
     >
-      <Card style={styles.listRowCard}>
+      <Card style={[styles.listRowCard, isCompact ? styles.listRowCardCompact : null]}>
         <View style={styles.rowTop}>
           <View style={styles.rowCopy}>
-            <Text style={styles.rowTitle}>{dream.title || copy.untitled}</Text>
-            <Text style={styles.rowMeta}>
+            <Text style={[styles.rowTitle, isCompact ? styles.rowTitleCompact : null]}>
+              {dream.title || copy.untitled}
+            </Text>
+            <Text style={[styles.rowMeta, isCompact ? styles.rowMetaCompact : null]}>
               {date.toLocaleDateString(localeKey, {
                 month: 'short',
                 day: 'numeric',
@@ -234,9 +333,11 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
               })}
             </Text>
           </View>
-          <View style={styles.dayChip}>
-            <Text style={styles.dayNumber}>{date.getDate()}</Text>
-            <Text style={styles.dayWeek}>
+          <View style={[styles.dayChip, isCompact ? styles.dayChipCompact : null]}>
+            <Text style={[styles.dayNumber, isCompact ? styles.dayNumberCompact : null]}>
+              {date.getDate()}
+            </Text>
+            <Text style={[styles.dayWeek, isCompact ? styles.dayWeekCompact : null]}>
               {date.toLocaleDateString(localeKey, {
                 weekday: 'short',
               })}
@@ -244,9 +345,11 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
           </View>
         </View>
 
-        <View style={styles.rowPreviewWrap}>
-          <View style={styles.rowPreviewAccent} />
-          <Text style={styles.rowPreview} numberOfLines={2}>
+        <View style={[styles.rowPreviewWrap, isCompact ? styles.rowPreviewWrapCompact : null]}>
+          <Text
+            style={[styles.rowPreview, isCompact ? styles.rowPreviewCompact : null]}
+            numberOfLines={isCompact ? 1 : 2}
+          >
             {formatArchivePreview(dream, copy)}
           </Text>
         </View>
@@ -280,6 +383,7 @@ export default function ArchiveScreen() {
   const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
   const [isCalendarExpanded, setIsCalendarExpanded] = React.useState(false);
+  const [viewMode, setViewMode] = React.useState<ArchiveViewMode>('comfortable');
 
   useFocusEffect(
     React.useCallback(() => {
@@ -394,6 +498,20 @@ export default function ArchiveScreen() {
     { key: 'starred' as const, label: copy.archiveFilterStarred },
     { key: 'archived' as const, label: copy.archiveFilterArchived },
   ];
+  const browseModes = [
+    { key: 'comfortable' as const, label: copy.archiveBrowseComfortable },
+    { key: 'compact' as const, label: copy.archiveBrowseCompact },
+  ];
+  const hasScopedDreams = statusScopedDreams.length > 0;
+  const hasVisibleDreams = visibleDreams.length > 0;
+  const archiveEmptyContent = getArchiveEmptyContent(
+    copy,
+    filter,
+    hasScopedDreams,
+    hasVisibleDreams,
+  );
+  const hasResettableView =
+    filter !== 'all' || Boolean(searchQuery.trim()) || Boolean(selectedDate);
 
   const renderArchiveItem = React.useCallback(
     ({ item }: { item: Dream }) => (
@@ -404,9 +522,10 @@ export default function ArchiveScreen() {
         moodLabels={moodLabels}
         navigation={navigation}
         styles={styles}
+        viewMode={viewMode}
       />
     ),
-    [copy, localeKey, moodLabels, navigation, styles],
+    [copy, localeKey, moodLabels, navigation, styles, viewMode],
   );
 
   function moveMonth(direction: 'older' | 'newer') {
@@ -421,6 +540,12 @@ export default function ArchiveScreen() {
     }
 
     setSelectedMonthKey(nextMonthKey);
+    setSelectedDate(null);
+  }
+
+  function resetArchiveView() {
+    setFilter('all');
+    setSearchQuery('');
     setSelectedDate(null);
   }
 
@@ -457,196 +582,233 @@ export default function ArchiveScreen() {
         ]}
         ListHeaderComponent={
           <View style={styles.headerBlock}>
-            <View style={styles.titleBlock}>
+            <Animated.View
+              entering={FadeInDown.duration(240)}
+              layout={archiveLayoutTransition}
+              style={styles.titleBlock}
+            >
               <SectionHeader title={copy.archiveTitle} subtitle={copy.archiveSubtitle} large />
-            </View>
+            </Animated.View>
 
-            <Card style={styles.controlsCard}>
-              <View style={styles.filtersRow}>
-                {archiveFilters.map(option => {
-                  const active = filter === option.key;
-                  return (
+            {selectedMonthKey ? (
+              <Animated.View
+                entering={FadeInDown.delay(40).duration(260)}
+                layout={archiveLayoutTransition}
+              >
+                <Card style={styles.toolbarCard}>
+                  <View style={styles.monthToolbar}>
                     <Pressable
-                      key={option.key}
-                      onPress={() => {
-                        setFilter(option.key);
-                        setSelectedDate(null);
-                      }}
-                      style={[styles.filterChip, active ? styles.filterChipActive : null]}
+                      style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
+                      disabled={!canGoOlder}
+                      onPress={() => moveMonth('older')}
                     >
                       <Text
                         style={[
-                          styles.filterChipText,
-                          active ? styles.filterChipTextActive : null,
+                          styles.monthPagerButtonText,
+                          !canGoOlder ? styles.monthPagerButtonTextDisabled : null,
                         ]}
                       >
-                        {option.label}
+                        {copy.archivePreviousMonth}
                       </Text>
                     </Pressable>
-                  );
-                })}
-              </View>
-              <FormField
-                placeholder={copy.archiveSearchPlaceholder}
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-                autoCapitalize="none"
-                autoCorrect={false}
-                helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
-              />
-            </Card>
-
-            {selectedMonthKey ? (
-              <Card style={styles.calendarCard}>
-                <View style={styles.calendarTopRow}>
-                  <View style={styles.calendarCopy}>
-                    <Text style={styles.calendarTitle}>{copy.archiveCalendarTitle}</Text>
-                    <Text style={styles.calendarSubtitle}>{copy.archiveCalendarSubtitle}</Text>
-                  </View>
-                  <Pressable
-                    style={styles.calendarToggleButton}
-                    onPress={() => setIsCalendarExpanded(current => !current)}
-                  >
-                    <Text style={styles.calendarToggleButtonText}>
-                      {isCalendarExpanded
-                        ? copy.archiveCalendarHideGrid
-                        : copy.archiveCalendarShowGrid}
-                    </Text>
-                  </Pressable>
-                </View>
-
-                <View style={styles.monthToolbar}>
-                  <Pressable
-                    style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
-                    disabled={!canGoOlder}
-                    onPress={() => moveMonth('older')}
-                  >
-                    <Text
-                      style={[
-                        styles.monthPagerButtonText,
-                        !canGoOlder ? styles.monthPagerButtonTextDisabled : null,
-                      ]}
-                    >
-                      {copy.archivePreviousMonth}
-                    </Text>
-                  </Pressable>
-                  <View style={styles.monthLabelBlock}>
-                    <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
-                    <View style={styles.monthMetaRow}>
-                      <View style={styles.monthMetaChip}>
-                        <Text style={styles.monthMetaChipText}>
-                          {`${monthEntryCount} ${copy.archiveMonthEntriesLabel}`}
-                        </Text>
-                      </View>
-                      <View style={styles.monthMetaChip}>
-                        <Text style={styles.monthMetaChipText}>
-                          {`${monthActiveDays} ${copy.archiveMonthActiveDaysLabel}`}
-                        </Text>
+                    <View style={styles.monthLabelBlock}>
+                      <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
+                      <View style={styles.monthMetaRow}>
+                        <View style={styles.monthMetaChip}>
+                          <Text style={styles.monthMetaChipText}>
+                            {formatArchiveEntryCount(monthEntryCount, locale)}
+                          </Text>
+                        </View>
+                        <View style={styles.monthMetaChip}>
+                          <Text style={styles.monthMetaChipText}>
+                            {formatArchiveActiveDaysCount(monthActiveDays, locale)}
+                          </Text>
+                        </View>
                       </View>
                     </View>
-                  </View>
-                  <Pressable
-                    style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
-                    disabled={!canGoNewer}
-                    onPress={() => moveMonth('newer')}
-                  >
-                    <Text
-                      style={[
-                        styles.monthPagerButtonText,
-                        !canGoNewer ? styles.monthPagerButtonTextDisabled : null,
-                      ]}
+                    <Pressable
+                      style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
+                      disabled={!canGoNewer}
+                      onPress={() => moveMonth('newer')}
                     >
-                      {copy.archiveNextMonth}
-                    </Text>
-                  </Pressable>
-                </View>
+                      <Text
+                        style={[
+                          styles.monthPagerButtonText,
+                          !canGoNewer ? styles.monthPagerButtonTextDisabled : null,
+                        ]}
+                      >
+                        {copy.archiveNextMonth}
+                      </Text>
+                    </Pressable>
+                  </View>
 
-                {isCalendarExpanded ? (
-                  <>
-                    <View style={styles.weekdayRow}>
-                      {weekdayLabels.map(label => (
-                        <Text key={label} style={styles.weekdayLabel}>
-                          {label}
+                  <FormField
+                    placeholder={copy.archiveSearchPlaceholder}
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
+                  />
+
+                  <View style={styles.filtersRow}>
+                    {archiveFilters.map(option => {
+                      const active = filter === option.key;
+                      return (
+                        <Pressable
+                          key={option.key}
+                          onPress={() => {
+                            setFilter(option.key);
+                            setSelectedDate(null);
+                          }}
+                          style={[styles.filterChip, active ? styles.filterChipActive : null]}
+                        >
+                          <Text
+                            style={[
+                              styles.filterChipText,
+                              active ? styles.filterChipTextActive : null,
+                            ]}
+                          >
+                            {option.label}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+
+                  <View style={styles.utilityRow}>
+                    <View style={styles.utilityLeadingRow}>
+                      {selectedDate ? (
+                        <View style={styles.controlsMetaChip}>
+                          <Text style={styles.controlsMetaChipText}>
+                            {formatSelectedDate(selectedDate, localeKey)}
+                          </Text>
+                        </View>
+                      ) : null}
+
+                      <Pressable
+                        style={styles.controlsActionChip}
+                        onPress={() => setIsCalendarExpanded(current => !current)}
+                      >
+                        <Text style={styles.controlsActionChipText}>
+                          {isCalendarExpanded
+                            ? copy.archiveCalendarHideGrid
+                            : copy.archiveCalendarShowGrid}
                         </Text>
-                      ))}
+                      </Pressable>
+
+                      {hasResettableView ? (
+                        <Pressable style={styles.controlsActionChip} onPress={resetArchiveView}>
+                          <Text style={styles.controlsActionChipText}>{copy.archiveResetView}</Text>
+                        </Pressable>
+                      ) : null}
                     </View>
 
-                    <View style={styles.calendarRows}>
-                      {calendarRows.map((row, rowIndex) => (
-                        <View key={`calendar-row-${rowIndex}`} style={styles.calendarWeekRow}>
-                          {row.map(cell => {
-                            const isSelected = cell.date === selectedDate;
-                            const isInteractive = Boolean(cell.date && cell.count > 0);
+                    <View style={styles.utilityTrailingRow}>
+                      {browseModes.map(option => {
+                        const active = viewMode === option.key;
 
-                            return (
-                              <Pressable
-                                key={cell.key}
-                                style={[
-                                  styles.calendarCell,
-                                  !cell.date ? styles.calendarCellPlaceholder : null,
-                                  isSelected ? styles.calendarCellSelected : null,
-                                  isInteractive ? styles.calendarCellActive : null,
-                                ]}
-                                disabled={!isInteractive}
-                                onPress={() =>
-                                  setSelectedDate(current =>
-                                    current === cell.date ? null : cell.date,
-                                  )
-                                }
-                              >
-                                {cell.dayNumber ? (
-                                  <>
-                                    <Text
-                                      style={[
-                                        styles.calendarCellDay,
-                                        isSelected ? styles.calendarCellDaySelected : null,
-                                        cell.count === 0 ? styles.calendarCellDayMuted : null,
-                                      ]}
-                                    >
-                                      {cell.dayNumber}
-                                    </Text>
-                                    {cell.count > 0 ? (
+                        return (
+                          <Pressable
+                            key={option.key}
+                            style={[styles.modeChip, active ? styles.modeChipActive : null]}
+                            onPress={() => setViewMode(option.key)}
+                          >
+                            <Text
+                              style={[
+                                styles.modeChipText,
+                                active ? styles.modeChipTextActive : null,
+                              ]}
+                            >
+                              {option.label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+
+                  {isCalendarExpanded ? (
+                    <Animated.View
+                      entering={FadeInDown.duration(220)}
+                      exiting={FadeOutUp.duration(180)}
+                      layout={archiveLayoutTransition}
+                      style={styles.calendarDaysWrap}
+                    >
+                      <View style={styles.weekdayRow}>
+                        {weekdayLabels.map(label => (
+                          <Text key={label} style={styles.weekdayLabel}>
+                            {label}
+                          </Text>
+                        ))}
+                      </View>
+
+                      <View style={styles.calendarRows}>
+                        {calendarRows.map((row, rowIndex) => (
+                          <View key={`calendar-row-${rowIndex}`} style={styles.calendarWeekRow}>
+                            {row.map(cell => {
+                              const isSelected = cell.date === selectedDate;
+                              const isInteractive = Boolean(cell.date && cell.count > 0);
+
+                              return (
+                                <Pressable
+                                  key={cell.key}
+                                  style={[
+                                    styles.calendarCell,
+                                    !cell.date ? styles.calendarCellPlaceholder : null,
+                                    isSelected ? styles.calendarCellSelected : null,
+                                    isInteractive ? styles.calendarCellActive : null,
+                                  ]}
+                                  disabled={!isInteractive}
+                                  onPress={() =>
+                                    setSelectedDate(current =>
+                                      current === cell.date ? null : cell.date,
+                                    )
+                                  }
+                                >
+                                  {cell.dayNumber ? (
+                                    <>
                                       <Text
                                         style={[
-                                          styles.calendarCellCount,
-                                          isSelected ? styles.calendarCellCountSelected : null,
+                                          styles.calendarCellDay,
+                                          isSelected ? styles.calendarCellDaySelected : null,
+                                          cell.count === 0 ? styles.calendarCellDayMuted : null,
                                         ]}
                                       >
-                                        {cell.count}
+                                        {cell.dayNumber}
                                       </Text>
-                                    ) : null}
-                                  </>
-                                ) : null}
-                              </Pressable>
-                            );
-                          })}
-                        </View>
-                      ))}
-                    </View>
-                  </>
-                ) : null}
-
-                {selectedDate ? (
-                  <View style={styles.selectedDateRow}>
-                    <View style={styles.selectedDateChip}>
-                      <Text style={styles.selectedDateText}>
-                        {`${copy.archiveSelectedDatePrefix}: ${formatSelectedDate(selectedDate, localeKey)}`}
-                      </Text>
-                    </View>
-                    <Pressable style={styles.clearDateChip} onPress={() => setSelectedDate(null)}>
-                      <Text style={styles.clearDateChipText}>{copy.archiveAllDates}</Text>
-                    </Pressable>
-                  </View>
-                ) : null}
-              </Card>
+                                      {cell.count > 0 ? (
+                                        <Text
+                                          style={[
+                                            styles.calendarCellCount,
+                                            isSelected ? styles.calendarCellCountSelected : null,
+                                          ]}
+                                        >
+                                          {cell.count}
+                                        </Text>
+                                      ) : null}
+                                    </>
+                                  ) : null}
+                                </Pressable>
+                              );
+                            })}
+                          </View>
+                        ))}
+                      </View>
+                    </Animated.View>
+                  ) : null}
+                </Card>
+              </Animated.View>
             ) : null}
 
-            {!statusScopedDreams.length || !selectedMonthKey || !visibleDreams.length ? (
+            {archiveEmptyContent || !selectedMonthKey ? (
               <View style={styles.emptyWrap}>
                 <ScreenStateCard
                   variant="empty"
-                  title={copy.homeSearchEmptyTitle}
-                  subtitle={copy.homeSearchEmptyDescription}
+                  title={archiveEmptyContent?.title ?? copy.archiveNoResultsTitle}
+                  subtitle={archiveEmptyContent?.subtitle ?? copy.archiveNoResultsDescription}
+                  actionLabel={hasResettableView ? copy.archiveResetView : undefined}
+                  onAction={hasResettableView ? resetArchiveView : undefined}
                 />
               </View>
             ) : null}
@@ -656,7 +818,6 @@ export default function ArchiveScreen() {
           section.data.length ? (
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>{section.title}</Text>
-              <Text style={styles.sectionMeta}>{section.data.length}</Text>
             </View>
           ) : null
         }

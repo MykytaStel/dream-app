@@ -434,6 +434,24 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 16,
     },
+    matchReasonsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    matchReasonPill: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+      }),
+      borderColor: theme.colors.accent,
+    },
+    matchReasonPillText: {
+      color: theme.colors.text,
+      fontSize: 10,
+      fontWeight: '700',
+    },
     dayChip: {
       ...createSoftTile(theme, {
         tone: 'surface',

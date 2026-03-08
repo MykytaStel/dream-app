@@ -10,6 +10,7 @@ export type HomeTranscriptFilter =
   | 'edited-transcript';
 export type HomeSortOrder = 'newest' | 'oldest';
 export type HomeDateRangeFilter = 'all' | '7d' | '30d' | '90d';
+export type DreamSearchMatchReason = 'title' | 'notes' | 'transcript' | 'tag' | 'context';
 
 export type HomeTimelineFilters = {
   archive: HomeArchiveFilter;
@@ -34,6 +35,51 @@ export const DEFAULT_HOME_TIMELINE_FILTERS: HomeTimelineFilters = {
   dateRange: 'all',
   sortOrder: 'newest',
 };
+
+export function normalizeHomeTimelineFilters(
+  filters: Partial<HomeTimelineFilters> | HomeTimelineFilters,
+): HomeTimelineFilters {
+  const uniqueTags = Array.from(
+    new Set((filters.tags ?? []).map(tag => tag.trim()).filter(Boolean)),
+  ).sort((a, b) => a.localeCompare(b));
+
+  return {
+    archive:
+      filters.archive === 'active' || filters.archive === 'archived' ? filters.archive : 'all',
+    starredOnly: Boolean(filters.starredOnly),
+    searchQuery: filters.searchQuery?.trim() ?? '',
+    mood:
+      filters.mood === 'positive' ||
+      filters.mood === 'neutral' ||
+      filters.mood === 'negative'
+        ? filters.mood
+        : 'all',
+    tags: uniqueTags,
+    entryType:
+      filters.entryType === 'text' ||
+      filters.entryType === 'audio' ||
+      filters.entryType === 'mixed'
+        ? filters.entryType
+        : 'all',
+    transcript:
+      filters.transcript === 'with-transcript' ||
+      filters.transcript === 'audio-only' ||
+      filters.transcript === 'edited-transcript'
+        ? filters.transcript
+        : 'all',
+    dateRange:
+      filters.dateRange === '7d' ||
+      filters.dateRange === '30d' ||
+      filters.dateRange === '90d'
+        ? filters.dateRange
+        : 'all',
+    sortOrder: filters.sortOrder === 'oldest' ? 'oldest' : 'newest',
+  };
+}
+
+export function getHomeTimelineFiltersSignature(filters: HomeTimelineFilters) {
+  return JSON.stringify(normalizeHomeTimelineFilters(filters));
+}
 
 function toLocalDateString(date: Date) {
   const offset = date.getTimezoneOffset() * 60_000;
@@ -82,21 +128,64 @@ export function matchesDreamSearch(dream: Dream, query: string) {
     return true;
   }
 
-  const searchableParts = [
-    dream.title,
-    dream.text,
-    dream.transcript,
-    dream.sleepContext?.importantEvents,
-    dream.sleepContext?.medications,
-    dream.sleepContext?.healthNotes,
-    ...dream.tags,
-  ];
+  return getDreamSearchMatchReasons(dream, normalizedQuery).length > 0;
+}
 
-  return searchableParts.some(part => part?.toLowerCase().includes(normalizedQuery));
+export function getDreamSearchMatchReasons(
+  dream: Dream,
+  query: string,
+): DreamSearchMatchReason[] {
+  const normalizedQuery = query.trim().toLowerCase();
+  if (!normalizedQuery) {
+    return [];
+  }
+
+  const reasons: DreamSearchMatchReason[] = [];
+  const hasMatch = (value?: string) => value?.toLowerCase().includes(normalizedQuery);
+
+  if (hasMatch(dream.title)) {
+    reasons.push('title');
+  }
+
+  if (hasMatch(dream.text)) {
+    reasons.push('notes');
+  }
+
+  if (hasMatch(dream.transcript)) {
+    reasons.push('transcript');
+  }
+
+  if (dream.tags.some(tag => hasMatch(tag))) {
+    reasons.push('tag');
+  }
+
+  if (
+    hasMatch(dream.sleepContext?.importantEvents) ||
+    hasMatch(dream.sleepContext?.medications) ||
+    hasMatch(dream.sleepContext?.healthNotes)
+  ) {
+    reasons.push('context');
+  }
+
+  return reasons;
+}
+
+function normalizeSearchValue(value?: string) {
+  return value?.trim().toLowerCase() ?? '';
+}
+
+function isExactSearchMatch(value: string | undefined, query: string) {
+  const normalizedValue = normalizeSearchValue(value);
+  return Boolean(normalizedValue) && normalizedValue === query;
+}
+
+function startsWithSearchQuery(value: string | undefined, query: string) {
+  const normalizedValue = normalizeSearchValue(value);
+  return Boolean(normalizedValue) && normalizedValue.startsWith(query);
 }
 
 function countQueryMatches(value: string | undefined, query: string) {
-  const haystack = value?.trim().toLowerCase();
+  const haystack = normalizeSearchValue(value);
   if (!haystack || !query) {
     return 0;
   }
@@ -112,6 +201,40 @@ function countQueryMatches(value: string | undefined, query: string) {
   return matches;
 }
 
+function getFieldSearchScore(
+  value: string | undefined,
+  query: string,
+  weights: { exact: number; prefix: number; match: number },
+) {
+  if (!query) {
+    return 0;
+  }
+
+  let score = countQueryMatches(value, query) * weights.match;
+
+  if (isExactSearchMatch(value, query)) {
+    score += weights.exact;
+  } else if (startsWithSearchQuery(value, query)) {
+    score += weights.prefix;
+  }
+
+  return score;
+}
+
+function getTagSearchScore(tags: string[], query: string) {
+  return tags.reduce((score, tag) => {
+    if (isExactSearchMatch(tag, query)) {
+      return score + 54 + countQueryMatches(tag, query) * 14;
+    }
+
+    if (startsWithSearchQuery(tag, query)) {
+      return score + 32 + countQueryMatches(tag, query) * 14;
+    }
+
+    return score + countQueryMatches(tag, query) * 14;
+  }, 0);
+}
+
 export function getDreamSearchScore(dream: Dream, query: string) {
   const normalizedQuery = query.trim().toLowerCase();
   if (!normalizedQuery) {
@@ -119,13 +242,37 @@ export function getDreamSearchScore(dream: Dream, query: string) {
   }
 
   return (
-    countQueryMatches(dream.title, normalizedQuery) * 6 +
-    countQueryMatches(dream.text, normalizedQuery) * 5 +
-    countQueryMatches(dream.transcript, normalizedQuery) * 4 +
-    countQueryMatches(dream.sleepContext?.importantEvents, normalizedQuery) * 3 +
-    countQueryMatches(dream.sleepContext?.medications, normalizedQuery) * 2 +
-    countQueryMatches(dream.sleepContext?.healthNotes, normalizedQuery) * 2 +
-    dream.tags.reduce((score, tag) => score + countQueryMatches(tag, normalizedQuery) * 4, 0)
+    getFieldSearchScore(dream.title, normalizedQuery, {
+      exact: 72,
+      prefix: 40,
+      match: 18,
+    }) +
+    getFieldSearchScore(dream.text, normalizedQuery, {
+      exact: 44,
+      prefix: 22,
+      match: 10,
+    }) +
+    getFieldSearchScore(dream.transcript, normalizedQuery, {
+      exact: 36,
+      prefix: 16,
+      match: 8,
+    }) +
+    getFieldSearchScore(dream.sleepContext?.importantEvents, normalizedQuery, {
+      exact: 20,
+      prefix: 10,
+      match: 4,
+    }) +
+    getFieldSearchScore(dream.sleepContext?.medications, normalizedQuery, {
+      exact: 16,
+      prefix: 8,
+      match: 3,
+    }) +
+    getFieldSearchScore(dream.sleepContext?.healthNotes, normalizedQuery, {
+      exact: 16,
+      prefix: 8,
+      match: 3,
+    }) +
+    getTagSearchScore(dream.tags, normalizedQuery)
   );
 }
 

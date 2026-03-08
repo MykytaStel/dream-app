@@ -1,12 +1,12 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, ScrollView, View } from 'react-native';
 import { Card } from '../../../../components/ui/Card';
 import { FormField } from '../../../../components/ui/FormField';
 import { SectionHeader } from '../../../../components/ui/SectionHeader';
-import { ScreenStateCard } from '../ScreenStateCard';
 import { TagChip } from '../../../../components/ui/TagChip';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
+import { type HomeSearchPreset } from '../../services/homeSearchPresetService';
 import {
   type HomeArchiveFilter,
   type HomeTimelineFilters,
@@ -14,6 +14,7 @@ import {
 import { type PatternDetailKind } from '../../../../app/navigation/routes';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 import { type HomeFilterChip, type HomeOption } from './homeTypes';
+import { HomeSearchPresetChip } from './HomeSearchPresetChip';
 
 type HomeListHeaderProps = {
   copy: DreamCopy;
@@ -26,6 +27,11 @@ type HomeListHeaderProps = {
   displayedDreamCount: number;
   searchResultsLabel: string;
   isSearchPending: boolean;
+  hasSearchQuery: boolean;
+  hasNonSearchRefinements: boolean;
+  savedSearchPresets: HomeSearchPreset[];
+  activeSearchPresetId: string | null;
+  canSaveSearchPreset: boolean;
   spotlightPattern: string;
   spotlightPatternKind: PatternDetailKind | null;
   spotlightCountLabel: string;
@@ -36,6 +42,10 @@ type HomeListHeaderProps = {
   onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
   onOpenFilterSheet: () => void;
   onClearFilters: () => void;
+  onClearSearch: () => void;
+  onSaveSearchPreset: () => void;
+  onApplySearchPreset: (preset: HomeSearchPreset) => void;
+  onDeleteSearchPreset: (preset: HomeSearchPreset) => void;
   updateTimelineFilters: (updater: (current: HomeTimelineFilters) => HomeTimelineFilters) => void;
 };
 
@@ -50,6 +60,11 @@ export function HomeListHeader({
   displayedDreamCount,
   searchResultsLabel,
   isSearchPending,
+  hasSearchQuery,
+  hasNonSearchRefinements,
+  savedSearchPresets,
+  activeSearchPresetId,
+  canSaveSearchPreset,
   spotlightPattern,
   spotlightPatternKind,
   spotlightCountLabel,
@@ -60,8 +75,30 @@ export function HomeListHeader({
   onOpenPatternDetail,
   onOpenFilterSheet,
   onClearFilters,
+  onClearSearch,
+  onSaveSearchPreset,
+  onApplySearchPreset,
+  onDeleteSearchPreset,
   updateTimelineFilters,
 }: HomeListHeaderProps) {
+  const orderedSearchPresets = React.useMemo(() => {
+    if (!activeSearchPresetId) {
+      return savedSearchPresets;
+    }
+
+    return [...savedSearchPresets].sort((a, b) => {
+      if (a.id === activeSearchPresetId) {
+        return -1;
+      }
+
+      if (b.id === activeSearchPresetId) {
+        return 1;
+      }
+
+      return b.createdAt - a.createdAt;
+    });
+  }, [activeSearchPresetId, savedSearchPresets]);
+
   return (
     <View style={styles.listHeaderContent}>
       <Card style={styles.spotlightCard}>
@@ -190,6 +227,37 @@ export function HomeListHeader({
           </View>
         </View>
 
+        {savedSearchPresets.length || canSaveSearchPreset ? (
+          <>
+            <View style={styles.searchPresetHeaderRow}>
+              <Text style={styles.searchPresetLabel}>{copy.homeSavedSearchesLabel}</Text>
+              {canSaveSearchPreset ? (
+                <Pressable style={styles.searchPresetSaveButton} onPress={onSaveSearchPreset}>
+                  <Text style={styles.searchPresetSaveButtonText}>{copy.homeSaveSearchPreset}</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            {orderedSearchPresets.length ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.searchPresetRow}
+              >
+                {orderedSearchPresets.map(preset => (
+                  <HomeSearchPresetChip
+                    key={preset.id}
+                    label={preset.label}
+                    active={activeSearchPresetId === preset.id}
+                    removeLabel={copy.homeSearchPresetRemove}
+                    onPress={() => onApplySearchPreset(preset)}
+                    onRemove={() => onDeleteSearchPreset(preset)}
+                  />
+                ))}
+              </ScrollView>
+            ) : null}
+          </>
+        ) : null}
+
         {activeFilterChips.length ? (
           <View style={styles.activeFiltersRow}>
             {activeFilterChips.map(chip => (
@@ -220,11 +288,27 @@ export function HomeListHeader({
       ) : null}
 
       {archiveScopedCount > 0 && !visibleDreamCount ? (
-        <ScreenStateCard
-          variant="empty"
-          title={copy.homeSearchEmptyTitle}
-          subtitle={copy.homeSearchEmptyDescription}
-        />
+        <Card style={styles.emptyCard}>
+          <SectionHeader
+            title={copy.homeSearchEmptyTitle}
+            subtitle={copy.homeSearchEmptyDescription}
+          />
+          <View style={styles.emptyActionsRow}>
+            {hasSearchQuery ? (
+              <Pressable style={styles.inlineActionButton} onPress={onClearSearch}>
+                <Text style={styles.inlineActionButtonText}>{copy.homeClearSearch}</Text>
+              </Pressable>
+            ) : null}
+            {hasNonSearchRefinements ? (
+              <Pressable style={styles.inlineActionButton} onPress={onClearFilters}>
+                <Text style={styles.inlineActionButtonText}>{copy.homeClearFilters}</Text>
+              </Pressable>
+            ) : null}
+            <Pressable style={styles.inlineActionButton} onPress={onOpenFilterSheet}>
+              <Text style={styles.inlineActionButtonText}>{copy.homeShowFilters}</Text>
+            </Pressable>
+          </View>
+        </Card>
       ) : null}
 
       {visibleDreamCount > displayedDreamCount ? (

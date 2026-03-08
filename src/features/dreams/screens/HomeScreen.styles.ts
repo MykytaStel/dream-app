@@ -435,6 +435,43 @@ export function createHomeScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 8,
     },
+    emptyActionsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 8,
+    },
+    searchPresetHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    searchPresetLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    searchPresetSaveButton: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 5,
+        paddingHorizontal: 9,
+      }),
+    },
+    searchPresetSaveButtonText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    searchPresetRow: {
+      flexDirection: 'row',
+      gap: 8,
+      paddingRight: 4,
+    },
     filterGroup: {
       gap: 8,
     },
@@ -650,6 +687,24 @@ export function createHomeScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 6,
       flex: 1,
+    },
+    matchReasonsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    matchReasonPill: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+      }),
+      borderColor: theme.colors.accent,
+    },
+    matchReasonPillText: {
+      color: theme.colors.text,
+      fontSize: 10,
+      fontWeight: '700',
     },
     statePill: {
       borderRadius: theme.borderRadii.pill,

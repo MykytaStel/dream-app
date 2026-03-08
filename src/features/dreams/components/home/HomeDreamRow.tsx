@@ -13,7 +13,12 @@ import { Theme } from '../../../../theme/theme';
 import { getDreamLayout } from '../../constants/layout';
 import { Dream, Mood } from '../../model/dream';
 import { getDreamDate } from '../../model/dreamAnalytics';
-import { isDreamArchived, isDreamStarred } from '../../model/homeTimeline';
+import {
+  getDreamSearchMatchReasons,
+  isDreamArchived,
+  isDreamStarred,
+  type DreamSearchMatchReason,
+} from '../../model/homeTimeline';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 
 function formatPreview(dream: Dream, copy: DreamCopy) {
@@ -107,6 +112,7 @@ function SwipeActionButton({
 type HomeDreamRowProps = {
   dream: Dream;
   copy: DreamCopy;
+  searchQuery?: string;
   moodLabels: Record<Mood, string>;
   theme: Theme;
   styles: ReturnType<typeof createHomeScreenStyles>;
@@ -127,6 +133,7 @@ type HomeDreamRowProps = {
 export const HomeDreamRow = React.memo(function HomeDreamRow({
   dream,
   copy,
+  searchQuery,
   moodLabels,
   theme,
   styles,
@@ -151,6 +158,27 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
   const visibleTags = dream.tags.slice(0, 2);
   const hiddenTagCount = Math.max(0, dream.tags.length - visibleTags.length);
   const accentColor = starred ? theme.colors.accent : moodColor(theme, dream.mood);
+  const matchReasonLabels = React.useMemo(() => {
+    const labelMap: Record<DreamSearchMatchReason, string> = {
+      title: copy.homeSearchMatchTitle,
+      notes: copy.homeSearchMatchNotes,
+      transcript: copy.homeSearchMatchTranscript,
+      tag: copy.homeSearchMatchTag,
+      context: copy.homeSearchMatchContext,
+    };
+
+    return getDreamSearchMatchReasons(dream, searchQuery ?? '')
+      .slice(0, 3)
+      .map(reason => labelMap[reason]);
+  }, [
+    copy.homeSearchMatchContext,
+    copy.homeSearchMatchNotes,
+    copy.homeSearchMatchTag,
+    copy.homeSearchMatchTitle,
+    copy.homeSearchMatchTranscript,
+    dream,
+    searchQuery,
+  ]);
 
   const renderRightActions = React.useCallback(
     (_: unknown, __: unknown, methods: SwipeableMethods) => {
@@ -300,6 +328,16 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
               {formatPreview(dream, copy)}
             </Text>
           </View>
+
+          {matchReasonLabels.length ? (
+            <View style={styles.matchReasonsRow}>
+              {matchReasonLabels.map(label => (
+                <View key={`${dream.id}-match-${label}`} style={styles.matchReasonPill}>
+                  <Text style={styles.matchReasonPillText}>{label}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
 
           <View style={styles.dreamFooterRow}>
             {stateLabels.length ? (

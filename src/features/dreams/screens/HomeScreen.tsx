@@ -45,6 +45,7 @@ import {
 import {
   applyHomeTimelineFilters,
   DEFAULT_HOME_TIMELINE_FILTERS,
+  getHomeTimelineFiltersSignature,
   getAvailableTimelineTags,
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
@@ -65,6 +66,12 @@ import {
   unstarDream,
 } from '../repository/dreamsRepository';
 import { getDreamDraft, type DreamDraft } from '../services/dreamDraftService';
+import {
+  getHomeSearchPresets,
+  removeHomeSearchPreset,
+  saveHomeSearchPreset,
+  type HomeSearchPreset,
+} from '../services/homeSearchPresetService';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import {
   getRecurringReflectionSignals,
@@ -103,6 +110,15 @@ function moodLabel(mood: Dream['mood'] | undefined, moodLabels: Record<Mood, str
   return mood ? moodLabels[mood] : undefined;
 }
 
+function clipPresetLabel(value: string, maxLength = 28) {
+  const trimmed = value.trim();
+  if (trimmed.length <= maxLength) {
+    return trimmed;
+  }
+
+  return `${trimmed.slice(0, maxLength - 3)}...`;
+}
+
 export default function HomeScreen() {
   const t = useTheme<Theme>();
   const insets = useSafeAreaInsets();
@@ -120,6 +136,9 @@ export default function HomeScreen() {
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [timelineFilters, setTimelineFilters] = React.useState<HomeTimelineFilters>(
     DEFAULT_HOME_TIMELINE_FILTERS,
+  );
+  const [savedSearchPresets, setSavedSearchPresets] = React.useState<HomeSearchPreset[]>(
+    () => getHomeSearchPresets(),
   );
   const [isFilterSheetOpen, setIsFilterSheetOpen] = React.useState(false);
   const styles = createHomeScreenStyles(t);
@@ -172,6 +191,58 @@ export default function HomeScreen() {
       { key: 'oldest', label: copy.homeSortFilterOldest },
     ],
     [copy],
+  );
+  const buildSearchPresetLabel = React.useCallback(
+    (filters: HomeTimelineFilters) => {
+      const searchLabel = filters.searchQuery.trim();
+      if (searchLabel) {
+        return clipPresetLabel(searchLabel);
+      }
+
+      if (filters.tags.length > 0) {
+        const [firstTag, ...restTags] = filters.tags;
+        return clipPresetLabel(restTags.length > 0 ? `${firstTag} +${restTags.length}` : firstTag);
+      }
+
+      if (filters.starredOnly) {
+        return copy.homeFilterStarred;
+      }
+
+      if (filters.mood !== 'all') {
+        return moodLabel(filters.mood, moodLabels) ?? copy.homeSearchPresetFallback;
+      }
+
+      if (filters.transcript !== 'all') {
+        return (
+          transcriptFilters.find(filter => filter.key === filters.transcript)?.label ??
+          copy.homeSearchPresetFallback
+        );
+      }
+
+      if (filters.entryType !== 'all') {
+        return (
+          typeFilters.find(filter => filter.key === filters.entryType)?.label ??
+          copy.homeSearchPresetFallback
+        );
+      }
+
+      if (filters.dateRange !== 'all') {
+        return (
+          dateRangeFilters.find(filter => filter.key === filters.dateRange)?.label ??
+          copy.homeSearchPresetFallback
+        );
+      }
+
+      if (filters.archive !== 'all') {
+        return (
+          homeFilters.find(filter => filter.key === filters.archive)?.label ??
+          copy.homeSearchPresetFallback
+        );
+      }
+
+      return copy.homeSearchPresetFallback;
+    },
+    [copy.homeFilterStarred, copy.homeSearchPresetFallback, dateRangeFilters, homeFilters, moodLabels, transcriptFilters, typeFilters],
   );
   const activeDreams = React.useMemo(
     () => dreams.filter(dream => !isDreamArchived(dream)),
@@ -342,9 +413,32 @@ export default function HomeScreen() {
 
     return chips;
   }, [copy.homeFilterStarred, copy.homeMoodFilterAll, dateRangeFilters, moodLabels, sortOptions, timelineFilters, transcriptFilters, typeFilters]);
+  const hasSearchQuery = Boolean(timelineFilters.searchQuery.trim());
+  const hasNonSearchRefinements = React.useMemo(
+    () => activeFilterChips.some(chip => chip.key !== 'search'),
+    [activeFilterChips],
+  );
   const heroInsetTop = insets.top + t.spacing.sm;
   const heroExpandedHeight = 214;
   const heroCollapsedHeight = 104;
+  const currentFilterSignature = React.useMemo(
+    () => getHomeTimelineFiltersSignature(timelineFilters),
+    [timelineFilters],
+  );
+  const activeSearchPresetId = React.useMemo(
+    () =>
+      savedSearchPresets.find(
+        preset => getHomeTimelineFiltersSignature(preset.filters) === currentFilterSignature,
+      )?.id ?? null,
+    [currentFilterSignature, savedSearchPresets],
+  );
+  const canSaveSearchPreset = React.useMemo(
+    () =>
+      (timelineFilters.archive !== DEFAULT_HOME_TIMELINE_FILTERS.archive ||
+        hasActiveTimelineRefinements(timelineFilters)) &&
+      !activeSearchPresetId,
+    [activeSearchPresetId, timelineFilters],
+  );
 
   const refreshDreams = React.useCallback(
     (mode: 'initial' | 'refresh' | 'silent' = 'initial') => {
@@ -361,6 +455,7 @@ export default function HomeScreen() {
       try {
         setDreams(listDreams());
         setDraft(getDreamDraft());
+        setSavedSearchPresets(getHomeSearchPresets());
       } catch (error) {
         setLoadError(String(error));
       } finally {
@@ -626,6 +721,60 @@ export default function HomeScreen() {
       archive: current.archive,
     }));
   }, [closeActiveSwipe]);
+  const clearTimelineSearch = React.useCallback(() => {
+    closeActiveSwipe();
+    setTimelineFilters(current => ({
+      ...current,
+      searchQuery: '',
+    }));
+  }, [closeActiveSwipe]);
+  const saveCurrentSearchPreset = React.useCallback(() => {
+    if (!canSaveSearchPreset) {
+      return;
+    }
+
+    closeActiveSwipe();
+    setSavedSearchPresets(
+      saveHomeSearchPreset({
+        label: buildSearchPresetLabel(timelineFilters),
+        filters: timelineFilters,
+      }),
+    );
+  }, [buildSearchPresetLabel, canSaveSearchPreset, closeActiveSwipe, timelineFilters]);
+  const applySearchPreset = React.useCallback(
+    (preset: HomeSearchPreset) => {
+      closeActiveSwipe();
+      setTimelineFilters(preset.filters);
+    },
+    [closeActiveSwipe],
+  );
+  const deleteSearchPreset = React.useCallback(
+    (preset: HomeSearchPreset) => {
+      Alert.alert(
+        copy.homeSearchPresetDeleteTitle,
+        copy.homeSearchPresetDeleteDescription,
+        [
+          {
+            text: copy.detailDeleteCancel,
+            style: 'cancel',
+          },
+          {
+            text: copy.detailDeleteConfirm,
+            style: 'destructive',
+            onPress: () => {
+              setSavedSearchPresets(removeHomeSearchPreset(preset.id));
+            },
+          },
+        ],
+      );
+    },
+    [
+      copy.detailDeleteCancel,
+      copy.detailDeleteConfirm,
+      copy.homeSearchPresetDeleteDescription,
+      copy.homeSearchPresetDeleteTitle,
+    ],
+  );
 
   if (loading) {
     return (
@@ -713,6 +862,7 @@ export default function HomeScreen() {
           <HomeDreamRow
             dream={item}
             copy={copy}
+            searchQuery={deferredTimelineFilters.searchQuery}
             moodLabels={moodLabels}
             theme={t}
             styles={styles}
@@ -742,6 +892,11 @@ export default function HomeScreen() {
             displayedDreamCount={displayedDreams.length}
             searchResultsLabel={searchResultsLabel}
             isSearchPending={isSearchPending}
+            hasSearchQuery={hasSearchQuery}
+            hasNonSearchRefinements={hasNonSearchRefinements}
+            savedSearchPresets={savedSearchPresets}
+            activeSearchPresetId={activeSearchPresetId}
+            canSaveSearchPreset={canSaveSearchPreset}
             spotlightPattern={spotlightPattern}
             spotlightPatternKind={spotlightPatternKind}
             spotlightCountLabel={spotlightCountLabel}
@@ -752,6 +907,10 @@ export default function HomeScreen() {
             onOpenPatternDetail={openPatternDetail}
             onOpenFilterSheet={() => setIsFilterSheetOpen(true)}
             onClearFilters={clearTimelineFilters}
+            onClearSearch={clearTimelineSearch}
+            onSaveSearchPreset={saveCurrentSearchPreset}
+            onApplySearchPreset={applySearchPreset}
+            onDeleteSearchPreset={deleteSearchPreset}
             updateTimelineFilters={updateTimelineFilters}
           />
         }

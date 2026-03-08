@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, SectionList, View } from 'react-native';
+import { Pressable, ScrollView, SectionList, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -70,6 +70,13 @@ function getMonthLabel(monthKey: string, locale: string) {
   const [year, month] = monthKey.split('-').map(Number);
   const date = new Date(year, month - 1, 1);
   return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
+}
+
+function getMonthChipLabel(monthKey: string, locale: string) {
+  const [year, month] = monthKey.split('-').map(Number);
+  const date = new Date(year, month - 1, 1);
+  const monthLabel = date.toLocaleDateString(locale, { month: 'short' });
+  return `${monthLabel} ${String(year).slice(-2)}`;
 }
 
 function formatSelectedDate(dateKey: string, locale: string) {
@@ -270,6 +277,22 @@ function buildCalendarRows(cells: ArchiveCalendarCell[]) {
   return rows;
 }
 
+function getQuickJumpMonthKeys(monthKeys: string[], selectedIndex: number, size = 5) {
+  if (!monthKeys.length) {
+    return [];
+  }
+
+  if (selectedIndex < 0) {
+    return monthKeys.slice(0, size);
+  }
+
+  const windowSize = Math.min(size, monthKeys.length);
+  const maxStart = Math.max(0, monthKeys.length - windowSize);
+  const start = Math.min(maxStart, Math.max(0, selectedIndex - Math.floor(windowSize / 2)));
+
+  return monthKeys.slice(start, start + windowSize);
+}
+
 function buildArchiveSections(
   dreams: Dream[],
   selectedMonthKey: string | null,
@@ -377,6 +400,7 @@ export default function ArchiveScreen() {
   const styles = createArchiveScreenStyles(t);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
+  const listRef = React.useRef<SectionList<Dream, ArchiveSection>>(null);
   const [dreams, setDreams] = React.useState(() => listDreams());
   const [filter, setFilter] = React.useState<ArchiveFilter>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
@@ -483,6 +507,10 @@ export default function ArchiveScreen() {
   const selectedMonthIndex = selectedMonthKey ? availableMonthKeys.indexOf(selectedMonthKey) : -1;
   const canGoOlder = selectedMonthIndex >= 0 && selectedMonthIndex < availableMonthKeys.length - 1;
   const canGoNewer = selectedMonthIndex > 0;
+  const quickJumpMonthKeys = React.useMemo(
+    () => getQuickJumpMonthKeys(availableMonthKeys, selectedMonthIndex),
+    [availableMonthKeys, selectedMonthIndex],
+  );
   const weekdayLabels = [
     copy.archiveWeekdayMon,
     copy.archiveWeekdayTue,
@@ -512,6 +540,18 @@ export default function ArchiveScreen() {
   );
   const hasResettableView =
     filter !== 'all' || Boolean(searchQuery.trim()) || Boolean(selectedDate);
+  const hasHardReset =
+    filter !== 'all' || Boolean(searchQuery.trim());
+
+  const scrollArchiveToTop = React.useCallback(() => {
+    requestAnimationFrame(() => {
+      const list = listRef.current as unknown as {
+        scrollToOffset?: (params: { animated?: boolean; offset: number }) => void;
+      } | null;
+
+      list?.scrollToOffset?.({ animated: true, offset: 0 });
+    });
+  }, []);
 
   const renderArchiveItem = React.useCallback(
     ({ item }: { item: Dream }) => (
@@ -528,6 +568,19 @@ export default function ArchiveScreen() {
     [copy, localeKey, moodLabels, navigation, styles, viewMode],
   );
 
+  const selectMonth = React.useCallback(
+    (monthKey: string) => {
+      if (monthKey === selectedMonthKey) {
+        return;
+      }
+
+      setSelectedMonthKey(monthKey);
+      setSelectedDate(null);
+      scrollArchiveToTop();
+    },
+    [scrollArchiveToTop, selectedMonthKey],
+  );
+
   function moveMonth(direction: 'older' | 'newer') {
     if (selectedMonthIndex < 0) {
       return;
@@ -539,14 +592,14 @@ export default function ArchiveScreen() {
       return;
     }
 
-    setSelectedMonthKey(nextMonthKey);
-    setSelectedDate(null);
+    selectMonth(nextMonthKey);
   }
 
   function resetArchiveView() {
     setFilter('all');
     setSearchQuery('');
     setSelectedDate(null);
+    scrollArchiveToTop();
   }
 
   if (!dreams.length) {
@@ -564,6 +617,7 @@ export default function ArchiveScreen() {
   return (
     <ScreenContainer scroll={false} padded={false}>
       <SectionList
+        ref={listRef}
         sections={sections}
         keyExtractor={item => item.id}
         stickySectionHeadersEnabled={false}
@@ -611,7 +665,12 @@ export default function ArchiveScreen() {
                         {copy.archivePreviousMonth}
                       </Text>
                     </Pressable>
-                    <View style={styles.monthLabelBlock}>
+                    <Animated.View
+                      key={`archive-month-${selectedMonthKey}`}
+                      entering={FadeInDown.duration(180)}
+                      layout={archiveLayoutTransition}
+                      style={styles.monthLabelBlock}
+                    >
                       <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
                       <View style={styles.monthMetaRow}>
                         <View style={styles.monthMetaChip}>
@@ -625,7 +684,7 @@ export default function ArchiveScreen() {
                           </Text>
                         </View>
                       </View>
-                    </View>
+                    </Animated.View>
                     <Pressable
                       style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
                       disabled={!canGoNewer}
@@ -641,6 +700,44 @@ export default function ArchiveScreen() {
                       </Text>
                     </Pressable>
                   </View>
+
+                  {quickJumpMonthKeys.length > 1 ? (
+                    <Animated.View
+                      key={`archive-jumps-${selectedMonthKey}`}
+                      entering={FadeInDown.delay(20).duration(180)}
+                      layout={archiveLayoutTransition}
+                    >
+                      <ScrollView
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={styles.quickJumpRow}
+                      >
+                        {quickJumpMonthKeys.map(monthKey => {
+                          const active = monthKey === selectedMonthKey;
+
+                          return (
+                            <Pressable
+                              key={monthKey}
+                              style={[
+                                styles.quickJumpChip,
+                                active ? styles.quickJumpChipActive : null,
+                              ]}
+                              onPress={() => selectMonth(monthKey)}
+                            >
+                              <Text
+                                style={[
+                                  styles.quickJumpChipText,
+                                  active ? styles.quickJumpChipTextActive : null,
+                                ]}
+                              >
+                                {getMonthChipLabel(monthKey, localeKey)}
+                              </Text>
+                            </Pressable>
+                          );
+                        })}
+                      </ScrollView>
+                    </Animated.View>
+                  ) : null}
 
                   <FormField
                     placeholder={copy.archiveSearchPlaceholder}
@@ -686,6 +783,18 @@ export default function ArchiveScreen() {
                         </View>
                       ) : null}
 
+                      {selectedDate ? (
+                        <Pressable
+                          style={styles.controlsActionChip}
+                          onPress={() => {
+                            setSelectedDate(null);
+                            scrollArchiveToTop();
+                          }}
+                        >
+                          <Text style={styles.controlsActionChipText}>{copy.archiveAllDates}</Text>
+                        </Pressable>
+                      ) : null}
+
                       <Pressable
                         style={styles.controlsActionChip}
                         onPress={() => setIsCalendarExpanded(current => !current)}
@@ -697,7 +806,7 @@ export default function ArchiveScreen() {
                         </Text>
                       </Pressable>
 
-                      {hasResettableView ? (
+                      {hasHardReset ? (
                         <Pressable style={styles.controlsActionChip} onPress={resetArchiveView}>
                           <Text style={styles.controlsActionChipText}>{copy.archiveResetView}</Text>
                         </Pressable>
@@ -815,10 +924,14 @@ export default function ArchiveScreen() {
           </View>
         }
         renderSectionHeader={({ section }) =>
-          section.data.length ? (
-            <View style={styles.sectionHeader}>
+          section.data.length && selectedDate ? (
+            <Animated.View
+              entering={FadeInDown.duration(160)}
+              layout={archiveLayoutTransition}
+              style={styles.sectionHeader}
+            >
               <Text style={styles.sectionTitle}>{section.title}</Text>
-            </View>
+            </Animated.View>
           ) : null
         }
         renderItem={renderArchiveItem}

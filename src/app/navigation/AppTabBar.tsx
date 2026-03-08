@@ -92,6 +92,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
   const [hasDraft, setHasDraft] = React.useState(false);
   const activeRouteName = state.routes[state.index]?.name;
   const addFocused = activeRouteName === TAB_ROUTE_NAMES.New;
+  const quickAddActive = isQuickAddOpen || addFocused;
   const leftRoutes = SIDE_ROUTE_NAMES.slice(0, 2);
   const rightRoutes = SIDE_ROUTE_NAMES.slice(2);
 
@@ -137,6 +138,8 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
       const descriptor = descriptors[route.key];
       const isFocused = activeRouteName === route.name;
       const label = labels[routeName];
+      const isNearCenter =
+        routeName === TAB_ROUTE_NAMES.Archive || routeName === TAB_ROUTE_NAMES.Stats;
 
       const onPress = () => {
         closeQuickAdd();
@@ -166,7 +169,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
           accessibilityLabel={descriptor.options.tabBarAccessibilityLabel ?? label}
           onLongPress={onLongPress}
           onPress={onPress}
-          style={styles.tabItem}
+          style={[styles.tabItem, isNearCenter ? styles.tabItemNearCenter : null]}
         >
           {({ pressed }) => (
             <View
@@ -176,22 +179,31 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
                 pressed ? styles.tabItemInnerPressed : null,
               ]}
             >
-              <Ionicons
-                name={TAB_ICONS[routeName]}
-                size={18}
-                color={isFocused ? t.colors.text : t.colors.tabIcon}
-              />
-              <Text
-                adjustsFontSizeToFit
-                allowFontScaling={false}
-                numberOfLines={1}
-                style={[
-                  styles.tabLabel,
-                  isFocused ? styles.tabLabelActive : styles.tabLabelInactive,
-                ]}
-              >
-                {label}
-              </Text>
+              <View style={styles.tabItemContent}>
+                <View
+                  style={[
+                    styles.tabIconShell,
+                    isFocused ? styles.tabIconShellActive : null,
+                  ]}
+                >
+                  <Ionicons
+                    name={TAB_ICONS[routeName]}
+                    size={17}
+                    color={isFocused ? '#0B1220' : t.colors.tabIcon}
+                  />
+                </View>
+                <Text
+                  adjustsFontSizeToFit
+                  allowFontScaling={false}
+                  numberOfLines={1}
+                  style={[
+                    styles.tabLabel,
+                    isFocused ? styles.tabLabelActive : styles.tabLabelInactive,
+                  ]}
+                >
+                  {label}
+                </Text>
+              </View>
             </View>
           )}
         </Pressable>
@@ -203,26 +215,48 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
   return (
     <>
       <View style={styles.tabBarShell}>
+        <View pointerEvents="none" style={styles.tabBarGlowLeft} />
+        <View pointerEvents="none" style={styles.tabBarGlowRight} />
+        <View pointerEvents="none" style={styles.tabBarEdgeHighlight} />
         <View style={styles.tabBarRow}>
           <View style={styles.tabCluster}>{leftRoutes.map(renderTabButton)}</View>
           <View style={styles.centerSlot}>
             <View
               style={[
                 styles.centerButtonFrame,
-                addFocused ? styles.centerButtonFrameActive : null,
+                quickAddActive ? styles.centerButtonFrameActive : null,
               ]}
             >
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.centerButtonAuraOuter,
+                  quickAddActive ? styles.centerButtonAuraOuterActive : null,
+                ]}
+              />
+              <View
+                pointerEvents="none"
+                style={[
+                  styles.centerButtonAuraInner,
+                  quickAddActive ? styles.centerButtonAuraInnerActive : null,
+                ]}
+              />
               <Pressable
                 accessibilityHint={copy.createSubtitle}
                 accessibilityLabel={copy.createTitle}
                 accessibilityRole="button"
-                onPress={openQuickAdd}
+                onPress={isQuickAddOpen ? closeQuickAdd : openQuickAdd}
                 style={({ pressed }) => [
                   styles.centerButton,
+                  quickAddActive ? styles.centerButtonActive : null,
                   pressed ? styles.centerButtonPressed : null,
                 ]}
               >
-                <Ionicons name="add" size={28} color="#0B1220" />
+                <Ionicons
+                  name={isQuickAddOpen ? 'close' : 'add'}
+                  size={26}
+                  color="#0B1220"
+                />
               </Pressable>
             </View>
           </View>
@@ -239,6 +273,8 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
         <View style={styles.quickAddRoot}>
           <Pressable style={styles.quickAddBackdrop} onPress={closeQuickAdd} />
           <View style={styles.quickAddSheet}>
+            <View pointerEvents="none" style={styles.quickAddGlowLarge} />
+            <View pointerEvents="none" style={styles.quickAddGlowSmall} />
             <View style={styles.quickAddHandle} />
             <View style={styles.quickAddHeader}>
               <View style={styles.quickAddHeaderCopy}>

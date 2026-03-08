@@ -20,6 +20,14 @@ import {
   DREAM_EXPORT_VERSION,
 } from '../services/dataExportService';
 import {
+  listLocalDreamExportFiles,
+  loadDreamImportPreview,
+  restoreDreamImportFromFile,
+  type DreamImportMode,
+  type DreamImportPreview,
+  type LocalDreamExportFile,
+} from '../services/dataImportService';
+import {
   ensureDreamTranscriptionModelInstalled,
   deleteDreamTranscriptionModel,
   getDreamTranscriptionModelStatus,
@@ -66,6 +74,18 @@ export default function SettingsScreen() {
     React.useState(false);
   const [isDeletingTranscriptionModel, setIsDeletingTranscriptionModel] = React.useState(false);
   const [lastExportPath, setLastExportPath] = React.useState<string | null>(null);
+  const [localExportFiles, setLocalExportFiles] = React.useState<LocalDreamExportFile[]>([]);
+  const [isLoadingLocalExports, setIsLoadingLocalExports] = React.useState(false);
+  const [selectedImportPreview, setSelectedImportPreview] =
+    React.useState<DreamImportPreview | null>(null);
+  const [selectedImportPath, setSelectedImportPath] = React.useState<string | null>(null);
+  const [importMode, setImportMode] = React.useState<DreamImportMode>('replace');
+  const [importPreviewError, setImportPreviewError] = React.useState<string | null>(null);
+  const [isLoadingImportPreview, setIsLoadingImportPreview] = React.useState(false);
+  const [isRestoringImport, setIsRestoringImport] = React.useState(false);
+  const [lastRestorePreview, setLastRestorePreview] = React.useState<DreamImportPreview | null>(
+    null,
+  );
   const [transcriptionModelStatus, setTranscriptionModelStatus] =
     React.useState<DreamTranscriptionModelStatus | null>(null);
   const [transcriptionDownloadProgress, setTranscriptionDownloadProgress] =
@@ -213,6 +233,43 @@ export default function SettingsScreen() {
     return `${base} ${progress.progress}%`;
   }
 
+  function formatBackupTimestamp(value: string) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return value;
+    }
+
+    return date.toLocaleString(getPickerLocale(locale), {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
+
+  const refreshLocalExports = React.useCallback(async () => {
+    setIsLoadingLocalExports(true);
+
+    try {
+      const files = await listLocalDreamExportFiles();
+      setLocalExportFiles(files);
+
+      setSelectedImportPath(currentPath => {
+        if (!currentPath) {
+          return files[0]?.filePath ?? null;
+        }
+
+        return files.some(file => file.filePath === currentPath)
+          ? currentPath
+          : (files[0]?.filePath ?? null);
+      });
+    } finally {
+      setIsLoadingLocalExports(false);
+    }
+  }, []);
+
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
     setAnalysisSettings(getDreamAnalysisSettings());
@@ -232,8 +289,43 @@ export default function SettingsScreen() {
   useFocusEffect(
     React.useCallback(() => {
       refreshReminderState().catch(() => undefined);
-    }, [refreshReminderState]),
+      refreshLocalExports().catch(() => undefined);
+    }, [refreshLocalExports, refreshReminderState]),
   );
+
+  React.useEffect(() => {
+    if (!selectedImportPath) {
+      setSelectedImportPreview(null);
+      setImportPreviewError(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingImportPreview(true);
+    setImportPreviewError(null);
+
+    loadDreamImportPreview(selectedImportPath, importMode)
+      .then(preview => {
+        if (!cancelled) {
+          setSelectedImportPreview(preview);
+        }
+      })
+      .catch(error => {
+        if (!cancelled) {
+          setSelectedImportPreview(null);
+          setImportPreviewError(error instanceof Error ? error.message : String(error));
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoadingImportPreview(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [importMode, selectedImportPath]);
 
   async function updateReminderSettings(next: DreamReminderSettings) {
     setIsApplyingReminder(true);
@@ -343,6 +435,8 @@ export default function SettingsScreen() {
     try {
       const result = await exportDreamDataSnapshot();
       setLastExportPath(result.filePath);
+      setSelectedImportPath(result.filePath);
+      await refreshLocalExports();
       Alert.alert(copy.exportSuccessTitle, `${copy.exportSuccessDescription}\n${result.filePath}`);
     } catch (error) {
       Alert.alert(
@@ -352,6 +446,59 @@ export default function SettingsScreen() {
     } finally {
       setIsExporting(false);
     }
+  }
+
+  function onSelectImportFile(filePath: string) {
+    setLastRestorePreview(null);
+    setSelectedImportPath(filePath);
+  }
+
+  function onRestoreImport() {
+    if (!selectedImportPath) {
+      return;
+    }
+
+    const isMerge = importMode === 'merge';
+    Alert.alert(
+      isMerge ? copy.restoreMergeConfirmTitle : copy.restoreConfirmTitle,
+      isMerge ? copy.restoreMergeConfirmDescription : copy.restoreConfirmDescription,
+      [
+      {
+        text: copy.actionCancel,
+        style: 'cancel',
+      },
+      {
+        text: isMerge ? copy.restoreModeMerge : copy.restoreModeReplace,
+        style: 'destructive',
+        onPress: () => {
+          setIsRestoringImport(true);
+
+          restoreDreamImportFromFile(selectedImportPath, importMode)
+            .then(async preview => {
+              setSelectedImportPreview(preview);
+              setLastRestorePreview(preview);
+              if (preview.mode === 'replace') {
+                setLocale(preview.locale);
+              }
+              await refreshReminderState();
+              await refreshLocalExports();
+              Alert.alert(
+                copy.restoreSuccessTitle,
+                `${copy.restoreSuccessDescription}\n${selectedImportPath}`,
+              );
+            })
+            .catch(error => {
+              Alert.alert(
+                copy.restoreErrorTitle,
+                error instanceof Error ? error.message : String(error),
+              );
+            })
+            .finally(() => {
+              setIsRestoringImport(false);
+            });
+        },
+      },
+    ]);
   }
 
   async function onDeleteTranscriptionModel() {
@@ -666,6 +813,222 @@ export default function SettingsScreen() {
               />
             </View>
             <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
+          </Card>
+
+          <Card style={styles.sectionCard}>
+            <SettingsSectionHeader
+              title={copy.restoreTitle}
+              description={copy.restoreDescription}
+            />
+
+            <View style={styles.restoreModeWrap}>
+              <Text style={styles.restoreLabel}>{copy.restoreModeLabel}</Text>
+              <View style={styles.restoreModeRow}>
+                {([
+                  {
+                    value: 'replace',
+                    label: copy.restoreModeReplace,
+                    hint: copy.restoreModeReplaceHint,
+                  },
+                  {
+                    value: 'merge',
+                    label: copy.restoreModeMerge,
+                    hint: copy.restoreModeMergeHint,
+                  },
+                ] as Array<{ value: DreamImportMode; label: string; hint: string }>).map(option => {
+                  const selected = importMode === option.value;
+
+                  return (
+                    <Pressable
+                      key={option.value}
+                      style={[
+                        styles.restoreModeChip,
+                        selected ? styles.restoreModeChipActive : null,
+                      ]}
+                      onPress={() => setImportMode(option.value)}
+                    >
+                      <Text
+                        style={[
+                          styles.restoreModeChipText,
+                          selected ? styles.restoreModeChipTextActive : null,
+                        ]}
+                      >
+                        {option.label}
+                      </Text>
+                      <Text style={styles.restoreModeHint}>{option.hint}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
+
+            {localExportFiles.length ? (
+              <>
+                <Text style={styles.restoreLabel}>
+                  {`${copy.restoreAvailableLabel} (${localExportFiles.length})`}
+                </Text>
+                <View style={styles.restoreList}>
+                  {localExportFiles.slice(0, 4).map(file => (
+                    <SettingsActionRow
+                      key={file.filePath}
+                      title={file.fileName.replace('.json', '')}
+                      meta={new Date(file.modifiedAt).toLocaleString(getPickerLocale(locale), {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                      value={
+                        selectedImportPath === file.filePath
+                          ? copy.restoreSelectedValue
+                          : undefined
+                      }
+                      onPress={() => onSelectImportFile(file.filePath)}
+                    />
+                  ))}
+                </View>
+              </>
+            ) : isLoadingLocalExports ? (
+              <Text style={styles.restoreHint}>{copy.restoreLoading}</Text>
+            ) : (
+              <View style={styles.restoreEmptyBlock}>
+                <Text style={styles.restoreEmptyTitle}>{copy.restoreEmptyTitle}</Text>
+                <Text style={styles.restoreHint}>{copy.restoreEmptyDescription}</Text>
+              </View>
+            )}
+
+            {importPreviewError ? (
+              <View style={styles.restoreEmptyBlock}>
+                <Text style={styles.restoreEmptyTitle}>{copy.restoreErrorTitle}</Text>
+                <Text style={styles.restoreHint}>{importPreviewError}</Text>
+              </View>
+            ) : null}
+
+            {selectedImportPreview ? (
+              <View style={styles.restorePreviewBlock}>
+                <Text style={styles.restoreLabel}>{copy.restorePreviewTitle}</Text>
+                <SettingsMetaGrid
+                  items={[
+                    {
+                      label: copy.restoreCurrentCountLabel,
+                      value: String(selectedImportPreview.diff.currentDreamCount),
+                    },
+                    {
+                      label: copy.restoreIncomingCountLabel,
+                      value: String(selectedImportPreview.diff.importDreamCount),
+                    },
+                    {
+                      label: copy.restoreNewCountLabel,
+                      value: String(selectedImportPreview.diff.newDreamCount),
+                    },
+                    {
+                      label: copy.restoreResultCountLabel,
+                      value: String(selectedImportPreview.diff.resultingDreamCount),
+                    },
+                    {
+                      label: copy.restoreOverlapCountLabel,
+                      value: String(selectedImportPreview.diff.overlappingDreamCount),
+                    },
+                    {
+                      label: copy.restoreDreamCountLabel,
+                      value: String(selectedImportPreview.summary.dreamCount),
+                    },
+                    {
+                      label: copy.restoreSettingsLabel,
+                      value:
+                        selectedImportPreview.settingsAction === 'replace'
+                          ? copy.restoreSettingsReplace
+                          : copy.restoreSettingsKeepCurrent,
+                      wide: true,
+                    },
+                    {
+                      label: copy.restoreDraftActionLabel,
+                      value:
+                        selectedImportPreview.draftAction === 'replace'
+                          ? copy.restoreDraftActionReplace
+                          : copy.restoreDraftActionImportIfEmpty,
+                      wide: true,
+                    },
+                    {
+                      label: copy.restoreDraftLabel,
+                      value: selectedImportPreview.summary.draftIncluded
+                        ? copy.restoreDraftPresent
+                        : copy.restoreDraftMissing,
+                    },
+                    {
+                      label: copy.restoreLocaleLabel,
+                      value: selectedImportPreview.locale.toUpperCase(),
+                    },
+                    {
+                      label: copy.restoreVersionLabel,
+                      value: `v${selectedImportPreview.version}`,
+                    },
+                    {
+                      label: copy.restoreAppVersionLabel,
+                      value: selectedImportPreview.appVersion,
+                    },
+                    {
+                      label: copy.restoreExportedAtLabel,
+                      value: formatBackupTimestamp(selectedImportPreview.exportedAt),
+                      wide: true,
+                    },
+                    {
+                      label: copy.restoreFileLabel,
+                      value: selectedImportPreview.fileName,
+                      wide: true,
+                    },
+                  ]}
+                />
+              </View>
+            ) : null}
+
+            {lastRestorePreview ? (
+              <View style={styles.restorePreviewBlock}>
+                <Text style={styles.restoreLabel}>{copy.restoreSuccessTitle}</Text>
+                <SettingsMetaGrid
+                  items={[
+                    {
+                      label: copy.restoreSuccessModeLabel,
+                      value:
+                        lastRestorePreview.mode === 'merge'
+                          ? copy.restoreModeMerge
+                          : copy.restoreModeReplace,
+                    },
+                    {
+                      label: copy.restoreSuccessCountLabel,
+                      value: String(lastRestorePreview.diff.resultingDreamCount),
+                    },
+                    {
+                      label: copy.restoreFileLabel,
+                      value: lastRestorePreview.fileName,
+                      wide: true,
+                    },
+                  ]}
+                />
+              </View>
+            ) : null}
+
+            <View style={styles.buttonStack}>
+              <Button
+                title={
+                  isRestoringImport
+                    ? copy.restoreRestoreButtonBusy
+                    : importMode === 'merge'
+                      ? copy.restoreMergeButton
+                      : copy.restoreRestoreButton
+                }
+                variant={importMode === 'merge' ? 'ghost' : 'primary'}
+                size="sm"
+                onPress={onRestoreImport}
+                disabled={
+                  !selectedImportPath ||
+                  isLoadingImportPreview ||
+                  isRestoringImport ||
+                  !selectedImportPreview
+                }
+              />
+            </View>
           </Card>
 
           {__DEV__ ? (

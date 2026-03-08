@@ -90,6 +90,8 @@ function getExportDirectoryPath() {
   return `${baseDirectory}/${DREAM_EXPORT_DIRECTORY}`;
 }
 
+export { getExportDirectoryPath };
+
 export async function exportDreamDataSnapshot() {
   const payload = buildDreamExportSnapshot({
     locale: getStoredLocale(),

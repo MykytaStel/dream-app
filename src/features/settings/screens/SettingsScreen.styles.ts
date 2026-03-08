@@ -70,9 +70,18 @@ export function createSettingsScreenStyles(theme: Theme) {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 10,
+      alignItems: 'stretch',
     },
     buttonStack: {
       gap: 10,
+      alignItems: 'stretch',
+    },
+    buttonRowButton: {
+      flex: 1,
+      minWidth: 150,
+    },
+    buttonStackButton: {
+      width: '100%',
     },
     exportPathBlock: {
       ...createSoftTile(theme, {

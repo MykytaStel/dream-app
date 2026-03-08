@@ -24,13 +24,6 @@ export function createProgressScreenStyles(theme: Theme) {
       fontSize: 12,
       fontWeight: '700',
     },
-    heroEyebrow: {
-      color: theme.colors.accent,
-      fontSize: 11,
-      fontWeight: '700',
-      letterSpacing: 0.7,
-      textTransform: 'uppercase',
-    },
     summaryRow: {
       flexDirection: 'row',
       gap: 8,
@@ -66,6 +59,47 @@ export function createProgressScreenStyles(theme: Theme) {
       color: theme.colors.textDim,
       fontSize: 12,
       lineHeight: 17,
+    },
+    focusCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 13,
+      }),
+      gap: 8,
+      borderColor: theme.colors.border,
+    },
+    focusLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      textTransform: 'uppercase',
+      letterSpacing: 0.55,
+      fontWeight: '700',
+    },
+    focusTitle: {
+      color: theme.colors.text,
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: '700',
+    },
+    focusDescription: {
+      color: theme.colors.textDim,
+      lineHeight: 19,
+      fontSize: 13,
+    },
+    focusMetaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    focusMetaText: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+      fontWeight: '600',
     },
     sectionCard: {
       gap: 12,

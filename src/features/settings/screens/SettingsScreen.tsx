@@ -80,6 +80,7 @@ export default function SettingsScreen() {
     React.useState<DreamImportPreview | null>(null);
   const [selectedImportPath, setSelectedImportPath] = React.useState<string | null>(null);
   const [importMode, setImportMode] = React.useState<DreamImportMode>('replace');
+  const [showRestorePreview, setShowRestorePreview] = React.useState(false);
   const [importPreviewError, setImportPreviewError] = React.useState<string | null>(null);
   const [isLoadingImportPreview, setIsLoadingImportPreview] = React.useState(false);
   const [isRestoringImport, setIsRestoringImport] = React.useState(false);
@@ -249,6 +250,25 @@ export default function SettingsScreen() {
     });
   }
 
+  function formatBackupListTitle(value: number) {
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return copy.restoreTitle;
+    }
+
+    return date.toLocaleString(getPickerLocale(locale), {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }
+
+  function formatBackupListMeta(fileName: string) {
+    return fileName.replace(/\.json$/i, '');
+  }
+
   const refreshLocalExports = React.useCallback(async () => {
     setIsLoadingLocalExports(true);
 
@@ -325,6 +345,10 @@ export default function SettingsScreen() {
     return () => {
       cancelled = true;
     };
+  }, [importMode, selectedImportPath]);
+
+  React.useEffect(() => {
+    setShowRestorePreview(false);
   }, [importMode, selectedImportPath]);
 
   async function updateReminderSettings(next: DreamReminderSettings) {
@@ -720,6 +744,7 @@ export default function SettingsScreen() {
                 title={copy.analysisUseManualButton}
                 variant={analysisSettings.provider === 'manual' ? 'primary' : 'ghost'}
                 size="sm"
+                style={styles.buttonRowButton}
                 onPress={() =>
                   saveNextAnalysisSettings({
                     ...analysisSettings,
@@ -732,6 +757,7 @@ export default function SettingsScreen() {
                 title={copy.analysisUseOpenAiButton}
                 variant={analysisSettings.provider === 'openai' ? 'primary' : 'ghost'}
                 size="sm"
+                style={styles.buttonRowButton}
                 onPress={() =>
                   saveNextAnalysisSettings({
                     ...analysisSettings,
@@ -749,6 +775,7 @@ export default function SettingsScreen() {
                 }
                 variant="ghost"
                 size="sm"
+                style={styles.buttonStackButton}
                 onPress={() =>
                   saveNextAnalysisSettings({
                     ...analysisSettings,
@@ -775,6 +802,7 @@ export default function SettingsScreen() {
                 }
                 variant="primary"
                 size="sm"
+                style={styles.buttonStackButton}
                 onPress={onDownloadTranscriptionModel}
                 disabled={
                   isDownloadingTranscriptionModel || Boolean(transcriptionModelStatus?.installed)
@@ -788,6 +816,7 @@ export default function SettingsScreen() {
                 }
                 variant="ghost"
                 size="sm"
+                style={styles.buttonStackButton}
                 onPress={onDeleteTranscriptionModel}
                 disabled={isDeletingTranscriptionModel || !transcriptionModelStatus?.installed}
               />
@@ -808,6 +837,7 @@ export default function SettingsScreen() {
                 title={isExporting ? copy.exportButtonBusy : copy.exportButton}
                 variant="primary"
                 size="sm"
+                style={styles.buttonStackButton}
                 onPress={onExportData}
                 disabled={isExporting}
               />
@@ -871,14 +901,8 @@ export default function SettingsScreen() {
                   {localExportFiles.slice(0, 4).map(file => (
                     <SettingsActionRow
                       key={file.filePath}
-                      title={file.fileName.replace('.json', '')}
-                      meta={new Date(file.modifiedAt).toLocaleString(getPickerLocale(locale), {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                        hour: 'numeric',
-                        minute: '2-digit',
-                      })}
+                      title={formatBackupListTitle(file.modifiedAt)}
+                      meta={formatBackupListMeta(file.fileName)}
                       value={
                         selectedImportPath === file.filePath
                           ? copy.restoreSelectedValue
@@ -906,8 +930,16 @@ export default function SettingsScreen() {
             ) : null}
 
             {selectedImportPreview ? (
+              <SettingsActionRow
+                title={copy.restorePreviewTitle}
+                meta={`${copy.restoreResultCountLabel} ${selectedImportPreview.diff.resultingDreamCount} • ${formatBackupTimestamp(selectedImportPreview.exportedAt)}`}
+                value={showRestorePreview ? copy.advancedHide : copy.advancedShow}
+                onPress={() => setShowRestorePreview(current => !current)}
+              />
+            ) : null}
+
+            {selectedImportPreview && showRestorePreview ? (
               <View style={styles.restorePreviewBlock}>
-                <Text style={styles.restoreLabel}>{copy.restorePreviewTitle}</Text>
                 <SettingsMetaGrid
                   items={[
                     {
@@ -1020,6 +1052,7 @@ export default function SettingsScreen() {
                 }
                 variant={importMode === 'merge' ? 'ghost' : 'primary'}
                 size="sm"
+                style={styles.buttonStackButton}
                 onPress={onRestoreImport}
                 disabled={
                   !selectedImportPath ||
@@ -1050,6 +1083,7 @@ export default function SettingsScreen() {
                   title={isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd250}
                   variant="ghost"
                   size="sm"
+                  style={styles.buttonRowButton}
                   onPress={() => onSeedDreams(250).catch(() => undefined)}
                   disabled={isUpdatingSeedDreams}
                 />
@@ -1057,6 +1091,7 @@ export default function SettingsScreen() {
                   title={isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd1000}
                   variant="primary"
                   size="sm"
+                  style={styles.buttonRowButton}
                   onPress={() => onSeedDreams(1000).catch(() => undefined)}
                   disabled={isUpdatingSeedDreams}
                 />
@@ -1066,6 +1101,7 @@ export default function SettingsScreen() {
                   title={copy.scaleTestClear}
                   variant="ghost"
                   size="sm"
+                  style={styles.buttonStackButton}
                   onPress={onClearSeedDreams}
                   disabled={isUpdatingSeedDreams || seedDreamCount === 0}
                 />

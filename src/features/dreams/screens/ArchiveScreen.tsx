@@ -31,6 +31,7 @@ import {
 import { listDreams } from '../repository/dreamsRepository';
 import { createArchiveScreenStyles } from './ArchiveScreen.styles';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
+import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 
 type ArchiveFilter = 'all' | 'active' | 'archived' | 'starred';
 type ArchiveViewMode = 'comfortable' | 'compact';
@@ -454,7 +455,12 @@ export default function ArchiveScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      setDreams(listDreams());
+      const startedAt = Date.now();
+      const nextDreams = listDreams();
+      React.startTransition(() => {
+        setDreams(nextDreams);
+      });
+      trackLocalSurfaceLoad('archive_refresh', startedAt, nextDreams.length);
     }, []),
   );
 

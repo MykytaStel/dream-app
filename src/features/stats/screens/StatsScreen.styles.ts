@@ -8,10 +8,15 @@ export function createStatsScreenStyles(theme: Theme) {
       justifyContent: 'center',
     },
     heroCard: {
-      gap: 12,
-      padding: 16,
+      gap: 10,
+      padding: 14,
     },
     heroHeader: {
+      gap: 4,
+    },
+    heroTopGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 8,
     },
     heroEyebrow: {
@@ -29,23 +34,30 @@ export function createStatsScreenStyles(theme: Theme) {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 14,
-        paddingVertical: 11,
-        paddingHorizontal: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
       }),
-      flex: 1,
-      gap: 3,
-      minHeight: 74,
+      flexGrow: 1,
+      flexBasis: '31%',
+      minWidth: 0,
+      gap: 2,
+      minHeight: 66,
     },
     summaryLabel: {
       color: theme.colors.textDim,
-      fontSize: 11,
-      lineHeight: 14,
+      fontSize: 10,
+      lineHeight: 13,
     },
     summaryValue: {
-      fontSize: 22,
-      lineHeight: 28,
+      fontSize: 18,
+      lineHeight: 22,
       fontWeight: '700',
       includeFontPadding: false,
+    },
+    summaryHint: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 13,
     },
     rangeHeader: {
       gap: 8,
@@ -60,11 +72,17 @@ export function createStatsScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 8,
     },
+    rangeSection: {
+      gap: 6,
+      flexGrow: 1,
+      flexBasis: '48%',
+      minWidth: 136,
+    },
     rangeChip: {
       ...createControlPill(theme, {
         tone: 'surface',
-        paddingHorizontal: 12,
-        paddingVertical: 7,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
       }),
     },
     rangeChipActive: {
@@ -73,11 +91,179 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     rangeChipText: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '700',
     },
     rangeChipTextActive: {
       color: theme.colors.background,
+    },
+    compareHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    comparePanel: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+      }),
+      gap: 10,
+    },
+    comparePanelHeader: {
+      gap: 3,
+    },
+    comparePanelTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+    },
+    comparePanelSubtitle: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    compareMetricGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    compareMetricTile: {
+      ...createSoftTile(theme, {
+        tone: 'alt',
+        radius: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 11,
+      }),
+      flexGrow: 1,
+      flexBasis: '31%',
+      minWidth: 102,
+      gap: 4,
+    },
+    compareMetricLabel: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 13,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    compareMetricValue: {
+      color: theme.colors.text,
+      fontSize: 18,
+      lineHeight: 22,
+      fontWeight: '700',
+      includeFontPadding: false,
+    },
+    compareMetricMeta: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 15,
+    },
+    compareMetricDeltaPositive: {
+      color: theme.colors.accent,
+    },
+    compareMetricDeltaNegative: {
+      color: theme.colors.primaryAlt,
+    },
+    compareMetricDeltaNeutral: {
+      color: theme.colors.textDim,
+    },
+    overviewPanel: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+      }),
+      gap: 10,
+    },
+    overviewPanelHeader: {
+      gap: 3,
+    },
+    overviewPanelTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+    },
+    overviewPanelSubtitle: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    activityBarsRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      gap: 6,
+      minHeight: 64,
+    },
+    activityBarColumn: {
+      flex: 1,
+      alignItems: 'center',
+      gap: 6,
+    },
+    activityBarTrack: {
+      width: '100%',
+      maxWidth: 18,
+      height: 48,
+      justifyContent: 'flex-end',
+      borderRadius: 999,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    activityBarFill: {
+      width: '100%',
+      borderRadius: 999,
+      backgroundColor: theme.colors.primary,
+      minHeight: 4,
+    },
+    activityBarLabel: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 12,
+      textTransform: 'uppercase',
+    },
+    storyRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    storyCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      flexGrow: 1,
+      flexBasis: '47%',
+      minWidth: 148,
+      gap: 4,
+    },
+    storyCardAccent: {
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    storyLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 14,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    storyValue: {
+      color: theme.colors.text,
+      fontSize: 18,
+      lineHeight: 22,
+      fontWeight: '700',
+      includeFontPadding: false,
+    },
+    storyHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
     sectionCard: {
       gap: 12,
@@ -117,8 +303,6 @@ export function createStatsScreenStyles(theme: Theme) {
       includeFontPadding: false,
     },
     insightGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
       gap: 8,
     },
     insightCard: {
@@ -159,39 +343,57 @@ export function createStatsScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 17,
     },
-    coverageList: {
-      gap: 12,
-    },
-    coverageItem: {
-      gap: 7,
-    },
-    coverageHeader: {
-      flexDirection: 'row',
+    takeawayLeadCard: {
+      minHeight: 118,
       justifyContent: 'space-between',
-      alignItems: 'center',
-      gap: 12,
+    },
+    takeawaySecondaryRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    takeawaySecondaryCard: {
+      flexGrow: 1,
+      flexBasis: '47%',
+      minWidth: 142,
+      minHeight: 96,
+      justifyContent: 'space-between',
+    },
+    coverageGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    coverageCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      flexGrow: 1,
+      flexBasis: '47%',
+      minWidth: 144,
+      gap: 5,
     },
     coverageLabel: {
-      color: theme.colors.text,
-      fontSize: 13,
-      fontWeight: '600',
-      flex: 1,
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 14,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     coverageValue: {
+      color: theme.colors.text,
+      fontSize: 20,
+      lineHeight: 24,
+      fontWeight: '700',
+      includeFontPadding: false,
+    },
+    coverageHint: {
       color: theme.colors.textDim,
       fontSize: 12,
-      fontWeight: '700',
-    },
-    coverageTrack: {
-      height: 10,
-      borderRadius: 999,
-      overflow: 'hidden',
-      backgroundColor: theme.colors.surface,
-    },
-    coverageFill: {
-      height: '100%',
-      borderRadius: 999,
-      backgroundColor: theme.colors.primary,
+      lineHeight: 17,
     },
     attentionRow: {
       flexDirection: 'row',
@@ -207,8 +409,8 @@ export function createStatsScreenStyles(theme: Theme) {
       }),
       flexGrow: 1,
       flexBasis: '31%',
-      minWidth: 92,
-      gap: 4,
+      minWidth: 110,
+      gap: 5,
     },
     attentionValue: {
       fontSize: 24,
@@ -217,11 +419,80 @@ export function createStatsScreenStyles(theme: Theme) {
       includeFontPadding: false,
     },
     attentionLabel: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: '700',
+      lineHeight: 17,
+    },
+    attentionHint: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 15,
+    },
+    patternGroupList: {
+      gap: 12,
+    },
+    patternTabsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    patternTabChip: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }),
+    },
+    patternTabChipActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    patternTabChipText: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    patternTabChipTextActive: {
+      color: theme.colors.background,
+    },
+    detailsToggleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12,
+    },
+    detailsToggleCopy: {
+      flex: 1,
+      gap: 3,
+    },
+    detailsToggleTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+    },
+    detailsToggleDescription: {
       color: theme.colors.textDim,
       fontSize: 12,
       lineHeight: 17,
     },
-    patternGroupList: {
+    detailsTogglePill: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    detailsTogglePillText: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    detailsSectionContent: {
       gap: 12,
     },
     patternGroup: {

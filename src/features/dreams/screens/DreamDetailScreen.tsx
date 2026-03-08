@@ -1,8 +1,10 @@
 import React from 'react';
-import { Alert, Pressable, View } from 'react-native';
+import { Alert, Pressable, ScrollView, View } from 'react-native';
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { FormField } from '../../../components/ui/FormField';
@@ -39,8 +41,8 @@ import {
   listDreams,
   saveDreamTranscriptEdit,
   starDream,
-  unstarDream,
   unarchiveDream,
+  unstarDream,
 } from '../repository/dreamsRepository';
 import { generateDreamAnalysis } from '../../analysis/services/dreamAnalysisService';
 import { play, stop } from '../services/audioService';
@@ -49,6 +51,8 @@ import {
   transcribeDreamAudio,
 } from '../services/dreamTranscriptionService';
 import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
+import { DreamDetailActionTile } from '../components/DreamDetailActionTile';
+import { DreamDetailSectionCard } from '../components/DreamDetailSectionCard';
 
 function moodColor(theme: Theme, mood?: Dream['mood']) {
   if (mood === 'positive') {
@@ -81,6 +85,13 @@ function formatMetaTimestamp(value: number) {
   });
 }
 
+function formatMetaTime(value: number) {
+  return new Date(value).toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
 function hasSleepContext(dream: Dream) {
   const context = dream.sleepContext;
   if (!context) {
@@ -100,6 +111,55 @@ function hasSleepContext(dream: Dream) {
 function hasEmotionSnapshot(dream: Dream) {
   return Boolean(dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length);
 }
+
+type DetailSectionsState = {
+  written: boolean;
+  emotions: boolean;
+  transcript: boolean;
+  tags: boolean;
+  related: boolean;
+  analysis: boolean;
+  context: boolean;
+  audio: boolean;
+};
+
+function createDefaultExpandedSections(dream: Dream): DetailSectionsState {
+  return {
+    written: true,
+    emotions: hasEmotionSnapshot(dream),
+    transcript: Boolean(dream.audioUri || dream.transcript || dream.transcriptStatus === 'error'),
+    tags: dream.tags.length > 0,
+    related: true,
+    analysis: Boolean(
+      dream.analysis?.summary || dream.analysis?.themes?.length || dream.analysis?.status === 'error',
+    ),
+    context: hasSleepContext(dream),
+    audio: false,
+  };
+}
+
+function getHeroPreview(dream: Dream, copy: ReturnType<typeof getDreamCopy>) {
+  const text = dream.text?.trim();
+  if (text) {
+    return text.length > 160 ? `${text.slice(0, 157)}...` : text;
+  }
+
+  const transcript = dream.transcript?.trim();
+  if (transcript) {
+    const visible = transcript.length > 136 ? `${transcript.slice(0, 133)}...` : transcript;
+    return `${copy.transcriptPreviewPrefix}: ${visible}`;
+  }
+
+  if (dream.audioUri) {
+    return copy.audioOnlyPreview;
+  }
+
+  return null;
+}
+
+const detailLayoutTransition = LinearTransition.springify()
+  .damping(18)
+  .stiffness(180);
 
 export default function DreamDetailScreen() {
   const t = useTheme<Theme>();
@@ -121,6 +181,9 @@ export default function DreamDetailScreen() {
   const [isTranscribingAudio, setIsTranscribingAudio] = React.useState(false);
   const [isEditingTranscript, setIsEditingTranscript] = React.useState(false);
   const [transcriptDraft, setTranscriptDraft] = React.useState('');
+  const [expandedSections, setExpandedSections] = React.useState<DetailSectionsState | null>(
+    () => (dream ? createDefaultExpandedSections(dream) : null),
+  );
   const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
     getDreamAnalysisSettings(),
   );
@@ -132,6 +195,7 @@ export default function DreamDetailScreen() {
     React.useCallback(() => {
       const nextDream = getDream(route.params.dreamId);
       setDream(nextDream);
+      setExpandedSections(nextDream ? createDefaultExpandedSections(nextDream) : null);
       setAnalysisSettings(getDreamAnalysisSettings());
       setTranscriptDraft(nextDream?.transcript ?? '');
       setIsPlayingAudio(false);
@@ -161,8 +225,14 @@ export default function DreamDetailScreen() {
     return (
       <ScreenContainer scroll>
         <Card style={styles.heroCard}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backLabel}>{copy.detailBack}</Text>
+          <View pointerEvents="none" style={styles.heroGlowLarge} />
+          <View pointerEvents="none" style={styles.heroGlowSmall} />
+          <Pressable
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+            accessibilityLabel={copy.detailBack}
+          >
+            <Ionicons name="chevron-back" size={18} color={t.colors.text} />
           </Pressable>
           <SectionHeader
             title={copy.detailMissingTitle}
@@ -205,6 +275,32 @@ export default function DreamDetailScreen() {
         : copy.detailAnalysisStateManual;
   const strongestSignal =
     relatedDreams[0]?.sharedSignals[0] ?? dream.tags[0] ?? dream.wakeEmotions?.[0] ?? null;
+  const heroPreview = getHeroPreview(dream, copy);
+  const sections = expandedSections ?? createDefaultExpandedSections(dream);
+  const heroStats = [
+    {
+      key: 'sleep-date',
+      label: copy.sleepDateLabel,
+      value: dream.sleepDate ? formatMetaDate(dream.sleepDate) : formatMetaDate(dream.createdAt),
+    },
+    {
+      key: 'words',
+      label: copy.wordsUnit,
+      value: String(wordsCount),
+    },
+    {
+      key: 'captured',
+      label: copy.detailCapturedLabel,
+      value: formatMetaTime(dream.createdAt),
+    },
+  ];
+
+  function toggleSection(section: keyof DetailSectionsState) {
+    setExpandedSections(current => ({
+      ...(current ?? sections),
+      [section]: !(current ?? sections)[section],
+    }));
+  }
 
   function formatTranscriptionProgress(progress: DreamTranscriptionProgress | null) {
     if (!progress) {
@@ -224,12 +320,10 @@ export default function DreamDetailScreen() {
   }
 
   function onToggleArchiveDream() {
-    if (archived) {
-      unarchiveDream(dreamId);
-    } else {
-      archiveDream(dreamId);
+    const nextDream = archived ? unarchiveDream(dreamId) : archiveDream(dreamId);
+    if (nextDream) {
+      setDream(nextDream);
     }
-    navigation.goBack();
   }
 
   function onToggleStarDream() {
@@ -301,16 +395,17 @@ export default function DreamDetailScreen() {
       setDream(getDream(dreamId));
       await pendingTranscription;
       setDream(getDream(dreamId));
+      setExpandedSections(current => ({
+        ...(current ?? sections),
+        transcript: true,
+      }));
       setTranscriptDraft(getDream(dreamId)?.transcript ?? '');
     } catch (error) {
       setDream(getDream(dreamId));
       setTranscriptDraft(getDream(dreamId)?.transcript ?? '');
       const fallbackDescription = copy.detailTranscriptionErrorDescription;
       const message = error instanceof Error ? error.message : String(error);
-      Alert.alert(
-        copy.detailTranscriptionErrorTitle,
-        `${fallbackDescription}\n${message}`,
-      );
+      Alert.alert(copy.detailTranscriptionErrorTitle, `${fallbackDescription}\n${message}`);
     } finally {
       setIsTranscribingAudio(false);
       setTranscriptionProgress(null);
@@ -319,6 +414,10 @@ export default function DreamDetailScreen() {
 
   function onStartTranscriptEdit() {
     setTranscriptDraft(dream?.transcript ?? '');
+    setExpandedSections(current => ({
+      ...(current ?? sections),
+      transcript: true,
+    }));
     setIsEditingTranscript(true);
   }
 
@@ -380,6 +479,10 @@ export default function DreamDetailScreen() {
       return;
     }
 
+    setExpandedSections(current => ({
+      ...(current ?? sections),
+      analysis: true,
+    }));
     setIsGeneratingAnalysis(true);
 
     try {
@@ -410,464 +513,531 @@ export default function DreamDetailScreen() {
 
   return (
     <ScreenContainer scroll>
-      <Card style={styles.heroCard}>
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLabel}>{copy.detailBack}</Text>
-        </Pressable>
+      <Animated.View entering={FadeInDown.duration(240)} layout={detailLayoutTransition}>
+        <Card style={styles.heroCard}>
+          <View pointerEvents="none" style={styles.heroGlowLarge} />
+          <View pointerEvents="none" style={styles.heroGlowSmall} />
 
-        <View style={styles.heroHeader}>
-          <Text style={styles.heroEyebrow}>{copy.detailMetaTitle}</Text>
-          <View style={styles.heroTitleRow}>
-            <Text style={styles.heroTitle}>{dream.title || copy.untitled}</Text>
-            <View
-              style={[
-                styles.moodDot,
-                { backgroundColor: moodColor(t, dream.mood) },
-              ]}
-            />
+          <View style={styles.heroTopBar}>
+            <Pressable
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              accessibilityLabel={copy.detailBack}
+            >
+              <Ionicons name="chevron-back" size={18} color={t.colors.text} />
+            </Pressable>
+
+            <View style={styles.heroStatusRow}>
+              {moodLabel ? (
+                <View style={styles.statusChip}>
+                  <View style={[styles.statusDot, { backgroundColor: moodColor(t, dream.mood) }]} />
+                  <Text style={styles.statusChipLabel}>{moodLabel}</Text>
+                </View>
+              ) : null}
+              {starred ? (
+                <View style={styles.statusChip}>
+                  <Ionicons name="star" size={12} color={t.colors.primary} />
+                  <Text style={styles.statusChipLabel}>{copy.starredTag}</Text>
+                </View>
+              ) : null}
+              {archived ? (
+                <View style={styles.statusChip}>
+                  <Ionicons name="archive" size={12} color={t.colors.textDim} />
+                  <Text style={styles.statusChipLabel}>{copy.archivedTag}</Text>
+                </View>
+              ) : null}
+            </View>
           </View>
-          <Text style={styles.heroSubtitle}>
-            {dream.sleepDate ? formatMetaDate(dream.sleepDate) : formatMetaDate(dream.createdAt)}
-          </Text>
-        </View>
 
-        <View style={styles.chipsRow}>
-          <View style={styles.metaChip}>
-            <Text style={styles.metaChipLabel}>{copy.sleepDateLabel}</Text>
-            <Text style={styles.metaChipValue}>
-              {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
+          <View style={styles.heroHeader}>
+            <Text style={styles.heroEyebrow}>{copy.detailMetaTitle}</Text>
+            <View style={styles.heroTitleRow}>
+              <Text style={styles.heroTitle}>{dream.title || copy.untitled}</Text>
+            </View>
+            <Text style={styles.heroSubtitle}>
+              {dream.sleepDate ? formatMetaDate(dream.sleepDate) : formatMetaDate(dream.createdAt)}
             </Text>
           </View>
-          <View style={styles.metaChip}>
-            <Text style={styles.metaChipLabel}>{copy.wordsUnit}</Text>
-            <Text style={styles.metaChipValue}>{wordsCount}</Text>
-          </View>
-          {moodLabel ? (
-            <View style={styles.metaChip}>
-              <Text style={styles.metaChipLabel}>{copy.moodTitle}</Text>
-              <Text style={styles.metaChipValue}>{moodLabel}</Text>
+
+          {heroPreview ? (
+            <View style={styles.heroPreviewCard}>
+              <Text style={styles.heroPreviewLabel}>{copy.detailPreviewLabel}</Text>
+              <Text style={styles.heroPreviewText}>{heroPreview}</Text>
             </View>
           ) : null}
-        </View>
 
-        <Button
-          title={copy.detailEdit}
-          variant="ghost"
-          icon="create-outline"
-          size="sm"
-          onPress={() =>
-            navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
-              dreamId,
-            })
-          }
-        />
-        <Button
-          title={starred ? copy.detailUnstar : copy.detailStar}
-          variant="ghost"
-          icon={starred ? 'star' : 'star-outline'}
-          size="sm"
-          onPress={onToggleStarDream}
-        />
-        <Button
-          title={archived ? copy.detailUnarchive : copy.detailArchive}
-          variant="ghost"
-          icon={archived ? 'archive' : 'archive-outline'}
-          size="sm"
-          onPress={onToggleArchiveDream}
-        />
-        <Button
-          title={copy.detailDelete}
-          variant="danger"
-          icon="trash-outline"
-          size="sm"
-          onPress={onDeleteDream}
-        />
-      </Card>
+          <View style={styles.heroStatsRow}>
+            {heroStats.map(item => (
+              <View key={item.key} style={styles.metaChip}>
+                <Text style={styles.metaChipLabel}>{item.label}</Text>
+                <Text style={styles.metaChipValue}>{item.value}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.heroActionsRow}>
+            <DreamDetailActionTile
+              icon="create-outline"
+              label={copy.detailActionEdit}
+              onPress={() =>
+                navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
+                  dreamId,
+                })
+              }
+            />
+            <DreamDetailActionTile
+              icon={starred ? 'star' : 'star-outline'}
+              label={copy.detailActionImportant}
+              onPress={onToggleStarDream}
+              active={starred}
+            />
+            <DreamDetailActionTile
+              icon={archived ? 'refresh-outline' : 'archive-outline'}
+              label={archived ? copy.detailActionRestore : copy.detailActionArchive}
+              onPress={onToggleArchiveDream}
+              active={archived}
+            />
+          </View>
+
+          <Pressable
+            style={({ pressed }) => [styles.deleteAction, pressed ? styles.deleteActionPressed : null]}
+            onPress={onDeleteDream}
+          >
+            <Ionicons name="trash-outline" size={16} color={t.colors.danger} />
+            <Text style={styles.deleteActionLabel}>{copy.detailActionDelete}</Text>
+          </Pressable>
+        </Card>
+      </Animated.View>
 
       {showSavedHighlight ? (
-        <Card style={styles.savedCard}>
-          <View style={styles.savedHeader}>
-            <View style={styles.savedCopy}>
-              <Text style={styles.savedTitle}>{copy.detailSavedTitle}</Text>
-              <Text style={styles.savedDescription}>{copy.detailSavedDescription}</Text>
+        <Animated.View entering={FadeInDown.delay(40).duration(220)} layout={detailLayoutTransition}>
+          <Card style={styles.savedCard}>
+            <View style={styles.savedHeader}>
+              <View style={styles.savedCopy}>
+                <Text style={styles.savedTitle}>{copy.detailSavedTitle}</Text>
+                <Text style={styles.savedDescription}>{copy.detailSavedDescription}</Text>
+              </View>
+              <Pressable
+                style={styles.savedDismiss}
+                onPress={() => setShowSavedHighlight(false)}
+                accessibilityLabel={copy.clearErrorAction}
+              >
+                <Ionicons name="close" size={16} color={t.colors.textDim} />
+              </Pressable>
             </View>
-            <Pressable style={styles.savedDismiss} onPress={() => setShowSavedHighlight(false)}>
-              <Text style={styles.savedDismissLabel}>{copy.clearErrorAction}</Text>
-            </Pressable>
-          </View>
 
-          <View style={styles.savedStatsRow}>
-            <View style={styles.savedStatTile}>
-              <Text style={styles.savedStatLabel}>{copy.detailSavedPatternLabel}</Text>
-              <Text style={styles.savedStatValue}>{strongestSignal ?? copy.homeSpotlightNoPattern}</Text>
+            <View style={styles.savedStatsRow}>
+              <View style={styles.savedStatTile}>
+                <Text style={styles.savedStatLabel}>{copy.detailSavedPatternLabel}</Text>
+                <Text style={styles.savedStatValue}>
+                  {strongestSignal ?? copy.homeSpotlightNoPattern}
+                </Text>
+              </View>
+              <View style={styles.savedStatTile}>
+                <Text style={styles.savedStatLabel}>{copy.detailSavedRelatedLabel}</Text>
+                <Text style={styles.savedStatValue}>{relatedDreams.length}</Text>
+              </View>
             </View>
-            <View style={styles.savedStatTile}>
-              <Text style={styles.savedStatLabel}>{copy.detailSavedRelatedLabel}</Text>
-              <Text style={styles.savedStatValue}>{relatedDreams.length}</Text>
-            </View>
-          </View>
-        </Card>
+          </Card>
+        </Animated.View>
       ) : null}
 
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.detailTranscriptTitle}</Text>
-        <Text style={dream.text ? styles.bodyText : styles.mutedText}>
-          {dream.text || copy.detailTranscriptEmpty}
-        </Text>
-      </Card>
+      <Animated.View entering={FadeInDown.delay(70).duration(220)} layout={detailLayoutTransition}>
+        <DreamDetailSectionCard
+          title={copy.detailTranscriptTitle}
+          expanded={sections.written}
+          onToggle={() => toggleSection('written')}
+        >
+          <Text style={dream.text ? styles.bodyText : styles.mutedText}>
+            {dream.text || copy.detailTranscriptEmpty}
+          </Text>
+        </DreamDetailSectionCard>
+      </Animated.View>
 
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.detailEmotionTitle}</Text>
-        {hasEmotions ? (
-          <View style={styles.contextRows}>
-            {dream.wakeEmotions?.length ? (
-              <>
-                <Text style={styles.sectionTitle}>{copy.detailWakeEmotionsLabel}</Text>
-                <View style={styles.tagsRow}>
-                  {dream.wakeEmotions.map(emotion => (
-                    <TagChip
-                      key={emotion}
-                      label={wakeEmotionLabels[emotion]}
-                    />
-                  ))}
-                </View>
-              </>
-            ) : null}
-            {dream.sleepContext?.preSleepEmotions?.length ? (
-              <>
-                <Text style={styles.sectionTitle}>{copy.detailPreSleepEmotionsLabel}</Text>
-                <View style={styles.tagsRow}>
-                  {dream.sleepContext.preSleepEmotions.map(emotion => (
-                    <TagChip
-                      key={emotion}
-                      label={preSleepEmotionLabels[emotion]}
-                    />
-                  ))}
-                </View>
-              </>
-            ) : null}
-          </View>
-        ) : (
-          <Text style={styles.mutedText}>{copy.detailEmotionEmpty}</Text>
-        )}
-      </Card>
+      <Animated.View entering={FadeInDown.delay(90).duration(220)} layout={detailLayoutTransition}>
+        <DreamDetailSectionCard
+          title={copy.detailEmotionTitle}
+          expanded={sections.emotions}
+          onToggle={() => toggleSection('emotions')}
+        >
+          {hasEmotions ? (
+            <View style={styles.contextRows}>
+              {dream.wakeEmotions?.length ? (
+                <>
+                  <Text style={styles.subsectionLabel}>{copy.detailWakeEmotionsLabel}</Text>
+                  <View style={styles.tagsRow}>
+                    {dream.wakeEmotions.map(emotion => (
+                      <TagChip key={emotion} label={wakeEmotionLabels[emotion]} />
+                    ))}
+                  </View>
+                </>
+              ) : null}
+              {dream.sleepContext?.preSleepEmotions?.length ? (
+                <>
+                  <Text style={styles.subsectionLabel}>{copy.detailPreSleepEmotionsLabel}</Text>
+                  <View style={styles.tagsRow}>
+                    {dream.sleepContext.preSleepEmotions.map(emotion => (
+                      <TagChip key={emotion} label={preSleepEmotionLabels[emotion]} />
+                    ))}
+                  </View>
+                </>
+              ) : null}
+            </View>
+          ) : (
+            <Text style={styles.mutedText}>{copy.detailEmotionEmpty}</Text>
+          )}
+        </DreamDetailSectionCard>
+      </Animated.View>
 
       {dream.audioUri || dream.transcript || transcriptStatus === 'error' ? (
-        <Card style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{copy.detailGeneratedTranscriptTitle}</Text>
+        <Animated.View entering={FadeInDown.delay(110).duration(220)} layout={detailLayoutTransition}>
+          <DreamDetailSectionCard
+            title={copy.detailGeneratedTranscriptTitle}
+            expanded={sections.transcript}
+            onToggle={() => toggleSection('transcript')}
+          >
 
-          {transcriptionProgress ? (
-            <View style={styles.progressBadge}>
-              <Text style={styles.progressBadgeLabel}>
-                {formatTranscriptionProgress(transcriptionProgress)}
+            {transcriptionProgress ? (
+              <View style={styles.progressBadge}>
+                <Text style={styles.progressBadgeLabel}>
+                  {formatTranscriptionProgress(transcriptionProgress)}
+                </Text>
+              </View>
+            ) : null}
+
+            {isEditingTranscript ? (
+              <FormField
+                value={transcriptDraft}
+                onChangeText={setTranscriptDraft}
+                multiline
+                inputStyle={styles.transcriptEditorInput}
+                helperText={`${transcriptDraft.trim() ? transcriptDraft.trim().split(/\s+/).length : 0} ${copy.wordsUnit}`}
+              />
+            ) : dream.transcript ? (
+              <Text style={styles.bodyText}>{dream.transcript}</Text>
+            ) : transcriptStatus === 'processing' || isTranscribingAudio ? (
+              <Text style={styles.statusText}>{copy.detailGeneratedTranscriptProcessing}</Text>
+            ) : transcriptStatus === 'error' ? (
+              <Text style={styles.statusErrorText}>{copy.detailGeneratedTranscriptError}</Text>
+            ) : (
+              <Text style={styles.mutedText}>{copy.detailGeneratedTranscriptEmpty}</Text>
+            )}
+
+            {dream.transcript ? (
+              <View style={styles.transcriptMetaCard}>
+                <InfoRow
+                  label={copy.detailGeneratedTranscriptSourceLabel}
+                  value={transcriptSourceLabel}
+                />
+                {dream.transcriptUpdatedAt ? (
+                  <InfoRow
+                    label={copy.detailGeneratedTranscriptUpdatedLabel}
+                    value={formatMetaTimestamp(dream.transcriptUpdatedAt)}
+                  />
+                ) : null}
+              </View>
+            ) : null}
+
+            {transcriptStatus === 'processing' && dream.transcript ? (
+              <Text style={styles.statusText}>{copy.detailGeneratedTranscriptProcessing}</Text>
+            ) : null}
+
+            {transcriptStatus === 'error' && dream.transcript ? (
+              <Text style={styles.statusErrorText}>
+                {copy.detailGeneratedTranscriptReplaceError}
               </Text>
-            </View>
-          ) : null}
+            ) : null}
 
-          {isEditingTranscript ? (
-            <FormField
-              value={transcriptDraft}
-              onChangeText={setTranscriptDraft}
-              multiline
-              inputStyle={styles.transcriptEditorInput}
-              helperText={`${transcriptDraft.trim() ? transcriptDraft.trim().split(/\s+/).length : 0} ${copy.wordsUnit}`}
-            />
-          ) : dream.transcript ? (
-            <Text style={styles.bodyText}>{dream.transcript}</Text>
-          ) : transcriptStatus === 'processing' || isTranscribingAudio ? (
-            <Text style={styles.statusText}>{copy.detailGeneratedTranscriptProcessing}</Text>
-          ) : transcriptStatus === 'error' ? (
-            <Text style={styles.statusErrorText}>{copy.detailGeneratedTranscriptError}</Text>
+            <Text style={styles.mutedText}>{copy.detailGeneratedTranscriptHint}</Text>
+
+            <View style={styles.transcriptActions}>
+              {isEditingTranscript ? (
+                <>
+                  <Button
+                    title={copy.detailGeneratedTranscriptSave}
+                    onPress={onSaveTranscriptEdit}
+                    icon="save-outline"
+                    size="sm"
+                  />
+                  <Button
+                    title={copy.detailGeneratedTranscriptCancel}
+                    variant="ghost"
+                    icon="close-outline"
+                    size="sm"
+                    onPress={onCancelTranscriptEdit}
+                  />
+                </>
+              ) : (
+                <>
+                  {dream.transcript ? (
+                    <>
+                      <Button
+                        title={copy.detailGeneratedTranscriptEdit}
+                        variant="ghost"
+                        icon="create-outline"
+                        size="sm"
+                        onPress={onStartTranscriptEdit}
+                      />
+                      <Button
+                        title={copy.detailGeneratedTranscriptClear}
+                        variant="danger"
+                        icon="close-circle-outline"
+                        size="sm"
+                        onPress={onClearTranscript}
+                      />
+                    </>
+                  ) : null}
+
+                  {dream.audioUri ? (
+                    <Button
+                      title={
+                        isTranscribingAudio
+                          ? formatTranscriptionProgress(transcriptionProgress) ??
+                            copy.detailTranscribeInProgress
+                          : dream.transcript
+                            ? copy.detailGeneratedTranscriptReplace
+                            : transcriptStatus === 'error'
+                              ? copy.detailTranscribeRetry
+                              : copy.detailTranscribeAudio
+                      }
+                      variant={
+                        dream.transcript || transcriptStatus === 'error' ? 'ghost' : 'primary'
+                      }
+                      onPress={onTranscribeAudio}
+                      disabled={isTranscribingAudio}
+                      icon={dream.transcript ? 'refresh-outline' : 'sparkles-outline'}
+                    />
+                  ) : null}
+                </>
+              )}
+            </View>
+          </DreamDetailSectionCard>
+        </Animated.View>
+      ) : null}
+
+      <Animated.View entering={FadeInDown.delay(130).duration(220)} layout={detailLayoutTransition}>
+        <DreamDetailSectionCard
+          title={copy.tagsTitle}
+          expanded={sections.tags}
+          onToggle={() => toggleSection('tags')}
+        >
+          <View style={styles.tagsRow}>
+            {dream.tags.length ? (
+              dream.tags.map(tag => <TagChip key={tag} label={tag} />)
+            ) : (
+              <Text style={styles.mutedText}>{copy.detailTagsEmpty}</Text>
+            )}
+          </View>
+        </DreamDetailSectionCard>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.delay(150).duration(220)} layout={detailLayoutTransition}>
+        <DreamDetailSectionCard
+          title={copy.detailRelatedTitle}
+          expanded={sections.related}
+          onToggle={() => toggleSection('related')}
+        >
+          <Text style={styles.mutedText}>{copy.detailRelatedDescription}</Text>
+          {relatedDreams.length ? (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.relatedCarousel}
+              contentContainerStyle={styles.relatedCarouselContent}
+            >
+              {relatedDreams.map(item => (
+                <Pressable
+                  key={item.dream.id}
+                  style={({ pressed }) => [
+                    styles.relatedCard,
+                    pressed ? styles.relatedCardPressed : null,
+                  ]}
+                  onPress={() =>
+                    navigation.push(ROOT_ROUTE_NAMES.DreamDetail, {
+                      dreamId: item.dream.id,
+                    })
+                  }
+                >
+                  <View style={styles.relatedHeader}>
+                    <View style={styles.relatedCopy}>
+                      <Text style={styles.relatedTitle}>{item.dream.title || copy.untitled}</Text>
+                      <Text style={styles.relatedMeta}>
+                        {item.dream.sleepDate ||
+                          new Date(item.dream.createdAt).toISOString().slice(0, 10)}
+                      </Text>
+                    </View>
+                    <Ionicons name="arrow-forward-outline" size={18} color={t.colors.textDim} />
+                  </View>
+
+                  {item.sharedSignals.length ? (
+                    <View style={styles.tagsRow}>
+                      {item.sharedSignals.slice(0, 3).map(signal => (
+                        <TagChip key={`${item.dream.id}-${signal}`} label={signal} />
+                      ))}
+                    </View>
+                  ) : null}
+
+                  <Text style={styles.relatedSharedLabel}>{copy.detailRelatedSharedLabel}</Text>
+                </Pressable>
+              ))}
+            </ScrollView>
           ) : (
-            <Text style={styles.mutedText}>{copy.detailGeneratedTranscriptEmpty}</Text>
+            <Text style={styles.mutedText}>{copy.detailRelatedEmpty}</Text>
+          )}
+        </DreamDetailSectionCard>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.delay(170).duration(220)} layout={detailLayoutTransition}>
+        <DreamDetailSectionCard
+          title={copy.detailAnalysisTitle}
+          expanded={sections.analysis}
+          onToggle={() => toggleSection('analysis')}
+        >
+          <View style={styles.analysisStateCard}>
+            <Text style={styles.analysisStateLabel}>{copy.detailAnalysisStateLabel}</Text>
+            <Text style={styles.analysisStateText}>{analysisStateText}</Text>
+            {!analysisSettings.enabled || analysisSettings.provider === 'openai' ? (
+              <Button
+                title={copy.detailAnalysisOpenSettings}
+                variant="ghost"
+                size="sm"
+                icon="settings-outline"
+                onPress={onOpenSettingsForAnalysis}
+              />
+            ) : null}
+          </View>
+
+          {dream.analysis?.summary ? (
+            <>
+              <Text style={styles.subsectionLabel}>{copy.detailAnalysisSummaryLabel}</Text>
+              <Text style={styles.bodyText}>{dream.analysis.summary}</Text>
+            </>
+          ) : (
+            <Text style={styles.mutedText}>
+              {analysisSettings.enabled ? copy.detailAnalysisEmpty : copy.detailAnalysisDisabled}
+            </Text>
           )}
 
-          {dream.transcript ? (
-            <View style={styles.transcriptMetaCard}>
+          <View style={styles.transcriptMetaCard}>
+            <InfoRow label={copy.detailAnalysisStatusLabel} value={analysisStatusLabel} />
+            <InfoRow label={copy.detailAnalysisProviderLabel} value={analysisProviderLabel} />
+            {dream.analysis?.generatedAt ? (
               <InfoRow
-                label={copy.detailGeneratedTranscriptSourceLabel}
-                value={transcriptSourceLabel}
+                label={copy.detailAnalysisUpdatedLabel}
+                value={formatMetaTimestamp(dream.analysis.generatedAt)}
               />
-              {dream.transcriptUpdatedAt ? (
-                <InfoRow
-                  label={copy.detailGeneratedTranscriptUpdatedLabel}
-                  value={formatMetaTimestamp(dream.transcriptUpdatedAt)}
+            ) : null}
+          </View>
+
+          {dream.analysis?.themes?.length ? (
+            <>
+              <Text style={styles.subsectionLabel}>{copy.detailAnalysisThemesLabel}</Text>
+              <View style={styles.tagsRow}>
+                {dream.analysis.themes.map(theme => <TagChip key={theme} label={theme} />)}
+              </View>
+            </>
+          ) : null}
+
+          {dream.analysis?.status === 'error' && dream.analysis.errorMessage ? (
+            <Text style={styles.statusErrorText}>{dream.analysis.errorMessage}</Text>
+          ) : null}
+
+          {analysisSettings.enabled ? (
+            <View style={styles.analysisActionsRow}>
+              <Button
+                title={
+                  isGeneratingAnalysis
+                    ? copy.detailAnalysisGenerating
+                    : dream.analysis?.status === 'ready'
+                      ? copy.detailAnalysisRegenerate
+                      : copy.detailAnalysisGenerate
+                }
+                variant={dream.analysis?.status === 'ready' ? 'ghost' : 'primary'}
+                onPress={onGenerateAnalysis}
+                disabled={isGeneratingAnalysis}
+                icon={dream.analysis?.status === 'ready' ? 'refresh-outline' : 'sparkles-outline'}
+              />
+              {dream.analysis ? (
+                <Button
+                  title={copy.detailAnalysisClear}
+                  variant="danger"
+                  onPress={onClearAnalysis}
+                  disabled={isGeneratingAnalysis}
+                  icon="trash-outline"
+                  size="sm"
                 />
               ) : null}
             </View>
           ) : null}
+        </DreamDetailSectionCard>
+      </Animated.View>
 
-          {transcriptStatus === 'processing' && dream.transcript ? (
-            <Text style={styles.statusText}>{copy.detailGeneratedTranscriptProcessing}</Text>
-          ) : null}
-
-          {transcriptStatus === 'error' && dream.transcript ? (
-            <Text style={styles.statusErrorText}>{copy.detailGeneratedTranscriptReplaceError}</Text>
-          ) : null}
-
-          <Text style={styles.mutedText}>{copy.detailGeneratedTranscriptHint}</Text>
-
-          <View style={styles.transcriptActions}>
-            {isEditingTranscript ? (
-              <>
-                <Button
-                  title={copy.detailGeneratedTranscriptSave}
-                  onPress={onSaveTranscriptEdit}
-                  icon="save-outline"
-                  size="sm"
-                />
-                <Button
-                  title={copy.detailGeneratedTranscriptCancel}
-                  variant="ghost"
-                  icon="close-outline"
-                  size="sm"
-                  onPress={onCancelTranscriptEdit}
-                />
-              </>
-            ) : (
-              <>
-                {dream.transcript ? (
-                  <>
-                    <Button
-                      title={copy.detailGeneratedTranscriptEdit}
-                      variant="ghost"
-                      icon="create-outline"
-                      size="sm"
-                      onPress={onStartTranscriptEdit}
-                    />
-                    <Button
-                      title={copy.detailGeneratedTranscriptClear}
-                      variant="danger"
-                      icon="close-circle-outline"
-                      size="sm"
-                      onPress={onClearTranscript}
-                    />
-                  </>
-                ) : null}
-
-                {dream.audioUri ? (
-                  <Button
-                    title={
-                      isTranscribingAudio
-                        ? formatTranscriptionProgress(transcriptionProgress) ??
-                          copy.detailTranscribeInProgress
-                        : dream.transcript
-                          ? copy.detailGeneratedTranscriptReplace
-                          : transcriptStatus === 'error'
-                            ? copy.detailTranscribeRetry
-                            : copy.detailTranscribeAudio
-                    }
-                    variant={
-                      dream.transcript || transcriptStatus === 'error' ? 'ghost' : 'primary'
-                    }
-                    onPress={onTranscribeAudio}
-                    disabled={isTranscribingAudio}
-                    icon={dream.transcript ? 'refresh-outline' : 'sparkles-outline'}
-                  />
-                ) : null}
-              </>
-            )}
-          </View>
-        </Card>
-      ) : null}
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.tagsTitle}</Text>
-        <View style={styles.tagsRow}>
-          {dream.tags.length ? (
-            dream.tags.map(tag => <TagChip key={tag} label={tag} />)
+      <Animated.View entering={FadeInDown.delay(190).duration(220)} layout={detailLayoutTransition}>
+        <DreamDetailSectionCard
+          title={copy.detailContextTitle}
+          expanded={sections.context}
+          onToggle={() => toggleSection('context')}
+        >
+          {!hasContext ? (
+            <Text style={styles.mutedText}>{copy.detailContextEmpty}</Text>
           ) : (
-            <Text style={styles.mutedText}>{copy.detailTagsEmpty}</Text>
-          )}
-        </View>
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.detailRelatedTitle}</Text>
-        <Text style={styles.mutedText}>{copy.detailRelatedDescription}</Text>
-        {relatedDreams.length ? (
-          <View style={styles.relatedList}>
-            {relatedDreams.map(item => (
-              <Pressable
-                key={item.dream.id}
-                style={({ pressed }) => [
-                  styles.relatedCard,
-                  pressed ? styles.relatedCardPressed : null,
-                ]}
-                onPress={() =>
-                  navigation.push(ROOT_ROUTE_NAMES.DreamDetail, {
-                    dreamId: item.dream.id,
-                  })
-                }
-              >
-                <View style={styles.relatedHeader}>
-                  <View style={styles.relatedCopy}>
-                    <Text style={styles.relatedTitle}>{item.dream.title || copy.untitled}</Text>
-                    <Text style={styles.relatedMeta}>
-                      {item.dream.sleepDate || new Date(item.dream.createdAt).toISOString().slice(0, 10)}
-                    </Text>
-                  </View>
-                </View>
-
-                {item.sharedSignals.length ? (
-                  <View style={styles.tagsRow}>
-                    {item.sharedSignals.map(signal => (
-                      <TagChip key={`${item.dream.id}-${signal}`} label={signal} />
-                    ))}
-                  </View>
-                ) : null}
-
-                <Text style={styles.relatedSharedLabel}>{copy.detailRelatedSharedLabel}</Text>
-              </Pressable>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.mutedText}>{copy.detailRelatedEmpty}</Text>
-        )}
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.detailAnalysisTitle}</Text>
-        <View style={styles.analysisStateCard}>
-          <Text style={styles.analysisStateLabel}>{copy.detailAnalysisStateLabel}</Text>
-          <Text style={styles.analysisStateText}>{analysisStateText}</Text>
-          {!analysisSettings.enabled || analysisSettings.provider === 'openai' ? (
-            <Button
-              title={copy.detailAnalysisOpenSettings}
-              variant="ghost"
-              size="sm"
-              icon="settings-outline"
-              onPress={onOpenSettingsForAnalysis}
-            />
-          ) : null}
-        </View>
-
-        {dream.analysis?.summary ? (
-          <>
-            <Text style={styles.sectionTitle}>{copy.detailAnalysisSummaryLabel}</Text>
-            <Text style={styles.bodyText}>{dream.analysis.summary}</Text>
-          </>
-        ) : (
-          <Text style={styles.mutedText}>
-            {analysisSettings.enabled ? copy.detailAnalysisEmpty : copy.detailAnalysisDisabled}
-          </Text>
-        )}
-
-        <View style={styles.transcriptMetaCard}>
-          <InfoRow label={copy.detailAnalysisStatusLabel} value={analysisStatusLabel} />
-          <InfoRow label={copy.detailAnalysisProviderLabel} value={analysisProviderLabel} />
-          {dream.analysis?.generatedAt ? (
-            <InfoRow
-              label={copy.detailAnalysisUpdatedLabel}
-              value={formatMetaTimestamp(dream.analysis.generatedAt)}
-            />
-          ) : null}
-        </View>
-
-        {dream.analysis?.themes?.length ? (
-          <>
-            <Text style={styles.sectionTitle}>{copy.detailAnalysisThemesLabel}</Text>
-            <View style={styles.tagsRow}>
-              {dream.analysis.themes.map(theme => <TagChip key={theme} label={theme} />)}
+            <View style={styles.contextRows}>
+              {typeof dream.sleepContext?.stressLevel === 'number' ? (
+                <InfoRow
+                  label={copy.stressLabel}
+                  value={stressLabels[dream.sleepContext.stressLevel]}
+                />
+              ) : null}
+              {typeof dream.sleepContext?.alcoholTaken === 'boolean' ? (
+                <InfoRow
+                  label={copy.alcoholLabel}
+                  value={dream.sleepContext.alcoholTaken ? copy.boolYes : copy.boolNo}
+                />
+              ) : null}
+              {typeof dream.sleepContext?.caffeineLate === 'boolean' ? (
+                <InfoRow
+                  label={copy.caffeineLabel}
+                  value={dream.sleepContext.caffeineLate ? copy.boolYes : copy.boolNo}
+                />
+              ) : null}
+              {dream.sleepContext?.medications ? (
+                <InfoRow label={copy.medicationsLabel} value={dream.sleepContext.medications} />
+              ) : null}
+              {dream.sleepContext?.importantEvents ? (
+                <InfoRow
+                  label={copy.eventsLabel}
+                  value={dream.sleepContext.importantEvents}
+                />
+              ) : null}
+              {dream.sleepContext?.healthNotes ? (
+                <InfoRow label={copy.healthNotesLabel} value={dream.sleepContext.healthNotes} />
+              ) : null}
             </View>
-          </>
-        ) : null}
-
-        {dream.analysis?.status === 'error' && dream.analysis.errorMessage ? (
-          <Text style={styles.statusErrorText}>{dream.analysis.errorMessage}</Text>
-        ) : null}
-
-        {analysisSettings.enabled ? (
-          <View style={styles.analysisActionsRow}>
-            <Button
-              title={
-                isGeneratingAnalysis
-                  ? copy.detailAnalysisGenerating
-                  : dream.analysis?.status === 'ready'
-                    ? copy.detailAnalysisRegenerate
-                    : copy.detailAnalysisGenerate
-              }
-              variant={dream.analysis?.status === 'ready' ? 'ghost' : 'primary'}
-              onPress={onGenerateAnalysis}
-              disabled={isGeneratingAnalysis}
-              icon={dream.analysis?.status === 'ready' ? 'refresh-outline' : 'sparkles-outline'}
-            />
-            {dream.analysis ? (
-              <Button
-                title={copy.detailAnalysisClear}
-                variant="danger"
-                onPress={onClearAnalysis}
-                disabled={isGeneratingAnalysis}
-                icon="trash-outline"
-                size="sm"
-              />
-            ) : null}
-          </View>
-        ) : null}
-      </Card>
-
-      <Card style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>{copy.detailContextTitle}</Text>
-        {!hasContext ? (
-          <Text style={styles.mutedText}>{copy.detailContextEmpty}</Text>
-        ) : (
-          <View style={styles.contextRows}>
-            {typeof dream.sleepContext?.stressLevel === 'number' ? (
-              <InfoRow
-                label={copy.stressLabel}
-                value={stressLabels[dream.sleepContext.stressLevel]}
-              />
-            ) : null}
-            {typeof dream.sleepContext?.alcoholTaken === 'boolean' ? (
-              <InfoRow
-                label={copy.alcoholLabel}
-                value={dream.sleepContext.alcoholTaken ? copy.boolYes : copy.boolNo}
-              />
-            ) : null}
-            {typeof dream.sleepContext?.caffeineLate === 'boolean' ? (
-              <InfoRow
-                label={copy.caffeineLabel}
-                value={dream.sleepContext.caffeineLate ? copy.boolYes : copy.boolNo}
-              />
-            ) : null}
-            {dream.sleepContext?.medications ? (
-              <InfoRow
-                label={copy.medicationsLabel}
-                value={dream.sleepContext.medications}
-              />
-            ) : null}
-            {dream.sleepContext?.importantEvents ? (
-              <InfoRow
-                label={copy.eventsLabel}
-                value={dream.sleepContext.importantEvents}
-              />
-            ) : null}
-            {dream.sleepContext?.healthNotes ? (
-              <InfoRow
-                label={copy.healthNotesLabel}
-                value={dream.sleepContext.healthNotes}
-              />
-            ) : null}
-          </View>
-        )}
-      </Card>
+          )}
+        </DreamDetailSectionCard>
+      </Animated.View>
 
       {dream.audioUri ? (
-        <Card style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>{copy.voiceTitle}</Text>
-          <View style={styles.audioCard}>
-            <Text>{copy.detailAudioDescription}</Text>
-            <Text style={styles.mutedText}>{copy.detailAudioPlaybackHint}</Text>
-            <InfoRow label={copy.detailAudioPathLabel} value={dream.audioUri} />
-            <Button
-              title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}
-              variant={isPlayingAudio ? 'ghost' : 'primary'}
-              onPress={onToggleAudioPlayback}
-              icon={isPlayingAudio ? 'stop-circle-outline' : 'play-outline'}
-              size="sm"
-            />
-          </View>
-        </Card>
+        <Animated.View entering={FadeInDown.delay(210).duration(220)} layout={detailLayoutTransition}>
+          <DreamDetailSectionCard
+            title={copy.voiceTitle}
+            expanded={sections.audio}
+            onToggle={() => toggleSection('audio')}
+          >
+            <View style={styles.audioCard}>
+              <Text>{copy.detailAudioDescription}</Text>
+              <Text style={styles.mutedText}>{copy.detailAudioPlaybackHint}</Text>
+              <InfoRow label={copy.detailAudioPathLabel} value={dream.audioUri} />
+              <Button
+                title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}
+                variant={isPlayingAudio ? 'ghost' : 'primary'}
+                onPress={onToggleAudioPlayback}
+                icon={isPlayingAudio ? 'stop-circle-outline' : 'play-outline'}
+                size="sm"
+              />
+            </View>
+          </DreamDetailSectionCard>
+        </Animated.View>
       ) : null}
     </ScreenContainer>
   );

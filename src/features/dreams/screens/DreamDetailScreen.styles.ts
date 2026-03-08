@@ -5,9 +5,11 @@ import { Theme } from '../../../theme/theme';
 export function createDreamDetailScreenStyles(theme: Theme) {
   return StyleSheet.create({
     heroCard: {
-      gap: 16,
+      gap: 10,
       overflow: 'hidden',
       position: 'relative',
+      padding: 16,
+      backgroundColor: theme.colors.surface,
     },
     heroGlowLarge: {
       position: 'absolute',
@@ -33,13 +35,13 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
-      gap: 12,
+      gap: 10,
     },
     heroStatusRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       justifyContent: 'flex-end',
-      gap: 8,
+      gap: 6,
     },
     backButton: {
       ...createControlPill(theme, {
@@ -61,17 +63,31 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     statusChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 6,
-        paddingHorizontal: 10,
+        paddingVertical: 4,
+        paddingHorizontal: 9,
       }),
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 6,
+      gap: 5,
+    },
+    statusChipInteractive: {
+      minHeight: 30,
+    },
+    statusChipActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    statusChipPressed: {
+      opacity: 0.95,
+      transform: [{ scale: 0.985 }],
     },
     statusChipLabel: {
       color: theme.colors.textDim,
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: '700',
+    },
+    statusChipLabelActive: {
+      color: theme.colors.background,
     },
     statusDot: {
       width: 8,
@@ -81,106 +97,97 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     heroHeader: {
       gap: 6,
     },
-    heroEyebrow: {
-      color: theme.colors.accent,
-      fontSize: 12,
-      fontWeight: '700',
-      letterSpacing: 0.8,
-      textTransform: 'uppercase',
-    },
     heroTitleRow: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
     },
+    titleEditButton: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 7,
+        paddingHorizontal: 7,
+      }),
+      width: 34,
+      height: 34,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    titleEditButtonPressed: {
+      opacity: 0.95,
+      transform: [{ scale: 0.985 }],
+    },
     heroTitle: {
       flex: 1,
-      fontSize: 32,
-      lineHeight: 38,
+      fontSize: 28,
+      lineHeight: 34,
       fontWeight: '700',
       includeFontPadding: false,
     },
     heroSubtitle: {
       color: theme.colors.textDim,
-      fontSize: 15,
-      lineHeight: 22,
+      fontSize: 13,
+      lineHeight: 18,
     },
-    heroStatsRow: {
+    heroPreviewText: {
+      color: theme.colors.text,
+      fontSize: 13,
+      lineHeight: 19,
+      maxWidth: '88%',
+    },
+    summaryCard: {
+      padding: 14,
+      gap: 10,
+      backgroundColor: theme.colors.surfaceElevated,
+    },
+    glanceGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 8,
     },
-    heroPreviewCard: {
+    glanceCard: {
       ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 16,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
-      }),
-      gap: 6,
-    },
-    heroPreviewLabel: {
-      color: theme.colors.textDim,
-      fontSize: 11,
-      textTransform: 'uppercase',
-      letterSpacing: 0.6,
-      fontWeight: '700',
-    },
-    heroPreviewText: {
-      color: theme.colors.text,
-      fontSize: 14,
-      lineHeight: 20,
-    },
-    metaChip: {
-      ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 16,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 9,
+        paddingHorizontal: 10,
       }),
       flex: 1,
-      minWidth: 102,
-      gap: 4,
+      minWidth: 132,
+      gap: 6,
     },
-    metaChipLabel: {
+    glanceHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    glanceIconShell: {
+      width: 22,
+      height: 22,
+      borderRadius: 999,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    glanceLabel: {
       color: theme.colors.textDim,
-      fontSize: 11,
+      fontSize: 10,
       textTransform: 'uppercase',
       letterSpacing: 0.6,
-    },
-    metaChipValue: {
       fontWeight: '700',
-      fontSize: 16,
-      lineHeight: 20,
+    },
+    glanceValue: {
+      fontWeight: '700',
+      fontSize: 14,
+      lineHeight: 18,
     },
     heroActionsRow: {
       flexDirection: 'row',
-      gap: 10,
-    },
-    deleteAction: {
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-      }),
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      alignSelf: 'flex-start',
+      flexWrap: 'wrap',
       gap: 8,
-      borderColor: `${theme.colors.danger}66`,
-      backgroundColor: `${theme.colors.danger}14`,
-    },
-    deleteActionPressed: {
-      opacity: 0.94,
-      transform: [{ scale: 0.99 }],
-    },
-    deleteActionLabel: {
-      color: theme.colors.danger,
-      fontSize: 12,
-      fontWeight: '700',
     },
     savedCard: {
+      padding: 16,
       gap: 12,
       borderColor: theme.colors.accent,
       backgroundColor: theme.colors.surface,
@@ -197,7 +204,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     savedTitle: {
       fontWeight: '700',
-      fontSize: 18,
+      fontSize: 16,
     },
     savedDescription: {
       color: theme.colors.textDim,
@@ -216,7 +223,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     savedStatsRow: {
       flexDirection: 'row',
-      gap: 10,
+      gap: 8,
     },
     savedStatTile: {
       flex: 1,
@@ -224,8 +231,8 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
+        paddingVertical: 9,
+        paddingHorizontal: 10,
       }),
     },
     savedStatLabel: {
@@ -240,7 +247,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       lineHeight: 20,
     },
     sectionCard: {
-      gap: 14,
+      gap: 12,
     },
     sectionTitle: {
       fontWeight: '700',
@@ -256,18 +263,18 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     bodyText: {
       color: theme.colors.text,
-      lineHeight: 24,
+      lineHeight: 22,
     },
     mutedText: {
       color: theme.colors.textDim,
-      lineHeight: 20,
+      lineHeight: 18,
     },
     statusText: {
-      lineHeight: 22,
+      lineHeight: 20,
       color: theme.colors.textDim,
     },
     statusErrorText: {
-      lineHeight: 22,
+      lineHeight: 20,
       color: theme.colors.danger,
     },
     tagsRow: {
@@ -276,7 +283,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       gap: 8,
     },
     contextRows: {
-      gap: 12,
+      gap: 10,
     },
     relatedList: {
       gap: 10,
@@ -286,17 +293,17 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     relatedCarouselContent: {
       paddingHorizontal: 4,
-      gap: 10,
+      gap: 8,
     },
     relatedCard: {
-      gap: 10,
+      gap: 8,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
       }),
-      width: 248,
+      width: 220,
     },
     relatedCardPressed: {
       opacity: 0.96,
@@ -317,7 +324,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     relatedMeta: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
     },
     relatedSharedLabel: {
       color: theme.colors.textDim,
@@ -331,12 +338,12 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       gap: 8,
     },
     audioCard: {
-      gap: 8,
+      gap: 6,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
       }),
     },
     audioPath: {
@@ -357,21 +364,21 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       fontWeight: '600',
     },
     transcriptMetaCard: {
-      gap: 10,
-      ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 14,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
-      }),
-    },
-    analysisStateCard: {
       gap: 8,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+      }),
+    },
+    analysisStateCard: {
+      gap: 6,
+      ...createSoftTile(theme, {
+        tone: 'alt',
+        radius: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
       }),
     },
     analysisStateLabel: {
@@ -385,13 +392,13 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       color: theme.colors.text,
     },
     analysisActionsRow: {
-      gap: 10,
+      gap: 8,
     },
     transcriptEditorInput: {
-      minHeight: 168,
+      minHeight: 150,
     },
     transcriptActions: {
-      gap: 10,
+      gap: 8,
     },
   });
 }

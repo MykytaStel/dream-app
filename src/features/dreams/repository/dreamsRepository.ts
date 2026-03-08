@@ -99,6 +99,7 @@ export function archiveDream(id: string) {
       : dream,
   );
   persistDreams(next);
+  return next.find(dream => dream.id === id);
 }
 
 export function starDream(id: string) {
@@ -127,6 +128,7 @@ export function unarchiveDream(id: string) {
     return nextDream;
   });
   persistDreams(next);
+  return next.find(dream => dream.id === id);
 }
 
 export function updateDreamTranscriptState(

@@ -93,6 +93,74 @@ export function createSettingsScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 18,
     },
+    restoreList: {
+      gap: 8,
+    },
+    restoreModeWrap: {
+      gap: 8,
+    },
+    restoreModeRow: {
+      flexDirection: 'row',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    restoreModeChip: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+      }),
+      flexBasis: '48%',
+      flexGrow: 1,
+      gap: 4,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    restoreModeChipActive: {
+      backgroundColor: theme.colors.surfaceElevated,
+      borderColor: theme.colors.primary,
+    },
+    restoreModeChipText: {
+      color: theme.colors.text,
+      fontWeight: '700',
+    },
+    restoreModeChipTextActive: {
+      color: theme.colors.primary,
+    },
+    restoreModeHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    restorePreviewBlock: {
+      gap: 8,
+    },
+    restoreLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+      fontWeight: '700',
+    },
+    restoreEmptyBlock: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      gap: 4,
+    },
+    restoreEmptyTitle: {
+      color: theme.colors.text,
+      fontWeight: '700',
+    },
+    restoreHint: {
+      color: theme.colors.textDim,
+      lineHeight: 17,
+      fontSize: 12,
+    },
     privacyFootnote: {
       color: theme.colors.textDim,
       lineHeight: 17,

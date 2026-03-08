@@ -4,6 +4,22 @@ import { Theme } from '../../theme/theme';
 type ButtonVariant = 'primary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
 
+function hexToRgba(hex: string, alpha: number) {
+  const normalized = hex.replace('#', '');
+  const chunk =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map(value => `${value}${value}`)
+          .join('')
+      : normalized;
+  const int = Number.parseInt(chunk, 16);
+  const r = (int >> 16) & 255;
+  const g = (int >> 8) & 255;
+  const b = int & 255;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export function createButtonStyles(
   theme: Theme,
   variant: ButtonVariant,
@@ -21,9 +37,9 @@ export function createButtonStyles(
       borderRadius: theme.borderRadii.xl,
       shadowColor: isPrimary ? theme.colors.glow : isDanger ? theme.colors.danger : 'transparent',
       shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: isPrimary || isDanger ? 0.14 : 0,
-      shadowRadius: 16,
-      elevation: isPrimary || isDanger ? 4 : 0,
+      shadowOpacity: isPrimary || isDanger ? 0.18 : 0,
+      shadowRadius: 18,
+      elevation: isPrimary || isDanger ? 5 : 0,
       opacity: disabled ? 0.56 : 1,
     },
     pressable: {
@@ -36,13 +52,13 @@ export function createButtonStyles(
           ? theme.colors.primary
           : isDanger
             ? theme.colors.danger
-            : theme.colors.surfaceElevated,
+            : hexToRgba(theme.colors.surfaceElevated, 0.9),
       borderColor:
         isPrimary
-          ? theme.colors.primary
+          ? hexToRgba('#FFFFFF', 0.14)
           : isDanger
-            ? theme.colors.danger
-            : theme.colors.border,
+            ? hexToRgba('#FFFFFF', 0.08)
+            : hexToRgba('#FFFFFF', 0.06),
     },
     contentRow: {
       flexDirection: 'row',

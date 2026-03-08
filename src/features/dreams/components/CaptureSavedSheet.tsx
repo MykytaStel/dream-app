@@ -2,7 +2,9 @@ import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { Pulse } from '../../../components/animation/Pulse';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
@@ -60,7 +62,18 @@ export function CaptureSavedSheet({
         <Pressable style={styles.backdrop} onPress={onClose} />
         <Animated.View entering={FadeInDown.duration(220)} style={styles.sheetWrap}>
           <Card style={styles.card}>
+            <View pointerEvents="none" style={styles.glowLarge} />
+            <View pointerEvents="none" style={styles.glowSmall} />
             <View style={styles.handle} />
+
+            <View style={styles.successHero}>
+              <View style={styles.successPulseWrap}>
+                <Pulse size={52} active={visible} />
+                <View style={styles.successOrb}>
+                  <Ionicons name="checkmark" size={22} color="#0B1220" />
+                </View>
+              </View>
+            </View>
 
             <Text style={styles.eyebrow}>{copy.saveSuccessTitle}</Text>
             <Text style={styles.title}>{copy.postSaveTitle}</Text>
@@ -141,6 +154,28 @@ function createStyles(theme: Theme, bottomInset: number) {
     card: {
       gap: 12,
       paddingTop: theme.spacing.sm,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    glowLarge: {
+      position: 'absolute',
+      width: 160,
+      height: 160,
+      borderRadius: 999,
+      backgroundColor: theme.colors.auroraMid,
+      opacity: 0.08,
+      top: -58,
+      right: -36,
+    },
+    glowSmall: {
+      position: 'absolute',
+      width: 110,
+      height: 110,
+      borderRadius: 999,
+      backgroundColor: theme.colors.accent,
+      opacity: 0.08,
+      bottom: -26,
+      left: -24,
     },
     handle: {
       width: 44,
@@ -149,6 +184,34 @@ function createStyles(theme: Theme, bottomInset: number) {
       borderRadius: 999,
       backgroundColor: theme.colors.border,
       opacity: 0.9,
+    },
+    successHero: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 2,
+      marginBottom: 2,
+    },
+    successPulseWrap: {
+      width: 62,
+      height: 62,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    successOrb: {
+      position: 'absolute',
+      width: 44,
+      height: 44,
+      borderRadius: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+      borderWidth: 1,
+      borderColor: 'rgba(255,255,255,0.12)',
+      shadowColor: theme.colors.glow,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.2,
+      shadowRadius: 14,
+      elevation: 5,
     },
     eyebrow: {
       color: theme.colors.accent,

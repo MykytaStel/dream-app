@@ -50,6 +50,10 @@ import {
   DreamTranscriptionProgress,
   transcribeDreamAudio,
 } from '../services/dreamTranscriptionService';
+import {
+  clearLastViewedDream,
+  saveLastViewedDream,
+} from '../services/lastViewedDreamService';
 import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
 import { DreamDetailActionTile } from '../components/DreamDetailActionTile';
 import { DreamDetailSectionCard } from '../components/DreamDetailSectionCard';
@@ -309,6 +313,10 @@ export default function DreamDetailScreen() {
       setTranscriptionProgress(null);
       setShowSavedHighlight(Boolean(route.params.justSaved));
 
+      if (nextDream) {
+        saveLastViewedDream(nextDream.id);
+      }
+
       if (route.params.justSaved) {
         navigation.setParams({
           justSaved: false,
@@ -479,6 +487,7 @@ export default function DreamDetailScreen() {
           style: 'destructive',
           onPress: () => {
             deleteDream(dreamId);
+            clearLastViewedDream(dreamId);
             navigation.goBack();
           },
         },

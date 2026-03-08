@@ -49,6 +49,7 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { Dream } from '../../dreams/model/dream';
 import { PatternGroupCard, type PatternGroupCardItem } from '../components/PatternGroupCard';
 import { AppLocale } from '../../../i18n/types';
+import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 
 type InsightRange = 'all' | '30d' | '7d';
 type InsightMode = 'snapshot' | 'compare';
@@ -317,7 +318,12 @@ export default function StatsScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      setDreams(listDreams());
+      const startedAt = Date.now();
+      const nextDreams = listDreams();
+      React.startTransition(() => {
+        setDreams(nextDreams);
+      });
+      trackLocalSurfaceLoad('insights_refresh', startedAt, nextDreams.length);
     }, []),
   );
 
@@ -840,11 +846,17 @@ export default function StatsScreen() {
                     </View>
                   </View>
 
-                  <View>
+                  <View style={styles.detailsSubsection}>
                     <SectionHeader title={copy.coverageTitle} subtitle={copy.coverageDescription} />
                     <View style={styles.coverageGrid}>
-                      {coverageItems.map(item => (
-                        <View key={item.label} style={styles.coverageCard}>
+                      {coverageItems.map((item, index) => (
+                        <View
+                          key={item.label}
+                          style={[
+                            styles.coverageCard,
+                            index === coverageItems.length - 1 ? styles.coverageCardWide : null,
+                          ]}
+                        >
                           <Text style={styles.coverageLabel}>{item.label}</Text>
                           <Text style={styles.coverageValue}>
                             {formatCoverageValue(item.value, item.total)}
@@ -855,11 +867,17 @@ export default function StatsScreen() {
                     </View>
                   </View>
 
-                  <View>
+                  <View style={styles.detailsSubsection}>
                     <SectionHeader title={copy.attentionTitle} subtitle={copy.attentionDescription} />
                     <View style={styles.attentionRow}>
-                      {attentionItems.map(item => (
-                        <View key={item.label} style={styles.attentionCard}>
+                      {attentionItems.map((item, index) => (
+                        <View
+                          key={item.label}
+                          style={[
+                            styles.attentionCard,
+                            index === attentionItems.length - 1 ? styles.attentionCardWide : null,
+                          ]}
+                        >
                           <Text style={styles.attentionValue}>{item.value}</Text>
                           <Text style={styles.attentionLabel}>{item.label}</Text>
                           <Text style={styles.attentionHint}>{item.hint}</Text>

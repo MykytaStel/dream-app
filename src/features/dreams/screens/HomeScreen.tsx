@@ -72,6 +72,10 @@ import {
   saveHomeSearchPreset,
   type HomeSearchPreset,
 } from '../services/homeSearchPresetService';
+import {
+  clearLastViewedDream,
+  getLastViewedDream,
+} from '../services/lastViewedDreamService';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import {
   getRecurringReflectionSignals,
@@ -79,6 +83,7 @@ import {
   getTranscriptArchiveStats,
 } from '../../stats/model/dreamReflection';
 import { createHomeScreenStyles } from './HomeScreen.styles';
+import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 
 const HOME_RECENT_LIMIT = 12;
 const SEARCH_DEBOUNCE_MS = 160;
@@ -140,6 +145,7 @@ export default function HomeScreen() {
   const [savedSearchPresets, setSavedSearchPresets] = React.useState<HomeSearchPreset[]>(
     () => getHomeSearchPresets(),
   );
+  const [lastViewedDream, setLastViewedDream] = React.useState<Dream | null>(null);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = React.useState(false);
   const styles = createHomeScreenStyles(t);
   const homeFilters = React.useMemo<Array<HomeOption<HomeArchiveFilter>>>(
@@ -318,6 +324,19 @@ export default function HomeScreen() {
       }),
     [localeKey],
   );
+  const lastViewedDreamMeta = React.useMemo(() => {
+    if (!lastViewedDream) {
+      return null;
+    }
+
+    return `${copy.homeLastDreamMetaPrefix} ${new Date(lastViewedDream.createdAt).toLocaleDateString(
+      localeKey,
+      {
+        month: 'short',
+        day: 'numeric',
+      },
+    )}`;
+  }, [copy.homeLastDreamMetaPrefix, lastViewedDream, localeKey]);
   const backlogValue = transcriptArchiveStats.audioOnly || moodBacklogCount;
   const spotlightPattern = spotlightWord?.label ?? spotlightTheme?.label ?? copy.homeSpotlightNoPattern;
   const spotlightPatternKind: PatternDetailKind | null = spotlightWord
@@ -442,6 +461,7 @@ export default function HomeScreen() {
 
   const refreshDreams = React.useCallback(
     (mode: 'initial' | 'refresh' | 'silent' = 'initial') => {
+      const startedAt = Date.now();
       if (mode === 'initial') {
         setLoading(true);
       }
@@ -453,9 +473,25 @@ export default function HomeScreen() {
       setLoadError(null);
 
       try {
-        setDreams(listDreams());
-        setDraft(getDreamDraft());
-        setSavedSearchPresets(getHomeSearchPresets());
+        const nextDreams = listDreams();
+        const nextDraft = getDreamDraft();
+        const nextPresets = getHomeSearchPresets();
+        const lastViewed = getLastViewedDream();
+        const nextLastViewedDream = lastViewed
+          ? nextDreams.find(dream => dream.id === lastViewed.dreamId) ?? null
+          : null;
+
+        if (lastViewed && !nextLastViewedDream) {
+          clearLastViewedDream(lastViewed.dreamId);
+        }
+
+        React.startTransition(() => {
+          setDreams(nextDreams);
+          setDraft(nextDraft);
+          setSavedSearchPresets(nextPresets);
+          setLastViewedDream(nextLastViewedDream);
+        });
+        trackLocalSurfaceLoad('home_refresh', startedAt, nextDreams.length);
       } catch (error) {
         setLoadError(String(error));
       } finally {
@@ -571,6 +607,14 @@ export default function HomeScreen() {
       dreamId,
     });
   }, [navigation]);
+
+  const openLastViewedDream = React.useCallback(() => {
+    if (!lastViewedDream) {
+      return;
+    }
+
+    openDreamDetail(lastViewedDream.id);
+  }, [lastViewedDream, openDreamDetail]);
 
   const toggleArchiveFromList = React.useCallback((dream: Dream) => {
     if (isDreamArchived(dream)) {
@@ -854,6 +898,9 @@ export default function HomeScreen() {
         streak={streak}
         totalDreams={activeDreams.length}
         averageWords={averageWords}
+        lastViewedDreamTitle={lastViewedDream?.title || (lastViewedDream ? copy.untitled : null)}
+        lastViewedDreamMeta={lastViewedDreamMeta}
+        onOpenLastDream={lastViewedDream ? openLastViewedDream : null}
       />
       <FlatList
         data={displayedDreams}

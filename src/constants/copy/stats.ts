@@ -66,7 +66,11 @@ const STATS_COPY_EN = {
   progressBackButton: 'Back',
   progressScreenTitle: 'Progress',
   progressScreenSubtitle:
-    'Milestones and weekly momentum live here instead of crowding the insights feed.',
+    'See your weekly rhythm, unlocked milestones, and the next recording goal.',
+  progressFocusTitle: 'Next unlock',
+  progressFocusDoneTitle: 'All core milestones unlocked',
+  progressFocusDoneDescription:
+    'The recording habit is established. New entries now mainly deepen the archive.',
   milestonesToggleShow: 'Show milestones',
   milestonesToggleHide: 'Hide milestones',
   currentStreak: 'Current streak',
@@ -82,9 +86,9 @@ const STATS_COPY_EN = {
   entriesWithTags: 'Entries with tags',
   readinessHint:
     'Small sample sizes can swing fast. Treat early patterns as directional, not final.',
-  milestonesTitle: 'Recording milestones',
+  milestonesTitle: 'All milestones',
   milestonesDescription:
-    'A lightweight motivation layer based on what you have already saved locally.',
+    'A simple view of what is already unlocked and what is still building up.',
   milestonesUnlockedLabel: 'Unlocked',
   milestonesCompleteTitle: 'Milestones complete',
   milestonesCompleteDescription:
@@ -92,7 +96,7 @@ const STATS_COPY_EN = {
   milestoneHighlightLabel: 'Highlight',
   milestoneUnlocked: 'Unlocked',
   milestoneInProgress: 'In progress',
-  milestoneProgressLabel: 'Progress',
+  milestoneProgressLabel: 'Done / goal',
   milestoneFirstDreamTitle: 'First dream saved',
   milestoneFirstDreamDescription: 'Capture the first dream to start building a usable archive.',
   milestoneThreeDayStreakTitle: 'Three days in a row',
@@ -268,7 +272,11 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   progressBackButton: 'Назад',
   progressScreenTitle: 'Прогрес',
   progressScreenSubtitle:
-    'Майлстоуни і тижневий ритм живуть тут окремо, а не перевантажують аналітику.',
+    'Тут видно тижневий ритм, відкриті майлстоуни і наступну ціль запису.',
+  progressFocusTitle: 'Наступне відкриття',
+  progressFocusDoneTitle: 'Усі базові майлстоуни відкриті',
+  progressFocusDoneDescription:
+    'Звичка запису вже зібрана. Тепер нові записи головно поглиблюють архів.',
   milestonesToggleShow: 'Показати майлстоуни',
   milestonesToggleHide: 'Сховати майлстоуни',
   currentStreak: 'Поточний стрік',
@@ -283,9 +291,9 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   entriesWithTags: 'Записи з тегами',
   readinessHint:
     'На малому обсязі даних патерни легко коливаються. Сприймай ранні сигнали як орієнтир, а не як висновок.',
-  milestonesTitle: 'Майлстоуни запису',
+  milestonesTitle: 'Усі майлстоуни',
   milestonesDescription:
-    'Легка мотивація на основі того, що ти вже зберіг локально.',
+    'Простий зріз того, що вже відкрито і що ще добудовується.',
   milestonesUnlockedLabel: 'Відкрито',
   milestonesCompleteTitle: 'Майлстоуни закрито',
   milestonesCompleteDescription:
@@ -293,7 +301,7 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   milestoneHighlightLabel: 'Фокус',
   milestoneUnlocked: 'Відкрито',
   milestoneInProgress: 'У процесі',
-  milestoneProgressLabel: 'Прогрес',
+  milestoneProgressLabel: 'Виконано / ціль',
   milestoneFirstDreamTitle: 'Перший сон збережено',
   milestoneFirstDreamDescription:
     'Збережи перший сон, щоб почати будувати корисний архів.',

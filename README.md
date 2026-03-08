@@ -22,8 +22,8 @@ This project is being developed by Mykyta Stelmashenko.
 
 ## Status
 
-Latest shipped version: `0.0.23`
-Current release target: `0.0.24`
+Latest shipped version: `0.0.24`
+Current release target: `0.0.25`
 
 This is an early MVP focused on the core journaling flow with local reminders,
 offline transcription, and local dream analysis. See
@@ -44,7 +44,9 @@ for the shipped insights-visual-refresh target,
 [docs/RELEASE_0.0.23_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.23_PLAN.md)
 for the latest shipped dream-detail-richness scope,
 [docs/RELEASE_0.0.24_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.24_PLAN.md)
-for the current import-and-shell-polish target, and
+for the shipped import-and-shell-polish target,
+[docs/RELEASE_0.0.25_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.25_PLAN.md)
+for the current performance-and-polish target, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the planned next versions.
 

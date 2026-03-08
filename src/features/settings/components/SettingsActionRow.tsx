@@ -30,7 +30,11 @@ export function SettingsActionRow({
     <>
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
-        {meta ? <Text style={styles.meta}>{meta}</Text> : null}
+        {meta ? (
+          <Text style={styles.meta} numberOfLines={1} ellipsizeMode="middle">
+            {meta}
+          </Text>
+        ) : null}
       </View>
       {trailing ?? (value ? <SettingsValueChip value={value} /> : null)}
     </>

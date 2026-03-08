@@ -21,6 +21,7 @@ import {
 import { getEntriesLastSevenDays } from '../../dreams/model/dreamAnalytics';
 import { createProgressScreenStyles } from './ProgressScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
+import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 
 const progressLayoutTransition = LinearTransition.springify()
   .damping(18)
@@ -62,7 +63,12 @@ export default function ProgressScreen() {
 
   useFocusEffect(
     React.useCallback(() => {
-      setDreams(listDreams());
+      const startedAt = Date.now();
+      const nextDreams = listDreams();
+      React.startTransition(() => {
+        setDreams(nextDreams);
+      });
+      trackLocalSurfaceLoad('progress_refresh', startedAt, nextDreams.length);
     }, []),
   );
 
@@ -71,13 +77,27 @@ export default function ProgressScreen() {
   const weeklyGoalTarget = 3;
   const lastSevenDays = getEntriesLastSevenDays(dreams);
   const weeklyGoalComplete = lastSevenDays >= weeklyGoalTarget;
+  const milestonesComplete =
+    achievementSummary.unlockedCount === achievementSummary.totalCount;
+  const highlightedAchievement = achievementSummary.highlightedId
+    ? achievements.find(achievement => achievement.id === achievementSummary.highlightedId) ?? null
+    : null;
   const highlightedAchievementTitle = achievementSummary.highlightedId
     ? getAchievementContent(achievementSummary.highlightedId, copy).title
     : null;
   const milestoneSummaryHint =
-    achievementSummary.unlockedCount === achievementSummary.totalCount
+    milestonesComplete
       ? copy.milestonesCompleteTitle
       : highlightedAchievementTitle ?? copy.milestoneInProgress;
+  const highlightedAchievementContent = highlightedAchievement
+    ? getAchievementContent(highlightedAchievement.id, copy)
+    : null;
+  const highlightedProgressRatio = highlightedAchievement
+    ? Math.min(highlightedAchievement.current / highlightedAchievement.target, 1)
+    : 0;
+  const highlightedProgressValue = highlightedAchievement
+    ? `${Math.min(highlightedAchievement.current, highlightedAchievement.target)}/${highlightedAchievement.target}`
+    : null;
 
   return (
     <ScreenContainer scroll>
@@ -88,7 +108,6 @@ export default function ProgressScreen() {
           </Pressable>
 
           <View style={styles.heroHeader}>
-            <Text style={styles.heroEyebrow}>{copy.progressScreenTitle}</Text>
             <SectionHeader
               title={copy.progressScreenTitle}
               subtitle={copy.progressScreenSubtitle}
@@ -111,6 +130,57 @@ export default function ProgressScreen() {
               </Text>
               <Text style={styles.summaryHint}>{milestoneSummaryHint}</Text>
             </View>
+          </View>
+
+          <View style={styles.focusCard}>
+            <Text style={styles.focusLabel}>
+              {milestonesComplete ? copy.progressFocusDoneTitle : copy.progressFocusTitle}
+            </Text>
+            {!milestonesComplete && highlightedAchievement && highlightedAchievementContent ? (
+              <>
+                <Text style={styles.focusTitle}>{highlightedAchievementContent.title}</Text>
+                <Text style={styles.focusDescription}>
+                  {highlightedAchievementContent.description}
+                </Text>
+                <View style={styles.focusMetaRow}>
+                  <Text style={styles.focusMetaText}>
+                    {`${copy.milestoneProgressLabel}: ${highlightedProgressValue}`}
+                  </Text>
+                  <View
+                    style={[
+                      styles.achievementBadge,
+                      highlightedAchievement.unlocked ? styles.achievementBadgeUnlocked : null,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.achievementBadgeText,
+                        highlightedAchievement.unlocked
+                          ? styles.achievementBadgeTextUnlocked
+                          : null,
+                      ]}
+                    >
+                      {highlightedAchievement.unlocked
+                        ? copy.milestoneUnlocked
+                        : copy.milestoneInProgress}
+                    </Text>
+                  </View>
+                </View>
+                <View style={styles.achievementProgressTrack}>
+                  <View
+                    style={[
+                      styles.achievementProgressFill,
+                      highlightedAchievement.unlocked
+                        ? styles.achievementProgressFillUnlocked
+                        : null,
+                      { width: `${highlightedProgressRatio * 100}%` },
+                    ]}
+                  />
+                </View>
+              </>
+            ) : (
+              <Text style={styles.focusDescription}>{copy.progressFocusDoneDescription}</Text>
+            )}
           </View>
         </Card>
       </Animated.View>

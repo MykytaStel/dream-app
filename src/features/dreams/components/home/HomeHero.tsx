@@ -1,5 +1,6 @@
 import React from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, Pressable, View } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
@@ -17,6 +18,9 @@ type HomeHeroProps = {
   streak: number;
   totalDreams: number;
   averageWords: number;
+  lastViewedDreamTitle?: string | null;
+  lastViewedDreamMeta?: string | null;
+  onOpenLastDream?: (() => void) | null;
 };
 
 export function HomeHero({
@@ -32,6 +36,9 @@ export function HomeHero({
   streak,
   totalDreams,
   averageWords,
+  lastViewedDreamTitle,
+  lastViewedDreamMeta,
+  onOpenLastDream,
 }: HomeHeroProps) {
   const heroHeight = scrollY.interpolate({
     inputRange: [0, collapseDistance],
@@ -112,6 +119,41 @@ export function HomeHero({
                 <Text style={styles.heroDateChipLabel}>{dateLabel}</Text>
               </View>
             </View>
+            {lastViewedDreamTitle && onOpenLastDream ? (
+              <Animated.View
+                style={{
+                  opacity: heroSubtitleOpacity,
+                  transform: [{ translateY: heroSubtitleTranslateY }],
+                }}
+              >
+                <Pressable
+                  onPress={onOpenLastDream}
+                  style={({ pressed }) => [
+                    styles.heroShortcutButton,
+                    pressed ? styles.heroShortcutButtonPressed : null,
+                  ]}
+                >
+                  <View style={styles.heroShortcutIconWrap}>
+                    <Ionicons
+                      name="return-up-forward-outline"
+                      size={15}
+                      color="#7CC8FF"
+                    />
+                  </View>
+                  <View style={styles.heroShortcutCopy}>
+                    <Text style={styles.heroShortcutLabel}>{copy.homeLastDreamLabel}</Text>
+                    <Text style={styles.heroShortcutTitle} numberOfLines={1}>
+                      {lastViewedDreamTitle}
+                    </Text>
+                    {lastViewedDreamMeta ? (
+                      <Text style={styles.heroShortcutMeta} numberOfLines={1}>
+                        {lastViewedDreamMeta}
+                      </Text>
+                    ) : null}
+                  </View>
+                </Pressable>
+              </Animated.View>
+            ) : null}
           </View>
           <Animated.View
             style={[

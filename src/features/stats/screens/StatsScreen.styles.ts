@@ -268,6 +268,9 @@ export function createStatsScreenStyles(theme: Theme) {
     sectionCard: {
       gap: 12,
     },
+    detailsSubsection: {
+      gap: 8,
+    },
     sectionHint: {
       color: theme.colors.textDim,
       lineHeight: 22,
@@ -362,19 +365,24 @@ export function createStatsScreenStyles(theme: Theme) {
     coverageGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 10,
     },
     coverageCard: {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 14,
-        paddingVertical: 11,
-        paddingHorizontal: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 13,
       }),
       flexGrow: 1,
       flexBasis: '47%',
       minWidth: 144,
-      gap: 5,
+      minHeight: 118,
+      gap: 6,
+      justifyContent: 'space-between',
+    },
+    coverageCardWide: {
+      flexBasis: '100%',
     },
     coverageLabel: {
       color: theme.colors.textDim,
@@ -398,23 +406,28 @@ export function createStatsScreenStyles(theme: Theme) {
     attentionRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 10,
     },
     attentionCard: {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 14,
-        paddingVertical: 11,
-        paddingHorizontal: 12,
+        paddingVertical: 12,
+        paddingHorizontal: 13,
       }),
       flexGrow: 1,
-      flexBasis: '31%',
-      minWidth: 110,
-      gap: 5,
+      flexBasis: '47%',
+      minWidth: 144,
+      minHeight: 118,
+      gap: 6,
+      justifyContent: 'space-between',
+    },
+    attentionCardWide: {
+      flexBasis: '100%',
     },
     attentionValue: {
-      fontSize: 24,
-      lineHeight: 28,
+      fontSize: 26,
+      lineHeight: 30,
       fontWeight: '700',
       includeFontPadding: false,
     },

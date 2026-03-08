@@ -20,10 +20,12 @@ import { Theme } from '../../../theme/theme';
 import { Dream, Mood } from '../model/dream';
 import { getDreamDate } from '../model/dreamAnalytics';
 import {
+  getDreamSearchMatchReasons,
   getDreamSearchScore,
   isDreamArchived,
   isDreamStarred,
   sortDreamsForTimeline,
+  type DreamSearchMatchReason,
 } from '../model/homeTimeline';
 import { listDreams } from '../repository/dreamsRepository';
 import { createArchiveScreenStyles } from './ArchiveScreen.styles';
@@ -312,9 +314,24 @@ function buildArchiveSections(
   ];
 }
 
+function getArchiveMatchReasonLabels(dream: Dream, query: string, copy: DreamCopy) {
+  const labelMap: Record<DreamSearchMatchReason, string> = {
+    title: copy.homeSearchMatchTitle,
+    notes: copy.homeSearchMatchNotes,
+    transcript: copy.homeSearchMatchTranscript,
+    tag: copy.homeSearchMatchTag,
+    context: copy.homeSearchMatchContext,
+  };
+
+  return getDreamSearchMatchReasons(dream, query)
+    .slice(0, 3)
+    .map(reason => labelMap[reason]);
+}
+
 const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   dream,
   copy,
+  searchQuery,
   localeKey,
   moodLabels,
   navigation,
@@ -323,6 +340,7 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
 }: {
   dream: Dream;
   copy: DreamCopy;
+  searchQuery: string;
   localeKey: string;
   moodLabels: Record<Mood, string>;
   navigation: NativeStackNavigationProp<RootStackParamList>;
@@ -333,6 +351,10 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   const mood = moodLabel(dream.mood, moodLabels);
   const isCompact = viewMode === 'compact';
   const pills = getArchivePills(dream, copy, mood).slice(0, isCompact ? 2 : 4);
+  const matchReasons = React.useMemo(
+    () => getArchiveMatchReasonLabels(dream, searchQuery, copy),
+    [copy, dream, searchQuery],
+  );
 
   return (
     <Pressable
@@ -376,6 +398,16 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
             {formatArchivePreview(dream, copy)}
           </Text>
         </View>
+
+        {matchReasons.length ? (
+          <View style={styles.matchReasonsRow}>
+            {matchReasons.map(label => (
+              <View key={`${dream.id}-match-${label}`} style={styles.matchReasonPill}>
+                <Text style={styles.matchReasonPillText}>{label}</Text>
+              </View>
+            ))}
+          </View>
+        ) : null}
 
         {pills.length ? (
           <View style={styles.pillsRow}>
@@ -558,6 +590,7 @@ export default function ArchiveScreen() {
       <ArchiveDreamRow
         dream={item}
         copy={copy}
+        searchQuery={deferredSearchQuery}
         localeKey={localeKey}
         moodLabels={moodLabels}
         navigation={navigation}

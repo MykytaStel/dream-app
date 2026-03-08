@@ -4,9 +4,11 @@ import {
   DEFAULT_HOME_TIMELINE_FILTERS,
   getAvailableTimelineTags,
   getDreamEntryType,
+  getDreamSearchMatchReasons,
   getDreamSearchScore,
   hasActiveTimelineRefinements,
   isDreamStarred,
+  matchesDreamSearch,
   matchesDreamTranscriptFilter,
 } from '../src/features/dreams/model/homeTimeline';
 
@@ -83,6 +85,9 @@ describe('homeTimeline', () => {
   });
 
   test('filters timeline by archive, mood, tags, type, and search query', () => {
+    expect(matchesDreamSearch(dreams[0], '')).toBe(true);
+    expect(getDreamSearchMatchReasons(dreams[0], '')).toEqual([]);
+
     expect(
       applyHomeTimelineFilters(dreams, {
         ...DEFAULT_HOME_TIMELINE_FILTERS,
@@ -206,6 +211,13 @@ describe('homeTimeline', () => {
         tags: [],
       },
       {
+        id: 'tag-hit',
+        createdAt: new Date('2026-03-07T08:00:00.000Z').getTime(),
+        sleepDate: '2026-03-07',
+        title: 'Ocean room',
+        tags: ['lantern'],
+      },
+      {
         id: 'transcript-hit',
         createdAt: new Date('2026-03-06T08:00:00.000Z').getTime(),
         sleepDate: '2026-03-06',
@@ -219,12 +231,15 @@ describe('homeTimeline', () => {
     expect(getDreamSearchScore(scoredDreams[1], 'lantern')).toBeGreaterThan(
       getDreamSearchScore(scoredDreams[0], 'lantern'),
     );
+    expect(getDreamSearchScore(scoredDreams[0], 'lantern')).toBeGreaterThan(
+      getDreamSearchScore(scoredDreams[2], 'lantern'),
+    );
     expect(
       applyHomeTimelineFilters(scoredDreams, {
         ...DEFAULT_HOME_TIMELINE_FILTERS,
         searchQuery: 'lantern',
       }).map(dream => dream.id),
-    ).toEqual(['transcript-hit', 'title-hit']);
+    ).toEqual(['tag-hit', 'title-hit', 'transcript-hit']);
   });
 
   test('returns sorted unique tags and detects active refinements', () => {

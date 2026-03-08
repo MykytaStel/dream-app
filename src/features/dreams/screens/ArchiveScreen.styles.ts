@@ -172,6 +172,30 @@ export function createArchiveScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 10,
     },
+    quickJumpRow: {
+      gap: 6,
+      paddingRight: 4,
+    },
+    quickJumpChip: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 5,
+        paddingHorizontal: 10,
+      }),
+    },
+    quickJumpChipActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    quickJumpChipText: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+    quickJumpChipTextActive: {
+      color: theme.colors.background,
+    },
     monthPagerButton: {
       ...createControlPill(theme, {
         tone: 'background',

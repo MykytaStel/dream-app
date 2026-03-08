@@ -12,6 +12,7 @@ to turn the app into a fast, coherent local-first product first:
 
 The rule for every version in this range:
 
+- ship one small new feature, even if it is modest
 - ship one visible design improvement
 - ship one practical workflow improvement
 - ship one speed or polish improvement
@@ -30,6 +31,11 @@ Performance and shell cleanup.
 - align `Home`, `Archive`, `Settings`, `Insights`, and `Progress` under one
   shared control and surface language
 
+### Small new feature
+
+- ship the central `+` quick-add sheet as a new primary action instead of a
+  passive record tab
+
 ## Release 0.0.18
 
 ### Theme
@@ -43,6 +49,10 @@ Archive redesign, phase 2.
 - add compact and comfortable browse modes if the data supports it cleanly
 - improve search and quick filters for older entries
 - continue reducing heavy month and card presentation
+
+### Small new feature
+
+- add `Compact` and `Comfortable` browse modes for archive history review
 
 ### Scope lock
 
@@ -62,6 +72,11 @@ Calendar and time navigation.
 - make it easy to revisit dreams by date, not only by list scroll
 - keep the calendar supporting the archive rather than replacing it
 
+### Small new feature
+
+- add a recent-month quick-jump strip so a user can jump to an active month in
+  one tap
+
 ## Release 0.0.20
 
 ### Theme
@@ -78,6 +93,10 @@ Capture flow upgrade.
   - return to feed
 - remove leftover “explanatory landing page” feel from the composer
 
+### Small new feature
+
+- add a post-save action sheet with fast next-step choices after each capture
+
 ## Release 0.0.21
 
 ### Theme
@@ -90,6 +109,10 @@ Search and retrieval 2.0.
 - add better explanation for why an entry matched
 - support smarter combinations of search and filters
 - reduce retrieval friction in larger archives
+
+### Small new feature
+
+- add saved search presets for recurring retrieval patterns
 
 ## Release 0.0.22
 
@@ -107,6 +130,11 @@ Insights visual refresh.
   - coverage
 - reduce the “stack of equal cards” feel
 
+### Small new feature
+
+- add a period-compare toggle so users can compare the current range to the
+  previous one
+
 ## Release 0.0.23
 
 ### Theme
@@ -123,6 +151,11 @@ Dream detail richness.
   - related dreams
 - continue reducing debug/admin feeling in follow-up surfaces
 
+### Small new feature
+
+- add a related-dreams strip so the user can jump between nearby or similar
+  entries
+
 ## Release 0.0.24
 
 ### Theme
@@ -136,6 +169,10 @@ Import and restore foundation.
 - define clear merge vs replace behavior
 - strengthen user trust in the local-first direction
 
+### Small new feature
+
+- add an import preview step before any restore action is committed
+
 ## Release 0.0.25
 
 ### Theme
@@ -148,6 +185,11 @@ Performance and polish milestone.
 - visual polish across `Home`, `Archive`, `Detail`, `Insights`, and `Settings`
 - add light profiling discipline around known slow surfaces
 - reach the point where the app feels beta-quality, not MVP-fragile
+
+### Small new feature
+
+- add a `Return to last dream` shortcut so users can quickly reopen what they
+  were just working on
 
 ## Decision point after 0.0.25
 

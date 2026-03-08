@@ -18,9 +18,72 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     toolbarCard: {
       gap: 12,
+      padding: 16,
+      backgroundColor: theme.colors.surface,
+      overflow: 'hidden',
+      position: 'relative',
+      borderColor: `${theme.colors.border}CC`,
     },
     controlsCard: {
       gap: 10,
+      padding: 16,
+      backgroundColor: theme.colors.surfaceElevated,
+      borderColor: `${theme.colors.border}E6`,
+    },
+    toolbarGlowLarge: {
+      position: 'absolute',
+      width: 150,
+      height: 150,
+      borderRadius: 999,
+      backgroundColor: theme.colors.auroraMid,
+      opacity: 0.08,
+      top: -46,
+      right: -36,
+    },
+    toolbarGlowSmall: {
+      position: 'absolute',
+      width: 86,
+      height: 86,
+      borderRadius: 999,
+      backgroundColor: theme.colors.accent,
+      opacity: 0.06,
+      bottom: -26,
+      left: -16,
+    },
+    toolbarVisualShell: {
+      position: 'absolute',
+      top: 14,
+      right: 16,
+      width: 42,
+      height: 42,
+      borderRadius: 14,
+      backgroundColor: 'rgba(28, 34, 53, 0.72)',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+      justifyContent: 'center',
+      opacity: 0.88,
+    },
+    toolbarFacet: {
+      position: 'absolute',
+      width: 12,
+      height: 12,
+      borderRadius: 4,
+      transform: [{ rotate: '45deg' }],
+    },
+    toolbarFacetPrimary: {
+      top: 8,
+      backgroundColor: theme.colors.primary,
+    },
+    toolbarFacetAccent: {
+      left: 10,
+      bottom: 10,
+      backgroundColor: theme.colors.accent,
+    },
+    toolbarFacetAlt: {
+      right: 10,
+      bottom: 10,
+      backgroundColor: theme.colors.auroraMid,
     },
     controlsMetaRow: {
       flexDirection: 'row',
@@ -52,15 +115,45 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 11,
       fontWeight: '700',
     },
-    filtersRow: {
+    searchRow: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 16,
+        paddingVertical: 0,
+        paddingHorizontal: 0,
+      }),
       flexDirection: 'row',
-      flexWrap: 'wrap',
+      alignItems: 'center',
+      paddingLeft: 12,
+      overflow: 'hidden',
+      borderColor: `${theme.colors.border}F0`,
+      backgroundColor: 'rgba(20, 24, 38, 0.46)',
+    },
+    searchIconWrap: {
+      width: 22,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    searchFieldContainer: {
+      flex: 1,
+      gap: 4,
+      marginLeft: 2,
+    },
+    searchInput: {
+      backgroundColor: 'transparent',
+      borderWidth: 0,
+      paddingVertical: 12,
+      paddingHorizontal: 0,
+      minHeight: 0,
+    },
+    filtersRail: {
       gap: 6,
+      paddingRight: 6,
     },
     filterChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 6,
+        paddingVertical: 5,
         paddingHorizontal: 10,
       }),
     },
@@ -70,37 +163,38 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     filterChipText: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '700',
     },
     filterChipTextActive: {
       color: theme.colors.background,
     },
-    utilityRow: {
+    controlsFooterRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       gap: 10,
       flexWrap: 'wrap',
     },
-    utilityLeadingRow: {
+    resultsToolbar: {
       flexDirection: 'row',
-      flexWrap: 'wrap',
+      justifyContent: 'space-between',
       alignItems: 'center',
-      gap: 8,
-      flex: 1,
-    },
-    utilityTrailingRow: {
-      flexDirection: 'row',
+      gap: 10,
+      paddingHorizontal: 2,
+      marginTop: 2,
       flexWrap: 'wrap',
-      gap: 8,
-      justifyContent: 'flex-end',
+    },
+    resultsToolbarText: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '700',
     },
     modeChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 6,
-        paddingHorizontal: 10,
+        paddingVertical: 5,
+        paddingHorizontal: 9,
       }),
     },
     modeChipActive: {
@@ -109,7 +203,7 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     modeChipText: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '700',
     },
     modeChipTextActive: {
@@ -131,7 +225,7 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     browseModeChips: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 6,
       flexWrap: 'wrap',
     },
     calendarCard: {
@@ -170,7 +264,8 @@ export function createArchiveScreenStyles(theme: Theme) {
     monthToolbar: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 10,
+      gap: 12,
+      paddingRight: 52,
     },
     quickJumpRow: {
       gap: 6,
@@ -179,13 +274,19 @@ export function createArchiveScreenStyles(theme: Theme) {
     quickJumpChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 10,
+        paddingVertical: 4,
+        paddingHorizontal: 9,
       }),
+      backgroundColor: 'rgba(20, 24, 38, 0.42)',
     },
     quickJumpChipActive: {
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.primary,
+      shadowColor: theme.colors.glow,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.14,
+      shadowRadius: 12,
+      elevation: 3,
     },
     quickJumpChipText: {
       color: theme.colors.textDim,
@@ -199,51 +300,34 @@ export function createArchiveScreenStyles(theme: Theme) {
     monthPagerButton: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 6,
-        paddingHorizontal: 10,
+        paddingVertical: 7,
+        paddingHorizontal: 7,
       }),
-      minWidth: 70,
+      width: 34,
+      height: 34,
       alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(20, 24, 38, 0.42)',
     },
     monthPagerButtonDisabled: {
       opacity: 0.45,
     },
-    monthPagerButtonText: {
-      color: theme.colors.text,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    monthPagerButtonTextDisabled: {
-      color: theme.colors.textDim,
-    },
     monthLabelBlock: {
       flex: 1,
-      gap: 6,
+      gap: 4,
       alignItems: 'center',
     },
     monthLabel: {
-      fontSize: 18,
-      lineHeight: 22,
+      fontSize: 20,
+      lineHeight: 24,
       fontWeight: '700',
       textTransform: 'capitalize',
     },
-    monthMetaRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      justifyContent: 'center',
-      gap: 6,
-    },
-    monthMetaChip: {
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 4,
-        paddingHorizontal: 8,
-      }),
-    },
-    monthMetaChipText: {
+    monthMetaText: {
       color: theme.colors.textDim,
-      fontSize: 11,
+      fontSize: 12,
       fontWeight: '600',
+      textAlign: 'center',
     },
     weekdayRow: {
       flexDirection: 'row',
@@ -319,6 +403,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 8,
       alignItems: 'center',
+      justifyContent: 'space-between',
     },
     selectedDateChip: {
       ...createControlPill(theme, {
@@ -326,6 +411,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 6,
         paddingHorizontal: 10,
       }),
+      backgroundColor: 'rgba(20, 24, 38, 0.42)',
     },
     selectedDateText: {
       color: theme.colors.text,
@@ -338,6 +424,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 6,
         paddingHorizontal: 10,
       }),
+      backgroundColor: 'rgba(20, 24, 38, 0.42)',
     },
     clearDateChipText: {
       color: theme.colors.textDim,
@@ -369,24 +456,26 @@ export function createArchiveScreenStyles(theme: Theme) {
       transform: [{ scale: 0.994 }],
     },
     listRowCard: {
-      paddingVertical: 12,
+      paddingVertical: 11,
       paddingHorizontal: 12,
-      gap: 8,
+      gap: 7,
+      backgroundColor: theme.colors.surface,
+      borderColor: `${theme.colors.border}D9`,
     },
     listRowCardCompact: {
-      paddingVertical: 10,
+      paddingVertical: 9,
       paddingHorizontal: 12,
-      gap: 8,
+      gap: 6,
     },
     rowTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      gap: 12,
+      alignItems: 'center',
+      gap: 10,
     },
     rowCopy: {
       flex: 1,
-      gap: 5,
+      gap: 6,
     },
     rowTitle: {
       fontSize: 16,
@@ -397,32 +486,34 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 15,
       lineHeight: 19,
     },
-    rowMeta: {
-      color: theme.colors.textDim,
-      fontSize: 12,
+    rowMetaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      flexWrap: 'wrap',
     },
-    rowMetaCompact: {
-      fontSize: 11,
+    rowDateChip: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 3,
+        paddingHorizontal: 8,
+      }),
+    },
+    rowDateChipText: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    rowDateChipTextCompact: {
+      fontSize: 9,
     },
     rowPreviewWrap: {
-      ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 12,
-        paddingVertical: 8,
-        paddingHorizontal: 10,
-      }),
-      flexDirection: 'row',
-      gap: 0,
-      alignItems: 'stretch',
+      paddingLeft: 10,
+      borderLeftWidth: 2,
+      borderLeftColor: theme.colors.border,
     },
     rowPreviewWrapCompact: {
-      paddingVertical: 7,
-      paddingHorizontal: 9,
-    },
-    rowPreviewAccent: {
-      width: 3,
-      borderRadius: 999,
-      backgroundColor: theme.colors.primary,
+      paddingLeft: 9,
     },
     rowPreview: {
       flex: 1,
@@ -437,7 +528,7 @@ export function createArchiveScreenStyles(theme: Theme) {
     matchReasonsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 6,
+      gap: 5,
     },
     matchReasonPill: {
       ...createControlPill(theme, {
@@ -452,56 +543,24 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 10,
       fontWeight: '700',
     },
-    dayChip: {
-      ...createSoftTile(theme, {
-        tone: 'surface',
-        radius: 12,
-        paddingVertical: 7,
-        paddingHorizontal: 6,
-      }),
-      minWidth: 44,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    dayChipCompact: {
-      minWidth: 40,
-      paddingVertical: 6,
-      paddingHorizontal: 5,
-    },
-    dayNumber: {
-      fontSize: 18,
-      lineHeight: 20,
-      fontWeight: '700',
-    },
-    dayNumberCompact: {
-      fontSize: 15,
-      lineHeight: 17,
-    },
-    dayWeek: {
-      color: theme.colors.textDim,
-      fontSize: 10,
-      textTransform: 'uppercase',
-      letterSpacing: 0.6,
-    },
-    dayWeekCompact: {
-      fontSize: 9,
-      letterSpacing: 0.4,
+    rowChevron: {
+      marginRight: -2,
     },
     pillsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 6,
+      gap: 5,
     },
     pill: {
       ...createControlPill(theme, {
         tone: 'surface',
-        paddingVertical: 4,
-        paddingHorizontal: 8,
+        paddingVertical: 3,
+        paddingHorizontal: 7,
       }),
     },
     pillText: {
       color: theme.colors.textDim,
-      fontSize: 10,
+      fontSize: 9,
       fontWeight: '600',
     },
     emptyWrap: {

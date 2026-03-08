@@ -4,6 +4,7 @@ import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@shopify/restyle';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { FormField } from '../../../components/ui/FormField';
@@ -74,10 +75,16 @@ function getMonthLabel(monthKey: string, locale: string) {
   return date.toLocaleDateString(locale, { month: 'long', year: 'numeric' });
 }
 
-function getMonthChipLabel(monthKey: string, locale: string) {
+function getMonthChipLabel(monthKey: string, selectedMonthKey: string, locale: string) {
   const [year, month] = monthKey.split('-').map(Number);
+  const [selectedYear] = selectedMonthKey.split('-').map(Number);
   const date = new Date(year, month - 1, 1);
   const monthLabel = date.toLocaleDateString(locale, { month: 'short' });
+
+  if (year === selectedYear) {
+    return monthLabel;
+  }
+
   return `${monthLabel} ${String(year).slice(-2)}`;
 }
 
@@ -279,7 +286,7 @@ function buildCalendarRows(cells: ArchiveCalendarCell[]) {
   return rows;
 }
 
-function getQuickJumpMonthKeys(monthKeys: string[], selectedIndex: number, size = 5) {
+function getQuickJumpMonthKeys(monthKeys: string[], selectedIndex: number, size = 4) {
   if (!monthKeys.length) {
     return [];
   }
@@ -347,14 +354,21 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   styles: ReturnType<typeof createArchiveScreenStyles>;
   viewMode: ArchiveViewMode;
 }) {
+  const theme = useTheme<Theme>();
   const date = getDreamDate(dream);
   const mood = moodLabel(dream.mood, moodLabels);
   const isCompact = viewMode === 'compact';
-  const pills = getArchivePills(dream, copy, mood).slice(0, isCompact ? 2 : 4);
+  const pills = getArchivePills(dream, copy, mood).slice(0, isCompact ? 2 : 3);
   const matchReasons = React.useMemo(
     () => getArchiveMatchReasonLabels(dream, searchQuery, copy),
     [copy, dream, searchQuery],
   );
+  const rowDateLabel = `${date.toLocaleDateString(localeKey, {
+    month: 'short',
+    day: 'numeric',
+  })} · ${date.toLocaleDateString(localeKey, {
+    weekday: 'short',
+  })}`;
 
   return (
     <Pressable
@@ -370,23 +384,20 @@ const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
             <Text style={[styles.rowTitle, isCompact ? styles.rowTitleCompact : null]}>
               {dream.title || copy.untitled}
             </Text>
-            <Text style={[styles.rowMeta, isCompact ? styles.rowMetaCompact : null]}>
-              {date.toLocaleDateString(localeKey, {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-              })}
-            </Text>
+            <View style={styles.rowMetaRow}>
+              <View style={styles.rowDateChip}>
+                <Text style={[styles.rowDateChipText, isCompact ? styles.rowDateChipTextCompact : null]}>
+                  {rowDateLabel}
+                </Text>
+              </View>
+            </View>
           </View>
-          <View style={[styles.dayChip, isCompact ? styles.dayChipCompact : null]}>
-            <Text style={[styles.dayNumber, isCompact ? styles.dayNumberCompact : null]}>
-              {date.getDate()}
-            </Text>
-            <Text style={[styles.dayWeek, isCompact ? styles.dayWeekCompact : null]}>
-              {date.toLocaleDateString(localeKey, {
-                weekday: 'short',
-              })}
-            </Text>
+          <View style={styles.rowChevron}>
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={theme.colors.textDim}
+            />
           </View>
         </View>
 
@@ -536,6 +547,7 @@ export default function ArchiveScreen() {
 
   const monthEntryCount = searchedMonthDreams.length;
   const monthActiveDays = getDistinctDayCount(searchedMonthDreams);
+  const monthMetaText = `${formatArchiveEntryCount(monthEntryCount, locale)} · ${formatArchiveActiveDaysCount(monthActiveDays, locale)}`;
   const selectedMonthIndex = selectedMonthKey ? availableMonthKeys.indexOf(selectedMonthKey) : -1;
   const canGoOlder = selectedMonthIndex >= 0 && selectedMonthIndex < availableMonthKeys.length - 1;
   const canGoNewer = selectedMonthIndex > 0;
@@ -574,6 +586,7 @@ export default function ArchiveScreen() {
     filter !== 'all' || Boolean(searchQuery.trim()) || Boolean(selectedDate);
   const hasHardReset =
     filter !== 'all' || Boolean(searchQuery.trim());
+  const visibleEntriesLabel = formatArchiveEntryCount(visibleDreams.length, locale);
 
   const scrollArchiveToTop = React.useCallback(() => {
     requestAnimationFrame(() => {
@@ -678,110 +691,227 @@ export default function ArchiveScreen() {
             </Animated.View>
 
             {selectedMonthKey ? (
-              <Animated.View
-                entering={FadeInDown.delay(40).duration(260)}
-                layout={archiveLayoutTransition}
-              >
-                <Card style={styles.toolbarCard}>
-                  <View style={styles.monthToolbar}>
-                    <Pressable
-                      style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
-                      disabled={!canGoOlder}
-                      onPress={() => moveMonth('older')}
-                    >
-                      <Text
-                        style={[
-                          styles.monthPagerButtonText,
-                          !canGoOlder ? styles.monthPagerButtonTextDisabled : null,
-                        ]}
+              <>
+                <Animated.View
+                  entering={FadeInDown.delay(40).duration(260)}
+                  layout={archiveLayoutTransition}
+                >
+                  <Card style={styles.toolbarCard}>
+                    <View pointerEvents="none" style={styles.toolbarGlowLarge} />
+                    <View pointerEvents="none" style={styles.toolbarGlowSmall} />
+                    <View pointerEvents="none" style={styles.toolbarVisualShell}>
+                      <View style={[styles.toolbarFacet, styles.toolbarFacetPrimary]} />
+                      <View style={[styles.toolbarFacet, styles.toolbarFacetAccent]} />
+                      <View style={[styles.toolbarFacet, styles.toolbarFacetAlt]} />
+                    </View>
+
+                    <View style={styles.monthToolbar}>
+                      <Pressable
+                        style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
+                        disabled={!canGoOlder}
+                        onPress={() => moveMonth('older')}
+                        accessibilityRole="button"
+                        accessibilityLabel={copy.archivePreviousMonth}
                       >
-                        {copy.archivePreviousMonth}
-                      </Text>
-                    </Pressable>
-                    <Animated.View
-                      key={`archive-month-${selectedMonthKey}`}
-                      entering={FadeInDown.duration(180)}
-                      layout={archiveLayoutTransition}
-                      style={styles.monthLabelBlock}
-                    >
-                      <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
-                      <View style={styles.monthMetaRow}>
-                        <View style={styles.monthMetaChip}>
-                          <Text style={styles.monthMetaChipText}>
-                            {formatArchiveEntryCount(monthEntryCount, locale)}
+                        <Ionicons
+                          name="chevron-back"
+                          size={16}
+                          color={canGoOlder ? t.colors.text : t.colors.textDim}
+                        />
+                      </Pressable>
+                      <Animated.View
+                        key={`archive-month-${selectedMonthKey}`}
+                        entering={FadeInDown.duration(180)}
+                        layout={archiveLayoutTransition}
+                        style={styles.monthLabelBlock}
+                      >
+                        <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
+                        <Text style={styles.monthMetaText}>{monthMetaText}</Text>
+                      </Animated.View>
+                      <Pressable
+                        style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
+                        disabled={!canGoNewer}
+                        onPress={() => moveMonth('newer')}
+                        accessibilityRole="button"
+                        accessibilityLabel={copy.archiveNextMonth}
+                      >
+                        <Ionicons
+                          name="chevron-forward"
+                          size={16}
+                          color={canGoNewer ? t.colors.text : t.colors.textDim}
+                        />
+                      </Pressable>
+                    </View>
+
+                    {quickJumpMonthKeys.length > 1 ? (
+                      <Animated.View
+                        key={`archive-jumps-${selectedMonthKey}`}
+                        entering={FadeInDown.delay(20).duration(180)}
+                        layout={archiveLayoutTransition}
+                      >
+                        <ScrollView
+                          horizontal
+                          showsHorizontalScrollIndicator={false}
+                          contentContainerStyle={styles.quickJumpRow}
+                        >
+                          {quickJumpMonthKeys.map(monthKey => {
+                            const active = monthKey === selectedMonthKey;
+
+                            return (
+                              <Pressable
+                                key={monthKey}
+                                style={[
+                                  styles.quickJumpChip,
+                                  active ? styles.quickJumpChipActive : null,
+                                ]}
+                                onPress={() => selectMonth(monthKey)}
+                              >
+                                <Text
+                                  style={[
+                                    styles.quickJumpChipText,
+                                    active ? styles.quickJumpChipTextActive : null,
+                                  ]}
+                                >
+                                  {getMonthChipLabel(monthKey, selectedMonthKey, localeKey)}
+                                </Text>
+                              </Pressable>
+                            );
+                          })}
+                        </ScrollView>
+                      </Animated.View>
+                    ) : null}
+
+                    <View style={styles.selectedDateRow}>
+                      {selectedDate ? (
+                        <View style={styles.selectedDateChip}>
+                          <Text style={styles.selectedDateText}>
+                            {formatSelectedDate(selectedDate, localeKey)}
                           </Text>
                         </View>
-                        <View style={styles.monthMetaChip}>
-                          <Text style={styles.monthMetaChipText}>
-                            {formatArchiveActiveDaysCount(monthActiveDays, locale)}
-                          </Text>
-                        </View>
-                      </View>
-                    </Animated.View>
-                    <Pressable
-                      style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
-                      disabled={!canGoNewer}
-                      onPress={() => moveMonth('newer')}
-                    >
-                      <Text
-                        style={[
-                          styles.monthPagerButtonText,
-                          !canGoNewer ? styles.monthPagerButtonTextDisabled : null,
-                        ]}
+                      ) : null}
+
+                      {selectedDate ? (
+                        <Pressable
+                          style={styles.clearDateChip}
+                          onPress={() => {
+                            setSelectedDate(null);
+                            scrollArchiveToTop();
+                          }}
+                        >
+                          <Text style={styles.clearDateChipText}>{copy.archiveAllDates}</Text>
+                        </Pressable>
+                      ) : null}
+
+                      <Pressable
+                        style={styles.controlsActionChip}
+                        onPress={() => setIsCalendarExpanded(current => !current)}
                       >
-                        {copy.archiveNextMonth}
-                      </Text>
-                    </Pressable>
+                        <Text style={styles.controlsActionChipText}>
+                          {isCalendarExpanded
+                            ? copy.archiveCalendarHideGrid
+                            : copy.archiveCalendarShowGrid}
+                        </Text>
+                      </Pressable>
+                    </View>
+
+                    {isCalendarExpanded ? (
+                      <Animated.View
+                        entering={FadeInDown.duration(220)}
+                        exiting={FadeOutUp.duration(180)}
+                        layout={archiveLayoutTransition}
+                        style={styles.calendarDaysWrap}
+                      >
+                        <View style={styles.weekdayRow}>
+                          {weekdayLabels.map(label => (
+                            <Text key={label} style={styles.weekdayLabel}>
+                              {label}
+                            </Text>
+                          ))}
+                        </View>
+
+                        <View style={styles.calendarRows}>
+                          {calendarRows.map((row, rowIndex) => (
+                            <View key={`calendar-row-${rowIndex}`} style={styles.calendarWeekRow}>
+                              {row.map(cell => {
+                                const isSelected = cell.date === selectedDate;
+                                const isInteractive = Boolean(cell.date && cell.count > 0);
+
+                                return (
+                                  <Pressable
+                                    key={cell.key}
+                                    style={[
+                                      styles.calendarCell,
+                                      !cell.date ? styles.calendarCellPlaceholder : null,
+                                      isSelected ? styles.calendarCellSelected : null,
+                                      isInteractive ? styles.calendarCellActive : null,
+                                    ]}
+                                    disabled={!isInteractive}
+                                    onPress={() =>
+                                      setSelectedDate(current =>
+                                        current === cell.date ? null : cell.date,
+                                      )
+                                    }
+                                  >
+                                    {cell.dayNumber ? (
+                                      <>
+                                        <Text
+                                          style={[
+                                            styles.calendarCellDay,
+                                            isSelected ? styles.calendarCellDaySelected : null,
+                                            cell.count === 0 ? styles.calendarCellDayMuted : null,
+                                          ]}
+                                        >
+                                          {cell.dayNumber}
+                                        </Text>
+                                        {cell.count > 0 ? (
+                                          <Text
+                                            style={[
+                                              styles.calendarCellCount,
+                                              isSelected ? styles.calendarCellCountSelected : null,
+                                            ]}
+                                          >
+                                            {cell.count}
+                                          </Text>
+                                        ) : null}
+                                      </>
+                                    ) : null}
+                                  </Pressable>
+                                );
+                              })}
+                            </View>
+                          ))}
+                        </View>
+                      </Animated.View>
+                    ) : null}
+                  </Card>
+                </Animated.View>
+
+                <Animated.View
+                  entering={FadeInDown.delay(60).duration(220)}
+                  layout={archiveLayoutTransition}
+                >
+                  <Card style={styles.controlsCard}>
+                  <View style={styles.searchRow}>
+                    <View style={styles.searchIconWrap}>
+                      <Ionicons name="search-outline" size={16} color={t.colors.textDim} />
+                    </View>
+                    <FormField
+                      placeholder={copy.archiveSearchPlaceholder}
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      containerStyle={styles.searchFieldContainer}
+                      inputStyle={styles.searchInput}
+                      helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
+                    />
                   </View>
 
-                  {quickJumpMonthKeys.length > 1 ? (
-                    <Animated.View
-                      key={`archive-jumps-${selectedMonthKey}`}
-                      entering={FadeInDown.delay(20).duration(180)}
-                      layout={archiveLayoutTransition}
-                    >
-                      <ScrollView
-                        horizontal
-                        showsHorizontalScrollIndicator={false}
-                        contentContainerStyle={styles.quickJumpRow}
-                      >
-                        {quickJumpMonthKeys.map(monthKey => {
-                          const active = monthKey === selectedMonthKey;
-
-                          return (
-                            <Pressable
-                              key={monthKey}
-                              style={[
-                                styles.quickJumpChip,
-                                active ? styles.quickJumpChipActive : null,
-                              ]}
-                              onPress={() => selectMonth(monthKey)}
-                            >
-                              <Text
-                                style={[
-                                  styles.quickJumpChipText,
-                                  active ? styles.quickJumpChipTextActive : null,
-                                ]}
-                              >
-                                {getMonthChipLabel(monthKey, localeKey)}
-                              </Text>
-                            </Pressable>
-                          );
-                        })}
-                      </ScrollView>
-                    </Animated.View>
-                  ) : null}
-
-                  <FormField
-                    placeholder={copy.archiveSearchPlaceholder}
-                    value={searchQuery}
-                    onChangeText={setSearchQuery}
-                    autoCapitalize="none"
-                    autoCorrect={false}
-                    helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
-                  />
-
-                  <View style={styles.filtersRow}>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.filtersRail}
+                  >
                     {archiveFilters.map(option => {
                       const active = filter === option.key;
                       return (
@@ -804,49 +934,28 @@ export default function ArchiveScreen() {
                         </Pressable>
                       );
                     })}
-                  </View>
+                  </ScrollView>
 
-                  <View style={styles.utilityRow}>
-                    <View style={styles.utilityLeadingRow}>
-                      {selectedDate ? (
-                        <View style={styles.controlsMetaChip}>
-                          <Text style={styles.controlsMetaChipText}>
-                            {formatSelectedDate(selectedDate, localeKey)}
-                          </Text>
-                        </View>
-                      ) : null}
-
-                      {selectedDate ? (
-                        <Pressable
-                          style={styles.controlsActionChip}
-                          onPress={() => {
-                            setSelectedDate(null);
-                            scrollArchiveToTop();
-                          }}
-                        >
-                          <Text style={styles.controlsActionChipText}>{copy.archiveAllDates}</Text>
-                        </Pressable>
-                      ) : null}
-
-                      <Pressable
-                        style={styles.controlsActionChip}
-                        onPress={() => setIsCalendarExpanded(current => !current)}
-                      >
-                        <Text style={styles.controlsActionChipText}>
-                          {isCalendarExpanded
-                            ? copy.archiveCalendarHideGrid
-                            : copy.archiveCalendarShowGrid}
-                        </Text>
+                  <View style={styles.controlsFooterRow}>
+                    {hasHardReset ? (
+                      <Pressable style={styles.controlsActionChip} onPress={resetArchiveView}>
+                        <Text style={styles.controlsActionChipText}>{copy.archiveResetView}</Text>
                       </Pressable>
+                    ) : (
+                      <View />
+                    )}
+                  </View>
+                  </Card>
+                </Animated.View>
 
-                      {hasHardReset ? (
-                        <Pressable style={styles.controlsActionChip} onPress={resetArchiveView}>
-                          <Text style={styles.controlsActionChipText}>{copy.archiveResetView}</Text>
-                        </Pressable>
-                      ) : null}
-                    </View>
-
-                    <View style={styles.utilityTrailingRow}>
+                {!archiveEmptyContent ? (
+                  <Animated.View
+                    entering={FadeInDown.delay(72).duration(220)}
+                    layout={archiveLayoutTransition}
+                    style={styles.resultsToolbar}
+                  >
+                    <Text style={styles.resultsToolbarText}>{visibleEntriesLabel}</Text>
+                    <View style={styles.browseModeChips}>
                       {browseModes.map(option => {
                         const active = viewMode === option.key;
 
@@ -868,79 +977,9 @@ export default function ArchiveScreen() {
                         );
                       })}
                     </View>
-                  </View>
-
-                  {isCalendarExpanded ? (
-                    <Animated.View
-                      entering={FadeInDown.duration(220)}
-                      exiting={FadeOutUp.duration(180)}
-                      layout={archiveLayoutTransition}
-                      style={styles.calendarDaysWrap}
-                    >
-                      <View style={styles.weekdayRow}>
-                        {weekdayLabels.map(label => (
-                          <Text key={label} style={styles.weekdayLabel}>
-                            {label}
-                          </Text>
-                        ))}
-                      </View>
-
-                      <View style={styles.calendarRows}>
-                        {calendarRows.map((row, rowIndex) => (
-                          <View key={`calendar-row-${rowIndex}`} style={styles.calendarWeekRow}>
-                            {row.map(cell => {
-                              const isSelected = cell.date === selectedDate;
-                              const isInteractive = Boolean(cell.date && cell.count > 0);
-
-                              return (
-                                <Pressable
-                                  key={cell.key}
-                                  style={[
-                                    styles.calendarCell,
-                                    !cell.date ? styles.calendarCellPlaceholder : null,
-                                    isSelected ? styles.calendarCellSelected : null,
-                                    isInteractive ? styles.calendarCellActive : null,
-                                  ]}
-                                  disabled={!isInteractive}
-                                  onPress={() =>
-                                    setSelectedDate(current =>
-                                      current === cell.date ? null : cell.date,
-                                    )
-                                  }
-                                >
-                                  {cell.dayNumber ? (
-                                    <>
-                                      <Text
-                                        style={[
-                                          styles.calendarCellDay,
-                                          isSelected ? styles.calendarCellDaySelected : null,
-                                          cell.count === 0 ? styles.calendarCellDayMuted : null,
-                                        ]}
-                                      >
-                                        {cell.dayNumber}
-                                      </Text>
-                                      {cell.count > 0 ? (
-                                        <Text
-                                          style={[
-                                            styles.calendarCellCount,
-                                            isSelected ? styles.calendarCellCountSelected : null,
-                                          ]}
-                                        >
-                                          {cell.count}
-                                        </Text>
-                                      ) : null}
-                                    </>
-                                  ) : null}
-                                </Pressable>
-                              );
-                            })}
-                          </View>
-                        ))}
-                      </View>
-                    </Animated.View>
-                  ) : null}
-                </Card>
-              </Animated.View>
+                  </Animated.View>
+                ) : null}
+              </>
             ) : null}
 
             {archiveEmptyContent || !selectedMonthKey ? (

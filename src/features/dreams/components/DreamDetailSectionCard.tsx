@@ -10,6 +10,7 @@ import { Theme } from '../../../theme/theme';
 
 type DreamDetailSectionCardProps = {
   title: string;
+  meta?: string;
   expanded: boolean;
   onToggle: () => void;
   children: React.ReactNode;
@@ -21,6 +22,7 @@ const sectionLayoutTransition = LinearTransition.springify()
 
 export function DreamDetailSectionCard({
   title,
+  meta,
   expanded,
   onToggle,
   children,
@@ -37,12 +39,19 @@ export function DreamDetailSectionCard({
         accessibilityState={{ expanded }}
       >
         <Text style={styles.title}>{title}</Text>
-        <View style={styles.toggleChip}>
-          <Ionicons
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            size={16}
-            color={theme.colors.textDim}
-          />
+        <View style={styles.headerAside}>
+          {meta ? (
+            <View style={styles.metaChip}>
+              <Text style={styles.metaLabel}>{meta}</Text>
+            </View>
+          ) : null}
+          <View style={styles.toggleChip}>
+            <Ionicons
+              name={expanded ? 'chevron-up' : 'chevron-down'}
+              size={16}
+              color={theme.colors.textDim}
+            />
+          </View>
         </View>
       </Pressable>
 
@@ -63,6 +72,7 @@ export function DreamDetailSectionCard({
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     card: {
+      padding: 14,
       gap: 12,
     },
     header: {
@@ -74,25 +84,42 @@ function createStyles(theme: Theme) {
     headerPressed: {
       opacity: 0.96,
     },
+    headerAside: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
     title: {
       flex: 1,
       fontWeight: '700',
-      fontSize: 16,
-      lineHeight: 21,
+      fontSize: 15,
+      lineHeight: 20,
+    },
+    metaChip: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 5,
+        paddingHorizontal: 9,
+      }),
+    },
+    metaLabel: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      fontWeight: '700',
     },
     toggleChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 6,
-        paddingHorizontal: 6,
+        paddingVertical: 5,
+        paddingHorizontal: 5,
       }),
-      width: 30,
-      height: 30,
+      width: 28,
+      height: 28,
       alignItems: 'center',
       justifyContent: 'center',
     },
     content: {
-      gap: 14,
+      gap: 12,
     },
   });
 }

@@ -37,7 +37,7 @@ export function DreamDetailActionTile({
       accessibilityLabel={label}
     >
       <View style={styles.iconShell}>
-        <Ionicons name={icon} size={20} color={iconColor} />
+        <Ionicons name={icon} size={16} color={iconColor} />
       </View>
       <Text style={styles.label}>{label}</Text>
     </Pressable>
@@ -70,32 +70,34 @@ function createStyles(theme: Theme, active: boolean, danger: boolean) {
     pressable: {
       ...createSoftTile(theme, {
         tone: 'alt',
-        radius: 18,
-        paddingVertical: 12,
+        radius: 999,
+        paddingVertical: 10,
         paddingHorizontal: 12,
       }),
-      flex: 1,
       minWidth: 0,
-      gap: 10,
+      gap: 8,
       borderColor,
       backgroundColor,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     pressablePressed: {
       opacity: 0.96,
-      transform: [{ scale: 0.986 }],
+      transform: [{ scale: 0.985 }],
     },
     iconShell: {
-      width: 38,
-      height: 38,
+      width: 26,
+      height: 26,
       alignItems: 'center',
       justifyContent: 'center',
-      borderRadius: 12,
+      borderRadius: 999,
       backgroundColor: iconShellBackground,
     },
     label: {
       color: labelColor,
       fontSize: 12,
-      lineHeight: 16,
+      lineHeight: 15,
       fontWeight: '700',
     },
   });

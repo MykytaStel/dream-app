@@ -19,6 +19,7 @@ type PatternGroupCardProps = {
   description: string;
   items: PatternGroupCardItem[];
   emptyLabel: string;
+  leadLabel: string;
   moreLabel: string;
 };
 
@@ -27,6 +28,7 @@ export function PatternGroupCard({
   description,
   items,
   emptyLabel,
+  leadLabel,
   moreLabel,
 }: PatternGroupCardProps) {
   const theme = useTheme<Theme>();
@@ -54,22 +56,24 @@ export function PatternGroupCard({
               pressed && leadItem.onPress ? styles.leadCardPressed : null,
             ]}
           >
-            <View style={styles.leadTopRow}>
-              <Text style={styles.leadLabel} numberOfLines={2}>
-                {leadItem.label}
-              </Text>
+            <View style={styles.leadHeader}>
+              <Text style={styles.leadEyebrow}>{leadLabel}</Text>
+              {leadItem.sourceLabel ? (
+                <View style={styles.sourceChip}>
+                  <Text style={styles.sourceChipText}>{leadItem.sourceLabel}</Text>
+                </View>
+              ) : null}
+            </View>
+
+            <Text style={styles.leadLabel} numberOfLines={2}>
+              {leadItem.label}
+            </Text>
+
+            <View style={styles.leadFooter}>
               <View style={styles.countChip}>
                 <Text style={styles.countChipText}>{leadItem.countLabel}</Text>
               </View>
             </View>
-
-            {leadItem.sourceLabel ? (
-              <View style={styles.sourceRow}>
-                <View style={styles.sourceChip}>
-                  <Text style={styles.sourceChipText}>{leadItem.sourceLabel}</Text>
-                </View>
-              </View>
-            ) : null}
           </Pressable>
 
           {secondaryItems.length ? (
@@ -82,17 +86,15 @@ export function PatternGroupCard({
                     disabled={!item.onPress}
                     onPress={item.onPress}
                     style={({ pressed }) => [
-                      styles.secondaryChip,
-                      item.onPress ? styles.secondaryChipInteractive : null,
-                      pressed && item.onPress ? styles.secondaryChipPressed : null,
+                      styles.secondaryCard,
+                      item.onPress ? styles.secondaryCardInteractive : null,
+                      pressed && item.onPress ? styles.secondaryCardPressed : null,
                     ]}
                   >
-                    <Text style={styles.secondaryChipLabel} numberOfLines={1}>
+                    <Text style={styles.secondaryCardLabel} numberOfLines={2}>
                       {item.label}
                     </Text>
-                    <View style={styles.secondaryCountChip}>
-                      <Text style={styles.secondaryCountChipText}>{item.countBadge}</Text>
-                    </View>
+                    <Text style={styles.secondaryCardMeta}>{item.countLabel}</Text>
                   </Pressable>
                 ))}
               </View>
@@ -149,18 +151,30 @@ function createStyles(theme: Theme) {
       opacity: 0.96,
       transform: [{ scale: 0.992 }],
     },
-    leadTopRow: {
+    leadHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      gap: 12,
+      alignItems: 'center',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    leadEyebrow: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     leadLabel: {
-      flex: 1,
       fontWeight: '700',
       fontSize: 18,
       lineHeight: 23,
       textTransform: 'capitalize',
+    },
+    leadFooter: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
     },
     countChip: {
       ...createControlPill(theme, {
@@ -173,11 +187,6 @@ function createStyles(theme: Theme) {
       color: theme.colors.text,
       fontSize: 11,
       fontWeight: '700',
-    },
-    sourceRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 6,
     },
     sourceChip: {
       ...createControlPill(theme, {
@@ -208,41 +217,36 @@ function createStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 8,
     },
-    secondaryChip: {
-      ...createControlPill(theme, {
-        tone: 'surface',
-        paddingVertical: 6,
+    secondaryCard: {
+      ...createSoftTile(theme, {
+        tone: 'alt',
+        radius: 12,
+        paddingVertical: 10,
         paddingHorizontal: 10,
       }),
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
+      flexGrow: 1,
+      flexBasis: '47%',
+      minWidth: 124,
+      gap: 4,
     },
-    secondaryChipInteractive: {
+    secondaryCardInteractive: {
       borderColor: theme.colors.accent,
     },
-    secondaryChipPressed: {
+    secondaryCardPressed: {
       opacity: 0.96,
       transform: [{ scale: 0.992 }],
     },
-    secondaryChipLabel: {
+    secondaryCardLabel: {
       color: theme.colors.text,
       fontSize: 12,
       fontWeight: '700',
-      maxWidth: 160,
+      lineHeight: 17,
       textTransform: 'capitalize',
     },
-    secondaryCountChip: {
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 3,
-        paddingHorizontal: 7,
-      }),
-    },
-    secondaryCountChipText: {
+    secondaryCardMeta: {
       color: theme.colors.textDim,
       fontSize: 11,
-      fontWeight: '700',
+      lineHeight: 15,
     },
   });
 }

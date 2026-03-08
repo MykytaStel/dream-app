@@ -4,6 +4,8 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
@@ -49,6 +51,12 @@ import { PatternGroupCard, type PatternGroupCardItem } from '../components/Patte
 import { AppLocale } from '../../../i18n/types';
 
 type InsightRange = 'all' | '30d' | '7d';
+type InsightMode = 'snapshot' | 'compare';
+type PatternGroupKey = 'themes' | 'words' | 'symbols' | 'pre-sleep';
+
+const statsLayoutTransition = LinearTransition.springify()
+  .damping(18)
+  .stiffness(180);
 
 function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof getStatsCopy>) {
   switch (id) {
@@ -85,6 +93,99 @@ function filterDreamsByRange(dreams: Dream[], range: InsightRange) {
   cutoff.setDate(cutoff.getDate() - (range === '7d' ? 6 : 29));
 
   return dreams.filter(dream => getDreamDate(dream) >= cutoff);
+}
+
+function getPreviousRangeDreams(dreams: Dream[], range: InsightRange) {
+  if (range === 'all') {
+    return [] as Dream[];
+  }
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const periodLength = range === '7d' ? 7 : 30;
+  const currentStart = new Date(today);
+  currentStart.setDate(currentStart.getDate() - (periodLength - 1));
+
+  const previousEnd = new Date(currentStart);
+  previousEnd.setDate(previousEnd.getDate() - 1);
+  previousEnd.setHours(23, 59, 59, 999);
+
+  const previousStart = new Date(previousEnd);
+  previousStart.setHours(0, 0, 0, 0);
+  previousStart.setDate(previousStart.getDate() - (periodLength - 1));
+
+  return dreams.filter(dream => {
+    const dreamDate = getDreamDate(dream);
+    return dreamDate >= previousStart && dreamDate <= previousEnd;
+  });
+}
+
+function summarizeScopedDreams(scopedDreams: Dream[]) {
+  let totalWords = 0;
+  let voiceNotes = 0;
+  let transcribedDreams = 0;
+  let taggedEntries = 0;
+  let moodEntries = 0;
+
+  scopedDreams.forEach(dream => {
+    totalWords += countDreamWords(dream.text);
+
+    if (dream.audioUri) {
+      voiceNotes += 1;
+    }
+
+    if (dream.transcript?.trim()) {
+      transcribedDreams += 1;
+    }
+
+    if (dream.tags.length > 0) {
+      taggedEntries += 1;
+    }
+
+    if (dream.mood) {
+      moodEntries += 1;
+    }
+  });
+
+  return {
+    totalWords,
+    voiceNotes,
+    transcribedDreams,
+    taggedEntries,
+    moodEntries,
+  };
+}
+
+function toLocalDateKey(date: Date) {
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function buildRecentActivityBars(dreams: Dream[], range: InsightRange, locale: AppLocale) {
+  const totalDays = range === '7d' ? 7 : 14;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const counts = new Map<string, number>();
+
+  dreams.forEach(dream => {
+    const dateKey = toLocalDateKey(getDreamDate(dream));
+    counts.set(dateKey, (counts.get(dateKey) ?? 0) + 1);
+  });
+
+  return Array.from({ length: totalDays }, (_, index) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - (totalDays - index - 1));
+    const dateKey = toLocalDateKey(date);
+
+    return {
+      key: dateKey,
+      label: date.toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
+        weekday: 'narrow',
+      }),
+      count: counts.get(dateKey) ?? 0,
+    };
+  });
 }
 
 function formatCoverageValue(value: number, total: number) {
@@ -134,6 +235,14 @@ function formatEntryCountLabel(count: number, locale: AppLocale) {
     en: { one: 'entry', other: 'entries' },
     uk: { one: 'запис', few: 'записи', many: 'записів' },
   })}`;
+}
+
+function formatSignedDelta(value: number) {
+  if (value > 0) {
+    return `+${value}`;
+  }
+
+  return String(value);
 }
 
 function getReflectionSourceLabel(
@@ -193,6 +302,10 @@ export default function StatsScreen() {
   );
   const [dreams, setDreams] = React.useState(() => listDreams());
   const [selectedRange, setSelectedRange] = React.useState<InsightRange>('all');
+  const [selectedMode, setSelectedMode] = React.useState<InsightMode>('snapshot');
+  const [selectedPatternGroup, setSelectedPatternGroup] =
+    React.useState<PatternGroupKey>('themes');
+  const [isDetailsExpanded, setIsDetailsExpanded] = React.useState(false);
   const styles = createStatsScreenStyles(t);
 
   const openPatternDetail = React.useCallback((signal: string, kind: PatternDetailKind) => {
@@ -212,41 +325,15 @@ export default function StatsScreen() {
     () => filterDreamsByRange(dreams, selectedRange),
     [dreams, selectedRange],
   );
-  const scopedSummary = React.useMemo(() => {
-    let totalWords = 0;
-    let voiceNotes = 0;
-    let transcribedDreams = 0;
-    let taggedEntries = 0;
-    let moodEntries = 0;
-
-    scopedDreams.forEach(dream => {
-      totalWords += countDreamWords(dream.text);
-
-      if (dream.audioUri) {
-        voiceNotes += 1;
-      }
-
-      if (dream.transcript?.trim()) {
-        transcribedDreams += 1;
-      }
-
-      if (dream.tags.length > 0) {
-        taggedEntries += 1;
-      }
-
-      if (dream.mood) {
-        moodEntries += 1;
-      }
-    });
-
-    return {
-      totalWords,
-      voiceNotes,
-      transcribedDreams,
-      taggedEntries,
-      moodEntries,
-    };
-  }, [scopedDreams]);
+  const previousScopedDreams = React.useMemo(
+    () => getPreviousRangeDreams(dreams, selectedRange),
+    [dreams, selectedRange],
+  );
+  const scopedSummary = React.useMemo(() => summarizeScopedDreams(scopedDreams), [scopedDreams]);
+  const previousScopedSummary = React.useMemo(
+    () => summarizeScopedDreams(previousScopedDreams),
+    [previousScopedDreams],
+  );
   const overallStreak = getCurrentStreak(dreams);
   const overallLastSevenDays = getEntriesLastSevenDays(dreams);
   const averageWords = getAverageWords(scopedDreams);
@@ -272,11 +359,52 @@ export default function StatsScreen() {
     { key: '30d' as const, label: copy.range30Days },
     { key: '7d' as const, label: copy.range7Days },
   ];
+  const canCompare = selectedRange !== 'all';
+  const compareOptions = [
+    { key: 'snapshot' as const, label: copy.compareSnapshot, disabled: false },
+    { key: 'compare' as const, label: copy.compareMode, disabled: !canCompare },
+  ];
+  const selectedRangeLabel =
+    rangeOptions.find(option => option.key === selectedRange)?.label ?? copy.rangeAll;
   const summaryTiles = [
     { label: copy.entries, value: scopedDreams.length },
     { label: copy.wordsSaved, value: scopedSummary.totalWords },
     { label: copy.voiceNotes, value: scopedSummary.voiceNotes },
     { label: copy.transcribedDreams, value: scopedSummary.transcribedDreams },
+  ];
+  const heroSummaryTiles = [
+    {
+      label: copy.entries,
+      value: scopedDreams.length,
+      hint: formatEntryCountLabel(scopedDreams.length, locale),
+    },
+    {
+      label: copy.wordsSaved,
+      value: scopedSummary.totalWords,
+      hint: `${averageWords} ${copy.averageWordsShort.toLowerCase()}`,
+    },
+    {
+      label: copy.currentStreak,
+      value: overallStreak,
+      hint: formatEntryCountLabel(overallLastSevenDays, locale),
+    },
+  ];
+  const compareMetrics = [
+    {
+      label: copy.entries,
+      current: scopedDreams.length,
+      previous: previousScopedDreams.length,
+    },
+    {
+      label: copy.wordsSaved,
+      current: scopedSummary.totalWords,
+      previous: previousScopedSummary.totalWords,
+    },
+    {
+      label: copy.transcribedDreams,
+      current: scopedSummary.transcribedDreams,
+      previous: previousScopedSummary.transcribedDreams,
+    },
   ];
   const coverageGap =
     [
@@ -284,77 +412,93 @@ export default function StatsScreen() {
       { label: copy.takeawayGapMood, value: entriesWithoutMood },
       { label: copy.takeawayGapContext, value: entriesWithoutContext },
     ].sort((a, b) => b.value - a.value)[0] ?? null;
-  const takeawayItems = [
-    {
-      label: copy.takeawayWordsLabel,
-      value: topWord?.label ?? copy.noData,
-      hint: topWord
-        ? `${topWord.dreamCount} ${copy.reflectionThemeCountLabel}`
-        : copy.takeawayWordsEmpty,
-      onPress: topWord ? () => openPatternDetail(topWord.label, 'word') : undefined,
-    },
-    {
-      label: copy.takeawayThemesLabel,
-      value: topTheme?.label ?? copy.noData,
-      hint: topTheme
-        ? `${topTheme.dreamCount} ${copy.reflectionThemeCountLabel}`
-        : copy.takeawayThemesEmpty,
-      onPress: topTheme ? () => openPatternDetail(topTheme.label, 'theme') : undefined,
-    },
-    {
-      label: copy.takeawayGapsLabel,
-      value: coverageGap?.value ? coverageGap.label : copy.noData,
-      hint:
-        coverageGap && coverageGap.value > 0
-          ? `${coverageGap.value} ${copy.entries}`
-          : copy.takeawayGapsEmpty,
-      onPress: undefined,
-    },
-  ];
+  const topSignal = React.useMemo(() => {
+    if (topTheme && topWord) {
+      return topTheme.dreamCount >= topWord.dreamCount
+        ? {
+            label: topTheme.label,
+            hint: `${topTheme.dreamCount} ${copy.reflectionThemeCountLabel}`,
+            onPress: () => openPatternDetail(topTheme.label, 'theme'),
+          }
+        : {
+            label: topWord.label,
+            hint: `${topWord.dreamCount} ${copy.reflectionThemeCountLabel}`,
+            onPress: () => openPatternDetail(topWord.label, 'word'),
+          };
+    }
+
+    if (topTheme) {
+      return {
+        label: topTheme.label,
+        hint: `${topTheme.dreamCount} ${copy.reflectionThemeCountLabel}`,
+        onPress: () => openPatternDetail(topTheme.label, 'theme'),
+      };
+    }
+
+    if (topWord) {
+      return {
+        label: topWord.label,
+        hint: `${topWord.dreamCount} ${copy.reflectionThemeCountLabel}`,
+        onPress: () => openPatternDetail(topWord.label, 'word'),
+      };
+    }
+
+    return null;
+  }, [copy.reflectionThemeCountLabel, openPatternDetail, topTheme, topWord]);
+  const activityBars = React.useMemo(
+    () => buildRecentActivityBars(scopedDreams, selectedRange, locale),
+    [locale, scopedDreams, selectedRange],
+  );
   const coverageItems = [
     {
-      label: copy.transcribedDreams,
+      label: copy.coverageTranscriptsLabel,
       value: scopedSummary.transcribedDreams,
       total: scopedDreams.length,
+      hint: copy.coverageTranscriptsHint,
     },
     {
-      label: copy.taggedDreams,
+      label: copy.coverageTagsLabel,
       value: scopedSummary.taggedEntries,
       total: scopedDreams.length,
+      hint: copy.coverageTagsHint,
     },
     {
-      label: copy.entriesWithContext,
+      label: copy.coverageContextLabel,
       value: sleepContextStats.withContext,
       total: scopedDreams.length,
+      hint: copy.coverageContextHint,
     },
   ];
   const attentionItems = [
     {
-      label: copy.audioOnlyDreams,
+      label: copy.attentionAudioLabel,
       value: transcriptArchiveStats.audioOnly,
+      hint:
+        transcriptArchiveStats.audioOnly > 0
+          ? copy.attentionAudioHint
+          : copy.attentionAllSetHint,
     },
     {
-      label: copy.entriesWithoutMood,
+      label: copy.attentionMoodLabel,
       value: entriesWithoutMood,
+      hint: entriesWithoutMood > 0 ? copy.attentionMoodHint : copy.attentionAllSetHint,
     },
     {
-      label: copy.entriesWithoutContext,
+      label: copy.attentionContextLabel,
       value: entriesWithoutContext,
+      hint:
+        entriesWithoutContext > 0 ? copy.attentionContextHint : copy.attentionAllSetHint,
     },
   ];
   const patternGroups: Array<{
+    key: PatternGroupKey;
     label: string;
     description: string;
     values: PatternGroupCardItem[];
     empty: string;
   }> = [
     {
-      label: copy.recurringWords,
-      description: copy.recurringWordsDescription,
-      values: createWordPatternItems(recurringWords, locale, openPatternDetail),
-      empty: copy.recurringWordsEmpty,
-    },
-    {
+      key: 'themes',
       label: copy.recurringThemes,
       description: copy.recurringThemesDescription,
       values: createReflectionPatternItems(
@@ -367,6 +511,14 @@ export default function StatsScreen() {
       empty: copy.recurringThemesEmpty,
     },
     {
+      key: 'words',
+      label: copy.recurringWords,
+      description: copy.recurringWordsDescription,
+      values: createWordPatternItems(recurringWords, locale, openPatternDetail),
+      empty: copy.recurringWordsEmpty,
+    },
+    {
+      key: 'symbols',
       label: copy.recurringSymbols,
       description: copy.recurringSymbolsDescription,
       values: createReflectionPatternItems(
@@ -379,6 +531,7 @@ export default function StatsScreen() {
       empty: copy.recurringSymbolsEmpty,
     },
     {
+      key: 'pre-sleep',
       label: copy.preSleepEmotions,
       description: copy.preSleepEmotionsDescription,
       values: preSleepEmotionSignals.map(signal => ({
@@ -390,6 +543,8 @@ export default function StatsScreen() {
       empty: copy.emotionPatternsEmpty,
     },
   ];
+  const activePatternGroup =
+    patternGroups.find(group => group.key === selectedPatternGroup) ?? patternGroups[0];
   const highlightedAchievementTitle = achievementSummary.highlightedId
     ? getAchievementContent(achievementSummary.highlightedId, copy).title
     : null;
@@ -397,6 +552,18 @@ export default function StatsScreen() {
     achievementSummary.unlockedCount === achievementSummary.totalCount
       ? copy.milestonesCompleteTitle
       : highlightedAchievementTitle ?? copy.milestoneInProgress;
+
+  React.useEffect(() => {
+    if (!canCompare && selectedMode === 'compare') {
+      setSelectedMode('snapshot');
+    }
+  }, [canCompare, selectedMode]);
+
+  React.useEffect(() => {
+    if (!patternGroups.some(group => group.key === selectedPatternGroup)) {
+      setSelectedPatternGroup(patternGroups[0]?.key ?? 'themes');
+    }
+  }, [patternGroups, selectedPatternGroup]);
 
   if (!dreams.length) {
     return (
@@ -412,49 +579,172 @@ export default function StatsScreen() {
 
   return (
     <ScreenContainer scroll>
+      <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.heroCard}>
         <View style={styles.heroHeader}>
-          <Text style={styles.heroEyebrow}>{copy.monthLabel}</Text>
           <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
         </View>
 
-        <View style={styles.summaryRow}>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>{copy.currentStreak}</Text>
-            <Text style={styles.summaryValue}>{overallStreak}</Text>
+        <View style={styles.heroTopGrid}>
+          <View style={styles.rangeSection}>
+            <Text style={styles.rangeLabel}>{copy.rangeLabel}</Text>
+            <View style={styles.rangeRow}>
+              {rangeOptions.map(option => {
+                const active = selectedRange === option.key;
+                return (
+                  <Pressable
+                    key={option.key}
+                    style={[styles.rangeChip, active ? styles.rangeChipActive : null]}
+                    onPress={() => setSelectedRange(option.key)}
+                  >
+                    <Text
+                      style={[styles.rangeChipText, active ? styles.rangeChipTextActive : null]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>{copy.lastSevenDays}</Text>
-            <Text style={styles.summaryValue}>{overallLastSevenDays}</Text>
-          </View>
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryLabel}>{copy.averageWordsShort}</Text>
-            <Text style={styles.summaryValue}>{averageWords}</Text>
+
+          <View style={styles.rangeSection}>
+            <Text style={styles.rangeLabel}>{copy.compareLabel}</Text>
+            <View style={styles.rangeRow}>
+              {compareOptions.map(option => {
+                const active = selectedMode === option.key;
+                return (
+                  <Pressable
+                    key={option.key}
+                    disabled={option.disabled}
+                    style={[
+                      styles.rangeChip,
+                      active ? styles.rangeChipActive : null,
+                      option.disabled ? { opacity: 0.45 } : null,
+                    ]}
+                    onPress={() => setSelectedMode(option.key)}
+                  >
+                    <Text
+                      style={[styles.rangeChipText, active ? styles.rangeChipTextActive : null]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
         </View>
 
-        <View style={styles.rangeHeader}>
-          <Text style={styles.rangeLabel}>{copy.rangeLabel}</Text>
-          <View style={styles.rangeRow}>
-            {rangeOptions.map(option => {
-              const active = selectedRange === option.key;
-              return (
+        <View style={styles.summaryRow}>
+          {heroSummaryTiles.map(tile => (
+            <View key={tile.label} style={styles.summaryCard}>
+              <Text style={styles.summaryLabel}>{tile.label}</Text>
+              <Text style={styles.summaryValue}>{tile.value}</Text>
+              <Text style={styles.summaryHint}>{tile.hint}</Text>
+            </View>
+          ))}
+        </View>
+
+        {selectedMode === 'compare' && canCompare ? (
+          <Animated.View
+            entering={FadeInDown.duration(220)}
+            layout={statsLayoutTransition}
+            style={styles.comparePanel}
+          >
+            <View style={styles.comparePanelHeader}>
+              <Text style={styles.comparePanelTitle}>
+                {`${copy.compareCurrentPeriod}: ${selectedRangeLabel}`}
+              </Text>
+              <Text style={styles.comparePanelSubtitle}>
+                {`${copy.comparePreviousPeriod}: ${selectedRangeLabel}`}
+              </Text>
+            </View>
+
+            <View style={styles.compareMetricGrid}>
+              {compareMetrics.map(metric => {
+                const delta = metric.current - metric.previous;
+                const deltaStyle =
+                  delta > 0
+                    ? styles.compareMetricDeltaPositive
+                    : delta < 0
+                      ? styles.compareMetricDeltaNegative
+                      : styles.compareMetricDeltaNeutral;
+
+                return (
+                  <View key={metric.label} style={styles.compareMetricTile}>
+                    <Text style={styles.compareMetricLabel}>{metric.label}</Text>
+                    <Text style={styles.compareMetricValue}>{metric.current}</Text>
+                    <Text style={[styles.compareMetricMeta, deltaStyle]}>
+                      {`${formatSignedDelta(delta)} ${copy.compareDeltaLabel}`}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          </Animated.View>
+        ) : (
+          <Animated.View entering={FadeInDown.duration(220)} layout={statsLayoutTransition}>
+            <View style={styles.overviewPanel}>
+              <View style={styles.overviewPanelHeader}>
+                <Text style={styles.overviewPanelTitle}>{copy.overviewActivityTitle}</Text>
+                <Text style={styles.overviewPanelSubtitle}>
+                  {copy.overviewActivityDescription}
+                </Text>
+              </View>
+
+              <View style={styles.activityBarsRow}>
+                {activityBars.map(bar => {
+                  const maxCount = Math.max(...activityBars.map(item => item.count), 1);
+                  const height = bar.count > 0 ? Math.max(10, (bar.count / maxCount) * 48) : 4;
+
+                  return (
+                    <View key={bar.key} style={styles.activityBarColumn}>
+                      <View style={styles.activityBarTrack}>
+                        <View style={[styles.activityBarFill, { height }]} />
+                      </View>
+                      <Text style={styles.activityBarLabel}>{bar.label}</Text>
+                    </View>
+                  );
+                })}
+              </View>
+
+              <View style={styles.storyRow}>
                 <Pressable
-                  key={option.key}
-                  style={[styles.rangeChip, active ? styles.rangeChipActive : null]}
-                  onPress={() => setSelectedRange(option.key)}
+                  disabled={!topSignal?.onPress}
+                  onPress={topSignal?.onPress}
+                  style={({ pressed }) => [
+                    styles.storyCard,
+                    styles.storyCardAccent,
+                    pressed && topSignal?.onPress ? styles.insightCardPressed : null,
+                  ]}
                 >
-                  <Text
-                    style={[styles.rangeChipText, active ? styles.rangeChipTextActive : null]}
-                  >
-                    {option.label}
+                  <Text style={styles.storyLabel}>{copy.overviewTopSignalLabel}</Text>
+                  <Text style={styles.storyValue} numberOfLines={2}>
+                    {topSignal?.label ?? copy.overviewTopSignalEmpty}
+                  </Text>
+                  <Text style={styles.storyHint} numberOfLines={2}>
+                    {topSignal?.hint ?? copy.takeawayThemesEmpty}
                   </Text>
                 </Pressable>
-              );
-            })}
-          </View>
-        </View>
+
+                <View style={styles.storyCard}>
+                  <Text style={styles.storyLabel}>{copy.overviewNextStepLabel}</Text>
+                  <Text style={styles.storyValue} numberOfLines={2}>
+                    {coverageGap?.value ? coverageGap.label : copy.overviewNextStepEmpty}
+                  </Text>
+                  <Text style={styles.storyHint} numberOfLines={2}>
+                    {coverageGap?.value
+                      ? `${coverageGap.value} ${copy.entries}`
+                      : copy.takeawayGapsEmpty}
+                  </Text>
+                </View>
+              </View>
+            </View>
+          </Animated.View>
+        )}
       </Card>
+      </Animated.View>
 
       {!scopedDreams.length ? (
         <ScreenStateCard
@@ -464,98 +754,127 @@ export default function StatsScreen() {
         />
       ) : (
         <>
-          <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.snapshotTitle} subtitle={copy.snapshotDescription} />
-            <View style={styles.metricGrid}>
-              {summaryTiles.map(tile => (
-                <View key={tile.label} style={styles.metricTile}>
-                  <Text style={styles.metricLabel}>{tile.label}</Text>
-                  <Text style={styles.metricValue}>{tile.value}</Text>
-                </View>
-              ))}
-            </View>
-          </Card>
+          <Animated.View layout={statsLayoutTransition}>
+            <Card style={styles.sectionCard}>
+              <SectionHeader title={copy.patternsTitle} subtitle={copy.patternsDescription} />
+              <View style={styles.patternTabsRow}>
+                {patternGroups.map(group => {
+                  const active = group.key === activePatternGroup.key;
 
-          <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.takeawaysTitle} subtitle={copy.takeawaysDescription} />
-            <View style={styles.insightGrid}>
-              {takeawayItems.map(item => (
-                <Pressable
-                  key={item.label}
-                  disabled={!item.onPress}
-                  onPress={item.onPress}
-                  style={({ pressed }) => [
-                    styles.insightCard,
-                    item.onPress ? styles.insightCardInteractive : null,
-                    pressed && item.onPress ? styles.insightCardPressed : null,
-                  ]}
+                  return (
+                    <Pressable
+                      key={group.key}
+                      style={[styles.patternTabChip, active ? styles.patternTabChipActive : null]}
+                      onPress={() => setSelectedPatternGroup(group.key)}
+                    >
+                      <Text
+                        style={[
+                          styles.patternTabChipText,
+                          active ? styles.patternTabChipTextActive : null,
+                        ]}
+                      >
+                        {group.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.patternGroupList}>
+                {activePatternGroup ? (
+                  <PatternGroupCard
+                    key={activePatternGroup.key}
+                    title={activePatternGroup.label}
+                    description={activePatternGroup.description}
+                    items={activePatternGroup.values}
+                    emptyLabel={activePatternGroup.empty}
+                    leadLabel={copy.patternsTopLabel}
+                    moreLabel={copy.patternsMoreLabel}
+                  />
+                ) : null}
+              </View>
+            </Card>
+          </Animated.View>
+
+          <Animated.View layout={statsLayoutTransition}>
+            <Card style={styles.sectionCard}>
+              <Pressable
+                style={styles.detailsToggleRow}
+                onPress={() => setIsDetailsExpanded(current => !current)}
+              >
+                <View style={styles.detailsToggleCopy}>
+                  <Text style={styles.detailsToggleTitle}>{copy.detailsTitle}</Text>
+                  <Text style={styles.detailsToggleDescription}>{copy.detailsDescription}</Text>
+                </View>
+                <View style={styles.detailsTogglePill}>
+                  <Text style={styles.detailsTogglePillText}>
+                    {isDetailsExpanded ? copy.detailsHide : copy.detailsShow}
+                  </Text>
+                  <Ionicons
+                    name={isDetailsExpanded ? 'chevron-up' : 'chevron-down'}
+                    size={14}
+                    color={t.colors.text}
+                  />
+                </View>
+              </Pressable>
+
+              {isDetailsExpanded ? (
+                <Animated.View
+                  entering={FadeInDown.duration(180)}
+                  layout={statsLayoutTransition}
+                  style={styles.detailsSectionContent}
                 >
-                  <Text style={styles.insightLabel}>{item.label}</Text>
-                  <Text style={styles.insightValue} numberOfLines={2}>
-                    {item.value}
-                  </Text>
-                  <Text style={styles.insightHint} numberOfLines={2}>
-                    {item.hint}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-          </Card>
-
-          <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.coverageTitle} subtitle={copy.coverageDescription} />
-            <View style={styles.coverageList}>
-              {coverageItems.map(item => (
-                <View key={item.label} style={styles.coverageItem}>
-                  <View style={styles.coverageHeader}>
-                    <Text style={styles.coverageLabel}>{item.label}</Text>
-                    <Text style={styles.coverageValue}>
-                      {formatCoverageValue(item.value, item.total)}
-                    </Text>
+                  <View>
+                    <SectionHeader title={copy.snapshotTitle} subtitle={copy.snapshotDescription} />
+                    <View style={styles.metricGrid}>
+                      <View style={styles.metricTile}>
+                        <Text style={styles.metricLabel}>{copy.lastSevenDays}</Text>
+                        <Text style={styles.metricValue}>{overallLastSevenDays}</Text>
+                      </View>
+                      {summaryTiles.map(tile => (
+                        <View key={tile.label} style={styles.metricTile}>
+                          <Text style={styles.metricLabel}>{tile.label}</Text>
+                          <Text style={styles.metricValue}>{tile.value}</Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
-                  <View style={styles.coverageTrack}>
-                    <View
-                      style={[
-                        styles.coverageFill,
-                        { width: `${item.total > 0 ? (item.value / item.total) * 100 : 0}%` },
-                      ]}
-                    />
+
+                  <View>
+                    <SectionHeader title={copy.coverageTitle} subtitle={copy.coverageDescription} />
+                    <View style={styles.coverageGrid}>
+                      {coverageItems.map(item => (
+                        <View key={item.label} style={styles.coverageCard}>
+                          <Text style={styles.coverageLabel}>{item.label}</Text>
+                          <Text style={styles.coverageValue}>
+                            {formatCoverageValue(item.value, item.total)}
+                          </Text>
+                          <Text style={styles.coverageHint}>{item.hint}</Text>
+                        </View>
+                      ))}
+                    </View>
                   </View>
-                </View>
-              ))}
-            </View>
-          </Card>
 
-          <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.attentionTitle} subtitle={copy.attentionDescription} />
-            <View style={styles.attentionRow}>
-              {attentionItems.map(item => (
-                <View key={item.label} style={styles.attentionCard}>
-                  <Text style={styles.attentionValue}>{item.value}</Text>
-                  <Text style={styles.attentionLabel}>{item.label}</Text>
-                </View>
-              ))}
-            </View>
-          </Card>
-
-          <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.patternsTitle} subtitle={copy.patternsDescription} />
-            <View style={styles.patternGroupList}>
-              {patternGroups.map(group => (
-                <PatternGroupCard
-                  key={group.label}
-                  title={group.label}
-                  description={group.description}
-                  items={group.values}
-                  emptyLabel={group.empty}
-                  moreLabel={copy.patternsMoreLabel}
-                />
-              ))}
-            </View>
-          </Card>
+                  <View>
+                    <SectionHeader title={copy.attentionTitle} subtitle={copy.attentionDescription} />
+                    <View style={styles.attentionRow}>
+                      {attentionItems.map(item => (
+                        <View key={item.label} style={styles.attentionCard}>
+                          <Text style={styles.attentionValue}>{item.value}</Text>
+                          <Text style={styles.attentionLabel}>{item.label}</Text>
+                          <Text style={styles.attentionHint}>{item.hint}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                </Animated.View>
+              ) : null}
+            </Card>
+          </Animated.View>
         </>
       )}
 
+      <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.sectionCard}>
         <SectionHeader title={copy.milestonesTitle} subtitle={copy.milestonesDescription} />
 
@@ -585,6 +904,7 @@ export default function StatsScreen() {
           onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.Progress)}
         />
       </Card>
+      </Animated.View>
     </ScreenContainer>
   );
 }

@@ -3,6 +3,7 @@ import { Pressable, View } from 'react-native';
 import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { InfoRow } from '../../../components/ui/InfoRow';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
@@ -20,6 +21,10 @@ import {
 import { getEntriesLastSevenDays } from '../../dreams/model/dreamAnalytics';
 import { createProgressScreenStyles } from './ProgressScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
+
+const progressLayoutTransition = LinearTransition.springify()
+  .damping(18)
+  .stiffness(180);
 
 function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof getStatsCopy>) {
   switch (id) {
@@ -76,86 +81,99 @@ export default function ProgressScreen() {
 
   return (
     <ScreenContainer scroll>
-      <Card style={styles.heroCard}>
-        <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-          <Text style={styles.backLabel}>{copy.progressBackButton}</Text>
-        </Pressable>
-        <SectionHeader title={copy.progressScreenTitle} subtitle={copy.progressScreenSubtitle} large />
-      </Card>
+      <Animated.View layout={progressLayoutTransition}>
+        <Card style={styles.heroCard}>
+          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
+            <Text style={styles.backLabel}>{copy.progressBackButton}</Text>
+          </Pressable>
 
-      <Card style={styles.sectionCard}>
-        <View style={styles.teaserRow}>
-          <View style={styles.teaserCard}>
-            <Text style={styles.teaserLabel}>{copy.weeklyGoalTitle}</Text>
-            <Text style={styles.teaserValue}>{`${lastSevenDays}/${weeklyGoalTarget}`}</Text>
-            <Text style={styles.teaserHint}>
-              {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
-            </Text>
+          <View style={styles.heroHeader}>
+            <Text style={styles.heroEyebrow}>{copy.progressScreenTitle}</Text>
+            <SectionHeader
+              title={copy.progressScreenTitle}
+              subtitle={copy.progressScreenSubtitle}
+              large
+            />
           </View>
-          <View style={[styles.teaserCard, styles.teaserCardAccent]}>
-            <Text style={styles.teaserLabel}>{copy.milestonesUnlockedLabel}</Text>
-            <Text style={styles.teaserValue}>
-              {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
-            </Text>
-            <Text style={styles.teaserHint}>{milestoneSummaryHint}</Text>
+
+          <View style={styles.summaryRow}>
+            <View style={styles.summaryCard}>
+              <Text style={styles.summaryLabel}>{copy.weeklyGoalTitle}</Text>
+              <Text style={styles.summaryValue}>{`${lastSevenDays}/${weeklyGoalTarget}`}</Text>
+              <Text style={styles.summaryHint}>
+                {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
+              </Text>
+            </View>
+            <View style={[styles.summaryCard, styles.summaryCardAccent]}>
+              <Text style={styles.summaryLabel}>{copy.milestonesUnlockedLabel}</Text>
+              <Text style={styles.summaryValue}>
+                {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
+              </Text>
+              <Text style={styles.summaryHint}>{milestoneSummaryHint}</Text>
+            </View>
           </View>
-        </View>
-      </Card>
+        </Card>
+      </Animated.View>
 
-      <Card style={styles.sectionCard}>
-        <SectionHeader title={copy.milestonesTitle} subtitle={copy.milestonesDescription} />
-        <View style={styles.achievementsList}>
-          {achievements.map(achievement => {
-            const content = getAchievementContent(achievement.id, copy);
-            const progressValue = `${Math.min(achievement.current, achievement.target)}/${achievement.target}`;
-            const progressRatio = Math.min(achievement.current / achievement.target, 1);
-            const isHighlighted = achievement.id === achievementSummary.highlightedId;
+      <Animated.View
+        entering={FadeInDown.duration(220)}
+        layout={progressLayoutTransition}
+      >
+        <Card style={styles.sectionCard}>
+          <SectionHeader title={copy.milestonesTitle} subtitle={copy.milestonesDescription} />
+          <View style={styles.achievementsList}>
+            {achievements.map(achievement => {
+              const content = getAchievementContent(achievement.id, copy);
+              const progressValue = `${Math.min(achievement.current, achievement.target)}/${achievement.target}`;
+              const progressRatio = Math.min(achievement.current / achievement.target, 1);
+              const isHighlighted = achievement.id === achievementSummary.highlightedId;
 
-            return (
-              <View
-                key={achievement.id}
-                style={[
-                  styles.achievementItem,
-                  achievement.unlocked ? styles.achievementItemUnlocked : null,
-                  isHighlighted ? styles.achievementItemHighlighted : null,
-                ]}
-              >
-                <View style={styles.achievementHeaderRow}>
-                  <View style={styles.achievementCopy}>
-                    <Text style={styles.achievementTitle}>{content.title}</Text>
-                    <Text style={styles.achievementDescription}>{content.description}</Text>
-                  </View>
-                  <View
-                    style={[
-                      styles.achievementBadge,
-                      achievement.unlocked ? styles.achievementBadgeUnlocked : null,
-                    ]}
-                  >
-                    <Text
+              return (
+                <View
+                  key={achievement.id}
+                  style={[
+                    styles.achievementItem,
+                    achievement.unlocked ? styles.achievementItemUnlocked : null,
+                    isHighlighted ? styles.achievementItemHighlighted : null,
+                  ]}
+                >
+                  <View style={styles.achievementHeaderRow}>
+                    <View style={styles.achievementCopy}>
+                      <Text style={styles.achievementTitle}>{content.title}</Text>
+                      <Text style={styles.achievementDescription}>{content.description}</Text>
+                    </View>
+                    <View
                       style={[
-                        styles.achievementBadgeText,
-                        achievement.unlocked ? styles.achievementBadgeTextUnlocked : null,
+                        styles.achievementBadge,
+                        achievement.unlocked ? styles.achievementBadgeUnlocked : null,
                       ]}
                     >
-                      {achievement.unlocked ? copy.milestoneUnlocked : copy.milestoneInProgress}
-                    </Text>
+                      <Text
+                        style={[
+                          styles.achievementBadgeText,
+                          achievement.unlocked ? styles.achievementBadgeTextUnlocked : null,
+                        ]}
+                      >
+                        {achievement.unlocked ? copy.milestoneUnlocked : copy.milestoneInProgress}
+                      </Text>
+                    </View>
+                  </View>
+                  <InfoRow label={copy.milestoneProgressLabel} value={progressValue} />
+                  <View style={styles.achievementProgressTrack}>
+                    <View
+                      style={[
+                        styles.achievementProgressFill,
+                        achievement.unlocked ? styles.achievementProgressFillUnlocked : null,
+                        { width: `${progressRatio * 100}%` },
+                      ]}
+                    />
                   </View>
                 </View>
-                <InfoRow label={copy.milestoneProgressLabel} value={progressValue} />
-                <View style={styles.achievementProgressTrack}>
-                  <View
-                    style={[
-                      styles.achievementProgressFill,
-                      achievement.unlocked ? styles.achievementProgressFillUnlocked : null,
-                      { width: `${progressRatio * 100}%` },
-                    ]}
-                  />
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      </Card>
+              );
+            })}
+          </View>
+        </Card>
+      </Animated.View>
     </ScreenContainer>
   );
 }

@@ -5,24 +5,38 @@ import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 export function createProgressScreenStyles(theme: Theme) {
   return StyleSheet.create({
     heroCard: {
-      gap: 12,
+      gap: 14,
+      padding: 16,
+    },
+    heroHeader: {
+      gap: 8,
     },
     backButton: {
       alignSelf: 'flex-start',
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }),
     },
     backLabel: {
       color: theme.colors.textDim,
       fontSize: 12,
-      fontWeight: '600',
+      fontWeight: '700',
     },
-    sectionCard: {
-      gap: 12,
+    heroEyebrow: {
+      color: theme.colors.accent,
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.7,
+      textTransform: 'uppercase',
     },
-    teaserRow: {
+    summaryRow: {
       flexDirection: 'row',
       gap: 8,
+      flexWrap: 'wrap',
     },
-    teaserCard: {
+    summaryCard: {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 14,
@@ -30,27 +44,31 @@ export function createProgressScreenStyles(theme: Theme) {
         paddingHorizontal: 12,
       }),
       flex: 1,
+      minWidth: 148,
       gap: 4,
     },
-    teaserCardAccent: {
+    summaryCardAccent: {
       borderColor: theme.colors.accent,
     },
-    teaserLabel: {
+    summaryLabel: {
       color: theme.colors.textDim,
       fontSize: 11,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
-    teaserValue: {
+    summaryValue: {
       fontSize: 24,
       lineHeight: 30,
       fontWeight: '700',
       includeFontPadding: false,
     },
-    teaserHint: {
+    summaryHint: {
       color: theme.colors.textDim,
       fontSize: 12,
       lineHeight: 17,
+    },
+    sectionCard: {
+      gap: 12,
     },
     achievementsList: {
       gap: 12,

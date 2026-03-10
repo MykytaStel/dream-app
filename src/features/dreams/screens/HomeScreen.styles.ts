@@ -129,6 +129,8 @@ export function createHomeScreenStyles(theme: Theme) {
       flex: 1,
       justifyContent: 'flex-start',
       gap: 12,
+      position: 'relative',
+      zIndex: 1,
     },
     heroGlowLarge: {
       position: 'absolute',
@@ -139,6 +141,7 @@ export function createHomeScreenStyles(theme: Theme) {
       opacity: 0.1,
       top: -4,
       right: -10,
+      zIndex: 0,
     },
     heroGlowSmall: {
       position: 'absolute',
@@ -149,17 +152,22 @@ export function createHomeScreenStyles(theme: Theme) {
       opacity: 0.08,
       bottom: 8,
       left: -12,
+      zIndex: 0,
     },
     heroTopRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
       gap: 18,
+      position: 'relative',
+      zIndex: 1,
     },
     heroCopy: {
       flex: 1,
       gap: layout.rowGap,
       paddingRight: 10,
+      minWidth: 0,
+      zIndex: 2,
     },
     heroMetaRow: {
       flexDirection: 'row',
@@ -170,6 +178,59 @@ export function createHomeScreenStyles(theme: Theme) {
     heroDateRow: {
       marginTop: 2,
       alignItems: 'flex-start',
+    },
+    heroPromptCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 16,
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+      }),
+      marginTop: 4,
+      gap: 10,
+      position: 'relative',
+      zIndex: 3,
+      elevation: 2,
+    },
+    heroPromptHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+    },
+    heroPromptIconWrap: {
+      width: 30,
+      height: 30,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(124, 200, 255, 0.14)',
+      borderWidth: 1,
+      borderColor: 'rgba(124, 200, 255, 0.18)',
+    },
+    heroPromptCopy: {
+      flex: 1,
+      gap: 3,
+      minWidth: 0,
+    },
+    heroPromptTitle: {
+      color: theme.colors.text,
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '700',
+    },
+    heroPromptDescription: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    heroPromptActions: {
+      gap: 8,
+    },
+    heroPromptPrimaryAction: {
+      width: '100%',
+    },
+    heroPromptSecondaryAction: {
+      width: '100%',
     },
     heroShortcutButton: {
       ...createSoftTile(theme, {
@@ -183,6 +244,9 @@ export function createHomeScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 10,
       maxWidth: '100%',
+      position: 'relative',
+      zIndex: 3,
+      elevation: 2,
     },
     heroShortcutButtonPressed: {
       opacity: 0.94,
@@ -276,6 +340,7 @@ export function createHomeScreenStyles(theme: Theme) {
       elevation: 4,
       marginTop: 10,
       marginRight: 4,
+      zIndex: 1,
     },
     heroFacet: {
       position: 'absolute',

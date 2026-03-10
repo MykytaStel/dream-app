@@ -212,12 +212,54 @@ export function createWakeEntryScreenStyles(theme: Theme) {
     actions: {
       gap: theme.spacing.md,
     },
-    secondaryActions: {
-      flexDirection: 'row',
-      gap: theme.spacing.md,
+    alternateLabel: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      fontWeight: '700',
+      letterSpacing: 0.6,
+      textTransform: 'uppercase',
+      textAlign: 'center',
     },
-    secondaryAction: {
+    actionCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.md,
+      borderRadius: 18,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      backgroundColor: hexToRgba(theme.colors.surfaceElevated, 0.92),
+      borderWidth: 1,
+      borderColor: hexToRgba('#FFFFFF', 0.08),
+    },
+    actionCardPressed: {
+      opacity: 0.86,
+      transform: [{ scale: 0.992 }],
+    },
+    actionCardIconWrap: {
+      width: 36,
+      height: 36,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: hexToRgba(theme.colors.accent, 0.12),
+      borderWidth: 1,
+      borderColor: hexToRgba('#7CC8FF', 0.12),
+    },
+    actionCardCopy: {
       flex: 1,
+      gap: 2,
+      minWidth: 0,
+    },
+    actionCardTitle: {
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '700',
+      color: theme.colors.text,
+    },
+    actionCardHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
   });
 }

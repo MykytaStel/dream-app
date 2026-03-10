@@ -14,6 +14,9 @@ export function createStatsScreenStyles(theme: Theme) {
     heroHeader: {
       gap: 4,
     },
+    modeSection: {
+      gap: 6,
+    },
     heroTopGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -77,6 +80,9 @@ export function createStatsScreenStyles(theme: Theme) {
       flexGrow: 1,
       flexBasis: '48%',
       minWidth: 136,
+    },
+    rangeSectionWide: {
+      flexBasis: '100%',
     },
     rangeChip: {
       ...createControlPill(theme, {
@@ -469,29 +475,103 @@ export function createStatsScreenStyles(theme: Theme) {
     patternGroupList: {
       gap: 12,
     },
-    patternTabsRow: {
+    threadHeaderRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'flex-start',
+      gap: 12,
+    },
+    threadLeadCard: {
+      ...createSoftTile(theme, {
+        tone: 'alt',
+        radius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+      }),
+      gap: 10,
+      borderColor: theme.colors.accent,
+    },
+    threadLeadHeader: {
+      gap: 10,
+    },
+    threadLeadCopy: {
+      gap: 4,
+    },
+    threadLeadLabel: {
+      color: theme.colors.text,
+      fontSize: 20,
+      lineHeight: 25,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+    threadLeadDescription: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    threadMetaWrap: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       gap: 8,
     },
-    patternTabChip: {
+    threadMetaChip: {
       ...createControlPill(theme, {
         tone: 'surface',
         paddingHorizontal: 10,
         paddingVertical: 6,
       }),
     },
-    patternTabChipActive: {
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.primary,
+    threadMetaChipText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
-    patternTabChipText: {
-      color: theme.colors.textDim,
-      fontSize: 12,
+    threadMatchList: {
+      gap: 8,
+    },
+    threadMatchCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      gap: 8,
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    threadMatchHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 10,
+    },
+    threadMatchCopy: {
+      flex: 1,
+      gap: 3,
+    },
+    threadMatchTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
       fontWeight: '700',
     },
-    patternTabChipTextActive: {
-      color: theme.colors.background,
+    threadMatchMeta: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    threadMatchPreview: {
+      color: theme.colors.text,
+      fontSize: 13,
+      lineHeight: 18,
+    },
+    threadMatchSourcesRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
     },
     detailsToggleRow: {
       flexDirection: 'row',

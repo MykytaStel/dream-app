@@ -37,17 +37,15 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 8,
     },
-    heroActionsWrap: {
+    heroTopBarSpacer: {
+      minWidth: 40,
+      minHeight: 24,
+    },
+    heroQuickActions: {
       flexDirection: 'row',
       alignItems: 'center',
       flexWrap: 'wrap',
-      justifyContent: 'flex-end',
-      gap: 5,
-    },
-    heroActionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
+      gap: 8,
     },
     backButton: {
       ...createControlPill(theme, {
@@ -89,27 +87,32 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     heroHeader: {
       gap: 5,
     },
-    heroActionButton: {
+    heroActionPill: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 6,
-        paddingHorizontal: 6,
+        paddingVertical: 7,
+        paddingHorizontal: 10,
       }),
-      width: 30,
-      height: 30,
+      flexDirection: 'row',
       alignItems: 'center',
-      justifyContent: 'center',
+      gap: 6,
     },
-    heroActionButtonActive: {
+    heroActionPillActive: {
       backgroundColor: theme.colors.primary,
       borderColor: theme.colors.primary,
     },
-    heroActionButtonDanger: {
-      borderColor: `${theme.colors.danger}55`,
-    },
-    heroActionButtonPressed: {
+    heroActionPillPressed: {
       opacity: 0.95,
       transform: [{ scale: 0.985 }],
+    },
+    heroActionLabel: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
+      lineHeight: 15,
+    },
+    heroActionLabelActive: {
+      color: theme.colors.background,
     },
     heroTitle: {
       fontSize: 26,
@@ -127,6 +130,27 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 18,
       maxWidth: '92%',
+    },
+    heroFooter: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      paddingTop: 2,
+    },
+    heroDeleteAction: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingVertical: 4,
+      paddingHorizontal: 2,
+    },
+    heroDeleteActionPressed: {
+      opacity: 0.72,
+    },
+    heroDeleteActionLabel: {
+      color: theme.colors.danger,
+      fontSize: 11,
+      fontWeight: '700',
+      lineHeight: 15,
     },
     summaryCard: {
       padding: 12,
@@ -175,64 +199,85 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       lineHeight: 17,
     },
     savedCard: {
-      padding: 14,
-      gap: 10,
+      padding: 12,
+      gap: 8,
       borderColor: theme.colors.accent,
       backgroundColor: theme.colors.surface,
     },
     savedHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       gap: 12,
+    },
+    savedLead: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+    },
+    savedIconShell: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 6,
+        paddingHorizontal: 6,
+      }),
+      width: 28,
+      height: 28,
+      borderColor: `${theme.colors.accent}44`,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     savedCopy: {
       flex: 1,
-      gap: 4,
+      gap: 2,
     },
     savedTitle: {
       fontWeight: '700',
-      fontSize: 15,
+      fontSize: 13,
     },
     savedDescription: {
       color: theme.colors.textDim,
-      lineHeight: 18,
+      fontSize: 12,
+      lineHeight: 17,
     },
     savedDismiss: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 7,
-        paddingHorizontal: 7,
+        paddingVertical: 6,
+        paddingHorizontal: 6,
       }),
-      width: 34,
-      height: 34,
+      width: 30,
+      height: 30,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    savedStatsRow: {
+    savedMetaRow: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 6,
     },
-    savedStatTile: {
+    savedMetaPill: {
       flex: 1,
-      gap: 4,
+      minWidth: 136,
+      gap: 3,
       ...createSoftTile(theme, {
         tone: 'alt',
-        radius: 14,
-        paddingVertical: 8,
-        paddingHorizontal: 9,
+        radius: 12,
+        paddingVertical: 7,
+        paddingHorizontal: 8,
       }),
     },
-    savedStatLabel: {
+    savedMetaLabel: {
       color: theme.colors.textDim,
-      fontSize: 10,
+      fontSize: 9,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
-    savedStatValue: {
+    savedMetaValue: {
       fontWeight: '700',
-      fontSize: 15,
-      lineHeight: 18,
+      fontSize: 13,
+      lineHeight: 16,
     },
     sectionCard: {
       gap: 12,

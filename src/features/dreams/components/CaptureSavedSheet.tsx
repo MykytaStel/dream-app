@@ -21,7 +21,6 @@ type CaptureSavedSheetProps = {
   onClose: () => void;
   onCaptureAnother: () => void;
   onOpenDetail: () => void;
-  onReturnHome: () => void;
 };
 
 function formatSavedDreamTitle(dream: Dream | null, fallback: string) {
@@ -39,7 +38,6 @@ export function CaptureSavedSheet({
   onClose,
   onCaptureAnother,
   onOpenDetail,
-  onReturnHome,
 }: CaptureSavedSheetProps) {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
@@ -122,13 +120,20 @@ export function CaptureSavedSheet({
                 iconPosition="right"
                 size="md"
               />
-              <Button
-                title={copy.postSaveReturnHome}
-                onPress={onReturnHome}
-                variant="ghost"
-                icon="home-outline"
-                size="md"
-              />
+            </View>
+
+            <View style={styles.footerActions}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onClose}
+                style={({ pressed }) => [
+                  styles.footerAction,
+                  pressed ? styles.footerActionPressed : null,
+                ]}
+              >
+                <Text style={styles.footerActionLabel}>{copy.postSaveContinueLater}</Text>
+              </Pressable>
+              <Text style={styles.footerHint}>{copy.postSaveFooterHint}</Text>
             </View>
           </Card>
         </Animated.View>
@@ -268,6 +273,30 @@ function createStyles(theme: Theme, bottomInset: number) {
     },
     actions: {
       gap: 8,
+    },
+    footerActions: {
+      gap: 8,
+      alignItems: 'center',
+    },
+    footerAction: {
+      borderRadius: 999,
+      paddingVertical: 4,
+      paddingHorizontal: 10,
+    },
+    footerActionPressed: {
+      opacity: 0.7,
+    },
+    footerActionLabel: {
+      color: theme.colors.textDim,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    footerHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+      textAlign: 'center',
+      opacity: 0.82,
     },
   });
 }

@@ -1,6 +1,13 @@
 import { Dream } from './dream';
 
 const MIN_TOKEN_LENGTH = 4;
+const SIGNAL_WEIGHT = {
+  tag: 8,
+  theme: 6,
+  emotion: 4,
+  text: 3,
+} as const;
+
 const STOPWORDS = new Set([
   'about',
   'after',
@@ -39,6 +46,7 @@ const STOPWORDS = new Set([
   'with',
   'would',
   'your',
+  'kept',
 ]);
 
 export type RelatedDream = {
@@ -46,6 +54,16 @@ export type RelatedDream = {
   score: number;
   sharedSignals: string[];
 };
+
+export type RelatedSignalSummary = {
+  label: string;
+  count: number;
+  totalScore: number;
+};
+
+function normalizeSignal(value: string) {
+  return value.trim().toLowerCase();
+}
 
 function tokenizeText(value?: string) {
   return value
@@ -66,39 +84,83 @@ function tokenizeText(value?: string) {
     }) ?? [];
 }
 
-function getDreamSignalSet(dream: Dream) {
-  return new Set([
-    ...dream.tags.map(tag => tag.toLowerCase()),
-    ...tokenizeText(dream.title),
-    ...tokenizeText(dream.text),
-    ...tokenizeText(dream.transcript),
-  ]);
-}
-
 function formatSignal(signal: string) {
   return signal.replace(/-/g, ' ');
 }
 
+function addWeightedSignals(
+  signalMap: Map<string, number>,
+  values: ReadonlyArray<string>,
+  weight: number,
+) {
+  values.forEach(value => {
+    const normalized = normalizeSignal(value);
+    if (!normalized) {
+      return;
+    }
+
+    const currentWeight = signalMap.get(normalized) ?? 0;
+    if (weight > currentWeight) {
+      signalMap.set(normalized, weight);
+    }
+  });
+}
+
+function getDreamSignalWeights(dream: Dream) {
+  const signalWeights = new Map<string, number>();
+
+  addWeightedSignals(signalWeights, dream.tags, SIGNAL_WEIGHT.tag);
+  addWeightedSignals(signalWeights, dream.analysis?.themes ?? [], SIGNAL_WEIGHT.theme);
+  addWeightedSignals(
+    signalWeights,
+    [...(dream.wakeEmotions ?? []), ...(dream.sleepContext?.preSleepEmotions ?? [])],
+    SIGNAL_WEIGHT.emotion,
+  );
+  addWeightedSignals(
+    signalWeights,
+    [
+      ...tokenizeText(dream.title),
+      ...tokenizeText(dream.text),
+      ...tokenizeText(dream.transcript),
+      ...tokenizeText(dream.sleepContext?.importantEvents),
+      ...tokenizeText(dream.sleepContext?.healthNotes),
+    ],
+    SIGNAL_WEIGHT.text,
+  );
+
+  return signalWeights;
+}
+
 export function getRelatedDreams(targetDream: Dream, dreams: Dream[], limit = 3): RelatedDream[] {
-  const targetTags = new Set(targetDream.tags.map(tag => tag.toLowerCase()));
-  const targetSignals = getDreamSignalSet(targetDream);
+  const targetSignals = getDreamSignalWeights(targetDream);
 
   return dreams
     .filter(candidate => candidate.id !== targetDream.id)
     .map(candidate => {
-      const candidateTags = new Set(candidate.tags.map(tag => tag.toLowerCase()));
-      const candidateSignals = getDreamSignalSet(candidate);
-      const sharedTags = Array.from(targetTags).filter(tag => candidateTags.has(tag));
-      const sharedWords = Array.from(targetSignals).filter(
-        signal => !sharedTags.includes(signal) && candidateSignals.has(signal),
-      );
-      const sharedSignals = [
-        ...sharedTags.map(formatSignal),
-        ...sharedWords.map(formatSignal),
-      ].slice(0, 4);
+      const candidateSignals = getDreamSignalWeights(candidate);
+      const sharedSignalEntries = Array.from(targetSignals.entries())
+        .filter(([signal]) => candidateSignals.has(signal))
+        .map(([signal, targetWeight]) => {
+          const candidateWeight = candidateSignals.get(signal) ?? SIGNAL_WEIGHT.text;
+
+          return {
+            signal,
+            score: Math.min(targetWeight, candidateWeight),
+            combinedWeight: targetWeight + candidateWeight,
+          };
+        })
+        .sort((left, right) => {
+          if (right.combinedWeight !== left.combinedWeight) {
+            return right.combinedWeight - left.combinedWeight;
+          }
+
+          return left.signal.localeCompare(right.signal);
+        });
+      const sharedSignals = sharedSignalEntries
+        .map(entry => formatSignal(entry.signal))
+        .slice(0, 4);
       const score =
-        sharedTags.length * 8 +
-        sharedWords.length * 3 +
+        sharedSignalEntries.reduce((total, entry) => total + entry.score, 0) +
         (targetDream.mood && candidate.mood && targetDream.mood === candidate.mood ? 1 : 0);
 
       return {
@@ -114,6 +176,47 @@ export function getRelatedDreams(targetDream: Dream, dreams: Dream[], limit = 3)
       }
 
       return b.dream.createdAt - a.dream.createdAt;
+    })
+    .slice(0, limit);
+}
+
+export function getRelatedSignalSummaries(
+  relatedDreams: RelatedDream[],
+  limit = 4,
+): RelatedSignalSummary[] {
+  const aggregatedSignals = new Map<string, RelatedSignalSummary>();
+
+  relatedDreams.forEach(item => {
+    item.sharedSignals.forEach((signal, index) => {
+      const normalized = normalizeSignal(signal);
+      const rankScore = item.sharedSignals.length - index;
+      const current = aggregatedSignals.get(normalized);
+
+      if (current) {
+        current.count += 1;
+        current.totalScore += rankScore;
+        return;
+      }
+
+      aggregatedSignals.set(normalized, {
+        label: signal,
+        count: 1,
+        totalScore: rankScore,
+      });
+    });
+  });
+
+  return Array.from(aggregatedSignals.values())
+    .sort((left, right) => {
+      if (right.count !== left.count) {
+        return right.count - left.count;
+      }
+
+      if (right.totalScore !== left.totalScore) {
+        return right.totalScore - left.totalScore;
+      }
+
+      return left.label.localeCompare(right.label);
     })
     .slice(0, limit);
 }

@@ -7,7 +7,7 @@ import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionService';
 import type { Dream } from './dream';
 import { countDreamWords } from './dreamAnalytics';
-import type { RelatedDream } from './relatedDreams';
+import { getRelatedSignalSummaries, type RelatedDream } from './relatedDreams';
 
 export type DreamDetailCopy = ReturnType<typeof getDreamCopy>;
 export type DreamMoodLabels = ReturnType<typeof getDreamMoodLabels>;
@@ -127,19 +127,25 @@ export function createEmptyDetailSectionsState(): DreamDetailSectionsState {
 }
 
 export function createDefaultExpandedSections(dream: Dream): DreamDetailSectionsState {
+  const hasRawText = Boolean(dream.text?.trim());
   const hasTranscriptSurface = Boolean(
     dream.audioUri || dream.transcript || dream.transcriptStatus === 'error',
+  );
+  const hasTranscriptContent = Boolean(
+    dream.transcript ||
+      dream.transcriptStatus === 'processing' ||
+      dream.transcriptStatus === 'error',
   );
 
   return {
     written: true,
     emotions: false,
-    transcript: hasTranscriptSurface && !dream.text?.trim(),
+    transcript: hasTranscriptSurface && hasTranscriptContent && !hasRawText,
     tags: false,
     related: false,
     analysis: false,
     context: false,
-    audio: false,
+    audio: Boolean(dream.audioUri && !hasRawText && !hasTranscriptContent),
   };
 }
 
@@ -326,7 +332,10 @@ export function getDreamDetailViewModel({
         ? copy.detailAnalysisStateLocalReady
         : copy.detailAnalysisStateManual;
   const strongestSignal =
-    relatedDreams[0]?.sharedSignals[0] ?? dream.tags[0] ?? dream.wakeEmotions?.[0] ?? null;
+    getRelatedSignalSummaries(relatedDreams, 1)[0]?.label ??
+    dream.tags[0] ??
+    dream.wakeEmotions?.[0] ??
+    null;
   const heroPreview = getHeroPreview(dream, copy);
   const heroSubtitle = `${dream.sleepDate ? formatMetaDate(dream.sleepDate) : formatMetaDate(dream.createdAt)} · ${formatMetaTime(dream.createdAt)}`;
   const hasTranscriptSurface = Boolean(

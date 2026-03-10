@@ -288,5 +288,18 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     attachedAudioUri: {
       color: theme.colors.textDim,
     },
+    captureAlternateBlock: {
+      gap: layout.rowGap + 2,
+      borderTopWidth: 1,
+      borderTopColor: theme.colors.border,
+      paddingTop: layout.sectionGap,
+    },
+    captureAlternateLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.6,
+      textTransform: 'uppercase',
+    },
   });
 }

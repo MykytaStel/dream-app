@@ -151,6 +151,98 @@ export function DreamComposerVoiceCard({
   );
 }
 
+type WakeCaptureCardProps = {
+  styles: DreamComposerStyles;
+  copy: DreamComposerCopy;
+  recording: boolean;
+  audioUri?: string;
+  audioFileLabel?: string;
+  onToggleRecord: () => void;
+  onRemoveAudio: () => void;
+  text: string;
+  onChangeText: (value: string) => void;
+  hasTriedSave: boolean;
+  hasMissingContent: boolean;
+  textWordCount: number;
+};
+
+export function DreamComposerWakeCaptureCard({
+  styles,
+  copy,
+  recording,
+  audioUri,
+  audioFileLabel,
+  onToggleRecord,
+  onRemoveAudio,
+  text,
+  onChangeText,
+  hasTriedSave,
+  hasMissingContent,
+  textWordCount,
+}: WakeCaptureCardProps) {
+  const helperText =
+    hasTriedSave && hasMissingContent
+      ? copy.saveErrorDescription
+      : `${textWordCount} ${copy.wordsUnit}`;
+  const helperTone = hasTriedSave && hasMissingContent ? 'error' : 'default';
+
+  return (
+    <Card style={styles.card}>
+      <View style={styles.sectionAccentRow}>
+        <View style={styles.sectionAccentPrimary} />
+        <View style={styles.sectionAccentSecondary} />
+      </View>
+      <SectionHeader title={copy.wakeCaptureTitle} subtitle={copy.wakeCaptureDescription} />
+
+      <FormField
+        label={copy.wakeTextLabel}
+        placeholder={copy.wakeTextPlaceholder}
+        value={text}
+        onChangeText={onChangeText}
+        autoFocus={!audioUri}
+        multiline
+        inputStyle={styles.textInput}
+        helperText={helperText}
+        helperTone={helperTone}
+        invalid={hasTriedSave && hasMissingContent}
+      />
+      <Text style={styles.refineHint}>{copy.wakeReadyHint}</Text>
+
+      <View style={styles.captureAlternateBlock}>
+        <Text style={styles.captureAlternateLabel}>{copy.wakeCaptureAlternateTitle}</Text>
+
+        <View style={styles.voiceStatusRow}>
+          <View style={styles.voiceStatusPill}>
+            <Text style={styles.voiceStatusLabel}>
+              {recording
+                ? copy.recordingHint
+                : audioUri
+                  ? copy.attachedAudioTitle
+                  : copy.wakeCaptureVoiceHint}
+            </Text>
+          </View>
+          {audioUri ? <Text style={styles.voiceFileLabel}>{audioFileLabel}</Text> : null}
+        </View>
+
+        <Button
+          title={recording ? copy.stopRecording : copy.startRecording}
+          onPress={onToggleRecord}
+          icon={recording ? 'stop-circle-outline' : 'mic-outline'}
+          size="md"
+        />
+
+        {audioUri ? (
+          <View style={styles.attachedAudioCard}>
+            <Text style={styles.attachedAudioTitle}>{copy.attachedAudioTitle}</Text>
+            <Text style={styles.attachedAudioUri}>{audioFileLabel}</Text>
+            <Button title={copy.removeAudio} variant="ghost" size="sm" onPress={onRemoveAudio} />
+          </View>
+        ) : null}
+      </View>
+    </Card>
+  );
+}
+
 type CoreCardProps = {
   styles: DreamComposerStyles;
   copy: DreamComposerCopy;

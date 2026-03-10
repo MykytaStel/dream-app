@@ -17,6 +17,7 @@ import {
   DreamComposerCoreCard,
   DreamComposerHeroCard,
   DreamComposerRefineCard,
+  DreamComposerWakeCaptureCard,
   DreamComposerVoiceCard,
   DreamComposerWakeMetaCard,
 } from './DreamComposerBasicSections';
@@ -127,36 +128,57 @@ export function DreamComposer({
         />
       ) : null}
 
-      <DreamComposerVoiceCard
-        styles={styles}
-        copy={copy}
-        isWakeMode={form.isWakeMode}
-        recording={form.recording}
-        audioUri={form.audioUri}
-        audioFileLabel={audioFileLabel}
-        onToggleRecord={() => {
-          form.onToggleRecord().catch(() => undefined);
-        }}
-        onRemoveAudio={() => form.setAudioUri(undefined)}
-      />
+      {form.isWakeMode ? (
+        <DreamComposerWakeCaptureCard
+          styles={styles}
+          copy={copy}
+          recording={form.recording}
+          audioUri={form.audioUri}
+          audioFileLabel={audioFileLabel}
+          onToggleRecord={() => {
+            form.onToggleRecord().catch(() => undefined);
+          }}
+          onRemoveAudio={() => form.setAudioUri(undefined)}
+          text={form.text}
+          onChangeText={form.setText}
+          hasTriedSave={form.hasTriedSave}
+          hasMissingContent={form.hasMissingContent}
+          textWordCount={form.textWordCount}
+        />
+      ) : (
+        <>
+          <DreamComposerVoiceCard
+            styles={styles}
+            copy={copy}
+            isWakeMode={form.isWakeMode}
+            recording={form.recording}
+            audioUri={form.audioUri}
+            audioFileLabel={audioFileLabel}
+            onToggleRecord={() => {
+              form.onToggleRecord().catch(() => undefined);
+            }}
+            onRemoveAudio={() => form.setAudioUri(undefined)}
+          />
 
-      <DreamComposerCoreCard
-        styles={styles}
-        copy={copy}
-        isWakeMode={form.isWakeMode}
-        isEntryEmpty={form.isEntryEmpty}
-        hasRestoredDraft={form.hasRestoredDraft}
-        title={form.title}
-        onChangeTitle={form.setTitle}
-        sleepDate={form.sleepDate}
-        onChangeSleepDate={form.setSleepDate}
-        text={form.text}
-        onChangeText={form.setText}
-        hasInvalidSleepDate={form.hasInvalidSleepDate}
-        hasTriedSave={form.hasTriedSave}
-        hasMissingContent={form.hasMissingContent}
-        textWordCount={form.textWordCount}
-      />
+          <DreamComposerCoreCard
+            styles={styles}
+            copy={copy}
+            isWakeMode={form.isWakeMode}
+            isEntryEmpty={form.isEntryEmpty}
+            hasRestoredDraft={form.hasRestoredDraft}
+            title={form.title}
+            onChangeTitle={form.setTitle}
+            sleepDate={form.sleepDate}
+            onChangeSleepDate={form.setSleepDate}
+            text={form.text}
+            onChangeText={form.setText}
+            hasInvalidSleepDate={form.hasInvalidSleepDate}
+            hasTriedSave={form.hasTriedSave}
+            hasMissingContent={form.hasMissingContent}
+            textWordCount={form.textWordCount}
+          />
+        </>
+      )}
 
       <DreamComposerRefineCard
         styles={styles}

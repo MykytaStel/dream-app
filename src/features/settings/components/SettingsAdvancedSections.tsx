@@ -14,30 +14,6 @@ import { createSettingsScreenStyles } from '../screens/SettingsScreen.styles';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 type SettingsStyles = ReturnType<typeof createSettingsScreenStyles>;
-
-export function AdvancedToggleSection({
-  copy,
-  styles,
-  showAdvanced,
-  onToggle,
-}: {
-  copy: SettingsCopy;
-  styles: SettingsStyles;
-  showAdvanced: boolean;
-  onToggle: () => void;
-}) {
-  return (
-    <View style={styles.advancedToggleWrap}>
-      <SettingsActionRow
-        title={copy.advancedTitle}
-        meta={copy.advancedDescription}
-        value={showAdvanced ? copy.advancedHide : copy.advancedShow}
-        onPress={onToggle}
-      />
-    </View>
-  );
-}
-
 export function AnalysisSection({
   copy,
   styles,
@@ -174,16 +150,20 @@ export function ExportSection({
   copy,
   styles,
   highlights,
-  isExporting,
+  isExportingJson,
+  isExportingPdf,
   lastExportPath,
-  onExport,
+  onExportJson,
+  onExportPdf,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
   highlights: SettingsMetaItem[];
-  isExporting: boolean;
+  isExportingJson: boolean;
+  isExportingPdf: boolean;
   lastExportPath: string | null;
-  onExport: () => void;
+  onExportJson: () => void;
+  onExportPdf: () => void;
 }) {
   return (
     <Card style={styles.sectionCard}>
@@ -195,14 +175,22 @@ export function ExportSection({
           <Text style={styles.exportPathValue}>{lastExportPath}</Text>
         </View>
       ) : null}
-      <View style={styles.buttonStack}>
+      <View style={styles.buttonRow}>
         <Button
-          title={isExporting ? copy.exportButtonBusy : copy.exportButton}
+          title={isExportingJson ? copy.exportButtonBusy : copy.exportButton}
           variant="primary"
           size="sm"
-          style={styles.buttonStackButton}
-          onPress={onExport}
-          disabled={isExporting}
+          style={styles.buttonRowButton}
+          onPress={onExportJson}
+          disabled={isExportingJson || isExportingPdf}
+        />
+        <Button
+          title={isExportingPdf ? copy.exportPdfButtonBusy : copy.exportPdfButton}
+          variant="ghost"
+          size="sm"
+          style={styles.buttonRowButton}
+          onPress={onExportPdf}
+          disabled={isExportingJson || isExportingPdf}
         />
       </View>
       <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
@@ -320,7 +308,7 @@ export function RestoreSection({
         <SettingsActionRow
           title={copy.restorePreviewTitle}
           meta={restorePreviewMeta ?? undefined}
-          value={showRestorePreview ? copy.advancedHide : copy.advancedShow}
+          value={showRestorePreview ? copy.toggleHide : copy.toggleShow}
           onPress={onToggleRestorePreview}
         />
       ) : null}

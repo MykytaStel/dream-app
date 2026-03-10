@@ -5,6 +5,7 @@ import type { DateTimePickerEvent } from '@react-native-community/datetimepicker
 import { APP_VERSION_LABEL } from '../../../config/app';
 import { type AppLocale } from '../../../i18n/types';
 import {
+  exportDreamArchivePdf,
   exportDreamDataSnapshot,
 } from '../services/dataExportService';
 import {
@@ -66,6 +67,8 @@ type UseSettingsScreenControllerArgs = {
   copy: SettingsCopy;
 };
 
+type ExportFormat = 'json' | 'pdf';
+
 export function useSettingsScreenController({
   locale,
   setLocale,
@@ -76,7 +79,7 @@ export function useSettingsScreenController({
   );
   const [permissionGranted, setPermissionGranted] = React.useState<boolean>(true);
   const [isApplyingReminder, setIsApplyingReminder] = React.useState(false);
-  const [isExporting, setIsExporting] = React.useState(false);
+  const [exportingFormat, setExportingFormat] = React.useState<ExportFormat | null>(null);
   const [isDownloadingTranscriptionModel, setIsDownloadingTranscriptionModel] =
     React.useState(false);
   const [isDeletingTranscriptionModel, setIsDeletingTranscriptionModel] = React.useState(false);
@@ -99,7 +102,6 @@ export function useSettingsScreenController({
   const [transcriptionDownloadProgress, setTranscriptionDownloadProgress] =
     React.useState<DreamTranscriptionProgress | null>(null);
   const [showIosTimePicker, setShowIosTimePicker] = React.useState(false);
-  const [showAdvanced, setShowAdvanced] = React.useState(false);
   const [seedDreamCount, setSeedDreamCount] = React.useState(0);
   const [isUpdatingSeedDreams, setIsUpdatingSeedDreams] = React.useState(false);
   const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
@@ -347,7 +349,7 @@ export function useSettingsScreenController({
   );
 
   const onExportData = React.useCallback(async () => {
-    setIsExporting(true);
+    setExportingFormat('json');
 
     try {
       const result = await exportDreamDataSnapshot();
@@ -361,7 +363,25 @@ export function useSettingsScreenController({
         error instanceof Error ? error.message : String(error),
       );
     } finally {
-      setIsExporting(false);
+      setExportingFormat(null);
+    }
+  }, [copy, refreshLocalExports]);
+
+  const onExportPdfData = React.useCallback(async () => {
+    setExportingFormat('pdf');
+
+    try {
+      const result = await exportDreamArchivePdf();
+      setLastExportPath(result.filePath);
+      await refreshLocalExports();
+      Alert.alert(copy.exportPdfSuccessTitle, `${copy.exportPdfSuccessDescription}\n${result.filePath}`);
+    } catch (error) {
+      Alert.alert(
+        copy.exportPdfErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setExportingFormat(null);
     }
   }, [copy, refreshLocalExports]);
 
@@ -533,8 +553,6 @@ export function useSettingsScreenController({
     pickerLocale: getPickerLocale(locale),
     onSelectLocale,
     privacyHighlights,
-    showAdvanced,
-    setShowAdvanced,
     analysisSettings,
     saveNextAnalysisSettings,
     analysisHighlights,
@@ -546,9 +564,11 @@ export function useSettingsScreenController({
     onDownloadTranscriptionModel,
     onDeleteTranscriptionModel,
     exportHighlights,
-    isExporting,
+    isExportingJson: exportingFormat === 'json',
+    isExportingPdf: exportingFormat === 'pdf',
     lastExportPath,
     onExportData,
+    onExportPdfData,
     localExportFiles,
     isLoadingLocalExports,
     selectedImportPreview,

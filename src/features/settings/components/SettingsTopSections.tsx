@@ -18,19 +18,19 @@ type SettingsStyles = ReturnType<typeof createSettingsScreenStyles>;
 export function SettingsHeroSection({
   copy,
   locale,
-  styles,
   isApplyingReminder,
   onSelectLocale,
+  styles,
 }: {
   copy: SettingsCopy;
   locale: AppLocale;
-  styles: SettingsStyles;
   isApplyingReminder: boolean;
   onSelectLocale: (locale: AppLocale) => void;
+  styles: SettingsStyles;
 }) {
   return (
     <View style={styles.heroHeader}>
-      <SectionHeader title={copy.title} large />
+      <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
       <View style={styles.inlineLanguageRow}>
         <Text style={styles.inlineLanguageLabel}>{copy.languageTitle}</Text>
         <View style={styles.inlineLanguageControls}>

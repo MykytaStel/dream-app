@@ -21,6 +21,14 @@ export function getPickerLocale(locale: AppLocale) {
   return locale === 'uk' ? 'uk-UA' : 'en-US';
 }
 
+export function formatLocaleDisplayName(value: AppLocale, locale: AppLocale) {
+  if (locale === 'uk') {
+    return value === 'uk' ? 'Українська' : 'Англійська';
+  }
+
+  return value === 'uk' ? 'Ukrainian' : 'English';
+}
+
 export function getReminderDate(settings: DreamReminderSettings) {
   const date = new Date();
   date.setHours(settings.hour, settings.minute, 0, 0);
@@ -255,7 +263,7 @@ export function buildRestorePreviewItems(
     },
     {
       label: copy.restoreLocaleLabel,
-      value: preview.locale.toUpperCase(),
+      value: formatLocaleDisplayName(preview.locale, locale),
     },
     {
       label: copy.restoreVersionLabel,

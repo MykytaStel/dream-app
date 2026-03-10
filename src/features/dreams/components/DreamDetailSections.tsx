@@ -11,7 +11,7 @@ import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { Dream } from '../model/dream';
-import type { RelatedDream } from '../model/relatedDreams';
+import { getRelatedSignalSummaries, type RelatedDream } from '../model/relatedDreams';
 import {
   formatMetaTimestamp,
   formatTranscriptionProgress,
@@ -26,6 +26,11 @@ import { DreamDetailSectionCard } from './DreamDetailSectionCard';
 const detailLayoutTransition = LinearTransition.springify()
   .damping(18)
   .stiffness(180);
+
+function getAudioFileLabel(audioUri: string) {
+  const filename = audioUri.split('/').filter(Boolean).pop();
+  return filename ? decodeURIComponent(filename) : audioUri;
+}
 
 type DreamDetailSectionsProps = {
   dream: Dream;
@@ -91,24 +96,59 @@ export function DreamDetailSections({
   onOpenSettingsForAnalysis,
 }: DreamDetailSectionsProps) {
   const theme = useTheme<Theme>();
+  const rawCaptureText = dream.text?.trim();
+  const captureBody =
+    rawCaptureText || (dream.audioUri ? copy.audioOnlyPreview : copy.detailCaptureEmpty);
+  const audioFileLabel = React.useMemo(
+    () => (dream.audioUri ? getAudioFileLabel(dream.audioUri) : null),
+    [dream.audioUri],
+  );
+  const relatedSignalSummaries = React.useMemo(
+    () => getRelatedSignalSummaries(relatedDreams, 5),
+    [relatedDreams],
+  );
 
   return (
     <>
       <Animated.View entering={FadeInDown.delay(70).duration(220)} layout={detailLayoutTransition}>
         <DreamDetailSectionCard
-          title={copy.detailTranscriptTitle}
+          title={copy.detailCaptureTitle}
           meta={viewModel.notesMetaLabel}
           expanded={sections.written}
           onToggle={() => onToggleSection('written')}
         >
-          <Text style={dream.text ? styles.bodyText : styles.mutedText}>
-            {dream.text || copy.detailTranscriptEmpty}
+          <Text style={rawCaptureText ? styles.bodyText : styles.mutedText}>
+            {captureBody}
           </Text>
         </DreamDetailSectionCard>
       </Animated.View>
 
-      {viewModel.hasTranscriptSurface ? (
+      {dream.audioUri ? (
         <Animated.View entering={FadeInDown.delay(90).duration(220)} layout={detailLayoutTransition}>
+          <DreamDetailSectionCard
+            title={copy.voiceTitle}
+            meta={copy.detailAudioAttachedMeta}
+            expanded={sections.audio}
+            onToggle={() => onToggleSection('audio')}
+          >
+            <View style={styles.audioCard}>
+              <Text style={styles.bodyText}>{copy.detailAudioDescription}</Text>
+              <InfoRow label={copy.detailAudioPathLabel} value={audioFileLabel ?? dream.audioUri} />
+              <Text style={styles.mutedText}>{copy.detailAudioPlaybackHint}</Text>
+              <Button
+                title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}
+                variant={isPlayingAudio ? 'ghost' : 'primary'}
+                onPress={onToggleAudioPlayback}
+                icon={isPlayingAudio ? 'stop-circle-outline' : 'play-outline'}
+                size="sm"
+              />
+            </View>
+          </DreamDetailSectionCard>
+        </Animated.View>
+      ) : null}
+
+      {viewModel.hasTranscriptSurface ? (
+        <Animated.View entering={FadeInDown.delay(110).duration(220)} layout={detailLayoutTransition}>
           <DreamDetailSectionCard
             title={copy.detailGeneratedTranscriptTitle}
             meta={viewModel.transcriptMetaLabel}
@@ -233,13 +273,27 @@ export function DreamDetailSections({
         </Animated.View>
       ) : null}
 
-      <Animated.View entering={FadeInDown.delay(110).duration(220)} layout={detailLayoutTransition}>
+      <Animated.View entering={FadeInDown.delay(130).duration(220)} layout={detailLayoutTransition}>
         <DreamDetailSectionCard
           title={copy.detailRelatedTitle}
           meta={viewModel.relatedMetaLabel}
           expanded={sections.related}
           onToggle={() => onToggleSection('related')}
         >
+          {relatedSignalSummaries.length ? (
+            <>
+              <Text style={styles.subsectionLabel}>{copy.detailRelatedRecurringLabel}</Text>
+              <View style={styles.tagsRow}>
+                {relatedSignalSummaries.map(signal => (
+                  <TagChip
+                    key={signal.label}
+                    label={signal.count > 1 ? `${signal.label} x${signal.count}` : signal.label}
+                  />
+                ))}
+              </View>
+            </>
+          ) : null}
+
           {relatedDreams.length ? (
             <ScrollView
               horizontal
@@ -289,7 +343,7 @@ export function DreamDetailSections({
         </DreamDetailSectionCard>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(130).duration(220)} layout={detailLayoutTransition}>
+      <Animated.View entering={FadeInDown.delay(150).duration(220)} layout={detailLayoutTransition}>
         <DreamDetailSectionCard
           title={copy.detailAnalysisTitle}
           meta={viewModel.analysisMetaLabel}
@@ -380,7 +434,7 @@ export function DreamDetailSections({
         </DreamDetailSectionCard>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(150).duration(220)} layout={detailLayoutTransition}>
+      <Animated.View entering={FadeInDown.delay(170).duration(220)} layout={detailLayoutTransition}>
         <DreamDetailSectionCard
           title={copy.tagsTitle}
           meta={viewModel.tagCountLabel}
@@ -397,7 +451,7 @@ export function DreamDetailSections({
         </DreamDetailSectionCard>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(170).duration(220)} layout={detailLayoutTransition}>
+      <Animated.View entering={FadeInDown.delay(190).duration(220)} layout={detailLayoutTransition}>
         <DreamDetailSectionCard
           title={copy.detailStateTitle}
           meta={viewModel.stateMetaLabel}
@@ -462,29 +516,6 @@ export function DreamDetailSections({
           )}
         </DreamDetailSectionCard>
       </Animated.View>
-
-      {dream.audioUri ? (
-        <Animated.View entering={FadeInDown.delay(190).duration(220)} layout={detailLayoutTransition}>
-          <DreamDetailSectionCard
-            title={copy.voiceTitle}
-            meta={copy.detailAudioAttachedMeta}
-            expanded={sections.audio}
-            onToggle={() => onToggleSection('audio')}
-          >
-            <View style={styles.audioCard}>
-              <Text>{copy.detailAudioDescription}</Text>
-              <InfoRow label={copy.detailAudioPathLabel} value={dream.audioUri} />
-              <Button
-                title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}
-                variant={isPlayingAudio ? 'ghost' : 'primary'}
-                onPress={onToggleAudioPlayback}
-                icon={isPlayingAudio ? 'stop-circle-outline' : 'play-outline'}
-                size="sm"
-              />
-            </View>
-          </DreamDetailSectionCard>
-        </Animated.View>
-      ) : null}
     </>
   );
 }

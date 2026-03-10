@@ -29,6 +29,11 @@ export function getContextGreeting(copy: DreamCopy, now = new Date()) {
   return copy.homeGreetingEvening;
 }
 
+export function isWakeCaptureWindow(now = new Date()) {
+  const hour = now.getHours();
+  return hour >= 4 && hour < 12;
+}
+
 export function formatResultCount(count: number, copy: DreamCopy) {
   return `${count} ${count === 1 ? copy.homeResultsSingle : copy.homeResultsPlural}`;
 }

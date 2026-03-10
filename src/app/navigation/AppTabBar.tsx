@@ -23,7 +23,7 @@ const SIDE_ROUTE_NAMES = [
 const TAB_ICONS: Record<(typeof SIDE_ROUTE_NAMES)[number], string> = {
   [TAB_ROUTE_NAMES.Home]: 'time-outline',
   [TAB_ROUTE_NAMES.Archive]: 'albums-outline',
-  [TAB_ROUTE_NAMES.Stats]: 'bar-chart-outline',
+  [TAB_ROUTE_NAMES.Stats]: 'git-compare-outline',
   [TAB_ROUTE_NAMES.Settings]: 'settings-outline',
 };
 
@@ -119,9 +119,10 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
       navigation.dispatch(
         TabActions.jumpTo(
           TAB_ROUTE_NAMES.New,
-          entryMode === 'voice'
-            ? { entryMode, launchKey: Date.now() }
-            : { entryMode },
+          {
+            entryMode,
+            launchKey: Date.now(),
+          },
         ),
       );
     },
@@ -297,10 +298,17 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
 
             <View style={styles.quickAddOptions}>
               <QuickAddOption
+                description={copy.quickAddWakeHint}
+                icon="sunny-outline"
+                onPress={() => openComposer('wake')}
+                primary
+                styles={styles}
+                title={copy.quickAddWakeAction}
+              />
+              <QuickAddOption
                 description={copy.quickAddVoiceHint}
                 icon="mic-outline"
                 onPress={() => openComposer('voice')}
-                primary
                 styles={styles}
                 title={copy.quickAddVoiceAction}
               />

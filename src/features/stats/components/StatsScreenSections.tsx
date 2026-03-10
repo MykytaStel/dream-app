@@ -109,14 +109,7 @@ export function StatsHeroSection({
   selectedRange,
   onSelectRange,
   rangeOptions,
-  selectedMode,
-  onSelectMode,
-  compareOptions,
-  heroSummaryTiles,
-  canCompare,
   selectedRangeLabel,
-  compareMetrics,
-  activityBars,
   topSignal,
   coverageGap,
 }: {
@@ -128,14 +121,7 @@ export function StatsHeroSection({
   selectedRange: string;
   onSelectRange: (value: any) => void;
   rangeOptions: ReadonlyArray<{ key: string; label: string }>;
-  selectedMode: string;
-  onSelectMode: (value: any) => void;
-  compareOptions: ReadonlyArray<{ key: string; label: string; disabled: boolean }>;
-  heroSummaryTiles: ReadonlyArray<{ label: string; value: number; hint: string }>;
-  canCompare: boolean;
   selectedRangeLabel: string;
-  compareMetrics: ReadonlyArray<{ label: string; current: number; previous: number }>;
-  activityBars: ReadonlyArray<{ key: string; label: string; count: number }>;
   topSignal: { label: string; hint: string; onPress?: () => void } | null;
   coverageGap: { label: string; value: number } | null;
 }) {
@@ -183,152 +169,42 @@ export function StatsHeroSection({
                 })}
               </View>
             </View>
-
-            {selectedMemoryMode === 'overview' ? (
-              <View style={styles.rangeSection}>
-                <Text style={styles.rangeLabel}>{copy.compareLabel}</Text>
-                <View style={styles.rangeRow}>
-                  {compareOptions.map(option => {
-                    const active = selectedMode === option.key;
-                    return (
-                      <Pressable
-                        key={option.key}
-                        disabled={option.disabled}
-                        style={[
-                          styles.rangeChip,
-                          active ? styles.rangeChipActive : null,
-                          option.disabled ? disabledRangeChipStyle : null,
-                        ]}
-                        onPress={() => onSelectMode(option.key)}
-                      >
-                        <Text
-                          style={[
-                            styles.rangeChipText,
-                            active ? styles.rangeChipTextActive : null,
-                          ]}
-                        >
-                          {option.label}
-                        </Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
-              </View>
-            ) : null}
           </View>
         ) : null}
 
         {selectedMemoryMode === 'overview' ? (
-          <>
-            <View style={styles.summaryRow}>
-              {heroSummaryTiles.map(tile => (
-                <View key={tile.label} style={styles.summaryCard}>
-                  <Text style={styles.summaryLabel}>{tile.label}</Text>
-                  <Text style={styles.summaryValue}>{tile.value}</Text>
-                  <Text style={styles.summaryHint}>{tile.hint}</Text>
-                </View>
-              ))}
-            </View>
+          <Animated.View entering={FadeInDown.duration(220)} layout={statsLayoutTransition}>
+            <View style={styles.overviewPanel}>
+              <View style={styles.overviewPanelHeader}>
+                <Text style={styles.overviewPanelTitle}>{copy.spotlightTitle}</Text>
+              </View>
 
-            {selectedMode === 'compare' && canCompare ? (
-              <Animated.View
-                entering={FadeInDown.duration(220)}
-                layout={statsLayoutTransition}
-                style={styles.comparePanel}
+              <Pressable
+                disabled={!topSignal?.onPress}
+                onPress={topSignal?.onPress}
+                style={({ pressed }) => [
+                  styles.storyCard,
+                  styles.storyCardAccent,
+                  styles.storyCardSingle,
+                  pressed && topSignal?.onPress ? styles.insightCardPressed : null,
+                ]}
               >
-                <View style={styles.comparePanelHeader}>
-                  <Text style={styles.comparePanelTitle}>
-                    {`${copy.compareCurrentPeriod}: ${selectedRangeLabel}`}
-                  </Text>
-                  <Text style={styles.comparePanelSubtitle}>
-                    {`${copy.comparePreviousPeriod}: ${selectedRangeLabel}`}
-                  </Text>
-                </View>
+                <Text style={styles.storyLabel}>{copy.overviewTopSignalLabel}</Text>
+                <Text style={styles.storyValue} numberOfLines={2}>
+                  {topSignal?.label ?? copy.overviewTopSignalEmpty}
+                </Text>
+                <Text style={styles.storyHint} numberOfLines={2}>
+                  {topSignal?.hint ?? copy.takeawayThemesEmpty}
+                </Text>
+              </Pressable>
 
-                <View style={styles.compareMetricGrid}>
-                  {compareMetrics.map(metric => {
-                    const delta = metric.current - metric.previous;
-                    const deltaStyle =
-                      delta > 0
-                        ? styles.compareMetricDeltaPositive
-                        : delta < 0
-                          ? styles.compareMetricDeltaNegative
-                          : styles.compareMetricDeltaNeutral;
-
-                    return (
-                      <View key={metric.label} style={styles.compareMetricTile}>
-                        <Text style={styles.compareMetricLabel}>{metric.label}</Text>
-                        <Text style={styles.compareMetricValue}>{metric.current}</Text>
-                        <Text style={[styles.compareMetricMeta, deltaStyle]}>
-                          {`${formatSignedDelta(delta)} ${copy.compareDeltaLabel}`}
-                        </Text>
-                      </View>
-                    );
-                  })}
-                </View>
-              </Animated.View>
-            ) : (
-              <Animated.View entering={FadeInDown.duration(220)} layout={statsLayoutTransition}>
-                <View style={styles.overviewPanel}>
-                  <View style={styles.overviewPanelHeader}>
-                    <Text style={styles.overviewPanelTitle}>{copy.overviewActivityTitle}</Text>
-                    <Text style={styles.overviewPanelSubtitle}>
-                      {copy.overviewActivityDescription}
-                    </Text>
-                  </View>
-
-                  <View style={styles.activityBarsRow}>
-                    {activityBars.map(bar => {
-                      const maxCount = Math.max(...activityBars.map(item => item.count), 1);
-                      const height =
-                        bar.count > 0 ? Math.max(10, (bar.count / maxCount) * 48) : 4;
-
-                      return (
-                        <View key={bar.key} style={styles.activityBarColumn}>
-                          <View style={styles.activityBarTrack}>
-                            <View style={[styles.activityBarFill, { height }]} />
-                          </View>
-                          <Text style={styles.activityBarLabel}>{bar.label}</Text>
-                        </View>
-                      );
-                    })}
-                  </View>
-
-                  <View style={styles.storyRow}>
-                    <Pressable
-                      disabled={!topSignal?.onPress}
-                      onPress={topSignal?.onPress}
-                      style={({ pressed }) => [
-                        styles.storyCard,
-                        styles.storyCardAccent,
-                        pressed && topSignal?.onPress ? styles.insightCardPressed : null,
-                      ]}
-                    >
-                      <Text style={styles.storyLabel}>{copy.overviewTopSignalLabel}</Text>
-                      <Text style={styles.storyValue} numberOfLines={2}>
-                        {topSignal?.label ?? copy.overviewTopSignalEmpty}
-                      </Text>
-                      <Text style={styles.storyHint} numberOfLines={2}>
-                        {topSignal?.hint ?? copy.takeawayThemesEmpty}
-                      </Text>
-                    </Pressable>
-
-                    <View style={styles.storyCard}>
-                      <Text style={styles.storyLabel}>{copy.overviewNextStepLabel}</Text>
-                      <Text style={styles.storyValue} numberOfLines={2}>
-                        {coverageGap?.value ? coverageGap.label : copy.overviewNextStepEmpty}
-                      </Text>
-                      <Text style={styles.storyHint} numberOfLines={2}>
-                        {coverageGap?.value
-                          ? `${coverageGap.value} ${copy.entries}`
-                          : copy.takeawayGapsEmpty}
-                      </Text>
-                    </View>
-                  </View>
-                </View>
-              </Animated.View>
-            )}
-          </>
+              <Text style={styles.overviewNextStepHint}>
+                {`${copy.overviewNextStepLabel}: ${
+                  coverageGap?.value ? coverageGap.label : copy.overviewNextStepEmpty
+                }`}
+              </Text>
+            </View>
+          </Animated.View>
         ) : null}
 
         {selectedMemoryMode === 'threads' ? (
@@ -383,6 +259,13 @@ export function StatsOverviewSections({
   fingerprintFacets,
   isDetailsExpanded,
   onToggleDetails,
+  selectedMode,
+  onSelectMode,
+  canCompare,
+  selectedRangeLabel,
+  compareOptions,
+  compareMetrics,
+  activityBars,
   summaryTiles,
   overallLastSevenDays,
   coverageItems,
@@ -394,6 +277,13 @@ export function StatsOverviewSections({
   fingerprintFacets: DreamFingerprintFacet[];
   isDetailsExpanded: boolean;
   onToggleDetails: () => void;
+  selectedMode: 'snapshot' | 'compare';
+  onSelectMode: (value: 'snapshot' | 'compare') => void;
+  canCompare: boolean;
+  selectedRangeLabel: string;
+  compareOptions: ReadonlyArray<{ key: 'snapshot' | 'compare'; label: string; disabled: boolean }>;
+  compareMetrics: ReadonlyArray<{ label: string; current: number; previous: number }>;
+  activityBars: ReadonlyArray<{ key: string; label: string; count: number }>;
   summaryTiles: ReadonlyArray<{ label: string; value: number }>;
   overallLastSevenDays: number;
   coverageItems: ReadonlyArray<{ label: string; value: number; total: number; hint: string }>;
@@ -439,6 +329,101 @@ export function StatsOverviewSections({
               layout={statsLayoutTransition}
               style={styles.detailsSectionContent}
             >
+              <View style={styles.detailsSubsection}>
+                {canCompare ? (
+                  <View style={styles.compareModeSection}>
+                    <Text style={styles.rangeLabel}>{copy.compareLabel}</Text>
+                    <View style={styles.rangeRow}>
+                      {compareOptions.map(option => {
+                        const active = selectedMode === option.key;
+                        return (
+                          <Pressable
+                            key={option.key}
+                            disabled={option.disabled}
+                            style={[
+                              styles.rangeChip,
+                              active ? styles.rangeChipActive : null,
+                              option.disabled ? disabledRangeChipStyle : null,
+                            ]}
+                            onPress={() => onSelectMode(option.key)}
+                          >
+                            <Text
+                              style={[
+                                styles.rangeChipText,
+                                active ? styles.rangeChipTextActive : null,
+                              ]}
+                            >
+                              {option.label}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ) : null}
+
+                {selectedMode === 'compare' && canCompare ? (
+                  <View style={styles.comparePanel}>
+                    <View style={styles.comparePanelHeader}>
+                      <Text style={styles.comparePanelTitle}>
+                        {`${copy.compareCurrentPeriod}: ${selectedRangeLabel}`}
+                      </Text>
+                      <Text style={styles.comparePanelSubtitle}>
+                        {`${copy.comparePreviousPeriod}: ${selectedRangeLabel}`}
+                      </Text>
+                    </View>
+
+                    <View style={styles.compareMetricGrid}>
+                      {compareMetrics.map(metric => {
+                        const delta = metric.current - metric.previous;
+                        const deltaStyle =
+                          delta > 0
+                            ? styles.compareMetricDeltaPositive
+                            : delta < 0
+                              ? styles.compareMetricDeltaNegative
+                              : styles.compareMetricDeltaNeutral;
+
+                        return (
+                          <View key={metric.label} style={styles.compareMetricTile}>
+                            <Text style={styles.compareMetricLabel}>{metric.label}</Text>
+                            <Text style={styles.compareMetricValue}>{metric.current}</Text>
+                            <Text style={[styles.compareMetricMeta, deltaStyle]}>
+                              {`${formatSignedDelta(delta)} ${copy.compareDeltaLabel}`}
+                            </Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                ) : (
+                  <View style={styles.overviewPanel}>
+                    <View style={styles.overviewPanelHeader}>
+                      <Text style={styles.overviewPanelTitle}>{copy.overviewActivityTitle}</Text>
+                      <Text style={styles.overviewPanelSubtitle}>
+                        {copy.overviewActivityDescription}
+                      </Text>
+                    </View>
+
+                    <View style={styles.activityBarsRow}>
+                      {activityBars.map(bar => {
+                        const maxCount = Math.max(...activityBars.map(item => item.count), 1);
+                        const height =
+                          bar.count > 0 ? Math.max(10, (bar.count / maxCount) * 48) : 4;
+
+                        return (
+                          <View key={bar.key} style={styles.activityBarColumn}>
+                            <View style={styles.activityBarTrack}>
+                              <View style={[styles.activityBarFill, { height }]} />
+                            </View>
+                            <Text style={styles.activityBarLabel}>{bar.label}</Text>
+                          </View>
+                        );
+                      })}
+                    </View>
+                  </View>
+                )}
+              </View>
+
               <View>
                 <SectionHeader title={copy.snapshotTitle} subtitle={copy.snapshotDescription} />
                 <View style={styles.metricGrid}>
@@ -750,27 +735,23 @@ export function StatsMilestonesSection({
   return (
     <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.sectionCard}>
-        <SectionHeader title={copy.milestonesTitle} subtitle={copy.milestonesDescription} />
-
-        <View style={styles.teaserRow}>
-          <View style={styles.teaserCard}>
-            <Text style={styles.teaserLabel}>{copy.weeklyGoalTitle}</Text>
-            <Text style={styles.teaserValue}>{`${overallLastSevenDays}/${weeklyGoalTarget}`}</Text>
-            <Text style={styles.teaserHint}>
-              {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
+        <Pressable style={styles.detailsToggleRow} onPress={onToggleExpanded}>
+          <View style={styles.detailsToggleCopy}>
+            <Text style={styles.detailsToggleTitle}>{copy.milestonesTitle}</Text>
+            <Text style={styles.detailsToggleDescription}>
+              {`${overallLastSevenDays}/${weeklyGoalTarget} • ${unlockedCount}/${totalCount} • ${milestoneSummaryHint}`}
             </Text>
           </View>
-          <View style={[styles.teaserCard, styles.teaserCardAccent]}>
-            <Text style={styles.teaserLabel}>{copy.milestonesUnlockedLabel}</Text>
-            <Text style={styles.teaserValue}>{`${unlockedCount}/${totalCount}`}</Text>
-            <Text style={styles.teaserHint}>{milestoneSummaryHint}</Text>
+          <View style={styles.detailsTogglePill}>
+            <Text style={styles.detailsTogglePillText}>
+              {isExpanded ? copy.milestonesToggleHide : copy.milestonesToggleShow}
+            </Text>
+            <Ionicons
+              name={isExpanded ? 'chevron-up' : 'chevron-down'}
+              size={14}
+              color="#F7F9FF"
+            />
           </View>
-        </View>
-
-        <Pressable style={styles.toggleButton} onPress={onToggleExpanded}>
-          <Text style={styles.toggleButtonText}>
-            {isExpanded ? copy.milestonesToggleHide : copy.milestonesToggleShow}
-          </Text>
         </Pressable>
 
         {isExpanded ? (
@@ -779,6 +760,21 @@ export function StatsMilestonesSection({
             layout={statsLayoutTransition}
             style={styles.achievementsList}
           >
+            <View style={styles.teaserRow}>
+              <View style={styles.teaserCard}>
+                <Text style={styles.teaserLabel}>{copy.weeklyGoalTitle}</Text>
+                <Text style={styles.teaserValue}>{`${overallLastSevenDays}/${weeklyGoalTarget}`}</Text>
+                <Text style={styles.teaserHint}>
+                  {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
+                </Text>
+              </View>
+              <View style={[styles.teaserCard, styles.teaserCardAccent]}>
+                <Text style={styles.teaserLabel}>{copy.milestonesUnlockedLabel}</Text>
+                <Text style={styles.teaserValue}>{`${unlockedCount}/${totalCount}`}</Text>
+                <Text style={styles.teaserHint}>{milestoneSummaryHint}</Text>
+              </View>
+            </View>
+
             {achievements.map(achievement => {
               const content = getAchievementContent(achievement.id, copy);
               const progressValue = `${Math.min(achievement.current, achievement.target)}/${achievement.target}`;

@@ -6,6 +6,7 @@ import { SectionHeader } from '../../../../components/ui/SectionHeader';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import {
+  type HomeArchiveFilter,
   type HomeDateRangeFilter,
   type HomeEntryTypeFilter,
   type HomeSortOrder,
@@ -20,6 +21,7 @@ type HomeFilterSheetProps = {
   copy: DreamCopy;
   styles: ReturnType<typeof createHomeScreenStyles>;
   timelineFilters: HomeTimelineFilters;
+  homeFilters: Array<HomeOption<HomeArchiveFilter>>;
   moodFilters: Array<HomeOption<HomeTimelineFilters['mood']>>;
   typeFilters: Array<HomeOption<HomeEntryTypeFilter>>;
   transcriptFilters: Array<HomeOption<HomeTranscriptFilter>>;
@@ -78,6 +80,7 @@ export function HomeFilterSheet({
   copy,
   styles,
   timelineFilters,
+  homeFilters,
   moodFilters,
   typeFilters,
   transcriptFilters,
@@ -118,6 +121,13 @@ export function HomeFilterSheet({
     [normalizedTagQuery, showAllTags, unselectedTags],
   );
   const hiddenTagCount = Math.max(0, unselectedTags.length - visibleUnselectedTags.length);
+  const starredFilterOptions = React.useMemo<Array<HomeOption<'all' | 'starred'>>>(
+    () => [
+      { key: 'all', label: copy.homeFilterAll },
+      { key: 'starred', label: copy.homeFilterStarred },
+    ],
+    [copy.homeFilterAll, copy.homeFilterStarred],
+  );
 
   return (
     <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
@@ -135,6 +145,32 @@ export function HomeFilterSheet({
             contentContainerStyle={styles.filterSheetBody}
             showsVerticalScrollIndicator={false}
           >
+            <FilterGroup
+              label={copy.homeArchiveFilterLabel}
+              options={homeFilters}
+              value={timelineFilters.archive === 'archived' ? 'all' : timelineFilters.archive}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  archive: value,
+                }))
+              }
+            />
+
+            <FilterGroup
+              label={copy.homeFilterStarred}
+              options={starredFilterOptions}
+              value={timelineFilters.starredOnly ? 'starred' : 'all'}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  starredOnly: value === 'starred',
+                }))
+              }
+            />
+
             <FilterGroup
               label={copy.homeMoodFilterLabel}
               options={moodFilters}

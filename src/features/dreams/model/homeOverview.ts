@@ -126,6 +126,7 @@ type BuildActiveFilterChipsArgs = {
   filters: HomeTimelineFilters;
   copy: DreamCopy;
   moodLabels: Record<Mood, string>;
+  homeFilters: Array<HomeOption<HomeArchiveFilter>>;
   typeFilters: Array<HomeOption<HomeEntryTypeFilter>>;
   transcriptFilters: Array<HomeOption<HomeTranscriptFilter>>;
   dateRangeFilters: Array<HomeOption<HomeDateRangeFilter>>;
@@ -136,12 +137,22 @@ export function buildActiveFilterChips({
   filters,
   copy,
   moodLabels,
+  homeFilters,
   typeFilters,
   transcriptFilters,
   dateRangeFilters,
   sortOptions,
 }: BuildActiveFilterChipsArgs): HomeFilterChip[] {
   const chips: HomeFilterChip[] = [];
+
+  if (filters.archive !== 'active') {
+    chips.push({
+      key: `archive:${filters.archive}`,
+      label:
+        homeFilters.find(filter => filter.key === filters.archive)?.label ??
+        filters.archive,
+    });
+  }
 
   if (filters.mood !== 'all') {
     chips.push({

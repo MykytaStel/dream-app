@@ -248,6 +248,9 @@ export function createStatsScreenStyles(theme: Theme) {
       minWidth: 148,
       gap: 4,
     },
+    storyCardSingle: {
+      minWidth: '100%',
+    },
     storyCardAccent: {
       borderColor: theme.colors.accent,
       backgroundColor: theme.colors.surfaceAlt,
@@ -267,6 +270,11 @@ export function createStatsScreenStyles(theme: Theme) {
       includeFontPadding: false,
     },
     storyHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    overviewNextStepHint: {
       color: theme.colors.textDim,
       fontSize: 12,
       lineHeight: 17,
@@ -611,6 +619,9 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     detailsSectionContent: {
       gap: 12,
+    },
+    compareModeSection: {
+      gap: 6,
     },
     patternGroup: {
       gap: 8,

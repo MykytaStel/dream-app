@@ -126,11 +126,11 @@ export function createHomeScreenStyles(theme: Theme) {
       overflow: 'hidden',
     },
     heroFrame: {
-      flex: 1,
       justifyContent: 'flex-start',
       gap: 12,
       position: 'relative',
       zIndex: 1,
+      paddingBottom: 8,
     },
     heroGlowLarge: {
       position: 'absolute',
@@ -404,19 +404,36 @@ export function createHomeScreenStyles(theme: Theme) {
       marginTop: -4,
     },
     spotlightCard: {
-      gap: 10,
+      gap: 8,
       overflow: 'hidden',
     },
     spotlightHeader: {
-      gap: 4,
-    },
-    spotlightSubtitle: {
-      color: theme.colors.textDim,
-      fontSize: 13,
-      lineHeight: 18,
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 10,
     },
     spotlightLeadRow: {
-      gap: 7,
+      gap: 6,
+    },
+    spotlightToggleButton: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 4,
+        paddingHorizontal: 9,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    spotlightToggleButtonPressed: {
+      opacity: 0.94,
+      transform: [{ scale: 0.992 }],
+    },
+    spotlightToggleButtonText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
     },
     spotlightSecondaryRow: {
       flexDirection: 'row',
@@ -426,12 +443,12 @@ export function createHomeScreenStyles(theme: Theme) {
     spotlightTile: {
       ...createSoftTile(theme),
       gap: 3,
-      paddingVertical: 9,
+      paddingVertical: 8,
       paddingHorizontal: 10,
     },
     spotlightTileLead: {
       minWidth: '100%',
-      paddingVertical: 11,
+      paddingVertical: 10,
       paddingHorizontal: 12,
     },
     spotlightCompactTile: {
@@ -510,6 +527,20 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     searchCard: {
       gap: 10,
+    },
+    searchDetailsToggleRow: {
+      alignItems: 'flex-start',
+      marginTop: -2,
+    },
+    searchDetailsToggleButton: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
     },
     primaryControlsRow: {
       flexDirection: 'row',

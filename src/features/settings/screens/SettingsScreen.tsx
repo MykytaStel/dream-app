@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
+import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
@@ -11,7 +12,6 @@ import { openMonthlyReport, openWakeEntry } from '../../../app/navigation/naviga
 import { useSettingsScreenController } from '../hooks/useSettingsScreenController';
 import {
   AnalysisSection,
-  AdvancedToggleSection,
   DevSection,
   ExportSection,
   RestoreSection,
@@ -22,12 +22,18 @@ import {
   ReminderSection,
   SettingsHeroSection,
 } from '../components/SettingsTopSections';
+import { SettingsSectionHeader } from '../components/SettingsSectionHeader';
+import { SettingsSegmentedControl } from '../components/SettingsSegmentedControl';
+
+type SettingsWorkspace = 'general' | 'backup' | 'tools';
 
 export default function SettingsScreen() {
   const theme = useTheme<Theme>();
   const { locale, setLocale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const styles = createSettingsScreenStyles(theme);
+  const [selectedWorkspace, setSelectedWorkspace] =
+    React.useState<SettingsWorkspace>('general');
 
   const controller = useSettingsScreenController({
     locale,
@@ -35,74 +41,87 @@ export default function SettingsScreen() {
     copy,
   });
 
+  const workspaceOptions = React.useMemo(
+    () => [
+      { value: 'general' as const, label: copy.sectionGeneral },
+      { value: 'backup' as const, label: copy.sectionBackup },
+      { value: 'tools' as const, label: copy.sectionTools },
+    ],
+    [copy.sectionBackup, copy.sectionGeneral, copy.sectionTools],
+  );
+  const workspaceHint = React.useMemo(() => {
+    switch (selectedWorkspace) {
+      case 'backup':
+        return copy.sectionBackupHint;
+      case 'tools':
+        return copy.sectionToolsHint;
+      case 'general':
+      default:
+        return copy.sectionGeneralHint;
+    }
+  }, [copy.sectionBackupHint, copy.sectionGeneralHint, copy.sectionToolsHint, selectedWorkspace]);
+
   return (
     <ScreenContainer scroll>
       <SettingsHeroSection
         copy={copy}
         locale={locale}
-        styles={styles}
         isApplyingReminder={controller.isApplyingReminder}
         onSelectLocale={controller.onSelectLocale}
-      />
-
-      <ReminderSection
-        copy={copy}
         styles={styles}
-        reminderSettings={controller.reminderSettings}
-        permissionGranted={controller.permissionGranted}
-        isApplyingReminder={controller.isApplyingReminder}
-        reminderTime={controller.reminderTime}
-        showIosTimePicker={controller.showIosTimePicker}
-        pickerLocale={controller.pickerLocale}
-        getReminderDate={controller.getReminderDate}
-        onToggleReminder={() => controller.onToggleReminder().catch(() => undefined)}
-        onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
-        onNativeTimePickerChange={controller.onNativeTimePickerChange}
-        onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
       />
 
-      <PrivacySection
-        copy={copy}
-        styles={styles}
-        privacyHighlights={controller.privacyHighlights}
-      />
+      <Card style={styles.workspaceCard}>
+        <SettingsSectionHeader
+          title={copy.sectionTitle}
+          description={workspaceHint}
+        />
+        <SettingsSegmentedControl
+          selectedValue={selectedWorkspace}
+          onChange={setSelectedWorkspace}
+          options={workspaceOptions}
+          columns={3}
+          minWidth={96}
+        />
+      </Card>
 
-      <AdvancedToggleSection
-        copy={copy}
-        styles={styles}
-        showAdvanced={controller.showAdvanced}
-        onToggle={() => controller.setShowAdvanced(current => !current)}
-      />
-
-      {controller.showAdvanced ? (
+      {selectedWorkspace === 'general' ? (
         <>
-          <AnalysisSection
+          <ReminderSection
             copy={copy}
             styles={styles}
-            analysisSettings={controller.analysisSettings}
-            analysisHighlights={controller.analysisHighlights}
-            onSave={controller.saveNextAnalysisSettings}
+            reminderSettings={controller.reminderSettings}
+            permissionGranted={controller.permissionGranted}
+            isApplyingReminder={controller.isApplyingReminder}
+            reminderTime={controller.reminderTime}
+            showIosTimePicker={controller.showIosTimePicker}
+            pickerLocale={controller.pickerLocale}
+            getReminderDate={controller.getReminderDate}
+            onToggleReminder={() => controller.onToggleReminder().catch(() => undefined)}
+            onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
+            onNativeTimePickerChange={controller.onNativeTimePickerChange}
+            onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
           />
 
-          <TranscriptionSection
+          <PrivacySection
             copy={copy}
             styles={styles}
-            highlights={controller.transcriptionHighlights}
-            isDownloading={controller.isDownloadingTranscriptionModel}
-            isDeleting={controller.isDeletingTranscriptionModel}
-            downloadLabel={controller.transcriptionDownloadLabel}
-            installed={controller.transcriptionModelInstalled}
-            onDownload={() => controller.onDownloadTranscriptionModel().catch(() => undefined)}
-            onDelete={() => controller.onDeleteTranscriptionModel().catch(() => undefined)}
+            privacyHighlights={controller.privacyHighlights}
           />
+        </>
+      ) : null}
 
+      {selectedWorkspace === 'backup' ? (
+        <>
           <ExportSection
             copy={copy}
             styles={styles}
             highlights={controller.exportHighlights}
-            isExporting={controller.isExporting}
+            isExportingJson={controller.isExportingJson}
+            isExportingPdf={controller.isExportingPdf}
             lastExportPath={controller.lastExportPath}
-            onExport={() => controller.onExportData().catch(() => undefined)}
+            onExportJson={() => controller.onExportData().catch(() => undefined)}
+            onExportPdf={() => controller.onExportPdfData().catch(() => undefined)}
           />
 
           <RestoreSection
@@ -129,6 +148,30 @@ export default function SettingsScreen() {
             isRestoringImport={controller.isRestoringImport}
             isLoadingImportPreview={controller.isLoadingImportPreview}
             onRestoreImport={controller.onRestoreImport}
+          />
+        </>
+      ) : null}
+
+      {selectedWorkspace === 'tools' ? (
+        <>
+          <AnalysisSection
+            copy={copy}
+            styles={styles}
+            analysisSettings={controller.analysisSettings}
+            analysisHighlights={controller.analysisHighlights}
+            onSave={controller.saveNextAnalysisSettings}
+          />
+
+          <TranscriptionSection
+            copy={copy}
+            styles={styles}
+            highlights={controller.transcriptionHighlights}
+            isDownloading={controller.isDownloadingTranscriptionModel}
+            isDeleting={controller.isDeletingTranscriptionModel}
+            downloadLabel={controller.transcriptionDownloadLabel}
+            installed={controller.transcriptionModelInstalled}
+            onDownload={() => controller.onDownloadTranscriptionModel().catch(() => undefined)}
+            onDelete={() => controller.onDeleteTranscriptionModel().catch(() => undefined)}
           />
 
           {controller.__DEV__ ? (

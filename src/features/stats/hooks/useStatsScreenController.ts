@@ -69,6 +69,7 @@ export function useStatsScreenController({
   const [selectedPatternGroup, setSelectedPatternGroup] =
     React.useState<PatternGroupKey>('themes');
   const [isDetailsExpanded, setIsDetailsExpanded] = React.useState(false);
+  const [isMilestonesExpanded, setIsMilestonesExpanded] = React.useState(false);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -77,7 +78,7 @@ export function useStatsScreenController({
       React.startTransition(() => {
         setDreams(nextDreams);
       });
-      trackLocalSurfaceLoad('insights_refresh', startedAt, nextDreams.length);
+      trackLocalSurfaceLoad('memory_refresh', startedAt, nextDreams.length);
     }, []),
   );
 
@@ -430,25 +431,11 @@ export function useStatsScreenController({
         ),
         empty: copy.recurringSymbolsEmpty,
       },
-      {
-        key: 'pre-sleep',
-        label: copy.preSleepEmotions,
-        description: copy.preSleepEmotionsDescription,
-        values: preSleepEmotionSignals.map(signal => ({
-          key: signal.emotion,
-          label: preSleepEmotionLabels[signal.emotion],
-          countLabel: formatEntryCountLabel(signal.count, locale),
-          countBadge: String(signal.count),
-        })),
-        empty: copy.emotionPatternsEmpty,
-      },
     ],
     [
       copy,
       locale,
       openPatternDetail,
-      preSleepEmotionLabels,
-      preSleepEmotionSignals,
       recurringSymbols,
       recurringThemes,
       recurringWords,
@@ -487,6 +474,8 @@ export function useStatsScreenController({
     setSelectedPatternGroup,
     isDetailsExpanded,
     setIsDetailsExpanded,
+    isMilestonesExpanded,
+    setIsMilestonesExpanded,
     rangeOptions,
     canCompare,
     compareOptions,
@@ -509,6 +498,7 @@ export function useStatsScreenController({
     attentionItems,
     weeklyGoalTarget,
     weeklyGoalComplete,
+    achievements,
     achievementSummary,
     milestoneSummaryHint,
   };

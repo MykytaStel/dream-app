@@ -1,13 +1,17 @@
 import { AppLocale } from '../../i18n/types';
 
 const STATS_COPY_EN = {
-  title: 'Insights',
-  subtitle: 'Your local dream archive, at a glance.',
+  title: 'Memory',
+  subtitle: 'Signals, threads, and monthly shapes from your local dream archive.',
   monthLabel: 'Current local snapshot',
   rangeLabel: 'Range',
   rangeAll: 'All time',
   range30Days: '30 days',
   range7Days: '7 days',
+  memoryModeLabel: 'Section',
+  memoryModeOverview: 'Overview',
+  memoryModeThreads: 'Threads',
+  memoryModeMonthly: 'Monthly',
   compareLabel: 'View',
   compareSnapshot: 'Snapshot',
   compareMode: 'Compare',
@@ -99,6 +103,10 @@ const STATS_COPY_EN = {
   patternsTitle: 'Patterns',
   patternsDescription:
     'Repeated tags, transcript symbols, and emotional signals that keep showing up.',
+  memoryThreadTitle: 'Current thread',
+  memoryThreadDescription:
+    'Stay on this screen and scan the dreams connected to the selected recurring signal.',
+  memoryThreadClearAction: 'Close thread',
   patternsTopLabel: 'Top signal',
   patternsMoreLabel: 'Also showing up',
   recurringWordsDescription: 'Across titles, notes, and transcripts.',
@@ -119,9 +127,9 @@ const STATS_COPY_EN = {
   currentStreak: 'Current streak',
   lastSevenDays: 'Last 7 days',
   monthChange: 'Local-first',
-  emptyTitle: 'No insights yet',
+  emptyTitle: 'No memory yet',
   emptyDescription:
-    'Save a few dreams first. Stats will start filling in from your local entries automatically.',
+    'Save a few dreams first. Memory will start connecting recurring signals from your local archive automatically.',
   readinessTitle: 'Insight readiness',
   readinessDescription:
     'The more mood, tags, and pre-sleep context you add, the more useful these patterns become.',
@@ -249,13 +257,17 @@ const STATS_COPY_EN = {
 
 const STATS_COPY_UK: typeof STATS_COPY_EN = {
   ...STATS_COPY_EN,
-  title: 'Аналітика',
-  subtitle: 'Твій локальний архів снів одним поглядом.',
+  title: 'Пам\'ять',
+  subtitle: 'Сигнали, нитки й місячні форми з твого локального архіву снів.',
   monthLabel: 'Поточний локальний стан',
   rangeLabel: 'Період',
   rangeAll: 'Увесь час',
   range30Days: '30 днів',
   range7Days: '7 днів',
+  memoryModeLabel: 'Розділ',
+  memoryModeOverview: 'Огляд',
+  memoryModeThreads: 'Нитки',
+  memoryModeMonthly: 'Місяць',
   compareLabel: 'Режим',
   compareSnapshot: 'Зріз',
   compareMode: 'Порівняти',
@@ -348,6 +360,10 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   patternsTitle: 'Патерни',
   patternsDescription:
     'Повторювані теги, символи з транскриптів і емоційні сигнали, які знову зʼявляються.',
+  memoryThreadTitle: 'Поточна нитка',
+  memoryThreadDescription:
+    'Залишайся на цьому екрані й переглядай сни, пов’язані з вибраним повторюваним сигналом.',
+  memoryThreadClearAction: 'Закрити нитку',
   patternsTopLabel: 'Головний сигнал',
   patternsMoreLabel: 'Ще повторюються',
   recurringWordsDescription: 'У назвах, нотатках і транскриптах.',
@@ -367,9 +383,9 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   milestonesToggleHide: 'Сховати майлстоуни',
   currentStreak: 'Поточний стрік',
   lastSevenDays: 'Останні 7 днів',
-  emptyTitle: 'Аналітики ще немає',
+  emptyTitle: 'Пам\'ять ще формується',
   emptyDescription:
-    'Спочатку збережи кілька снів. Статистика почне автоматично заповнюватися з локальних записів.',
+    'Спочатку збережи кілька снів. Пам\'ять почне автоматично пов\'язувати повторювані сигнали з локального архіву.',
   readinessTitle: 'Готовність аналітики',
   readinessDescription:
     'Що більше ти додаєш настрою, тегів і контексту перед сном, то кориснішими стають ці патерни.',

@@ -22,6 +22,9 @@ export function createSettingsScreenStyles(theme: Theme) {
       letterSpacing: 0.5,
       textTransform: 'uppercase',
     },
+    workspaceCard: {
+      gap: 8,
+    },
     inlineLanguageControls: {
       flexDirection: 'row',
       gap: 7,
@@ -62,9 +65,6 @@ export function createSettingsScreenStyles(theme: Theme) {
         paddingHorizontal: 0,
       }),
       overflow: 'hidden',
-    },
-    advancedToggleWrap: {
-      marginTop: 2,
     },
     buttonRow: {
       flexDirection: 'row',
@@ -110,11 +110,6 @@ export function createSettingsScreenStyles(theme: Theme) {
     },
     restoreModeWrap: {
       gap: 6,
-    },
-    restoreModeHint: {
-      color: theme.colors.textDim,
-      fontSize: 12,
-      lineHeight: 16,
     },
     restorePreviewBlock: {
       gap: 6,

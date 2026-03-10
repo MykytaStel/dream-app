@@ -11,7 +11,7 @@ import type { DreamReflectionSignal, DreamWordSignal } from './dreamReflection';
 import type { PatternGroupCardItem } from '../components/PatternGroupCard';
 
 export type InsightRange = 'all' | '30d' | '7d';
-export type PatternGroupKey = 'themes' | 'words' | 'symbols' | 'pre-sleep';
+export type PatternGroupKey = 'themes' | 'words' | 'symbols';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
 
@@ -231,6 +231,7 @@ export function createWordPatternItems(
     label: signal.label,
     countLabel: formatDreamCountLabel(signal.dreamCount, locale),
     countBadge: String(signal.dreamCount),
+    signalKind: 'word',
     onPress: () => onOpenPatternDetail(signal.label, 'word'),
   }));
 }
@@ -248,6 +249,7 @@ export function createReflectionPatternItems(
     countLabel: formatDreamCountLabel(signal.dreamCount, locale),
     countBadge: String(signal.dreamCount),
     sourceLabel: getReflectionSourceLabel(signal.source, copy),
+    signalKind: kind,
     onPress: () => onOpenPatternDetail(signal.label, kind),
   }));
 }

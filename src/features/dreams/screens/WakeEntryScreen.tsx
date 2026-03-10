@@ -14,7 +14,6 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from '../../../components/ui/Button';
 import { Text } from '../../../components/ui/Text';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { useI18n } from '../../../i18n/I18nProvider';
@@ -154,37 +153,45 @@ export default function WakeEntryScreen() {
           </Animated.View>
 
           <Animated.View entering={FadeInDown.delay(70).duration(240)} style={styles.actions}>
-            <Button
-              title={copy.wakeEntryWriteAction}
-              size="lg"
-              icon="create-outline"
-              onPress={() => handoffToComposer('wake')}
-            />
-            {hasDraft ? (
-              <View style={styles.secondaryActions}>
-                <Button
-                  title={copy.wakeEntrySpeakAction}
-                  variant="ghost"
-                  icon="mic-outline"
-                  onPress={() => handoffToComposer('voice')}
-                  style={styles.secondaryAction}
-                />
-                <Button
-                  title={copy.wakeEntryDraftAction}
-                  variant="ghost"
-                  icon="document-text-outline"
-                  onPress={() => handoffToComposer('wake')}
-                  style={styles.secondaryAction}
-                />
+            <Text style={styles.alternateLabel}>{copy.wakeEntryAlternateTitle}</Text>
+
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => handoffToComposer('voice')}
+              style={({ pressed }) => [
+                styles.actionCard,
+                pressed ? styles.actionCardPressed : null,
+              ]}
+            >
+              <View style={styles.actionCardIconWrap}>
+                <Ionicons name="mic-outline" size={18} color="#7CC8FF" />
               </View>
-            ) : (
-              <Button
-                title={copy.wakeEntrySpeakAction}
-                variant="ghost"
-                icon="mic-outline"
-                onPress={() => handoffToComposer('voice')}
-              />
-            )}
+              <View style={styles.actionCardCopy}>
+                <Text style={styles.actionCardTitle}>{copy.wakeEntrySpeakAction}</Text>
+                <Text style={styles.actionCardHint}>{copy.wakeEntrySpeakHint}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+            </Pressable>
+
+            {hasDraft ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => handoffToComposer('wake')}
+                style={({ pressed }) => [
+                  styles.actionCard,
+                  pressed ? styles.actionCardPressed : null,
+                ]}
+              >
+                <View style={styles.actionCardIconWrap}>
+                  <Ionicons name="document-text-outline" size={18} color="#7CC8FF" />
+                </View>
+                <View style={styles.actionCardCopy}>
+                  <Text style={styles.actionCardTitle}>{copy.wakeEntryDraftAction}</Text>
+                  <Text style={styles.actionCardHint}>{copy.wakeEntryDraftHint}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+              </Pressable>
+            ) : null}
           </Animated.View>
         </View>
       </View>

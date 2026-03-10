@@ -15,6 +15,11 @@ import { DreamComposer } from '../components/DreamComposer';
 export default function NewDreamScreen() {
   const route = useRoute<RouteProp<TabParamList, typeof TAB_ROUTE_NAMES.New>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const entryMode = route.params?.entryMode ?? 'default';
+  const composerKey = React.useMemo(
+    () => `${entryMode}:${route.params?.source ?? 'none'}:${route.params?.launchKey ?? 'initial'}`,
+    [entryMode, route.params?.launchKey, route.params?.source],
+  );
   const [savedDream, setSavedDream] = React.useState<Dream | null>(null);
   const [isSavedSheetVisible, setIsSavedSheetVisible] = React.useState(false);
   const [autoStartRecordingKey, setAutoStartRecordingKey] = React.useState<number | undefined>(
@@ -56,18 +61,12 @@ export default function NewDreamScreen() {
     });
   }
 
-  function handleReturnHome() {
-    closeSavedSheet();
-    navigation.navigate(ROOT_ROUTE_NAMES.Tabs, {
-      screen: TAB_ROUTE_NAMES.Home,
-    });
-  }
-
   return (
     <>
       <DreamComposer
+        key={composerKey}
         mode="create"
-        entryMode={route.params?.entryMode}
+        entryMode={entryMode}
         onSaved={dream => {
           setSavedDream(dream);
           setIsSavedSheetVisible(true);
@@ -81,7 +80,6 @@ export default function NewDreamScreen() {
         onClose={closeSavedSheet}
         onCaptureAnother={handleCaptureAnother}
         onOpenDetail={handleOpenDetail}
-        onReturnHome={handleReturnHome}
       />
     </>
   );

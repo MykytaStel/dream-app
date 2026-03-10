@@ -11,6 +11,7 @@ export type PatternGroupCardItem = {
   countLabel: string;
   countBadge: string;
   sourceLabel?: string;
+  signalKind?: 'word' | 'theme' | 'symbol';
   onPress?: () => void;
 };
 

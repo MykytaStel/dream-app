@@ -1,5 +1,8 @@
 import { Dream } from '../src/features/dreams/model/dream';
-import { getRelatedDreams } from '../src/features/dreams/model/relatedDreams';
+import {
+  getRelatedDreams,
+  getRelatedSignalSummaries,
+} from '../src/features/dreams/model/relatedDreams';
 
 describe('relatedDreams', () => {
   test('ranks dreams by shared tags and repeated words', () => {
@@ -49,5 +52,80 @@ describe('relatedDreams', () => {
         sharedSignals: expect.arrayContaining(['glass', 'hallway']),
       }),
     ]);
+  });
+
+  test('uses recurring emotions and analysis themes when building dream threads', () => {
+    const target: Dream = {
+      id: 'target-memory',
+      createdAt: 20,
+      sleepDate: '2026-03-10',
+      text: 'A station room kept bending around me.',
+      tags: ['station'],
+      wakeEmotions: ['curious'],
+      analysis: {
+        provider: 'manual',
+        status: 'ready',
+        themes: ['threshold'],
+      },
+    };
+
+    const emotionallyRelated: Dream = {
+      id: 'emotion-match',
+      createdAt: 19,
+      sleepDate: '2026-03-09',
+      text: 'I returned to the same station again.',
+      tags: ['platform'],
+      wakeEmotions: ['curious'],
+      analysis: {
+        provider: 'manual',
+        status: 'ready',
+        themes: ['threshold'],
+      },
+    };
+
+    const threads = getRelatedDreams(target, [target, emotionallyRelated]);
+
+    expect(threads).toEqual([
+      expect.objectContaining({
+        dream: emotionallyRelated,
+        sharedSignals: expect.arrayContaining(['threshold', 'curious', 'station']),
+      }),
+    ]);
+  });
+
+  test('summarizes the strongest recurring thread signals across matches', () => {
+    const target: Dream = {
+      id: 'target-summary',
+      createdAt: 30,
+      text: 'Glass water room.',
+      tags: ['water'],
+    };
+
+    const firstMatch: Dream = {
+      id: 'first-match',
+      createdAt: 29,
+      text: 'Water filled the glass room.',
+      tags: ['water'],
+    };
+
+    const secondMatch: Dream = {
+      id: 'second-match',
+      createdAt: 28,
+      text: 'Another glass corridor near water.',
+      tags: ['corridor'],
+    };
+
+    const summary = getRelatedSignalSummaries(
+      getRelatedDreams(target, [target, firstMatch, secondMatch], 5),
+      3,
+    );
+
+    expect(summary[0]).toEqual(
+      expect.objectContaining({
+        label: 'water',
+        count: 2,
+      }),
+    );
+    expect(summary.map(item => item.label)).toContain('glass');
   });
 });

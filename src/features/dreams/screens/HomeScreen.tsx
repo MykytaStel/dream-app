@@ -18,6 +18,7 @@ import { getDreamCopy, getDreamMoodLabels } from '../../../constants/copy/dreams
 import {
   type RootStackParamList,
 } from '../../../app/navigation/routes';
+import { openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
@@ -28,6 +29,7 @@ import { HomeHero } from '../components/home/HomeHero';
 import { HomeListHeader } from '../components/home/HomeListHeader';
 import { getDreamLayout } from '../constants/layout';
 import type { Dream } from '../model/dream';
+import { isWakeCaptureWindow } from '../model/homeOverview';
 import { createHomeScreenStyles } from './HomeScreen.styles';
 import { useHomeScreenData } from '../hooks/useHomeScreenData';
 import { useHomeSwipeActions } from '../hooks/useHomeSwipeActions';
@@ -100,8 +102,11 @@ export default function HomeScreen() {
     }, [closeActiveSwipe, loading, refreshDreams]),
   );
 
+  const hasDraft = Boolean(draft);
+  const showWakeCapturePrompt = isWakeCaptureWindow();
+  const showHeroPrompt = showWakeCapturePrompt || hasDraft;
   const heroInsetTop = insets.top + theme.spacing.sm;
-  const heroExpandedHeight = 214;
+  const heroExpandedHeight = showHeroPrompt ? 300 : 214;
   const heroCollapsedHeight = 104;
 
   const openLastViewedDream = React.useCallback(() => {
@@ -116,6 +121,50 @@ export default function HomeScreen() {
     closeActiveSwipe();
     refreshDreams('refresh');
   }, [closeActiveSwipe, refreshDreams]);
+
+  const openDraftCapture = React.useCallback(() => {
+    openNewDreamTab({
+      entryMode: 'default',
+      launchKey: Date.now(),
+    });
+  }, []);
+
+  const heroPrompt = React.useMemo(() => {
+    if (showWakeCapturePrompt) {
+      return {
+        title: copy.wakeHeroTitle,
+        description: copy.quickAddWakeHint,
+        primaryActionLabel: copy.quickAddWakeAction,
+        primaryActionIcon: 'sunny-outline',
+        onPrimaryAction: () => openWakeEntry({ source: 'manual' }),
+        secondaryActionLabel: hasDraft ? copy.homeContinueDraft : undefined,
+        secondaryActionIcon: hasDraft ? 'document-text-outline' : undefined,
+        onSecondaryAction: hasDraft ? openDraftCapture : undefined,
+      };
+    }
+
+    if (hasDraft) {
+      return {
+        title: copy.recordDraftRestoredTitle,
+        description: copy.recordDraftRestoredDescription,
+        primaryActionLabel: copy.homeContinueDraft,
+        primaryActionIcon: 'document-text-outline',
+        onPrimaryAction: openDraftCapture,
+      };
+    }
+
+    return null;
+  }, [
+    copy.homeContinueDraft,
+    copy.quickAddWakeAction,
+    copy.quickAddWakeHint,
+    copy.recordDraftRestoredDescription,
+    copy.recordDraftRestoredTitle,
+    copy.wakeHeroTitle,
+    hasDraft,
+    openDraftCapture,
+    showWakeCapturePrompt,
+  ]);
 
   const renderDreamRow = React.useCallback(
     ({ item }: { item: Dream }) => (
@@ -282,6 +331,7 @@ export default function HomeScreen() {
         }
         lastViewedDreamMeta={timeline.lastViewedDreamMeta}
         onOpenLastDream={lastViewedDream ? openLastViewedDream : null}
+        prompt={heroPrompt}
       />
 
       <FlatList

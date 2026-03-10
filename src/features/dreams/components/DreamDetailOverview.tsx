@@ -63,76 +63,19 @@ export function DreamDetailOverview({
               <Ionicons name="chevron-back" size={18} color={theme.colors.text} />
             </Pressable>
 
-            <View style={styles.heroActionsWrap}>
-              {viewModel.moodLabel ? (
-                <View style={styles.statusChip}>
-                  <View
-                    style={[
-                      styles.statusDot,
-                      { backgroundColor: moodColor(theme, dream.mood) },
-                    ]}
-                  />
-                  <Text style={styles.statusChipLabel}>{viewModel.moodLabel}</Text>
-                </View>
-              ) : null}
-              <View style={styles.heroActionRow}>
-                <Pressable
-                  onPress={onToggleStarDream}
-                  style={({ pressed }) => [
-                    styles.heroActionButton,
-                    viewModel.starred ? styles.heroActionButtonActive : null,
-                    pressed ? styles.heroActionButtonPressed : null,
+            {viewModel.moodLabel ? (
+              <View style={styles.statusChip}>
+                <View
+                  style={[
+                    styles.statusDot,
+                    { backgroundColor: moodColor(theme, dream.mood) },
                   ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={viewModel.starred ? copy.detailUnstar : copy.detailStar}
-                >
-                  <Ionicons
-                    name={viewModel.starred ? 'star' : 'star-outline'}
-                    size={15}
-                    color={viewModel.starred ? theme.colors.background : theme.colors.primary}
-                  />
-                </Pressable>
-                <Pressable
-                  onPress={onToggleArchiveDream}
-                  style={({ pressed }) => [
-                    styles.heroActionButton,
-                    viewModel.archived ? styles.heroActionButtonActive : null,
-                    pressed ? styles.heroActionButtonPressed : null,
-                  ]}
-                  accessibilityRole="button"
-                  accessibilityLabel={viewModel.archived ? copy.detailUnarchive : copy.detailArchive}
-                >
-                  <Ionicons
-                    name={viewModel.archived ? 'refresh-outline' : 'archive-outline'}
-                    size={15}
-                    color={viewModel.archived ? theme.colors.background : theme.colors.textDim}
-                  />
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.heroActionButton,
-                    pressed ? styles.heroActionButtonPressed : null,
-                  ]}
-                  onPress={onEditDream}
-                  accessibilityRole="button"
-                  accessibilityLabel={copy.detailEdit}
-                >
-                  <Ionicons name="create-outline" size={15} color={theme.colors.text} />
-                </Pressable>
-                <Pressable
-                  style={({ pressed }) => [
-                    styles.heroActionButton,
-                    styles.heroActionButtonDanger,
-                    pressed ? styles.heroActionButtonPressed : null,
-                  ]}
-                  onPress={onDeleteDream}
-                  accessibilityRole="button"
-                  accessibilityLabel={copy.detailDelete}
-                >
-                  <Ionicons name="trash-outline" size={15} color={theme.colors.danger} />
-                </Pressable>
+                />
+                <Text style={styles.statusChipLabel}>{viewModel.moodLabel}</Text>
               </View>
-            </View>
+            ) : (
+              <View style={styles.heroTopBarSpacer} />
+            )}
           </View>
 
           <View style={styles.heroHeader}>
@@ -145,6 +88,86 @@ export function DreamDetailOverview({
               {viewModel.heroPreview}
             </Text>
           ) : null}
+
+          <View style={styles.heroQuickActions}>
+            <Pressable
+              onPress={onEditDream}
+              style={({ pressed }) => [
+                styles.heroActionPill,
+                pressed ? styles.heroActionPillPressed : null,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={copy.detailEdit}
+            >
+              <Ionicons name="create-outline" size={15} color={theme.colors.text} />
+              <Text style={styles.heroActionLabel}>{copy.detailActionEdit}</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={onToggleStarDream}
+              style={({ pressed }) => [
+                styles.heroActionPill,
+                viewModel.starred ? styles.heroActionPillActive : null,
+                pressed ? styles.heroActionPillPressed : null,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={viewModel.starred ? copy.detailUnstar : copy.detailStar}
+            >
+              <Ionicons
+                name={viewModel.starred ? 'star' : 'star-outline'}
+                size={15}
+                color={viewModel.starred ? theme.colors.background : theme.colors.primary}
+              />
+              <Text
+                style={[
+                  styles.heroActionLabel,
+                  viewModel.starred ? styles.heroActionLabelActive : null,
+                ]}
+              >
+                {copy.detailActionImportant}
+              </Text>
+            </Pressable>
+
+            <Pressable
+              onPress={onToggleArchiveDream}
+              style={({ pressed }) => [
+                styles.heroActionPill,
+                viewModel.archived ? styles.heroActionPillActive : null,
+                pressed ? styles.heroActionPillPressed : null,
+              ]}
+              accessibilityRole="button"
+              accessibilityLabel={viewModel.archived ? copy.detailUnarchive : copy.detailArchive}
+            >
+              <Ionicons
+                name={viewModel.archived ? 'refresh-outline' : 'archive-outline'}
+                size={15}
+                color={viewModel.archived ? theme.colors.background : theme.colors.textDim}
+              />
+              <Text
+                style={[
+                  styles.heroActionLabel,
+                  viewModel.archived ? styles.heroActionLabelActive : null,
+                ]}
+              >
+                {viewModel.archived ? copy.detailActionRestore : copy.detailActionArchive}
+              </Text>
+            </Pressable>
+          </View>
+
+          <View style={styles.heroFooter}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.heroDeleteAction,
+                pressed ? styles.heroDeleteActionPressed : null,
+              ]}
+              onPress={onDeleteDream}
+              accessibilityRole="button"
+              accessibilityLabel={copy.detailDelete}
+            >
+              <Ionicons name="trash-outline" size={14} color={theme.colors.danger} />
+              <Text style={styles.heroDeleteActionLabel}>{copy.detailActionDelete}</Text>
+            </Pressable>
+          </View>
         </Card>
       </Animated.View>
 
@@ -152,9 +175,14 @@ export function DreamDetailOverview({
         <Animated.View entering={FadeInDown.delay(40).duration(220)} layout={detailLayoutTransition}>
           <Card style={styles.savedCard}>
             <View style={styles.savedHeader}>
-              <View style={styles.savedCopy}>
-                <Text style={styles.savedTitle}>{copy.detailSavedTitle}</Text>
-                <Text style={styles.savedDescription}>{copy.detailSavedDescription}</Text>
+              <View style={styles.savedLead}>
+                <View style={styles.savedIconShell}>
+                  <Ionicons name="checkmark" size={14} color={theme.colors.accent} />
+                </View>
+                <View style={styles.savedCopy}>
+                  <Text style={styles.savedTitle}>{copy.detailSavedTitle}</Text>
+                  <Text style={styles.savedDescription}>{copy.detailSavedDescription}</Text>
+                </View>
               </View>
               <Pressable
                 style={styles.savedDismiss}
@@ -165,16 +193,16 @@ export function DreamDetailOverview({
               </Pressable>
             </View>
 
-            <View style={styles.savedStatsRow}>
-              <View style={styles.savedStatTile}>
-                <Text style={styles.savedStatLabel}>{copy.detailSavedPatternLabel}</Text>
-                <Text style={styles.savedStatValue}>
+            <View style={styles.savedMetaRow}>
+              <View style={styles.savedMetaPill}>
+                <Text style={styles.savedMetaLabel}>{copy.detailSavedPatternLabel}</Text>
+                <Text numberOfLines={1} style={styles.savedMetaValue}>
                   {viewModel.strongestSignal ?? copy.homeSpotlightNoPattern}
                 </Text>
               </View>
-              <View style={styles.savedStatTile}>
-                <Text style={styles.savedStatLabel}>{copy.detailSavedRelatedLabel}</Text>
-                <Text style={styles.savedStatValue}>{String(viewModel.relatedCount)}</Text>
+              <View style={styles.savedMetaPill}>
+                <Text style={styles.savedMetaLabel}>{copy.detailSavedRelatedLabel}</Text>
+                <Text style={styles.savedMetaValue}>{String(viewModel.relatedCount)}</Text>
               </View>
             </View>
           </Card>

@@ -44,19 +44,34 @@ export default function DreamDetailScreen() {
     [locale],
   );
   const styles = React.useMemo(() => createDreamDetailScreenStyles(theme), [theme]);
+  const handleAcknowledgeSaved = React.useCallback(() => {
+    navigation.setParams({
+      justSaved: false,
+    });
+  }, [navigation]);
+  const handleDeleteComplete = React.useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+  const handleOpenRelatedDream = React.useCallback(
+    (dreamId: string) => {
+      navigation.push(ROOT_ROUTE_NAMES.DreamDetail, {
+        dreamId,
+      });
+    },
+    [navigation],
+  );
+  const handleOpenSettingsForAnalysis = React.useCallback(() => {
+    navigation.navigate(ROOT_ROUTE_NAMES.Tabs, {
+      screen: TAB_ROUTE_NAMES.Settings,
+    });
+  }, [navigation]);
 
   const controller = useDreamDetailController({
     dreamId: route.params.dreamId,
     justSaved: Boolean(route.params.justSaved),
     copy,
-    onAcknowledgeSaved: () => {
-      navigation.setParams({
-        justSaved: false,
-      });
-    },
-    onDeleteComplete: () => {
-      navigation.goBack();
-    },
+    onAcknowledgeSaved: handleAcknowledgeSaved,
+    onDeleteComplete: handleDeleteComplete,
   });
 
   const viewModel = React.useMemo(
@@ -154,16 +169,8 @@ export default function DreamDetailScreen() {
         onGenerateAnalysis={controller.onGenerateAnalysis}
         onClearAnalysis={controller.onClearAnalysis}
         onToggleAudioPlayback={controller.onToggleAudioPlayback}
-        onOpenRelatedDream={dreamId =>
-          navigation.push(ROOT_ROUTE_NAMES.DreamDetail, {
-            dreamId,
-          })
-        }
-        onOpenSettingsForAnalysis={() =>
-          navigation.navigate(ROOT_ROUTE_NAMES.Tabs, {
-            screen: TAB_ROUTE_NAMES.Settings,
-          })
-        }
+        onOpenRelatedDream={handleOpenRelatedDream}
+        onOpenSettingsForAnalysis={handleOpenSettingsForAnalysis}
       />
     </ScreenContainer>
   );

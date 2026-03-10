@@ -25,7 +25,7 @@ const TAB_ROUTE_LABELS_EN: TabRouteLabelMap = {
   [TAB_ROUTE_NAMES.Home]: 'Home',
   [TAB_ROUTE_NAMES.Archive]: 'Archive',
   [TAB_ROUTE_NAMES.New]: 'Add',
-  [TAB_ROUTE_NAMES.Stats]: 'Insights',
+  [TAB_ROUTE_NAMES.Stats]: 'Memory',
   [TAB_ROUTE_NAMES.Settings]: 'Settings',
 };
 
@@ -33,7 +33,7 @@ const TAB_ROUTE_LABELS_UK: TabRouteLabelMap = {
   [TAB_ROUTE_NAMES.Home]: 'Стрічка',
   [TAB_ROUTE_NAMES.Archive]: 'Архів',
   [TAB_ROUTE_NAMES.New]: 'Додати',
-  [TAB_ROUTE_NAMES.Stats]: 'Аналітика',
+  [TAB_ROUTE_NAMES.Stats]: 'Пам\'ять',
   [TAB_ROUTE_NAMES.Settings]: 'Опції',
 };
 
@@ -50,6 +50,7 @@ export type TabParamList = {
   [TAB_ROUTE_NAMES.New]:
     | {
         entryMode?: 'default' | 'voice' | 'wake';
+        source?: 'manual' | 'reminder';
         launchKey?: number;
       }
     | undefined;

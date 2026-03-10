@@ -6,6 +6,8 @@ type LastViewedDreamRecord = {
   viewedAt: number;
 };
 
+export const LAST_VIEWED_DREAM_MAX_AGE_MS = 48 * 60 * 60 * 1000;
+
 function normalizeLastViewedDream(
   value: Partial<LastViewedDreamRecord> | null | undefined,
 ): LastViewedDreamRecord | null {
@@ -47,6 +49,17 @@ export function saveLastViewedDream(dreamId: string) {
 
   kv.set(LAST_VIEWED_DREAM_STORAGE_KEY, JSON.stringify(value));
   return value;
+}
+
+export function isLastViewedDreamFresh(
+  value: LastViewedDreamRecord | null | undefined,
+  now = Date.now(),
+) {
+  if (!value) {
+    return false;
+  }
+
+  return now - value.viewedAt <= LAST_VIEWED_DREAM_MAX_AGE_MS;
 }
 
 export function clearLastViewedDream(dreamId?: string) {

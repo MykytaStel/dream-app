@@ -105,9 +105,10 @@ export default function HomeScreen() {
   const hasDraft = Boolean(draft);
   const showWakeCapturePrompt = isWakeCaptureWindow();
   const showHeroPrompt = showWakeCapturePrompt || hasDraft;
+  const showLastViewedShortcut = !showHeroPrompt && Boolean(lastViewedDream);
   const heroInsetTop = insets.top + theme.spacing.sm;
-  const heroExpandedHeight = showHeroPrompt ? 300 : 214;
-  const heroCollapsedHeight = 104;
+  const heroExpandedHeight = showHeroPrompt ? 252 : 160;
+  const heroCollapsedHeight = 92;
 
   const openLastViewedDream = React.useCallback(() => {
     if (!lastViewedDream) {
@@ -216,12 +217,20 @@ export default function HomeScreen() {
         copy={copy}
         styles={styles}
         timelineFilters={timeline.timelineFilters}
-        homeFilters={timeline.homeFilters}
         activeFilterChips={timeline.activeFilterChips}
         visibleDreamCount={timeline.visibleDreams.length}
         archiveScopedCount={timeline.archiveScopedDreams.length}
-        displayedDreamCount={timeline.displayedDreams.length}
         searchResultsLabel={timeline.searchResultsLabel}
+        lastViewedDreamTitle={
+          showLastViewedShortcut
+            ? lastViewedDream?.title || (lastViewedDream ? copy.untitled : null)
+            : null
+        }
+        lastViewedDreamMeta={showLastViewedShortcut ? timeline.lastViewedDreamMeta : null}
+        onOpenLastDream={showLastViewedShortcut ? openLastViewedDream : null}
+        streak={timeline.streak}
+        totalDreams={timeline.activeDreams.length}
+        averageWords={timeline.averageWords}
         isSearchPending={timeline.isSearchPending}
         hasSearchQuery={timeline.hasSearchQuery}
         hasNonSearchRefinements={timeline.hasNonSearchRefinements}
@@ -245,7 +254,7 @@ export default function HomeScreen() {
         updateTimelineFilters={timeline.updateTimelineFilters}
       />
     ),
-    [copy, openPatternDetail, styles, timeline],
+    [copy, openLastViewedDream, openPatternDetail, showLastViewedShortcut, styles, timeline, lastViewedDream],
   );
 
   if (loading) {
@@ -323,14 +332,6 @@ export default function HomeScreen() {
         collapseDistance={HERO_COLLAPSE_DISTANCE}
         greeting={timeline.heroGreeting}
         dateLabel={timeline.heroDateLabel}
-        streak={timeline.streak}
-        totalDreams={timeline.activeDreams.length}
-        averageWords={timeline.averageWords}
-        lastViewedDreamTitle={
-          lastViewedDream?.title || (lastViewedDream ? copy.untitled : null)
-        }
-        lastViewedDreamMeta={timeline.lastViewedDreamMeta}
-        onOpenLastDream={lastViewedDream ? openLastViewedDream : null}
         prompt={heroPrompt}
       />
 
@@ -364,7 +365,7 @@ export default function HomeScreen() {
         contentContainerStyle={[
           styles.listContent,
           {
-            paddingTop: heroExpandedHeight + heroInsetTop + theme.spacing.md,
+            paddingTop: heroExpandedHeight + heroInsetTop,
             paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
           },
         ]}
@@ -375,6 +376,7 @@ export default function HomeScreen() {
         copy={copy}
         styles={styles}
         timelineFilters={timeline.timelineFilters}
+        homeFilters={timeline.homeFilters}
         moodFilters={timeline.moodFilters}
         typeFilters={timeline.typeFilters}
         transcriptFilters={timeline.transcriptFilters}

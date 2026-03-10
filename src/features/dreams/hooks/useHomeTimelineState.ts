@@ -75,8 +75,8 @@ export function useHomeTimelineState({
 
   const homeFilters = React.useMemo<Array<HomeOption<HomeArchiveFilter>>>(
     () => [
-      { key: 'all', label: copy.homeFilterAll },
       { key: 'active', label: copy.homeFilterActive },
+      { key: 'all', label: copy.homeFilterAll },
     ],
     [copy.homeFilterActive, copy.homeFilterAll],
   );
@@ -245,12 +245,22 @@ export function useHomeTimelineState({
         filters: timelineFilters,
         copy,
         moodLabels,
+        homeFilters,
         typeFilters,
         transcriptFilters,
         dateRangeFilters,
         sortOptions,
       }),
-    [copy, dateRangeFilters, moodLabels, sortOptions, timelineFilters, transcriptFilters, typeFilters],
+    [
+      copy,
+      dateRangeFilters,
+      homeFilters,
+      moodLabels,
+      sortOptions,
+      timelineFilters,
+      transcriptFilters,
+      typeFilters,
+    ],
   );
   const hasSearchQuery = Boolean(timelineFilters.searchQuery.trim());
   const hasNonSearchRefinements = React.useMemo(
@@ -298,10 +308,7 @@ export function useHomeTimelineState({
 
   const clearTimelineFilters = React.useCallback(() => {
     closeActiveSwipe();
-    setTimelineFilters(current => ({
-      ...DEFAULT_HOME_TIMELINE_FILTERS,
-      archive: current.archive,
-    }));
+    setTimelineFilters(DEFAULT_HOME_TIMELINE_FILTERS);
   }, [closeActiveSwipe]);
 
   const clearTimelineSearch = React.useCallback(() => {

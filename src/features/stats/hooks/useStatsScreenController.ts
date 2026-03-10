@@ -8,8 +8,6 @@ import {
 import { getStatsCopy } from '../../../constants/copy/stats';
 import { type AppLocale } from '../../../i18n/types';
 import {
-  getAverageWords,
-  getCurrentStreak,
   getEntriesLastSevenDays,
   getSleepContextStats,
   getTopPreSleepEmotionSignals,
@@ -95,9 +93,7 @@ export function useStatsScreenController({
     () => summarizeScopedDreams(previousScopedDreams),
     [previousScopedDreams],
   );
-  const overallStreak = React.useMemo(() => getCurrentStreak(dreams), [dreams]);
   const overallLastSevenDays = React.useMemo(() => getEntriesLastSevenDays(dreams), [dreams]);
-  const averageWords = React.useMemo(() => getAverageWords(scopedDreams), [scopedDreams]);
   const sleepContextStats = React.useMemo(() => getSleepContextStats(scopedDreams), [scopedDreams]);
   const wakeEmotionSignals = React.useMemo(
     () => getTopWakeEmotionSignals(scopedDreams, 6),
@@ -166,26 +162,6 @@ export function useStatsScreenController({
       { label: copy.transcribedDreams, value: scopedSummary.transcribedDreams },
     ],
     [copy, scopedDreams.length, scopedSummary.totalWords, scopedSummary.transcribedDreams, scopedSummary.voiceNotes],
-  );
-  const heroSummaryTiles = React.useMemo(
-    () => [
-      {
-        label: copy.entries,
-        value: scopedDreams.length,
-        hint: formatEntryCountLabel(scopedDreams.length, locale),
-      },
-      {
-        label: copy.wordsSaved,
-        value: scopedSummary.totalWords,
-        hint: `${averageWords} ${copy.averageWordsShort.toLowerCase()}`,
-      },
-      {
-        label: copy.currentStreak,
-        value: overallStreak,
-        hint: formatEntryCountLabel(overallLastSevenDays, locale),
-      },
-    ],
-    [averageWords, copy, locale, overallLastSevenDays, overallStreak, scopedDreams.length, scopedSummary.totalWords],
   );
   const compareMetrics = React.useMemo(
     () => [
@@ -480,7 +456,6 @@ export function useStatsScreenController({
     canCompare,
     compareOptions,
     selectedRangeLabel,
-    heroSummaryTiles,
     compareMetrics,
     activityBars,
     topSignal,

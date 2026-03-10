@@ -155,14 +155,7 @@ export default function StatsScreen() {
         selectedRange={controller.selectedRange}
         onSelectRange={controller.setSelectedRange}
         rangeOptions={controller.rangeOptions}
-        selectedMode={controller.selectedMode}
-        onSelectMode={controller.setSelectedMode}
-        compareOptions={controller.compareOptions}
-        heroSummaryTiles={controller.heroSummaryTiles}
-        canCompare={controller.canCompare}
         selectedRangeLabel={controller.selectedRangeLabel}
-        compareMetrics={controller.compareMetrics}
-        activityBars={controller.activityBars}
         topSignal={controller.topSignal}
         coverageGap={controller.coverageGap}
       />
@@ -183,6 +176,13 @@ export default function StatsScreen() {
               fingerprintFacets={controller.fingerprintFacets}
               isDetailsExpanded={controller.isDetailsExpanded}
               onToggleDetails={() => controller.setIsDetailsExpanded(current => !current)}
+              selectedMode={controller.selectedMode}
+              onSelectMode={controller.setSelectedMode}
+              canCompare={controller.canCompare}
+              selectedRangeLabel={controller.selectedRangeLabel}
+              compareOptions={controller.compareOptions}
+              compareMetrics={controller.compareMetrics}
+              activityBars={controller.activityBars}
               summaryTiles={controller.summaryTiles}
               overallLastSevenDays={controller.overallLastSevenDays}
               coverageItems={controller.coverageItems}

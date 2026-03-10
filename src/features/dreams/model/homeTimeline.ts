@@ -25,7 +25,7 @@ export type HomeTimelineFilters = {
 };
 
 export const DEFAULT_HOME_TIMELINE_FILTERS: HomeTimelineFilters = {
-  archive: 'all',
+  archive: 'active',
   starredOnly: false,
   searchQuery: '',
   mood: 'all',
@@ -45,7 +45,7 @@ export function normalizeHomeTimelineFilters(
 
   return {
     archive:
-      filters.archive === 'active' || filters.archive === 'archived' ? filters.archive : 'all',
+      filters.archive === 'active' || filters.archive === 'archived' ? filters.archive : 'active',
     starredOnly: Boolean(filters.starredOnly),
     searchQuery: filters.searchQuery?.trim() ?? '',
     mood:

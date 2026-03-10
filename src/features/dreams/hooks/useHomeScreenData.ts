@@ -9,6 +9,7 @@ import {
 import {
   clearLastViewedDream,
   getLastViewedDream,
+  isLastViewedDreamFresh,
 } from '../services/lastViewedDreamService';
 import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 
@@ -54,11 +55,12 @@ export function useHomeScreenData(): HomeScreenDataState {
       const nextDraft = getDreamDraft();
       const nextPresets = getHomeSearchPresets();
       const lastViewed = getLastViewedDream();
+      const freshLastViewed = isLastViewedDreamFresh(lastViewed) ? lastViewed : null;
       const nextLastViewedDream = lastViewed
         ? nextDreams.find(dream => dream.id === lastViewed.dreamId) ?? null
         : null;
 
-      if (lastViewed && !nextLastViewedDream) {
+      if (lastViewed && (!freshLastViewed || !nextLastViewedDream)) {
         clearLastViewedDream(lastViewed.dreamId);
       }
 
@@ -66,7 +68,7 @@ export function useHomeScreenData(): HomeScreenDataState {
         setDreams(nextDreams);
         setDraft(nextDraft);
         setSavedSearchPresets(nextPresets);
-        setLastViewedDream(nextLastViewedDream);
+        setLastViewedDream(freshLastViewed ? nextLastViewedDream : null);
       });
 
       trackLocalSurfaceLoad('home_refresh', startedAt, nextDreams.length);

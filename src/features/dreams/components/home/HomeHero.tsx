@@ -1,5 +1,5 @@
 import React from 'react';
-import { Animated, Pressable, View } from 'react-native';
+import { Animated, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button } from '../../../../components/ui/Button';
 import { Text } from '../../../../components/ui/Text';
@@ -27,12 +27,6 @@ type HomeHeroProps = {
   collapseDistance: number;
   greeting: string;
   dateLabel: string;
-  streak: number;
-  totalDreams: number;
-  averageWords: number;
-  lastViewedDreamTitle?: string | null;
-  lastViewedDreamMeta?: string | null;
-  onOpenLastDream?: (() => void) | null;
   prompt?: HomeHeroPrompt | null;
 };
 
@@ -46,12 +40,6 @@ export function HomeHero({
   collapseDistance,
   greeting,
   dateLabel,
-  streak,
-  totalDreams,
-  averageWords,
-  lastViewedDreamTitle,
-  lastViewedDreamMeta,
-  onOpenLastDream,
   prompt,
 }: HomeHeroProps) {
   const heroHeight = scrollY.interpolate({
@@ -79,16 +67,6 @@ export function HomeHero({
     outputRange: [0, -10],
     extrapolate: 'clamp',
   });
-  const heroStatsTranslateY = scrollY.interpolate({
-    inputRange: [0, collapseDistance],
-    outputRange: [0, -6],
-    extrapolate: 'clamp',
-  });
-  const heroStatsOpacity = scrollY.interpolate({
-    inputRange: [0, collapseDistance * 0.8, collapseDistance],
-    outputRange: [1, 0.94, 0.82],
-    extrapolate: 'clamp',
-  });
   const heroGlowOpacity = scrollY.interpolate({
     inputRange: [0, collapseDistance],
     outputRange: [1, 0.35],
@@ -109,10 +87,12 @@ export function HomeHero({
         pointerEvents="none"
         style={[styles.heroGlowLarge, { opacity: heroGlowOpacity }]}
       />
-      <Animated.View
-        pointerEvents="none"
-        style={[styles.heroGlowSmall, { opacity: heroGlowOpacity }]}
-      />
+      {prompt ? (
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.heroGlowSmall, { opacity: heroGlowOpacity }]}
+        />
+      ) : null}
       <View style={styles.heroFrame}>
         <View style={styles.heroTopRow}>
           <View style={styles.heroCopy}>
@@ -176,41 +156,6 @@ export function HomeHero({
                 </View>
               </Animated.View>
             ) : null}
-            {!prompt && lastViewedDreamTitle && onOpenLastDream ? (
-              <Animated.View
-                style={{
-                  opacity: heroSubtitleOpacity,
-                  transform: [{ translateY: heroSubtitleTranslateY }],
-                }}
-              >
-                <Pressable
-                  onPress={onOpenLastDream}
-                  style={({ pressed }) => [
-                    styles.heroShortcutButton,
-                    pressed ? styles.heroShortcutButtonPressed : null,
-                  ]}
-                >
-                  <View style={styles.heroShortcutIconWrap}>
-                    <Ionicons
-                      name="return-up-forward-outline"
-                      size={15}
-                      color="#7CC8FF"
-                    />
-                  </View>
-                  <View style={styles.heroShortcutCopy}>
-                    <Text style={styles.heroShortcutLabel}>{copy.homeLastDreamLabel}</Text>
-                    <Text style={styles.heroShortcutTitle} numberOfLines={1}>
-                      {lastViewedDreamTitle}
-                    </Text>
-                    {lastViewedDreamMeta ? (
-                      <Text style={styles.heroShortcutMeta} numberOfLines={1}>
-                        {lastViewedDreamMeta}
-                      </Text>
-                    ) : null}
-                  </View>
-                </Pressable>
-              </Animated.View>
-            ) : null}
           </View>
           <Animated.View
             style={[
@@ -225,31 +170,6 @@ export function HomeHero({
             <View style={[styles.heroFacet, styles.heroFacetAlt]} />
           </Animated.View>
         </View>
-
-        <Animated.View
-          style={[
-            styles.heroFooter,
-            {
-              opacity: heroStatsOpacity,
-              transform: [{ translateY: heroStatsTranslateY }],
-            },
-          ]}
-        >
-          <View style={styles.statsRow}>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
-              <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
-            </View>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
-              <Text style={styles.statValue}>{totalDreams}</Text>
-            </View>
-            <View style={styles.statChip}>
-              <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
-              <Text style={styles.statValue}>{averageWords}</Text>
-            </View>
-          </View>
-        </Animated.View>
       </View>
     </Animated.View>
   );

@@ -72,8 +72,8 @@ export function DreamDetailSectionCard({
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     card: {
-      padding: 14,
-      gap: 12,
+      padding: 12,
+      gap: 10,
     },
     header: {
       flexDirection: 'row',
@@ -87,39 +87,39 @@ function createStyles(theme: Theme) {
     headerAside: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 8,
+      gap: 6,
     },
     title: {
       flex: 1,
       fontWeight: '700',
-      fontSize: 15,
-      lineHeight: 20,
+      fontSize: 14,
+      lineHeight: 19,
     },
     metaChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 9,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
       }),
     },
     metaLabel: {
       color: theme.colors.textDim,
-      fontSize: 10,
+      fontSize: 9,
       fontWeight: '700',
     },
     toggleChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 5,
+        paddingVertical: 4,
+        paddingHorizontal: 4,
       }),
-      width: 28,
-      height: 28,
+      width: 26,
+      height: 26,
       alignItems: 'center',
       justifyContent: 'center',
     },
     content: {
-      gap: 12,
+      gap: 10,
     },
   });
 }

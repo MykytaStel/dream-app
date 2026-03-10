@@ -22,11 +22,12 @@ This project is being developed by Mykyta Stelmashenko.
 
 ## Status
 
-Latest shipped version: `0.0.24`
-Current release target: `0.0.25`
+Latest shipped version: `0.0.25`
+Current release target: `0.1.0`
 
-This is an early MVP focused on the core journaling flow with local reminders,
-offline transcription, and local dream analysis. See
+This release turns the app from a local-first MVP into a first public-quality
+beta focused on an ultra-fast wake flow, an intimate private feeling, and
+stylized reflection through voice, transcript, and recurring dream patterns. See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
 for the latest shipped release scope,
 [docs/RELEASE_0.0.17_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.17_PLAN.md)
@@ -46,9 +47,11 @@ for the latest shipped dream-detail-richness scope,
 [docs/RELEASE_0.0.24_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.24_PLAN.md)
 for the shipped import-and-shell-polish target,
 [docs/RELEASE_0.0.25_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.25_PLAN.md)
-for the current performance-and-polish target, and
+for the latest performance-and-polish target,
+[docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
+for the current beta-release target, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
-for the planned next versions.
+for the completed path that led into `0.1.0`.
 
 ## Infrastructure
 

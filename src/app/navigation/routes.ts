@@ -11,9 +11,11 @@ export const TAB_ROUTE_NAMES = {
 
 export const ROOT_ROUTE_NAMES = {
   Tabs: 'Tabs',
+  WakeEntry: 'WakeEntry',
   DreamDetail: 'DreamDetail',
   DreamEditor: 'DreamEditor',
   Progress: 'Progress',
+  MonthlyReport: 'MonthlyReport',
   PatternDetail: 'PatternDetail',
 } as const;
 
@@ -47,7 +49,7 @@ export type TabParamList = {
   [TAB_ROUTE_NAMES.Archive]: undefined;
   [TAB_ROUTE_NAMES.New]:
     | {
-        entryMode?: 'default' | 'voice';
+        entryMode?: 'default' | 'voice' | 'wake';
         launchKey?: number;
       }
     | undefined;
@@ -57,6 +59,11 @@ export type TabParamList = {
 
 export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.Tabs]: NavigatorScreenParams<TabParamList> | undefined;
+  [ROOT_ROUTE_NAMES.WakeEntry]:
+    | {
+        source?: 'manual' | 'reminder';
+      }
+    | undefined;
   [ROOT_ROUTE_NAMES.DreamDetail]: {
     dreamId: string;
     justSaved?: boolean;
@@ -65,6 +72,11 @@ export type RootStackParamList = {
     dreamId: string;
   };
   [ROOT_ROUTE_NAMES.Progress]: undefined;
+  [ROOT_ROUTE_NAMES.MonthlyReport]:
+    | {
+        yearMonth?: string;
+      }
+    | undefined;
   [ROOT_ROUTE_NAMES.PatternDetail]: {
     signal: string;
     kind: PatternDetailKind;

@@ -5,10 +5,10 @@ import { Theme } from '../../../theme/theme';
 export function createDreamDetailScreenStyles(theme: Theme) {
   return StyleSheet.create({
     heroCard: {
-      gap: 10,
+      gap: 8,
       overflow: 'hidden',
       position: 'relative',
-      padding: 16,
+      padding: 14,
       backgroundColor: theme.colors.surface,
     },
     heroGlowLarge: {
@@ -17,9 +17,9 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       height: 200,
       borderRadius: 999,
       backgroundColor: theme.colors.auroraMid,
-      opacity: 0.08,
-      top: -72,
-      right: -48,
+      opacity: 0.06,
+      top: -82,
+      right: -58,
     },
     heroGlowSmall: {
       position: 'absolute',
@@ -27,21 +27,27 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       height: 140,
       borderRadius: 999,
       backgroundColor: theme.colors.primary,
-      opacity: 0.08,
-      bottom: -42,
-      left: -22,
+      opacity: 0.06,
+      bottom: -52,
+      left: -34,
     },
     heroTopBar: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
-      gap: 10,
+      alignItems: 'center',
+      gap: 8,
     },
-    heroStatusRow: {
+    heroActionsWrap: {
       flexDirection: 'row',
+      alignItems: 'center',
       flexWrap: 'wrap',
       justifyContent: 'flex-end',
-      gap: 6,
+      gap: 5,
+    },
+    heroActionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
     },
     backButton: {
       ...createControlPill(theme, {
@@ -49,8 +55,8 @@ export function createDreamDetailScreenStyles(theme: Theme) {
         paddingVertical: 9,
         paddingHorizontal: 9,
       }),
-      width: 42,
-      height: 42,
+      width: 40,
+      height: 40,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -64,30 +70,16 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       ...createControlPill(theme, {
         tone: 'background',
         paddingVertical: 4,
-        paddingHorizontal: 9,
+        paddingHorizontal: 8,
       }),
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
-    },
-    statusChipInteractive: {
-      minHeight: 30,
-    },
-    statusChipActive: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
-    },
-    statusChipPressed: {
-      opacity: 0.95,
-      transform: [{ scale: 0.985 }],
+      gap: 4,
     },
     statusChipLabel: {
       color: theme.colors.textDim,
-      fontSize: 10,
+      fontSize: 9,
       fontWeight: '700',
-    },
-    statusChipLabelActive: {
-      color: theme.colors.background,
     },
     statusDot: {
       width: 8,
@@ -95,66 +87,67 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       borderRadius: 999,
     },
     heroHeader: {
-      gap: 6,
+      gap: 5,
     },
-    heroTitleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-    },
-    titleEditButton: {
+    heroActionButton: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 7,
-        paddingHorizontal: 7,
+        paddingVertical: 6,
+        paddingHorizontal: 6,
       }),
-      width: 34,
-      height: 34,
+      width: 30,
+      height: 30,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    titleEditButtonPressed: {
+    heroActionButtonActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    heroActionButtonDanger: {
+      borderColor: `${theme.colors.danger}55`,
+    },
+    heroActionButtonPressed: {
       opacity: 0.95,
       transform: [{ scale: 0.985 }],
     },
     heroTitle: {
-      flex: 1,
-      fontSize: 28,
-      lineHeight: 34,
+      fontSize: 26,
+      lineHeight: 31,
       fontWeight: '700',
       includeFontPadding: false,
     },
     heroSubtitle: {
       color: theme.colors.textDim,
-      fontSize: 13,
-      lineHeight: 18,
+      fontSize: 12,
+      lineHeight: 17,
     },
     heroPreviewText: {
       color: theme.colors.text,
-      fontSize: 13,
-      lineHeight: 19,
-      maxWidth: '88%',
+      fontSize: 12,
+      lineHeight: 18,
+      maxWidth: '92%',
     },
     summaryCard: {
-      padding: 14,
-      gap: 10,
+      padding: 12,
+      gap: 8,
       backgroundColor: theme.colors.surfaceElevated,
     },
     glanceGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 6,
     },
     glanceCard: {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 14,
-        paddingVertical: 9,
-        paddingHorizontal: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 9,
       }),
       flex: 1,
-      minWidth: 132,
-      gap: 6,
+      minWidth: 124,
+      gap: 5,
     },
     glanceHeader: {
       flexDirection: 'row',
@@ -162,8 +155,8 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       gap: 8,
     },
     glanceIconShell: {
-      width: 22,
-      height: 22,
+      width: 20,
+      height: 20,
       borderRadius: 999,
       alignItems: 'center',
       justifyContent: 'center',
@@ -171,24 +164,19 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     glanceLabel: {
       color: theme.colors.textDim,
-      fontSize: 10,
+      fontSize: 9,
       textTransform: 'uppercase',
       letterSpacing: 0.6,
       fontWeight: '700',
     },
     glanceValue: {
       fontWeight: '700',
-      fontSize: 14,
-      lineHeight: 18,
-    },
-    heroActionsRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
+      fontSize: 13,
+      lineHeight: 17,
     },
     savedCard: {
-      padding: 16,
-      gap: 12,
+      padding: 14,
+      gap: 10,
       borderColor: theme.colors.accent,
       backgroundColor: theme.colors.surface,
     },
@@ -204,11 +192,11 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     savedTitle: {
       fontWeight: '700',
-      fontSize: 16,
+      fontSize: 15,
     },
     savedDescription: {
       color: theme.colors.textDim,
-      lineHeight: 20,
+      lineHeight: 18,
     },
     savedDismiss: {
       ...createControlPill(theme, {
@@ -223,7 +211,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     savedStatsRow: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 6,
     },
     savedStatTile: {
       flex: 1,
@@ -231,20 +219,20 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 9,
-        paddingHorizontal: 10,
+        paddingVertical: 8,
+        paddingHorizontal: 9,
       }),
     },
     savedStatLabel: {
       color: theme.colors.textDim,
-      fontSize: 11,
+      fontSize: 10,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
     savedStatValue: {
       fontWeight: '700',
-      fontSize: 16,
-      lineHeight: 20,
+      fontSize: 15,
+      lineHeight: 18,
     },
     sectionCard: {
       gap: 12,
@@ -263,11 +251,11 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     bodyText: {
       color: theme.colors.text,
-      lineHeight: 22,
+      lineHeight: 20,
     },
     mutedText: {
       color: theme.colors.textDim,
-      lineHeight: 18,
+      lineHeight: 17,
     },
     statusText: {
       lineHeight: 20,
@@ -280,10 +268,10 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     tagsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 6,
     },
     contextRows: {
-      gap: 10,
+      gap: 8,
     },
     relatedList: {
       gap: 10,
@@ -293,17 +281,17 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     relatedCarouselContent: {
       paddingHorizontal: 4,
-      gap: 8,
+      gap: 7,
     },
     relatedCard: {
-      gap: 8,
+      gap: 7,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
+        paddingVertical: 9,
+        paddingHorizontal: 9,
       }),
-      width: 220,
+      width: 198,
     },
     relatedCardPressed: {
       opacity: 0.96,
@@ -317,7 +305,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     },
     relatedCopy: {
       flex: 1,
-      gap: 4,
+      gap: 3,
     },
     relatedTitle: {
       fontWeight: '700',
@@ -335,15 +323,15 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     sectionMutedActionRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 6,
     },
     audioCard: {
-      gap: 6,
+      gap: 5,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
+        paddingVertical: 9,
+        paddingHorizontal: 9,
       }),
     },
     audioPath: {
@@ -354,51 +342,53 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       alignSelf: 'flex-start',
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 6,
-        paddingHorizontal: 10,
+        paddingVertical: 5,
+        paddingHorizontal: 9,
       }),
     },
     progressBadgeLabel: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '600',
     },
     transcriptMetaCard: {
-      gap: 8,
+      gap: 7,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
+        paddingVertical: 9,
+        paddingHorizontal: 9,
       }),
     },
     analysisStateCard: {
-      gap: 6,
+      gap: 5,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 10,
+        paddingVertical: 9,
+        paddingHorizontal: 9,
       }),
     },
     analysisStateLabel: {
       color: theme.colors.textDim,
-      fontSize: 11,
+      fontSize: 10,
       textTransform: 'uppercase',
       letterSpacing: 0.6,
     },
     analysisStateText: {
-      lineHeight: 20,
+      lineHeight: 18,
       color: theme.colors.text,
     },
     analysisActionsRow: {
-      gap: 8,
+      gap: 6,
     },
     transcriptEditorInput: {
       minHeight: 150,
     },
     transcriptActions: {
-      gap: 8,
+      gap: 6,
     },
   });
 }
+
+export type DreamDetailScreenStyles = ReturnType<typeof createDreamDetailScreenStyles>;

@@ -47,7 +47,7 @@ export function createSettingsScreenStyles(theme: Theme) {
       color: theme.colors.background,
     },
     sectionCard: {
-      gap: 10,
+      gap: 8,
     },
     reminderHint: {
       color: theme.colors.textDim,
@@ -69,12 +69,15 @@ export function createSettingsScreenStyles(theme: Theme) {
     buttonRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 10,
+      gap: 8,
       alignItems: 'stretch',
     },
     buttonStack: {
-      gap: 10,
+      gap: 8,
       alignItems: 'stretch',
+    },
+    settingControlBlock: {
+      gap: 6,
     },
     buttonRowButton: {
       flex: 1,
@@ -106,44 +109,15 @@ export function createSettingsScreenStyles(theme: Theme) {
       gap: 8,
     },
     restoreModeWrap: {
-      gap: 8,
-    },
-    restoreModeRow: {
-      flexDirection: 'row',
-      gap: 8,
-      flexWrap: 'wrap',
-    },
-    restoreModeChip: {
-      ...createSoftTile(theme, {
-        tone: 'surface',
-        radius: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 12,
-      }),
-      flexBasis: '48%',
-      flexGrow: 1,
-      gap: 4,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-    },
-    restoreModeChipActive: {
-      backgroundColor: theme.colors.surfaceElevated,
-      borderColor: theme.colors.primary,
-    },
-    restoreModeChipText: {
-      color: theme.colors.text,
-      fontWeight: '700',
-    },
-    restoreModeChipTextActive: {
-      color: theme.colors.primary,
+      gap: 6,
     },
     restoreModeHint: {
       color: theme.colors.textDim,
       fontSize: 12,
-      lineHeight: 17,
+      lineHeight: 16,
     },
     restorePreviewBlock: {
-      gap: 8,
+      gap: 6,
     },
     restoreLabel: {
       color: theme.colors.textDim,
@@ -167,7 +141,7 @@ export function createSettingsScreenStyles(theme: Theme) {
     },
     restoreHint: {
       color: theme.colors.textDim,
-      lineHeight: 17,
+      lineHeight: 16,
       fontSize: 12,
     },
     privacyFootnote: {

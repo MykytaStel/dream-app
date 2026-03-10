@@ -1,26 +1,11 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../theme/theme';
+import { hexToRgba } from '../../theme/color';
 import {
   TAB_BAR_BOTTOM_OFFSET,
   TAB_BAR_SIDE_OFFSET,
   getTabBarHeight,
 } from './tabBarLayout';
-
-function hexToRgba(hex: string, alpha: number) {
-  const normalized = hex.replace('#', '');
-  const chunk =
-    normalized.length === 3
-      ? normalized
-          .split('')
-          .map(value => `${value}${value}`)
-          .join('')
-      : normalized;
-  const int = Number.parseInt(chunk, 16);
-  const r = (int >> 16) & 255;
-  const g = (int >> 8) & 255;
-  const b = int & 255;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-}
 
 export function createTabsStyles(theme: Theme, bottomInset: number) {
   const barHeight = getTabBarHeight(bottomInset);

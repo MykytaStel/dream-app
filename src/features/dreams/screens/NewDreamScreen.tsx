@@ -30,8 +30,7 @@ export default function NewDreamScreen() {
     setAutoStartRecordingKey(current => (current === nextKey ? current : nextKey));
   }, [route.params?.entryMode, route.params?.launchKey]);
 
-  const prefersVoiceCapture =
-    route.params?.entryMode === 'voice' || Boolean(savedDream?.audioUri);
+  const prefersVoiceCapture = route.params?.entryMode === 'voice';
 
   function closeSavedSheet() {
     setIsSavedSheetVisible(false);
@@ -68,6 +67,7 @@ export default function NewDreamScreen() {
     <>
       <DreamComposer
         mode="create"
+        entryMode={route.params?.entryMode}
         onSaved={dream => {
           setSavedDream(dream);
           setIsSavedSheetVisible(true);

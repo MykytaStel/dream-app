@@ -5,6 +5,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card } from '../../../components/ui/Card';
+import { ListItemSeparator } from '../../../components/ui/ListItemSeparator';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { ScreenStateCard } from '../../dreams/components/ScreenStateCard';
 import { TagChip } from '../../../components/ui/TagChip';
@@ -255,7 +256,7 @@ export default function PatternDetailScreen() {
         keyExtractor={item => item.dream.id}
         renderItem={renderMatchItem}
         ListHeaderComponent={listHeader}
-        ItemSeparatorComponent={() => <View style={{ height: t.spacing.sm }} />}
+        ItemSeparatorComponent={ListItemSeparator}
         showsVerticalScrollIndicator={false}
         removeClippedSubviews
         initialNumToRender={8}

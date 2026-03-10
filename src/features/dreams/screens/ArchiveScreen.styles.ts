@@ -17,16 +17,16 @@ export function createArchiveScreenStyles(theme: Theme) {
       paddingHorizontal: 2,
     },
     toolbarCard: {
-      gap: 12,
-      padding: 16,
+      gap: 10,
+      padding: 14,
       backgroundColor: theme.colors.surface,
       overflow: 'hidden',
       position: 'relative',
       borderColor: `${theme.colors.border}CC`,
     },
     controlsCard: {
-      gap: 10,
-      padding: 16,
+      gap: 8,
+      padding: 14,
       backgroundColor: theme.colors.surfaceElevated,
       borderColor: `${theme.colors.border}E6`,
     },
@@ -93,26 +93,26 @@ export function createArchiveScreenStyles(theme: Theme) {
     controlsMetaChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 9,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
       }),
     },
     controlsMetaChipText: {
       color: theme.colors.textDim,
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: '700',
       textTransform: 'capitalize',
     },
     controlsActionChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 9,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
       }),
     },
     controlsActionChipText: {
       color: theme.colors.text,
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: '700',
     },
     searchRow: {
@@ -142,18 +142,18 @@ export function createArchiveScreenStyles(theme: Theme) {
     searchInput: {
       backgroundColor: 'transparent',
       borderWidth: 0,
-      paddingVertical: 12,
+      paddingVertical: 11,
       paddingHorizontal: 0,
       minHeight: 0,
     },
     filtersRail: {
-      gap: 6,
+      gap: 5,
       paddingRight: 6,
     },
     filterChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 5,
+        paddingVertical: 4,
         paddingHorizontal: 10,
       }),
     },
@@ -173,28 +173,36 @@ export function createArchiveScreenStyles(theme: Theme) {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      gap: 10,
+      gap: 8,
       flexWrap: 'wrap',
     },
     resultsToolbar: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      gap: 10,
+      gap: 8,
       paddingHorizontal: 2,
-      marginTop: 2,
+      marginTop: 1,
+      flexWrap: 'wrap',
+    },
+    resultsToolbarMeta: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
       flexWrap: 'wrap',
     },
     resultsToolbarText: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
     },
     modeChip: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 9,
+        paddingVertical: 4,
+        paddingHorizontal: 8,
       }),
     },
     modeChipActive: {
@@ -203,7 +211,7 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     modeChipText: {
       color: theme.colors.textDim,
-      fontSize: 11,
+      fontSize: 10,
       fontWeight: '700',
     },
     modeChipTextActive: {
@@ -225,7 +233,7 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     browseModeChips: {
       flexDirection: 'row',
-      gap: 6,
+      gap: 5,
       flexWrap: 'wrap',
     },
     calendarCard: {
@@ -264,18 +272,18 @@ export function createArchiveScreenStyles(theme: Theme) {
     monthToolbar: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 12,
+      gap: 10,
       paddingRight: 52,
     },
     quickJumpRow: {
-      gap: 6,
+      gap: 5,
       paddingRight: 4,
     },
     quickJumpChip: {
       ...createControlPill(theme, {
         tone: 'background',
         paddingVertical: 4,
-        paddingHorizontal: 9,
+        paddingHorizontal: 8,
       }),
       backgroundColor: 'rgba(20, 24, 38, 0.42)',
     },
@@ -314,18 +322,18 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     monthLabelBlock: {
       flex: 1,
-      gap: 4,
+      gap: 3,
       alignItems: 'center',
     },
     monthLabel: {
-      fontSize: 20,
-      lineHeight: 24,
+      fontSize: 18,
+      lineHeight: 22,
       fontWeight: '700',
       textTransform: 'capitalize',
     },
     monthMetaText: {
       color: theme.colors.textDim,
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: '600',
       textAlign: 'center',
     },
@@ -345,7 +353,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       gap: 4,
     },
     calendarDaysWrap: {
-      gap: 6,
+      gap: 5,
       paddingTop: 4,
       borderTopWidth: 1,
       borderTopColor: theme.colors.border,
@@ -401,7 +409,7 @@ export function createArchiveScreenStyles(theme: Theme) {
     selectedDateRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 6,
       alignItems: 'center',
       justifyContent: 'space-between',
     },
@@ -456,16 +464,16 @@ export function createArchiveScreenStyles(theme: Theme) {
       transform: [{ scale: 0.994 }],
     },
     listRowCard: {
-      paddingVertical: 11,
-      paddingHorizontal: 12,
-      gap: 7,
+      paddingVertical: 10,
+      paddingHorizontal: 11,
+      gap: 6,
       backgroundColor: theme.colors.surface,
       borderColor: `${theme.colors.border}D9`,
     },
     listRowCardCompact: {
-      paddingVertical: 9,
-      paddingHorizontal: 12,
-      gap: 6,
+      paddingVertical: 8,
+      paddingHorizontal: 11,
+      gap: 5,
     },
     rowTop: {
       flexDirection: 'row',
@@ -475,16 +483,16 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     rowCopy: {
       flex: 1,
-      gap: 6,
+      gap: 5,
     },
     rowTitle: {
-      fontSize: 16,
-      lineHeight: 21,
+      fontSize: 15,
+      lineHeight: 20,
       fontWeight: '700',
     },
     rowTitleCompact: {
-      fontSize: 15,
-      lineHeight: 19,
+      fontSize: 14,
+      lineHeight: 18,
     },
     rowMetaRow: {
       flexDirection: 'row',
@@ -496,7 +504,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       ...createControlPill(theme, {
         tone: 'background',
         paddingVertical: 3,
-        paddingHorizontal: 8,
+        paddingHorizontal: 7,
       }),
     },
     rowDateChipText: {
@@ -508,39 +516,39 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 9,
     },
     rowPreviewWrap: {
-      paddingLeft: 10,
+      paddingLeft: 8,
       borderLeftWidth: 2,
-      borderLeftColor: theme.colors.border,
+      borderLeftColor: `${theme.colors.border}B3`,
     },
     rowPreviewWrapCompact: {
-      paddingLeft: 9,
+      paddingLeft: 8,
     },
     rowPreview: {
       flex: 1,
       color: theme.colors.textDim,
-      fontSize: 13,
-      lineHeight: 18,
+      fontSize: 12,
+      lineHeight: 17,
     },
     rowPreviewCompact: {
-      fontSize: 12,
-      lineHeight: 16,
+      fontSize: 11,
+      lineHeight: 15,
     },
     matchReasonsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 5,
+      gap: 4,
     },
     matchReasonPill: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 4,
-        paddingHorizontal: 8,
+        paddingVertical: 3,
+        paddingHorizontal: 7,
       }),
       borderColor: theme.colors.accent,
     },
     matchReasonPillText: {
       color: theme.colors.text,
-      fontSize: 10,
+      fontSize: 9,
       fontWeight: '700',
     },
     rowChevron: {
@@ -549,18 +557,18 @@ export function createArchiveScreenStyles(theme: Theme) {
     pillsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 5,
+      gap: 4,
     },
     pill: {
       ...createControlPill(theme, {
         tone: 'surface',
         paddingVertical: 3,
-        paddingHorizontal: 7,
+        paddingHorizontal: 6,
       }),
     },
     pillText: {
       color: theme.colors.textDim,
-      fontSize: 9,
+      fontSize: 8,
       fontWeight: '600',
     },
     emptyWrap: {

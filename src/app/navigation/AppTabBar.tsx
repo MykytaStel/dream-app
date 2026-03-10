@@ -114,7 +114,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
   }, []);
 
   const openComposer = React.useCallback(
-    (entryMode: 'default' | 'voice') => {
+    (entryMode: 'default' | 'voice' | 'wake') => {
       closeQuickAdd();
       navigation.dispatch(
         TabActions.jumpTo(
@@ -209,7 +209,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
         </Pressable>
       );
     },
-    [activeRouteName, closeQuickAdd, descriptors, labels, navigation, state.routes, styles, t.colors.tabIcon, t.colors.text],
+    [activeRouteName, closeQuickAdd, descriptors, labels, navigation, state.routes, styles, t.colors.tabIcon],
   );
 
   return (
@@ -297,12 +297,12 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
 
             <View style={styles.quickAddOptions}>
               <QuickAddOption
-                description={copy.voiceIdleHint}
+                description={copy.quickAddVoiceHint}
                 icon="mic-outline"
                 onPress={() => openComposer('voice')}
                 primary
                 styles={styles}
-                title={copy.voiceTitle}
+                title={copy.quickAddVoiceAction}
               />
               <QuickAddOption
                 description={copy.quickAddTextHint}

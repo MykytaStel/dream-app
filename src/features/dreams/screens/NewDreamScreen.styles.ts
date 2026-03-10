@@ -92,9 +92,18 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       paddingVertical: 7,
       paddingHorizontal: 12,
     },
+    helperChipActive: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
     helperChipLabel: {
       color: theme.colors.textDim,
       fontSize: 11,
+    },
+    helperChipLabelActive: {
+      color: theme.colors.background,
+      fontSize: 11,
+      fontWeight: '700',
     },
     card: {
       gap: layout.sectionGap + 2,

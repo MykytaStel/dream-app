@@ -300,9 +300,38 @@ const DREAM_COPY_EN = {
   createSubtitle:
     'Capture the shape now. Sort the details later.',
   quickAddKicker: 'Quick add',
+  quickAddWakeAction: 'Wake capture',
+  quickAddWakeHint: 'Open the compressed morning flow for a quick voice or text capture.',
+  quickAddVoiceAction: 'Voice note',
+  quickAddVoiceHint: 'Open the composer in voice-first mode and start recording fast.',
   quickAddTextAction: 'Write note',
   quickAddTextHint: 'Open the composer and type what is still there.',
   quickAddContinueHint: 'Pick up the saved local draft exactly where you left it.',
+  wakeEntryKicker: 'Wake flow',
+  wakeEntryTitle: 'Before it slips away',
+  wakeEntryDescription:
+    'One calm screen after the reminder. Tap the center to write, or choose voice below.',
+  wakeEntryOrbAction: 'Write',
+  wakeEntryOrbHint: 'Tap the center and start with raw lines.',
+  wakeEntryWriteAction: 'Write now',
+  wakeEntrySpeakAction: 'Speak instead',
+  wakeEntryDraftAction: 'Continue draft',
+  wakeModeChip: 'Wake mode',
+  wakeHeroTitle: 'Catch the first shape',
+  wakeHeroDescription:
+    'Voice first, raw lines second. Title, tags, and context can wait.',
+  wakeVoiceDescription: 'Start recording now or drop a few raw lines below.',
+  wakeCoreTitle: 'Raw memory',
+  wakeCoreDescription: 'Keep only what is still vivid. Structure can come later.',
+  wakeTextLabel: 'What is still here?',
+  wakeTextPlaceholder: 'A place, a face, a feeling, a line...',
+  wakeRefineTitle: 'Add later if it helps',
+  wakeRefineDescription:
+    'Keep wake capture light. Title, tags, and before-sleep context are still here when you need them.',
+  wakeRefineMetaAction: 'Title + date',
+  wakeMetaTitle: 'Title and sleep date',
+  wakeMetaDescription: 'Only add these now if they help anchor the memory.',
+  wakeReadyHint: 'A voice note, a few raw lines, and a waking feeling are enough to save.',
   createHeroTitle: 'Capture before it fades',
   createHeroDescription:
     'Start with voice or a few raw lines.',
@@ -397,6 +426,8 @@ const DREAM_COPY_EN = {
   updateSuccessTitle: 'Updated',
   updateSuccessDescription: 'Your dream was updated locally.',
   audioErrorTitle: 'Audio error',
+  audioSimulatorHint:
+    'Voice capture may be unavailable on the iOS Simulator. Use text here or test recording on a real device.',
 };
 
 const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
@@ -692,9 +723,38 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   createSubtitle:
     'Злови форму сну зараз. Деталі відсортуєш пізніше.',
   quickAddKicker: 'Швидке додавання',
+  quickAddWakeAction: 'Ранковий запис',
+  quickAddWakeHint: 'Відкрий стислий ранковий режим для швидкого голосового або текстового запису.',
+  quickAddVoiceAction: 'Голосова нотатка',
+  quickAddVoiceHint: 'Відкрий редактор у голосовому режимі й швидко почни запис.',
   quickAddTextAction: 'Текстова нотатка',
   quickAddTextHint: 'Відкрий редактор і зафіксуй те, що ще памʼятаєш.',
   quickAddContinueHint: 'Продовж із локально збереженої чернетки з того місця, де зупинився.',
+  wakeEntryKicker: 'Ранковий потік',
+  wakeEntryTitle: 'Поки не вислизнуло',
+  wakeEntryDescription:
+    'Один спокійний екран після нагадування. Натисни в центр, щоб писати, або нижче обери голос.',
+  wakeEntryOrbAction: 'Писати',
+  wakeEntryOrbHint: 'Натисни в центр і почни з сирих рядків.',
+  wakeEntryWriteAction: 'Писати зараз',
+  wakeEntrySpeakAction: 'Говорити замість цього',
+  wakeEntryDraftAction: 'Продовжити чернетку',
+  wakeModeChip: 'Ранковий режим',
+  wakeHeroTitle: 'Злови першу форму',
+  wakeHeroDescription:
+    'Спочатку голос, потім сирі рядки. Назва, теги й контекст можуть зачекати.',
+  wakeVoiceDescription: 'Почни запис зараз або одразу впиши кілька сирих рядків нижче.',
+  wakeCoreTitle: 'Сирий спогад',
+  wakeCoreDescription: 'Залиши лише те, що ще живе. Структуру додаси пізніше.',
+  wakeTextLabel: 'Що ще лишилося?',
+  wakeTextPlaceholder: 'Місце, обличчя, відчуття, один рядок...',
+  wakeRefineTitle: 'Додаси пізніше, якщо треба',
+  wakeRefineDescription:
+    'Ранковий запис має лишатися легким. Назва, теги і контекст перед сном усе ще доступні пізніше.',
+  wakeRefineMetaAction: 'Назва + дата',
+  wakeMetaTitle: 'Назва і дата сну',
+  wakeMetaDescription: 'Додавай це зараз лише якщо воно справді допомагає заякорити спогад.',
+  wakeReadyHint: 'Голосу, кількох сирих рядків і відчуття після пробудження достатньо для збереження.',
   createHeroTitle: 'Запиши, поки не зникло',
   createHeroDescription:
     'Почни з голосу або кількох сирих рядків.',
@@ -785,6 +845,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   updateSuccessTitle: 'Оновлено',
   updateSuccessDescription: 'Сон оновлено локально.',
   audioErrorTitle: 'Помилка аудіо',
+  audioSimulatorHint:
+    'Голосовий запис може не працювати в iOS Simulator. Тут краще тестувати текст, а запис перевіряти на реальному пристрої.',
 };
 
 const DREAM_MOODS_EN: Array<{ label: string; value: Mood }> = [

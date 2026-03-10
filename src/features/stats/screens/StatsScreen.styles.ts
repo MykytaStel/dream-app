@@ -265,11 +265,68 @@ export function createStatsScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 17,
     },
+    reportEntryCard: {
+      ...createSoftTile(theme, {
+        tone: 'alt',
+        radius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+      }),
+      gap: 10,
+      borderColor: theme.colors.accent,
+    },
+    reportEntryEyebrow: {
+      color: theme.colors.accent,
+      fontSize: 10,
+      lineHeight: 13,
+      textTransform: 'uppercase',
+      letterSpacing: 0.6,
+      fontWeight: '700',
+    },
+    reportEntryCopy: {
+      gap: 3,
+    },
+    reportEntryTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+    },
+    reportEntryDescription: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    reportEntryMeta: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+      fontWeight: '600',
+    },
+    reportEntrySignalRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    reportEntrySignalChip: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }),
+    },
+    reportEntrySignalChipText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      lineHeight: 14,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
     sectionCard: {
       gap: 12,
     },
     detailsSubsection: {
-      gap: 8,
+      gap: 6,
     },
     sectionHint: {
       color: theme.colors.textDim,
@@ -362,85 +419,52 @@ export function createStatsScreenStyles(theme: Theme) {
       minHeight: 96,
       justifyContent: 'space-between',
     },
-    coverageGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 10,
+    detailsList: {
+      gap: 8,
     },
-    coverageCard: {
+    detailsListRow: {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 14,
-        paddingVertical: 12,
+        paddingVertical: 10,
         paddingHorizontal: 13,
       }),
-      flexGrow: 1,
-      flexBasis: '47%',
-      minWidth: 144,
-      minHeight: 118,
-      gap: 6,
+      gap: 5,
+    },
+    detailsListHeader: {
+      flexDirection: 'row',
       justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 12,
     },
-    coverageCardWide: {
-      flexBasis: '100%',
+    detailsListCopy: {
+      flex: 1,
+      gap: 2,
     },
-    coverageLabel: {
+    detailsListLabel: {
       color: theme.colors.textDim,
       fontSize: 11,
       lineHeight: 14,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
     },
-    coverageValue: {
-      color: theme.colors.text,
-      fontSize: 20,
-      lineHeight: 24,
-      fontWeight: '700',
-      includeFontPadding: false,
-    },
-    coverageHint: {
+    detailsListHint: {
       color: theme.colors.textDim,
       fontSize: 12,
-      lineHeight: 17,
+      lineHeight: 16,
     },
-    attentionRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 10,
-    },
-    attentionCard: {
-      ...createSoftTile(theme, {
+    detailsListValueChip: {
+      ...createControlPill(theme, {
         tone: 'surface',
-        radius: 14,
-        paddingVertical: 12,
-        paddingHorizontal: 13,
+        paddingHorizontal: 10,
+        paddingVertical: 6,
       }),
-      flexGrow: 1,
-      flexBasis: '47%',
-      minWidth: 144,
-      minHeight: 118,
-      gap: 6,
-      justifyContent: 'space-between',
     },
-    attentionCardWide: {
-      flexBasis: '100%',
-    },
-    attentionValue: {
-      fontSize: 26,
-      lineHeight: 30,
-      fontWeight: '700',
-      includeFontPadding: false,
-    },
-    attentionLabel: {
+    detailsListValue: {
       color: theme.colors.text,
-      fontSize: 12,
+      fontSize: 14,
+      lineHeight: 18,
       fontWeight: '700',
-      lineHeight: 17,
-    },
-    attentionHint: {
-      color: theme.colors.textDim,
-      fontSize: 11,
-      lineHeight: 15,
     },
     patternGroupList: {
       gap: 12,

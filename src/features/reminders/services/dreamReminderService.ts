@@ -9,7 +9,10 @@ import notifee, {
 } from '@notifee/react-native';
 import { Platform } from 'react-native';
 import { kv } from '../../../services/storage/mmkv';
-import { REMINDER_PENDING_OPEN_KEY, REMINDER_SETTINGS_KEY } from '../../../services/storage/keys';
+import {
+  REMINDER_PENDING_WAKE_OPEN_KEY,
+  REMINDER_SETTINGS_KEY,
+} from '../../../services/storage/keys';
 import { getStoredLocale } from '../../../i18n/localeStore';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 
@@ -218,14 +221,14 @@ export function isReminderInitialNotificationTarget(initial: {
   return initial?.notification?.data?.target === REMINDER_TARGET_RECORD;
 }
 
-export function markPendingRecordOpenFromReminder() {
-  kv.set(REMINDER_PENDING_OPEN_KEY, '1');
+export function markPendingWakeOpenFromReminder() {
+  kv.set(REMINDER_PENDING_WAKE_OPEN_KEY, '1');
 }
 
-export function consumePendingRecordOpenFromReminder() {
-  const hasPending = kv.getString(REMINDER_PENDING_OPEN_KEY) === '1';
+export function consumePendingWakeOpenFromReminder() {
+  const hasPending = kv.getString(REMINDER_PENDING_WAKE_OPEN_KEY) === '1';
   if (hasPending) {
-    kv.remove(REMINDER_PENDING_OPEN_KEY);
+    kv.remove(REMINDER_PENDING_WAKE_OPEN_KEY);
   }
   return hasPending;
 }

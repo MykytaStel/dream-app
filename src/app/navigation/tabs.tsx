@@ -7,13 +7,18 @@ import StatsScreen from '../../features/stats/screens/StatsScreen';
 import SettingsScreen from '../../features/settings/screens/SettingsScreen';
 import { TAB_ROUTE_NAMES, type TabParamList } from './routes';
 import { AppTabBar } from './AppTabBar';
+import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 
 const Tab = createBottomTabNavigator<TabParamList>();
+
+function renderAppTabBar(props: BottomTabBarProps) {
+  return <AppTabBar {...props} />;
+}
 
 export default function Tabs() {
   return (
     <Tab.Navigator
-      tabBar={props => <AppTabBar {...props} />}
+      tabBar={renderAppTabBar}
       screenOptions={{
         headerShown: false,
       }}

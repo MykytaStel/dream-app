@@ -45,7 +45,7 @@ describe('achievements', () => {
     expect(summary).toEqual({
       unlockedCount: 2,
       totalCount: 4,
-      highlightedId: 'first-voice-dream',
+      highlightedId: 'three-day-streak',
     });
   });
 });

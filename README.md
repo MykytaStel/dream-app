@@ -23,7 +23,7 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.2.3`
+Current release target: `0.2.4`
 
 This release should move the app out of the generic "dream journal with AI"
 bucket and into a more distinct memory-first product focused on:
@@ -56,7 +56,7 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.2.3_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.2.3_PLAN.md)
+[docs/RELEASE_0.2.4_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.2.4_PLAN.md)
 for the active release target, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.

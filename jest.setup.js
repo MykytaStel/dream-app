@@ -47,9 +47,57 @@ jest.mock('@notifee/react-native', () => {
 });
 
 jest.mock('react-native-reanimated', () => {
-  const Reanimated = require('react-native-reanimated/mock');
-  Reanimated.default.call = () => {};
-  return Reanimated;
+  const React = require('react');
+  const { View, ScrollView, Text } = require('react-native');
+
+  const createTransitionBuilder = () => {
+    const builder = {
+      duration: () => builder,
+      delay: () => builder,
+      springify: () => builder,
+      damping: () => builder,
+      stiffness: () => builder,
+    };
+
+    return builder;
+  };
+
+  const AnimatedView = React.forwardRef((props, ref) =>
+    React.createElement(View, { ...props, ref }, props.children),
+  );
+  const AnimatedScrollView = React.forwardRef((props, ref) =>
+    React.createElement(ScrollView, { ...props, ref }, props.children),
+  );
+  const AnimatedText = React.forwardRef((props, ref) =>
+    React.createElement(Text, { ...props, ref }, props.children),
+  );
+
+  return {
+    __esModule: true,
+    default: {
+      View: AnimatedView,
+      ScrollView: AnimatedScrollView,
+      Text: AnimatedText,
+      createAnimatedComponent: Component => Component,
+      call: () => {},
+    },
+    View: AnimatedView,
+    ScrollView: AnimatedScrollView,
+    Text: AnimatedText,
+    createAnimatedComponent: Component => Component,
+    useSharedValue: value => ({ value }),
+    useAnimatedStyle: updater => (typeof updater === 'function' ? updater() : {}),
+    withRepeat: value => value,
+    withSequence: (...values) => values[values.length - 1],
+    withTiming: value => value,
+    LinearTransition: createTransitionBuilder(),
+    FadeInDown: createTransitionBuilder(),
+    Easing: {
+      linear: 'linear',
+      quad: 'quad',
+      inOut: value => value,
+    },
+  };
 });
 
 jest.mock('react-native-mmkv', () => {
@@ -97,5 +145,13 @@ jest.mock('react-native-fs', () => ({
     promise: Promise.resolve({ statusCode: 200 }),
   })),
 }));
+
+jest.mock('react-native-html-to-pdf', () => ({
+  generatePDF: jest.fn(async () => ({
+    filePath: '/documents/exports/mock.pdf',
+  })),
+}));
+
+jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons');
 
 jest.mock('react-native/src/private/animated/NativeAnimatedHelper');

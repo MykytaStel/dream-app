@@ -8,8 +8,19 @@ jest.mock('@react-navigation/native', () => ({
   useNavigation: jest.fn(),
 }));
 
+jest.mock('../src/i18n/I18nProvider', () => ({
+  useI18n: jest.fn(() => ({
+    locale: 'en',
+    setLocale: jest.fn(),
+  })),
+}));
+
 jest.mock('../src/features/dreams/components/DreamComposer', () => ({
   DreamComposer: jest.fn((_props: Record<string, unknown>) => null),
+}));
+
+jest.mock('../src/features/dreams/components/CaptureSavedSheet', () => ({
+  CaptureSavedSheet: jest.fn(() => null),
 }));
 
 const mockedUseRoute = useRoute as jest.Mock;

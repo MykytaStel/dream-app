@@ -2,10 +2,10 @@
 
 ## Goal
 
-Start backend work without breaking the current local-first `0.2.2` loop.
+Start backend work without breaking the current local-first `0.2.4` loop.
 
 This phase is not a cloud release.
-It is backend preparation on top of the `0.2.2` product shape.
+It is backend preparation on top of the `0.2.4` product shape.
 
 ## Product rule
 
@@ -31,7 +31,7 @@ It is backend preparation on top of the `0.2.2` product shape.
 
 ## Recommended release split
 
-### 0.2.2
+### 0.2.4
 
 Finish the local memory-first product:
 
@@ -40,6 +40,7 @@ Finish the local memory-first product:
 - Memory framing
 - related dreams / threads lite
 - export / restore
+- font/theme stabilization
 
 ### 0.2.x
 

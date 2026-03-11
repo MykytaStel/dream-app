@@ -163,7 +163,7 @@ describe('homeTimeline', () => {
         },
         new Date('2026-03-06T12:00:00.000Z'),
       ).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5']);
 
     expect(
       applyHomeTimelineFilters(
@@ -174,7 +174,7 @@ describe('homeTimeline', () => {
         },
         new Date('2026-03-06T12:00:00.000Z'),
       ).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5', 'dream-6']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5', 'dream-6']);
 
     expect(
       applyHomeTimelineFilters(
@@ -185,20 +185,20 @@ describe('homeTimeline', () => {
         },
         new Date('2026-03-06T12:00:00.000Z'),
       ).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5', 'dream-6', 'dream-7']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5', 'dream-6', 'dream-7']);
   });
 
   test('sorts timeline newest first by default and can switch to oldest first', () => {
     expect(
       applyHomeTimelineFilters(dreams, DEFAULT_HOME_TIMELINE_FILTERS).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-3', 'dream-4', 'dream-5']);
+    ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5']);
 
     expect(
       applyHomeTimelineFilters(dreams, {
         ...DEFAULT_HOME_TIMELINE_FILTERS,
         sortOrder: 'oldest',
       }).map(dream => dream.id),
-    ).toEqual(['dream-5', 'dream-4', 'dream-3', 'dream-2', 'dream-1']);
+    ).toEqual(['dream-5', 'dream-4', 'dream-2', 'dream-1']);
   });
 
   test('boosts more relevant search matches before chronological order', () => {

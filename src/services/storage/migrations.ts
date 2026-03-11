@@ -1,6 +1,7 @@
 import { AppLocale } from '../../i18n/types';
 import {
   Dream,
+  DreamSyncStatus,
   PreSleepEmotion,
   SleepContext,
   WakeEmotion,
@@ -165,6 +166,10 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
       typeof record.archivedAt === 'number' && Number.isFinite(record.archivedAt)
         ? record.archivedAt
         : undefined,
+    updatedAt:
+      typeof record.updatedAt === 'number' && Number.isFinite(record.updatedAt)
+        ? record.updatedAt
+        : undefined,
     starredAt:
       typeof record.starredAt === 'number' && Number.isFinite(record.starredAt)
         ? record.starredAt
@@ -177,6 +182,12 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
         ? record.audioUri
         : typeof record.audioPath === 'string'
           ? record.audioPath
+          : undefined,
+    audioRemotePath:
+      typeof record.audioRemotePath === 'string'
+        ? record.audioRemotePath
+        : typeof record.audioStoragePath === 'string'
+          ? record.audioStoragePath
           : undefined,
     transcript: typeof record.transcript === 'string' ? record.transcript : undefined,
     transcriptStatus:
@@ -194,6 +205,18 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
       typeof record.transcriptUpdatedAt === 'number' && Number.isFinite(record.transcriptUpdatedAt)
         ? record.transcriptUpdatedAt
         : undefined,
+    syncStatus:
+      record.syncStatus === 'local' ||
+      record.syncStatus === 'syncing' ||
+      record.syncStatus === 'synced' ||
+      record.syncStatus === 'error'
+        ? (record.syncStatus as DreamSyncStatus)
+        : undefined,
+    lastSyncedAt:
+      typeof record.lastSyncedAt === 'number' && Number.isFinite(record.lastSyncedAt)
+        ? record.lastSyncedAt
+        : undefined,
+    syncError: typeof record.syncError === 'string' ? record.syncError : undefined,
     analysis: analysisRecord
         ? {
             provider: analysisRecord.provider === 'openai' ? 'openai' : 'manual',
@@ -427,6 +450,30 @@ function migrateDreamsToV7() {
   }
 }
 
+function migrateDreamsToV8() {
+  const raw = kv.getString(DREAMS_STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    if (!Array.isArray(parsed)) {
+      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+      return;
+    }
+
+    const migrated = parsed
+      .map(coerceLegacyDream)
+      .filter((dream): dream is Dream => Boolean(dream))
+      .map(sanitizeDream);
+
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
+  } catch {
+    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+  }
+}
+
 function migrateAnalysisSettingsToV5() {
   const raw = kv.getString(DREAM_ANALYSIS_SETTINGS_KEY);
   if (!raw) {
@@ -485,6 +532,11 @@ export function runStorageMigrations() {
   if (nextVersion < 7) {
     migrateDreamsToV7();
     nextVersion = 7;
+  }
+
+  if (nextVersion < 8) {
+    migrateDreamsToV8();
+    nextVersion = 8;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

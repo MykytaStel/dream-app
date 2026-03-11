@@ -1,14 +1,22 @@
 import { kv } from '../src/services/storage/mmkv';
 import {
+  getDreamDeletionTombstone,
+  listDreamDeletionTombstones,
+} from '../src/features/dreams/repository/dreamDeletionTombstonesRepository';
+import {
   archiveDream,
   clearDreamTranscript,
   deleteDream,
   getDream,
   listDreams,
+  markDreamSynced,
+  markDreamSyncError,
+  markDreamSyncing,
   saveDreamTranscriptEdit,
   saveDream,
   starDream,
   updateDreamTranscriptState,
+  upsertDreamFromSyncBundle,
   unstarDream,
   unarchiveDream,
 } from '../src/features/dreams/repository/dreamsRepository';
@@ -92,6 +100,10 @@ describe('dream repository flows', () => {
     deleteDream('b');
     all = listDreams();
     expect(all.map(dream => dream.id)).toEqual(['a']);
+    expect(getDreamDeletionTombstone('b')).toMatchObject({
+      dreamId: 'b',
+      syncStatus: 'local',
+    });
   });
 
   test('supports starring and unstarring dreams', () => {
@@ -182,6 +194,7 @@ describe('dream repository flows', () => {
       transcript: 'Transcript edited by hand',
       transcriptStatus: 'ready',
       transcriptSource: 'edited',
+      syncStatus: 'local',
     });
   });
 
@@ -239,6 +252,134 @@ describe('dream repository flows', () => {
       transcriptSource: undefined,
       transcriptUpdatedAt: undefined,
     });
+  });
+
+  test('tracks sync lifecycle metadata without losing remote bookkeeping', () => {
+    saveDream({
+      id: 'sync-dream',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      text: 'Sync me',
+      tags: [],
+    });
+
+    expect(getDream('sync-dream')).toMatchObject({
+      updatedAt: 1710000000000,
+      syncStatus: 'local',
+    });
+
+    markDreamSyncing('sync-dream');
+    expect(getDream('sync-dream')?.syncStatus).toBe('syncing');
+
+    markDreamSynced('sync-dream', {
+      audioRemotePath: 'user-1/sync-dream/audio.m4a',
+      syncedAt: 1710000005000,
+    });
+    expect(getDream('sync-dream')).toMatchObject({
+      syncStatus: 'synced',
+      audioRemotePath: 'user-1/sync-dream/audio.m4a',
+      lastSyncedAt: 1710000005000,
+    });
+
+    saveDream({
+      id: 'sync-dream',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      text: 'Sync me again',
+      tags: [],
+    });
+    expect(getDream('sync-dream')).toMatchObject({
+      text: 'Sync me again',
+      syncStatus: 'local',
+      audioRemotePath: 'user-1/sync-dream/audio.m4a',
+      lastSyncedAt: 1710000005000,
+    });
+
+    markDreamSyncError('sync-dream', 'upload failed');
+    expect(getDream('sync-dream')).toMatchObject({
+      syncStatus: 'error',
+      syncError: 'upload failed',
+    });
+  });
+
+  test('can hydrate repository state from a remote sync bundle', () => {
+    const result = upsertDreamFromSyncBundle({
+      dream: {
+        id: 'remote-1',
+        user_id: 'user-1',
+        created_at: '2026-03-06T08:00:00.000Z',
+        updated_at: '2026-03-06T09:30:00.000Z',
+        sleep_date: '2026-03-06',
+        title: 'Remote dream',
+        raw_text: 'Cloud copy',
+        audio_storage_path: 'user-1/remote-1/audio.m4a',
+        transcript: null,
+        transcript_status: null,
+        transcript_source: null,
+        transcript_updated_at: null,
+        mood: 'positive',
+        lucidity: 2,
+        archived_at: null,
+        starred_at: null,
+        analysis_provider: null,
+        analysis_status: null,
+        analysis_summary: null,
+        analysis_themes: [],
+        analysis_generated_at: null,
+        analysis_error_message: null,
+      },
+      tags: [{ dream_id: 'remote-1', tag: 'ocean', position: 0 }],
+      wakeEmotions: [{ dream_id: 'remote-1', emotion: 'curious', position: 0 }],
+      preSleepEmotions: [
+        { dream_id: 'remote-1', emotion: 'hopeful', position: 0 },
+      ],
+      sleepContext: {
+        dream_id: 'remote-1',
+        stress_level: 1,
+        alcohol_taken: false,
+        caffeine_late: true,
+        medications: null,
+        important_events: 'Late planning',
+        health_notes: null,
+      },
+    });
+
+    expect(result).toMatchObject({
+      id: 'remote-1',
+      syncStatus: 'synced',
+      audioRemotePath: 'user-1/remote-1/audio.m4a',
+      wakeEmotions: ['curious'],
+      sleepContext: {
+        preSleepEmotions: ['hopeful'],
+        importantEvents: 'Late planning',
+      },
+    });
+    expect(getDreamDeletionTombstone('remote-1')).toBeUndefined();
+  });
+
+  test('saving a dream with the same id clears a pending deletion tombstone', () => {
+    saveDream({
+      id: 'restore-me',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      text: 'Before delete',
+      tags: [],
+    });
+
+    deleteDream('restore-me');
+    expect(listDreamDeletionTombstones()).toHaveLength(1);
+
+    saveDream({
+      id: 'restore-me',
+      createdAt: 1710000000000,
+      updatedAt: 1710001000000,
+      sleepDate: '2026-03-06',
+      text: 'Restored with same id',
+      tags: [],
+    });
+
+    expect(getDreamDeletionTombstone('restore-me')).toBeUndefined();
+    expect(getDream('restore-me')?.text).toBe('Restored with same id');
   });
 
   test('rejects invalid captures before writing to storage', () => {

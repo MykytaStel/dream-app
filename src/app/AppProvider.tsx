@@ -4,16 +4,18 @@ import { theme } from '../theme/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ensurePreviewDream } from '../features/dreams/repository/dreamsRepository';
-import {
-  syncDreamReminderState,
-} from '../features/reminders/services/dreamReminderService';
+import { syncDreamReminderState } from '../features/reminders/services/dreamReminderService';
 import { observability } from '../services/observability';
 import { OBS_EVENTS } from '../services/observability/events';
 import { I18nProvider } from '../i18n/I18nProvider';
+import { startCloudAuthSessionSync } from '../services/auth/cloudAuth';
+import { maybeRunCloudSyncOnLaunch } from '../services/cloud/sync';
 import { runStorageMigrations } from '../services/storage/migrations';
 
 const qc = new QueryClient();
-export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) => {
+export const AppProviders: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
   React.useEffect(() => {
     try {
       runStorageMigrations();
@@ -24,7 +26,9 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) =>
     ensurePreviewDream();
     observability.trackEvent(OBS_EVENTS.AppOpened);
     syncDreamReminderState().catch(error => {
-      observability.captureError(error, { event: 'schedule_dream_reminder_on_launch' });
+      observability.captureError(error, {
+        event: 'schedule_dream_reminder_on_launch',
+      });
     });
   }, []);
 
@@ -34,7 +38,8 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) =>
       getGlobalHandler?: () => GlobalErrorHandler;
       setGlobalHandler?: (handler: GlobalErrorHandler) => void;
     };
-    const maybeErrorUtils = (globalThis as { ErrorUtils?: ErrorUtilsShape }).ErrorUtils;
+    const maybeErrorUtils = (globalThis as { ErrorUtils?: ErrorUtilsShape })
+      .ErrorUtils;
     const previous = maybeErrorUtils?.getGlobalHandler?.();
 
     if (!maybeErrorUtils?.setGlobalHandler || !previous) {
@@ -52,6 +57,24 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({ children }) =>
     return () => {
       maybeErrorUtils.setGlobalHandler?.(previous);
     };
+  }, []);
+
+  React.useEffect(() => {
+    return startCloudAuthSessionSync({
+      onError: error => {
+        observability.captureError(error, {
+          event: 'cloud_auth_session_sync_failed',
+        });
+      },
+    });
+  }, []);
+
+  React.useEffect(() => {
+    maybeRunCloudSyncOnLaunch().catch(error => {
+      observability.captureError(error, {
+        event: 'cloud_sync_launch_failed',
+      });
+    });
   }, []);
 
   return (

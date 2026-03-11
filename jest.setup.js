@@ -27,7 +27,9 @@ jest.mock('@notifee/react-native', () => {
     TriggerType: {
       TIMESTAMP: 'TIMESTAMP',
     },
-    createTriggerNotification: jest.fn(async notification => notification?.id || 'trigger-id'),
+    createTriggerNotification: jest.fn(
+      async notification => notification?.id || 'trigger-id',
+    ),
     createChannel: jest.fn(async channel => channel?.id || 'channel-id'),
     cancelNotification: jest.fn(async () => {}),
     requestPermission: jest.fn(async () => ({
@@ -86,7 +88,8 @@ jest.mock('react-native-reanimated', () => {
     Text: AnimatedText,
     createAnimatedComponent: Component => Component,
     useSharedValue: value => ({ value }),
-    useAnimatedStyle: updater => (typeof updater === 'function' ? updater() : {}),
+    useAnimatedStyle: updater =>
+      typeof updater === 'function' ? updater() : {},
     withRepeat: value => value,
     withSequence: (...values) => values[values.length - 1],
     withTiming: value => value,
@@ -137,6 +140,7 @@ jest.mock('react-native-fs', () => ({
   DocumentDirectoryPath: '/documents',
   ExternalDirectoryPath: '/external',
   mkdir: jest.fn().mockResolvedValue(undefined),
+  readFile: jest.fn().mockResolvedValue(''),
   writeFile: jest.fn().mockResolvedValue(undefined),
   exists: jest.fn().mockResolvedValue(false),
   unlink: jest.fn().mockResolvedValue(undefined),
@@ -145,6 +149,23 @@ jest.mock('react-native-fs', () => ({
     promise: Promise.resolve({ statusCode: 200 }),
   })),
 }));
+
+jest.mock('@react-native-async-storage/async-storage', () => {
+  const store = new Map();
+
+  return {
+    setItem: jest.fn(async (key, value) => {
+      store.set(key, String(value));
+    }),
+    getItem: jest.fn(async key => store.get(key) ?? null),
+    removeItem: jest.fn(async key => {
+      store.delete(key);
+    }),
+    clear: jest.fn(async () => {
+      store.clear();
+    }),
+  };
+});
 
 jest.mock('react-native-html-to-pdf', () => ({
   generatePDF: jest.fn(async () => ({

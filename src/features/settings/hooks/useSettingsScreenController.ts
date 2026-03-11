@@ -3,7 +3,30 @@ import { Alert, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { APP_VERSION_LABEL } from '../../../config/app';
+import {
+  clearCloudRuntimeConfig,
+  getCloudRuntimeConfigDraft,
+  isCloudRuntimeConfigured,
+  saveCloudRuntimeConfig,
+} from '../../../config/cloud';
 import { type AppLocale } from '../../../i18n/types';
+import { resetSupabaseClient } from '../../../services/api/supabase/client';
+import {
+  upgradeCloudAnonymousSession,
+  signInToCloudWithPassword,
+  signInToCloudAnonymously,
+  signOutFromCloud,
+} from '../../../services/auth/cloudAuth';
+import {
+  getCloudSyncSnapshot,
+  runCloudSync,
+} from '../../../services/cloud/sync';
+import {
+  clearCloudSession,
+  getCloudSession,
+  getCloudSyncEnabled,
+  setCloudSyncEnabled,
+} from '../../../services/auth/session';
 import {
   exportDreamArchivePdf,
   exportDreamDataSnapshot,
@@ -35,6 +58,7 @@ import {
   countSeedDreams,
   seedDreamSamples,
 } from '../../dreams/services/dreamSeedService';
+import { listDreams } from '../../dreams/repository/dreamsRepository';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import {
   getDreamAnalysisSettings,
@@ -43,6 +67,7 @@ import {
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import {
   buildAnalysisHighlights,
+  buildCloudHighlights,
   buildExportHighlights,
   buildPrivacyHighlights,
   buildRestorePreviewItems,
@@ -51,6 +76,7 @@ import {
   formatBackupListMeta,
   formatBackupListTitle,
   formatBackupTimestamp,
+  formatCloudSyncMeta,
   formatDownloadProgress,
   formatReminderTime,
   getPickerLocale,
@@ -74,29 +100,41 @@ export function useSettingsScreenController({
   setLocale,
   copy,
 }: UseSettingsScreenControllerArgs) {
-  const [reminderSettings, setReminderSettings] = React.useState<DreamReminderSettings>(() =>
-    getDreamReminderSettings(),
-  );
-  const [permissionGranted, setPermissionGranted] = React.useState<boolean>(true);
+  const [reminderSettings, setReminderSettings] =
+    React.useState<DreamReminderSettings>(() => getDreamReminderSettings());
+  const [permissionGranted, setPermissionGranted] =
+    React.useState<boolean>(true);
   const [isApplyingReminder, setIsApplyingReminder] = React.useState(false);
-  const [exportingFormat, setExportingFormat] = React.useState<ExportFormat | null>(null);
+  const [exportingFormat, setExportingFormat] =
+    React.useState<ExportFormat | null>(null);
   const [isDownloadingTranscriptionModel, setIsDownloadingTranscriptionModel] =
     React.useState(false);
-  const [isDeletingTranscriptionModel, setIsDeletingTranscriptionModel] = React.useState(false);
-  const [lastExportPath, setLastExportPath] = React.useState<string | null>(null);
-  const [localExportFiles, setLocalExportFiles] = React.useState<LocalDreamExportFile[]>([]);
-  const [isLoadingLocalExports, setIsLoadingLocalExports] = React.useState(false);
-  const [selectedImportPreview, setSelectedImportPreview] =
-    React.useState<DreamImportPreview | null>(null);
-  const [selectedImportPath, setSelectedImportPath] = React.useState<string | null>(null);
-  const [importMode, setImportMode] = React.useState<DreamImportMode>('replace');
-  const [showRestorePreview, setShowRestorePreview] = React.useState(false);
-  const [importPreviewError, setImportPreviewError] = React.useState<string | null>(null);
-  const [isLoadingImportPreview, setIsLoadingImportPreview] = React.useState(false);
-  const [isRestoringImport, setIsRestoringImport] = React.useState(false);
-  const [lastRestorePreview, setLastRestorePreview] = React.useState<DreamImportPreview | null>(
+  const [isDeletingTranscriptionModel, setIsDeletingTranscriptionModel] =
+    React.useState(false);
+  const [lastExportPath, setLastExportPath] = React.useState<string | null>(
     null,
   );
+  const [localExportFiles, setLocalExportFiles] = React.useState<
+    LocalDreamExportFile[]
+  >([]);
+  const [isLoadingLocalExports, setIsLoadingLocalExports] =
+    React.useState(false);
+  const [selectedImportPreview, setSelectedImportPreview] =
+    React.useState<DreamImportPreview | null>(null);
+  const [selectedImportPath, setSelectedImportPath] = React.useState<
+    string | null
+  >(null);
+  const [importMode, setImportMode] =
+    React.useState<DreamImportMode>('replace');
+  const [showRestorePreview, setShowRestorePreview] = React.useState(false);
+  const [importPreviewError, setImportPreviewError] = React.useState<
+    string | null
+  >(null);
+  const [isLoadingImportPreview, setIsLoadingImportPreview] =
+    React.useState(false);
+  const [isRestoringImport, setIsRestoringImport] = React.useState(false);
+  const [lastRestorePreview, setLastRestorePreview] =
+    React.useState<DreamImportPreview | null>(null);
   const [transcriptionModelStatus, setTranscriptionModelStatus] =
     React.useState<DreamTranscriptionModelStatus | null>(null);
   const [transcriptionDownloadProgress, setTranscriptionDownloadProgress] =
@@ -104,12 +142,54 @@ export function useSettingsScreenController({
   const [showIosTimePicker, setShowIosTimePicker] = React.useState(false);
   const [seedDreamCount, setSeedDreamCount] = React.useState(0);
   const [isUpdatingSeedDreams, setIsUpdatingSeedDreams] = React.useState(false);
-  const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
-    getDreamAnalysisSettings(),
+  const [analysisSettings, setAnalysisSettings] =
+    React.useState<DreamAnalysisSettings>(() => getDreamAnalysisSettings());
+  const [cloudConfigDraft, setCloudConfigDraft] = React.useState(() =>
+    getCloudRuntimeConfigDraft(),
   );
+  const [cloudSession, setCloudSession] = React.useState(() =>
+    getCloudSession(),
+  );
+  const [cloudIdentityEmail, setCloudIdentityEmail] = React.useState('');
+  const [cloudIdentityPassword, setCloudIdentityPassword] =
+    React.useState('');
+  const [cloudSyncEnabled, setCloudSyncEnabledState] = React.useState(() =>
+    getCloudSyncEnabled(),
+  );
+  const [cloudDreams, setCloudDreams] = React.useState(() => listDreams());
+  const [cloudSyncSnapshot, setCloudSyncSnapshot] = React.useState(() =>
+    getCloudSyncSnapshot(),
+  );
+  const [isConnectingCloud, setIsConnectingCloud] = React.useState(false);
+  const [isSigningInCloudAccount, setIsSigningInCloudAccount] =
+    React.useState(false);
+  const [isUpgradingCloudAccount, setIsUpgradingCloudAccount] =
+    React.useState(false);
+  const [isDisconnectingCloud, setIsDisconnectingCloud] = React.useState(false);
+  const [isSyncingCloud, setIsSyncingCloud] = React.useState(false);
+  const cloudConfigured = isCloudRuntimeConfigured();
 
   const footerMeta = React.useMemo(() => getSettingsFooterMeta(copy), [copy]);
-  const privacyHighlights = React.useMemo(() => buildPrivacyHighlights(copy), [copy]);
+  const privacyHighlights = React.useMemo(
+    () => buildPrivacyHighlights(copy),
+    [copy],
+  );
+  const cloudHighlights = React.useMemo(
+    () =>
+      buildCloudHighlights(
+        copy,
+        cloudSession,
+        cloudSyncEnabled,
+        cloudDreams,
+        cloudConfigured,
+        __DEV__,
+      ),
+    [cloudConfigured, cloudDreams, cloudSession, cloudSyncEnabled, copy],
+  );
+  const cloudSyncMeta = React.useMemo(
+    () => formatCloudSyncMeta(copy, cloudSyncSnapshot, locale, __DEV__),
+    [cloudSyncSnapshot, copy, locale],
+  );
   const analysisHighlights = React.useMemo(
     () => buildAnalysisHighlights(copy, analysisSettings),
     [analysisSettings, copy],
@@ -118,7 +198,10 @@ export function useSettingsScreenController({
     () => buildTranscriptionHighlights(copy, transcriptionModelStatus),
     [copy, transcriptionModelStatus],
   );
-  const exportHighlights = React.useMemo(() => buildExportHighlights(copy), [copy]);
+  const exportHighlights = React.useMemo(
+    () => buildExportHighlights(copy),
+    [copy],
+  );
   const reminderTime = React.useMemo(
     () => formatReminderTime(reminderSettings, locale),
     [locale, reminderSettings],
@@ -134,7 +217,12 @@ export function useSettingsScreenController({
   const restorePreviewMeta = React.useMemo(
     () =>
       selectedImportPreview
-        ? `${copy.restoreResultCountLabel} ${selectedImportPreview.diff.resultingDreamCount} • ${formatBackupTimestamp(selectedImportPreview.exportedAt, locale)}`
+        ? `${copy.restoreResultCountLabel} ${
+            selectedImportPreview.diff.resultingDreamCount
+          } • ${formatBackupTimestamp(
+            selectedImportPreview.exportedAt,
+            locale,
+          )}`
         : null,
     [copy, locale, selectedImportPreview],
   );
@@ -147,9 +235,19 @@ export function useSettingsScreenController({
   );
   const restoreSuccessItems = React.useMemo(
     () =>
-      lastRestorePreview ? buildRestoreSuccessItems(copy, lastRestorePreview) : [],
+      lastRestorePreview
+        ? buildRestoreSuccessItems(copy, lastRestorePreview)
+        : [],
     [copy, lastRestorePreview],
   );
+
+  const refreshCloudState = React.useCallback(() => {
+    setCloudConfigDraft(getCloudRuntimeConfigDraft());
+    setCloudSession(getCloudSession());
+    setCloudSyncEnabledState(getCloudSyncEnabled());
+    setCloudDreams(listDreams());
+    setCloudSyncSnapshot(getCloudSyncSnapshot());
+  }, []);
 
   const refreshLocalExports = React.useCallback(async () => {
     setIsLoadingLocalExports(true);
@@ -165,7 +263,7 @@ export function useSettingsScreenController({
 
         return files.some(file => file.filePath === currentPath)
           ? currentPath
-          : (files[0]?.filePath ?? null);
+          : files[0]?.filePath ?? null;
       });
     } finally {
       setIsLoadingLocalExports(false);
@@ -175,18 +273,22 @@ export function useSettingsScreenController({
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
     setAnalysisSettings(getDreamAnalysisSettings());
+    refreshCloudState();
     setPermissionGranted(await getDreamReminderPermissionGranted());
     setTranscriptionModelStatus(await getDreamTranscriptionModelStatus());
     if (__DEV__) {
       setSeedDreamCount(countSeedDreams());
     }
-  }, []);
+  }, [refreshCloudState]);
 
-  const saveNextAnalysisSettings = React.useCallback((next: DreamAnalysisSettings) => {
-    const saved = saveDreamAnalysisSettings(next);
-    setAnalysisSettings(saved);
-    return saved;
-  }, []);
+  const saveNextAnalysisSettings = React.useCallback(
+    (next: DreamAnalysisSettings) => {
+      const saved = saveDreamAnalysisSettings(next);
+      setAnalysisSettings(saved);
+      return saved;
+    },
+    [],
+  );
 
   useFocusEffect(
     React.useCallback(() => {
@@ -215,7 +317,9 @@ export function useSettingsScreenController({
       .catch(error => {
         if (!cancelled) {
           setSelectedImportPreview(null);
-          setImportPreviewError(error instanceof Error ? error.message : String(error));
+          setImportPreviewError(
+            error instanceof Error ? error.message : String(error),
+          );
         }
       })
       .finally(() => {
@@ -306,7 +410,9 @@ export function useSettingsScreenController({
         return;
       }
 
-      onSelectTime(selectedDate.getHours(), selectedDate.getMinutes()).catch(() => undefined);
+      onSelectTime(selectedDate.getHours(), selectedDate.getMinutes()).catch(
+        () => undefined,
+      );
     },
     [onSelectTime],
   );
@@ -319,7 +425,9 @@ export function useSettingsScreenController({
     const currentDate = getReminderDate(reminderSettings);
 
     if (Platform.OS === 'android') {
-      const { DateTimePickerAndroid } = require('@react-native-community/datetimepicker');
+      const {
+        DateTimePickerAndroid,
+      } = require('@react-native-community/datetimepicker');
       DateTimePickerAndroid.open({
         value: currentDate,
         mode: 'time',
@@ -338,7 +446,9 @@ export function useSettingsScreenController({
       setLocale(nextLocale);
 
       try {
-        const appliedSettings = await applyDreamReminderSettings(reminderSettings);
+        const appliedSettings = await applyDreamReminderSettings(
+          reminderSettings,
+        );
         setReminderSettings(appliedSettings);
         setPermissionGranted(await getDreamReminderPermissionGranted());
       } catch (error) {
@@ -348,6 +458,201 @@ export function useSettingsScreenController({
     [copy.reminderSaveErrorTitle, reminderSettings, setLocale],
   );
 
+  const onToggleCloudSync = React.useCallback(() => {
+    if (cloudSession.status !== 'signed-in') {
+      return;
+    }
+
+    const nextValue = setCloudSyncEnabled(!cloudSyncEnabled);
+    setCloudSyncEnabledState(nextValue);
+  }, [cloudSession.status, cloudSyncEnabled]);
+
+  const onSaveCloudConfig = React.useCallback(() => {
+    const savedConfig = saveCloudRuntimeConfig(cloudConfigDraft);
+    resetSupabaseClient();
+    refreshCloudState();
+
+    if (!savedConfig) {
+      Alert.alert(
+        copy.cloudConfigErrorTitle,
+        copy.cloudConfigMissingDescription,
+      );
+    }
+  }, [
+    cloudConfigDraft,
+    copy.cloudConfigErrorTitle,
+    copy.cloudConfigMissingDescription,
+    refreshCloudState,
+  ]);
+
+  const onClearCloudConfig = React.useCallback(() => {
+    clearCloudRuntimeConfig();
+    resetSupabaseClient();
+    clearCloudSession();
+    refreshCloudState();
+  }, [refreshCloudState]);
+
+  const getCloudCredentials = React.useCallback(() => {
+    const email = cloudIdentityEmail.trim();
+    const password = cloudIdentityPassword;
+
+    if (!email || !password) {
+      Alert.alert(
+        copy.cloudCredentialsMissingTitle,
+        copy.cloudCredentialsMissingDescription,
+      );
+      return null;
+    }
+
+    return { email, password };
+  }, [
+    cloudIdentityEmail,
+    cloudIdentityPassword,
+    copy.cloudCredentialsMissingDescription,
+    copy.cloudCredentialsMissingTitle,
+  ]);
+
+  const onConnectCloud = React.useCallback(async () => {
+    const savedConfig = saveCloudRuntimeConfig(cloudConfigDraft);
+    resetSupabaseClient();
+    refreshCloudState();
+
+    if (!savedConfig) {
+      Alert.alert(
+        copy.cloudConfigMissingTitle,
+        copy.cloudConfigMissingDescription,
+      );
+      return;
+    }
+
+    setIsConnectingCloud(true);
+
+    try {
+      await signInToCloudAnonymously();
+      refreshCloudState();
+    } catch (error) {
+      Alert.alert(
+        copy.cloudConnectErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsConnectingCloud(false);
+    }
+  }, [
+    cloudConfigDraft,
+    copy.cloudConfigMissingDescription,
+    copy.cloudConfigMissingTitle,
+    copy.cloudConnectErrorTitle,
+    refreshCloudState,
+  ]);
+
+  const onSignInCloudAccount = React.useCallback(async () => {
+    const savedConfig = saveCloudRuntimeConfig(cloudConfigDraft);
+    resetSupabaseClient();
+    refreshCloudState();
+
+    if (!savedConfig) {
+      Alert.alert(
+        copy.cloudConfigMissingTitle,
+        copy.cloudConfigMissingDescription,
+      );
+      return;
+    }
+
+    const credentials = getCloudCredentials();
+    if (!credentials) {
+      return;
+    }
+
+    setIsSigningInCloudAccount(true);
+
+    try {
+      await signInToCloudWithPassword(credentials);
+      setCloudIdentityPassword('');
+      refreshCloudState();
+    } catch (error) {
+      Alert.alert(
+        copy.cloudAccountSignInErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsSigningInCloudAccount(false);
+    }
+  }, [
+    cloudConfigDraft,
+    copy.cloudAccountSignInErrorTitle,
+    copy.cloudConfigMissingDescription,
+    copy.cloudConfigMissingTitle,
+    getCloudCredentials,
+    refreshCloudState,
+  ]);
+
+  const onUpgradeCloudAccount = React.useCallback(async () => {
+    const credentials = getCloudCredentials();
+    if (!credentials) {
+      return;
+    }
+
+    setIsUpgradingCloudAccount(true);
+
+    try {
+      await upgradeCloudAnonymousSession(credentials);
+      setCloudIdentityPassword('');
+      refreshCloudState();
+    } catch (error) {
+      Alert.alert(
+        copy.cloudAccountUpgradeErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsUpgradingCloudAccount(false);
+    }
+  }, [
+    copy.cloudAccountUpgradeErrorTitle,
+    getCloudCredentials,
+    refreshCloudState,
+  ]);
+
+  const onDisconnectCloud = React.useCallback(async () => {
+    setIsDisconnectingCloud(true);
+
+    try {
+      await signOutFromCloud();
+      refreshCloudState();
+    } catch (error) {
+      Alert.alert(
+        copy.cloudDisconnectErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsDisconnectingCloud(false);
+    }
+  }, [copy.cloudDisconnectErrorTitle, refreshCloudState]);
+
+  const onRunCloudSync = React.useCallback(async () => {
+    if (cloudSession.status !== 'signed-in') {
+      return;
+    }
+
+    setIsSyncingCloud(true);
+
+    try {
+      const result = await runCloudSync({ reason: 'manual' });
+      refreshCloudState();
+      if (result.status === 'error' && result.errorMessage) {
+        Alert.alert(copy.cloudSyncManualErrorTitle, result.errorMessage);
+      }
+    } catch (error) {
+      refreshCloudState();
+      Alert.alert(
+        copy.cloudSyncManualErrorTitle,
+        error instanceof Error ? error.message : String(error),
+      );
+    } finally {
+      setIsSyncingCloud(false);
+    }
+  }, [cloudSession.status, copy.cloudSyncManualErrorTitle, refreshCloudState]);
+
   const onExportData = React.useCallback(async () => {
     setExportingFormat('json');
 
@@ -356,7 +661,10 @@ export function useSettingsScreenController({
       setLastExportPath(result.filePath);
       setSelectedImportPath(result.filePath);
       await refreshLocalExports();
-      Alert.alert(copy.exportSuccessTitle, `${copy.exportSuccessDescription}\n${result.filePath}`);
+      Alert.alert(
+        copy.exportSuccessTitle,
+        `${copy.exportSuccessDescription}\n${result.filePath}`,
+      );
     } catch (error) {
       Alert.alert(
         copy.exportErrorTitle,
@@ -374,7 +682,10 @@ export function useSettingsScreenController({
       const result = await exportDreamArchivePdf();
       setLastExportPath(result.filePath);
       await refreshLocalExports();
-      Alert.alert(copy.exportPdfSuccessTitle, `${copy.exportPdfSuccessDescription}\n${result.filePath}`);
+      Alert.alert(
+        copy.exportPdfSuccessTitle,
+        `${copy.exportPdfSuccessDescription}\n${result.filePath}`,
+      );
     } catch (error) {
       Alert.alert(
         copy.exportPdfErrorTitle,
@@ -552,6 +863,29 @@ export function useSettingsScreenController({
     getReminderDate: () => getReminderDate(reminderSettings),
     pickerLocale: getPickerLocale(locale),
     onSelectLocale,
+    cloudConfigDraft,
+    cloudConfigured,
+    cloudSession,
+    cloudIdentityEmail,
+    cloudIdentityPassword,
+    cloudSyncEnabled,
+    cloudSyncSnapshot,
+    isConnectingCloud,
+    isSigningInCloudAccount,
+    isUpgradingCloudAccount,
+    isDisconnectingCloud,
+    isSyncingCloud,
+    onSaveCloudConfig,
+    onClearCloudConfig,
+    onConnectCloud,
+    onSignInCloudAccount,
+    onUpgradeCloudAccount,
+    onDisconnectCloud,
+    onRunCloudSync,
+    onToggleCloudSync,
+    cloudHighlights,
+    cloudSyncMetaTitle: cloudSyncMeta.title,
+    cloudSyncMetaDescription: cloudSyncMeta.meta,
     privacyHighlights,
     analysisSettings,
     saveNextAnalysisSettings,
@@ -586,12 +920,20 @@ export function useSettingsScreenController({
     restorePreviewMeta,
     restorePreviewItems,
     restoreSuccessItems,
-    formatBackupListTitle: (value: number) => formatBackupListTitle(value, locale, copy),
+    formatBackupListTitle: (value: number) =>
+      formatBackupListTitle(value, locale, copy),
     formatBackupListMeta,
     __DEV__,
     seedDreamCount,
     isUpdatingSeedDreams,
     onSeedDreams,
     onClearSeedDreams,
+    onChangeCloudConfigUrl: (value: string) =>
+      setCloudConfigDraft(current => ({ ...current, url: value })),
+    onChangeCloudConfigAnonKey: (value: string) =>
+      setCloudConfigDraft(current => ({ ...current, anonKey: value })),
+    onChangeCloudIdentityEmail: (value: string) => setCloudIdentityEmail(value),
+    onChangeCloudIdentityPassword: (value: string) =>
+      setCloudIdentityPassword(value),
   };
 }

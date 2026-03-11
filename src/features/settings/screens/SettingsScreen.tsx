@@ -8,7 +8,10 @@ import { getSettingsCopy } from '../../../constants/copy/settings';
 import { Theme } from '../../../theme/theme';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
-import { openMonthlyReport, openWakeEntry } from '../../../app/navigation/navigationRef';
+import {
+  openMonthlyReport,
+  openWakeEntry,
+} from '../../../app/navigation/navigationRef';
 import { useSettingsScreenController } from '../hooks/useSettingsScreenController';
 import {
   AnalysisSection,
@@ -18,6 +21,7 @@ import {
   TranscriptionSection,
 } from '../components/SettingsAdvancedSections';
 import {
+  CloudSection,
   PrivacySection,
   ReminderSection,
   SettingsHeroSection,
@@ -59,7 +63,12 @@ export default function SettingsScreen() {
       default:
         return copy.sectionGeneralHint;
     }
-  }, [copy.sectionBackupHint, copy.sectionGeneralHint, copy.sectionToolsHint, selectedWorkspace]);
+  }, [
+    copy.sectionBackupHint,
+    copy.sectionGeneralHint,
+    copy.sectionToolsHint,
+    selectedWorkspace,
+  ]);
 
   return (
     <ScreenContainer scroll>
@@ -97,10 +106,68 @@ export default function SettingsScreen() {
             showIosTimePicker={controller.showIosTimePicker}
             pickerLocale={controller.pickerLocale}
             getReminderDate={controller.getReminderDate}
-            onToggleReminder={() => controller.onToggleReminder().catch(() => undefined)}
+            onToggleReminder={() =>
+              controller.onToggleReminder().catch(() => undefined)
+            }
             onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
             onNativeTimePickerChange={controller.onNativeTimePickerChange}
             onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
+          />
+
+          <CloudSection
+            copy={copy}
+            styles={styles}
+            highlights={controller.cloudHighlights}
+            showDeveloperCloudConfig={controller.__DEV__}
+            cloudConfigured={controller.cloudConfigured}
+            cloudSessionStatus={controller.cloudSession.status}
+            cloudSessionIsAnonymous={Boolean(
+              controller.cloudSession.status === 'signed-in' &&
+                controller.cloudSession.isAnonymous,
+            )}
+            cloudSyncEnabled={controller.cloudSyncEnabled}
+            cloudSyncEnabledDisabled={
+              controller.cloudSession.status !== 'signed-in' ||
+              controller.isConnectingCloud ||
+              controller.isSigningInCloudAccount ||
+              controller.isUpgradingCloudAccount ||
+              controller.isDisconnectingCloud
+            }
+            cloudConfigUrl={controller.cloudConfigDraft.url}
+            cloudConfigAnonKey={controller.cloudConfigDraft.anonKey}
+            cloudIdentityEmail={controller.cloudIdentityEmail}
+            cloudIdentityPassword={controller.cloudIdentityPassword}
+            isConnectingCloud={controller.isConnectingCloud}
+            isSigningInCloudAccount={controller.isSigningInCloudAccount}
+            isUpgradingCloudAccount={controller.isUpgradingCloudAccount}
+            isDisconnectingCloud={controller.isDisconnectingCloud}
+            isSyncingCloud={controller.isSyncingCloud}
+            cloudSyncMetaTitle={controller.cloudSyncMetaTitle}
+            cloudSyncMetaDescription={controller.cloudSyncMetaDescription}
+            onChangeCloudConfigUrl={controller.onChangeCloudConfigUrl}
+            onChangeCloudConfigAnonKey={controller.onChangeCloudConfigAnonKey}
+            onChangeCloudIdentityEmail={controller.onChangeCloudIdentityEmail}
+            onChangeCloudIdentityPassword={
+              controller.onChangeCloudIdentityPassword
+            }
+            onSaveCloudConfig={controller.onSaveCloudConfig}
+            onClearCloudConfig={controller.onClearCloudConfig}
+            onConnectCloud={() =>
+              controller.onConnectCloud().catch(() => undefined)
+            }
+            onSignInCloudAccount={() =>
+              controller.onSignInCloudAccount().catch(() => undefined)
+            }
+            onUpgradeCloudAccount={() =>
+              controller.onUpgradeCloudAccount().catch(() => undefined)
+            }
+            onDisconnectCloud={() =>
+              controller.onDisconnectCloud().catch(() => undefined)
+            }
+            onRunCloudSync={() =>
+              controller.onRunCloudSync().catch(() => undefined)
+            }
+            onToggleCloudSync={controller.onToggleCloudSync}
           />
 
           <PrivacySection
@@ -120,8 +187,12 @@ export default function SettingsScreen() {
             isExportingJson={controller.isExportingJson}
             isExportingPdf={controller.isExportingPdf}
             lastExportPath={controller.lastExportPath}
-            onExportJson={() => controller.onExportData().catch(() => undefined)}
-            onExportPdf={() => controller.onExportPdfData().catch(() => undefined)}
+            onExportJson={() =>
+              controller.onExportData().catch(() => undefined)
+            }
+            onExportPdf={() =>
+              controller.onExportPdfData().catch(() => undefined)
+            }
           />
 
           <RestoreSection
@@ -170,8 +241,12 @@ export default function SettingsScreen() {
             isDeleting={controller.isDeletingTranscriptionModel}
             downloadLabel={controller.transcriptionDownloadLabel}
             installed={controller.transcriptionModelInstalled}
-            onDownload={() => controller.onDownloadTranscriptionModel().catch(() => undefined)}
-            onDelete={() => controller.onDeleteTranscriptionModel().catch(() => undefined)}
+            onDownload={() =>
+              controller.onDownloadTranscriptionModel().catch(() => undefined)
+            }
+            onDelete={() =>
+              controller.onDeleteTranscriptionModel().catch(() => undefined)
+            }
           />
 
           {controller.__DEV__ ? (
@@ -180,8 +255,12 @@ export default function SettingsScreen() {
               styles={styles}
               seedDreamCount={controller.seedDreamCount}
               isUpdatingSeedDreams={controller.isUpdatingSeedDreams}
-              onSeed250={() => controller.onSeedDreams(250).catch(() => undefined)}
-              onSeed1000={() => controller.onSeedDreams(1000).catch(() => undefined)}
+              onSeed250={() =>
+                controller.onSeedDreams(250).catch(() => undefined)
+              }
+              onSeed1000={() =>
+                controller.onSeedDreams(1000).catch(() => undefined)
+              }
               onPreviewMonthlyReport={() => openMonthlyReport()}
               onClearSeedDreams={controller.onClearSeedDreams}
             />

@@ -20,6 +20,11 @@ const DREAM_EXPORT_DIRECTORY = 'exports';
 const PDF_OUTPUT_DIRECTORY = 'Documents';
 const PDF_TEXT_LIMIT = 1800;
 
+export type DreamBackup = Omit<
+  Dream,
+  'updatedAt' | 'audioRemotePath' | 'syncStatus' | 'lastSyncedAt' | 'syncError'
+>;
+
 type DreamPdfCopy = {
   archiveTitle: string;
   archiveSubtitle: string;
@@ -68,7 +73,7 @@ export type DreamExportV1 = {
     starredDreamCount: number;
     draftIncluded: boolean;
   };
-  dreams: Dream[];
+  dreams: DreamBackup[];
   draft: DreamDraft | null;
   reminderSettings: DreamReminderSettings;
   analysisSettings: DreamAnalysisSettings;
@@ -561,6 +566,16 @@ function buildCurrentDreamExportSnapshot() {
   });
 }
 
+function stripTransientDreamFields(dream: Dream): DreamBackup {
+  const backup = { ...dream };
+  delete backup.updatedAt;
+  delete backup.audioRemotePath;
+  delete backup.syncStatus;
+  delete backup.lastSyncedAt;
+  delete backup.syncError;
+  return backup;
+}
+
 export function buildDreamExportSnapshot(input: {
   exportedAt?: string;
   appVersion?: string;
@@ -572,6 +587,8 @@ export function buildDreamExportSnapshot(input: {
   analysisSettings: DreamAnalysisSettings;
   storageSchemaVersion?: number;
 }): DreamExportV1 {
+  const backupDreams = input.dreams.map(stripTransientDreamFields);
+
   return {
     version: DREAM_EXPORT_VERSION,
     exportedAt: input.exportedAt ?? new Date().toISOString(),
@@ -580,17 +597,17 @@ export function buildDreamExportSnapshot(input: {
     locale: input.locale,
     storageSchemaVersion: input.storageSchemaVersion ?? CURRENT_STORAGE_SCHEMA_VERSION,
     summary: {
-      dreamCount: input.dreams.length,
-      archivedDreamCount: input.dreams.filter(dream => typeof dream.archivedAt === 'number').length,
-      audioDreamCount: input.dreams.filter(dream => Boolean(dream.audioUri?.trim())).length,
-      transcribedDreamCount: input.dreams.filter(dream => Boolean(dream.transcript?.trim())).length,
-      editedTranscriptCount: input.dreams.filter(dream => dream.transcriptSource === 'edited')
+      dreamCount: backupDreams.length,
+      archivedDreamCount: backupDreams.filter(dream => typeof dream.archivedAt === 'number').length,
+      audioDreamCount: backupDreams.filter(dream => Boolean(dream.audioUri?.trim())).length,
+      transcribedDreamCount: backupDreams.filter(dream => Boolean(dream.transcript?.trim())).length,
+      editedTranscriptCount: backupDreams.filter(dream => dream.transcriptSource === 'edited')
         .length,
-      analyzedDreamCount: input.dreams.filter(dream => dream.analysis?.status === 'ready').length,
-      starredDreamCount: input.dreams.filter(dream => typeof dream.starredAt === 'number').length,
+      analyzedDreamCount: backupDreams.filter(dream => dream.analysis?.status === 'ready').length,
+      starredDreamCount: backupDreams.filter(dream => typeof dream.starredAt === 'number').length,
       draftIncluded: Boolean(input.draft),
     },
-    dreams: input.dreams,
+    dreams: backupDreams,
     draft: input.draft,
     reminderSettings: input.reminderSettings,
     analysisSettings: input.analysisSettings,

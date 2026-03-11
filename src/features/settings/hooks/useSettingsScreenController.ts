@@ -3,30 +3,7 @@ import { Alert, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import type { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { APP_VERSION_LABEL } from '../../../config/app';
-import {
-  clearCloudRuntimeConfig,
-  getCloudRuntimeConfigDraft,
-  isCloudRuntimeConfigured,
-  saveCloudRuntimeConfig,
-} from '../../../config/cloud';
 import { type AppLocale } from '../../../i18n/types';
-import { resetSupabaseClient } from '../../../services/api/supabase/client';
-import {
-  upgradeCloudAnonymousSession,
-  signInToCloudWithPassword,
-  signInToCloudAnonymously,
-  signOutFromCloud,
-} from '../../../services/auth/cloudAuth';
-import {
-  getCloudSyncSnapshot,
-  runCloudSync,
-} from '../../../services/cloud/sync';
-import {
-  clearCloudSession,
-  getCloudSession,
-  getCloudSyncEnabled,
-  setCloudSyncEnabled,
-} from '../../../services/auth/session';
 import {
   exportDreamArchivePdf,
   exportDreamDataSnapshot,
@@ -58,7 +35,6 @@ import {
   countSeedDreams,
   seedDreamSamples,
 } from '../../dreams/services/dreamSeedService';
-import { listDreams } from '../../dreams/repository/dreamsRepository';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import {
   getDreamAnalysisSettings,
@@ -67,7 +43,6 @@ import {
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import {
   buildAnalysisHighlights,
-  buildCloudHighlights,
   buildExportHighlights,
   buildPrivacyHighlights,
   buildRestorePreviewItems,
@@ -76,7 +51,6 @@ import {
   formatBackupListMeta,
   formatBackupListTitle,
   formatBackupTimestamp,
-  formatCloudSyncMeta,
   formatDownloadProgress,
   formatReminderTime,
   getPickerLocale,
@@ -84,6 +58,7 @@ import {
   getRestoreConfirmContent,
   getSettingsFooterMeta,
 } from '../model/settingsPresentation';
+import { useCloudBackupController } from './useCloudBackupController';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 
@@ -144,51 +119,15 @@ export function useSettingsScreenController({
   const [isUpdatingSeedDreams, setIsUpdatingSeedDreams] = React.useState(false);
   const [analysisSettings, setAnalysisSettings] =
     React.useState<DreamAnalysisSettings>(() => getDreamAnalysisSettings());
-  const [cloudConfigDraft, setCloudConfigDraft] = React.useState(() =>
-    getCloudRuntimeConfigDraft(),
-  );
-  const [cloudSession, setCloudSession] = React.useState(() =>
-    getCloudSession(),
-  );
-  const [cloudIdentityEmail, setCloudIdentityEmail] = React.useState('');
-  const [cloudIdentityPassword, setCloudIdentityPassword] =
-    React.useState('');
-  const [cloudSyncEnabled, setCloudSyncEnabledState] = React.useState(() =>
-    getCloudSyncEnabled(),
-  );
-  const [cloudDreams, setCloudDreams] = React.useState(() => listDreams());
-  const [cloudSyncSnapshot, setCloudSyncSnapshot] = React.useState(() =>
-    getCloudSyncSnapshot(),
-  );
-  const [isConnectingCloud, setIsConnectingCloud] = React.useState(false);
-  const [isSigningInCloudAccount, setIsSigningInCloudAccount] =
-    React.useState(false);
-  const [isUpgradingCloudAccount, setIsUpgradingCloudAccount] =
-    React.useState(false);
-  const [isDisconnectingCloud, setIsDisconnectingCloud] = React.useState(false);
-  const [isSyncingCloud, setIsSyncingCloud] = React.useState(false);
-  const cloudConfigured = isCloudRuntimeConfigured();
+  const cloudBackup = useCloudBackupController({
+    locale,
+    copy,
+  });
 
   const footerMeta = React.useMemo(() => getSettingsFooterMeta(copy), [copy]);
   const privacyHighlights = React.useMemo(
     () => buildPrivacyHighlights(copy),
     [copy],
-  );
-  const cloudHighlights = React.useMemo(
-    () =>
-      buildCloudHighlights(
-        copy,
-        cloudSession,
-        cloudSyncEnabled,
-        cloudDreams,
-        cloudConfigured,
-        __DEV__,
-      ),
-    [cloudConfigured, cloudDreams, cloudSession, cloudSyncEnabled, copy],
-  );
-  const cloudSyncMeta = React.useMemo(
-    () => formatCloudSyncMeta(copy, cloudSyncSnapshot, locale, __DEV__),
-    [cloudSyncSnapshot, copy, locale],
   );
   const analysisHighlights = React.useMemo(
     () => buildAnalysisHighlights(copy, analysisSettings),
@@ -241,14 +180,6 @@ export function useSettingsScreenController({
     [copy, lastRestorePreview],
   );
 
-  const refreshCloudState = React.useCallback(() => {
-    setCloudConfigDraft(getCloudRuntimeConfigDraft());
-    setCloudSession(getCloudSession());
-    setCloudSyncEnabledState(getCloudSyncEnabled());
-    setCloudDreams(listDreams());
-    setCloudSyncSnapshot(getCloudSyncSnapshot());
-  }, []);
-
   const refreshLocalExports = React.useCallback(async () => {
     setIsLoadingLocalExports(true);
 
@@ -273,13 +204,12 @@ export function useSettingsScreenController({
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
     setAnalysisSettings(getDreamAnalysisSettings());
-    refreshCloudState();
     setPermissionGranted(await getDreamReminderPermissionGranted());
     setTranscriptionModelStatus(await getDreamTranscriptionModelStatus());
     if (__DEV__) {
       setSeedDreamCount(countSeedDreams());
     }
-  }, [refreshCloudState]);
+  }, []);
 
   const saveNextAnalysisSettings = React.useCallback(
     (next: DreamAnalysisSettings) => {
@@ -457,201 +387,6 @@ export function useSettingsScreenController({
     },
     [copy.reminderSaveErrorTitle, reminderSettings, setLocale],
   );
-
-  const onToggleCloudSync = React.useCallback(() => {
-    if (cloudSession.status !== 'signed-in') {
-      return;
-    }
-
-    const nextValue = setCloudSyncEnabled(!cloudSyncEnabled);
-    setCloudSyncEnabledState(nextValue);
-  }, [cloudSession.status, cloudSyncEnabled]);
-
-  const onSaveCloudConfig = React.useCallback(() => {
-    const savedConfig = saveCloudRuntimeConfig(cloudConfigDraft);
-    resetSupabaseClient();
-    refreshCloudState();
-
-    if (!savedConfig) {
-      Alert.alert(
-        copy.cloudConfigErrorTitle,
-        copy.cloudConfigMissingDescription,
-      );
-    }
-  }, [
-    cloudConfigDraft,
-    copy.cloudConfigErrorTitle,
-    copy.cloudConfigMissingDescription,
-    refreshCloudState,
-  ]);
-
-  const onClearCloudConfig = React.useCallback(() => {
-    clearCloudRuntimeConfig();
-    resetSupabaseClient();
-    clearCloudSession();
-    refreshCloudState();
-  }, [refreshCloudState]);
-
-  const getCloudCredentials = React.useCallback(() => {
-    const email = cloudIdentityEmail.trim();
-    const password = cloudIdentityPassword;
-
-    if (!email || !password) {
-      Alert.alert(
-        copy.cloudCredentialsMissingTitle,
-        copy.cloudCredentialsMissingDescription,
-      );
-      return null;
-    }
-
-    return { email, password };
-  }, [
-    cloudIdentityEmail,
-    cloudIdentityPassword,
-    copy.cloudCredentialsMissingDescription,
-    copy.cloudCredentialsMissingTitle,
-  ]);
-
-  const onConnectCloud = React.useCallback(async () => {
-    const savedConfig = saveCloudRuntimeConfig(cloudConfigDraft);
-    resetSupabaseClient();
-    refreshCloudState();
-
-    if (!savedConfig) {
-      Alert.alert(
-        copy.cloudConfigMissingTitle,
-        copy.cloudConfigMissingDescription,
-      );
-      return;
-    }
-
-    setIsConnectingCloud(true);
-
-    try {
-      await signInToCloudAnonymously();
-      refreshCloudState();
-    } catch (error) {
-      Alert.alert(
-        copy.cloudConnectErrorTitle,
-        error instanceof Error ? error.message : String(error),
-      );
-    } finally {
-      setIsConnectingCloud(false);
-    }
-  }, [
-    cloudConfigDraft,
-    copy.cloudConfigMissingDescription,
-    copy.cloudConfigMissingTitle,
-    copy.cloudConnectErrorTitle,
-    refreshCloudState,
-  ]);
-
-  const onSignInCloudAccount = React.useCallback(async () => {
-    const savedConfig = saveCloudRuntimeConfig(cloudConfigDraft);
-    resetSupabaseClient();
-    refreshCloudState();
-
-    if (!savedConfig) {
-      Alert.alert(
-        copy.cloudConfigMissingTitle,
-        copy.cloudConfigMissingDescription,
-      );
-      return;
-    }
-
-    const credentials = getCloudCredentials();
-    if (!credentials) {
-      return;
-    }
-
-    setIsSigningInCloudAccount(true);
-
-    try {
-      await signInToCloudWithPassword(credentials);
-      setCloudIdentityPassword('');
-      refreshCloudState();
-    } catch (error) {
-      Alert.alert(
-        copy.cloudAccountSignInErrorTitle,
-        error instanceof Error ? error.message : String(error),
-      );
-    } finally {
-      setIsSigningInCloudAccount(false);
-    }
-  }, [
-    cloudConfigDraft,
-    copy.cloudAccountSignInErrorTitle,
-    copy.cloudConfigMissingDescription,
-    copy.cloudConfigMissingTitle,
-    getCloudCredentials,
-    refreshCloudState,
-  ]);
-
-  const onUpgradeCloudAccount = React.useCallback(async () => {
-    const credentials = getCloudCredentials();
-    if (!credentials) {
-      return;
-    }
-
-    setIsUpgradingCloudAccount(true);
-
-    try {
-      await upgradeCloudAnonymousSession(credentials);
-      setCloudIdentityPassword('');
-      refreshCloudState();
-    } catch (error) {
-      Alert.alert(
-        copy.cloudAccountUpgradeErrorTitle,
-        error instanceof Error ? error.message : String(error),
-      );
-    } finally {
-      setIsUpgradingCloudAccount(false);
-    }
-  }, [
-    copy.cloudAccountUpgradeErrorTitle,
-    getCloudCredentials,
-    refreshCloudState,
-  ]);
-
-  const onDisconnectCloud = React.useCallback(async () => {
-    setIsDisconnectingCloud(true);
-
-    try {
-      await signOutFromCloud();
-      refreshCloudState();
-    } catch (error) {
-      Alert.alert(
-        copy.cloudDisconnectErrorTitle,
-        error instanceof Error ? error.message : String(error),
-      );
-    } finally {
-      setIsDisconnectingCloud(false);
-    }
-  }, [copy.cloudDisconnectErrorTitle, refreshCloudState]);
-
-  const onRunCloudSync = React.useCallback(async () => {
-    if (cloudSession.status !== 'signed-in') {
-      return;
-    }
-
-    setIsSyncingCloud(true);
-
-    try {
-      const result = await runCloudSync({ reason: 'manual' });
-      refreshCloudState();
-      if (result.status === 'error' && result.errorMessage) {
-        Alert.alert(copy.cloudSyncManualErrorTitle, result.errorMessage);
-      }
-    } catch (error) {
-      refreshCloudState();
-      Alert.alert(
-        copy.cloudSyncManualErrorTitle,
-        error instanceof Error ? error.message : String(error),
-      );
-    } finally {
-      setIsSyncingCloud(false);
-    }
-  }, [cloudSession.status, copy.cloudSyncManualErrorTitle, refreshCloudState]);
 
   const onExportData = React.useCallback(async () => {
     setExportingFormat('json');
@@ -863,29 +598,7 @@ export function useSettingsScreenController({
     getReminderDate: () => getReminderDate(reminderSettings),
     pickerLocale: getPickerLocale(locale),
     onSelectLocale,
-    cloudConfigDraft,
-    cloudConfigured,
-    cloudSession,
-    cloudIdentityEmail,
-    cloudIdentityPassword,
-    cloudSyncEnabled,
-    cloudSyncSnapshot,
-    isConnectingCloud,
-    isSigningInCloudAccount,
-    isUpgradingCloudAccount,
-    isDisconnectingCloud,
-    isSyncingCloud,
-    onSaveCloudConfig,
-    onClearCloudConfig,
-    onConnectCloud,
-    onSignInCloudAccount,
-    onUpgradeCloudAccount,
-    onDisconnectCloud,
-    onRunCloudSync,
-    onToggleCloudSync,
-    cloudHighlights,
-    cloudSyncMetaTitle: cloudSyncMeta.title,
-    cloudSyncMetaDescription: cloudSyncMeta.meta,
+    ...cloudBackup,
     privacyHighlights,
     analysisSettings,
     saveNextAnalysisSettings,
@@ -928,12 +641,5 @@ export function useSettingsScreenController({
     isUpdatingSeedDreams,
     onSeedDreams,
     onClearSeedDreams,
-    onChangeCloudConfigUrl: (value: string) =>
-      setCloudConfigDraft(current => ({ ...current, url: value })),
-    onChangeCloudConfigAnonKey: (value: string) =>
-      setCloudConfigDraft(current => ({ ...current, anonKey: value })),
-    onChangeCloudIdentityEmail: (value: string) => setCloudIdentityEmail(value),
-    onChangeCloudIdentityPassword: (value: string) =>
-      setCloudIdentityPassword(value),
   };
 }

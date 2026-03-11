@@ -9,6 +9,7 @@ import { Theme } from '../../../theme/theme';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import {
+  openBackupScreen,
   openMonthlyReport,
   openWakeEntry,
 } from '../../../app/navigation/navigationRef';
@@ -21,11 +22,12 @@ import {
   TranscriptionSection,
 } from '../components/SettingsAdvancedSections';
 import {
-  CloudSection,
   PrivacySection,
   ReminderSection,
   SettingsHeroSection,
 } from '../components/SettingsTopSections';
+import { SettingsActionRow } from '../components/SettingsActionRow';
+import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import { SettingsSectionHeader } from '../components/SettingsSectionHeader';
 import { SettingsSegmentedControl } from '../components/SettingsSegmentedControl';
 
@@ -114,61 +116,25 @@ export default function SettingsScreen() {
             onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
           />
 
-          <CloudSection
-            copy={copy}
-            styles={styles}
-            highlights={controller.cloudHighlights}
-            showDeveloperCloudConfig={controller.__DEV__}
-            cloudConfigured={controller.cloudConfigured}
-            cloudSessionStatus={controller.cloudSession.status}
-            cloudSessionIsAnonymous={Boolean(
-              controller.cloudSession.status === 'signed-in' &&
-                controller.cloudSession.isAnonymous,
-            )}
-            cloudSyncEnabled={controller.cloudSyncEnabled}
-            cloudSyncEnabledDisabled={
-              controller.cloudSession.status !== 'signed-in' ||
-              controller.isConnectingCloud ||
-              controller.isSigningInCloudAccount ||
-              controller.isUpgradingCloudAccount ||
-              controller.isDisconnectingCloud
-            }
-            cloudConfigUrl={controller.cloudConfigDraft.url}
-            cloudConfigAnonKey={controller.cloudConfigDraft.anonKey}
-            cloudIdentityEmail={controller.cloudIdentityEmail}
-            cloudIdentityPassword={controller.cloudIdentityPassword}
-            isConnectingCloud={controller.isConnectingCloud}
-            isSigningInCloudAccount={controller.isSigningInCloudAccount}
-            isUpgradingCloudAccount={controller.isUpgradingCloudAccount}
-            isDisconnectingCloud={controller.isDisconnectingCloud}
-            isSyncingCloud={controller.isSyncingCloud}
-            cloudSyncMetaTitle={controller.cloudSyncMetaTitle}
-            cloudSyncMetaDescription={controller.cloudSyncMetaDescription}
-            onChangeCloudConfigUrl={controller.onChangeCloudConfigUrl}
-            onChangeCloudConfigAnonKey={controller.onChangeCloudConfigAnonKey}
-            onChangeCloudIdentityEmail={controller.onChangeCloudIdentityEmail}
-            onChangeCloudIdentityPassword={
-              controller.onChangeCloudIdentityPassword
-            }
-            onSaveCloudConfig={controller.onSaveCloudConfig}
-            onClearCloudConfig={controller.onClearCloudConfig}
-            onConnectCloud={() =>
-              controller.onConnectCloud().catch(() => undefined)
-            }
-            onSignInCloudAccount={() =>
-              controller.onSignInCloudAccount().catch(() => undefined)
-            }
-            onUpgradeCloudAccount={() =>
-              controller.onUpgradeCloudAccount().catch(() => undefined)
-            }
-            onDisconnectCloud={() =>
-              controller.onDisconnectCloud().catch(() => undefined)
-            }
-            onRunCloudSync={() =>
-              controller.onRunCloudSync().catch(() => undefined)
-            }
-            onToggleCloudSync={controller.onToggleCloudSync}
-          />
+          <Card style={styles.sectionCard}>
+            <SettingsSectionHeader
+              title={copy.cloudTitle}
+              description={copy.cloudDescription}
+            />
+            <SettingsMetaGrid
+              items={controller.cloudSummaryHighlights}
+              dense
+            />
+            <SettingsActionRow
+              title={controller.cloudManageActionTitle}
+              meta={controller.cloudManageActionMeta}
+              value={controller.cloudSyncMetaTitle}
+              onPress={() => openBackupScreen()}
+            />
+            <Text style={styles.privacyFootnote}>
+              {controller.cloudSyncMetaDescription}
+            </Text>
+          </Card>
 
           <PrivacySection
             copy={copy}

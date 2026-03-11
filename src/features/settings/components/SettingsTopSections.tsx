@@ -13,11 +13,13 @@ import { type DreamReminderSettings } from '../../reminders/services/dreamRemind
 import { SettingsActionRow } from './SettingsActionRow';
 import { SettingsMetaGrid, type SettingsMetaItem } from './SettingsMetaGrid';
 import { SettingsSectionHeader } from './SettingsSectionHeader';
+import { SettingsSegmentedControl } from './SettingsSegmentedControl';
 import { createSettingsScreenStyles } from '../screens/SettingsScreen.styles';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 type SettingsStyles = ReturnType<typeof createSettingsScreenStyles>;
+type BackupEntryPath = 'first-device' | 'another-device';
 
 export function SettingsHeroSection({
   copy,
@@ -200,9 +202,11 @@ export function CloudSection({
   cloudIdentityPassword,
   isConnectingCloud,
   isSigningInCloudAccount,
+  isRequestingCloudPasswordReset,
   isUpgradingCloudAccount,
   isDisconnectingCloud,
   isSyncingCloud,
+  cloudActionFeedback,
   cloudSyncMetaTitle,
   cloudSyncMetaDescription,
   onChangeCloudConfigUrl,
@@ -213,10 +217,12 @@ export function CloudSection({
   onClearCloudConfig,
   onConnectCloud,
   onSignInCloudAccount,
+  onRequestCloudPasswordReset,
   onUpgradeCloudAccount,
   onDisconnectCloud,
   onRunCloudSync,
   onToggleCloudSync,
+  onDismissCloudActionFeedback,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
@@ -233,9 +239,11 @@ export function CloudSection({
   cloudIdentityPassword: string;
   isConnectingCloud: boolean;
   isSigningInCloudAccount: boolean;
+  isRequestingCloudPasswordReset: boolean;
   isUpgradingCloudAccount: boolean;
   isDisconnectingCloud: boolean;
   isSyncingCloud: boolean;
+  cloudActionFeedback: { title: string; description: string } | null;
   cloudSyncMetaTitle: string;
   cloudSyncMetaDescription: string;
   onChangeCloudConfigUrl: (value: string) => void;
@@ -246,24 +254,55 @@ export function CloudSection({
   onClearCloudConfig: () => void;
   onConnectCloud: () => void;
   onSignInCloudAccount: () => void;
+  onRequestCloudPasswordReset: () => void;
   onUpgradeCloudAccount: () => void;
   onDisconnectCloud: () => void;
   onRunCloudSync: () => void;
   onToggleCloudSync: () => void;
+  onDismissCloudActionFeedback: () => void;
 }) {
   const t = useTheme<Theme>();
+  const [backupEntryPath, setBackupEntryPath] =
+    React.useState<BackupEntryPath>('first-device');
   const isBusy =
     isConnectingCloud ||
     isSigningInCloudAccount ||
+    isRequestingCloudPasswordReset ||
     isUpgradingCloudAccount ||
     isDisconnectingCloud ||
     isSyncingCloud;
-  const showNamedAccountForm =
-    cloudSessionStatus === 'signed-out' || cloudSessionIsAnonymous;
-  const namedAccountDescription =
+  const showPathSelector = cloudSessionStatus === 'signed-out';
+  const showConnectAction =
+    cloudSessionStatus === 'signed-out' && backupEntryPath === 'first-device';
+  const showExistingBackupForm =
+    cloudSessionStatus === 'signed-out' && backupEntryPath === 'another-device';
+  const showSaveBackupForm = cloudSessionIsAnonymous;
+  const showNamedAccountActions =
+    cloudSessionStatus === 'signed-in' && !cloudSessionIsAnonymous;
+  const backupGuideSteps =
     cloudSessionStatus === 'signed-out'
-      ? copy.cloudIdentityDescriptionSignedOut
-      : copy.cloudIdentityDescriptionAnonymous;
+      ? backupEntryPath === 'first-device'
+        ? [
+            copy.cloudGuideStepOne,
+            copy.cloudGuideStepTwo,
+            copy.cloudGuideStepThree,
+          ]
+        : [
+            copy.cloudGuideExistingStepOne,
+            copy.cloudGuideExistingStepTwo,
+            copy.cloudGuideExistingStepThree,
+          ]
+      : cloudSessionIsAnonymous
+      ? [
+          copy.cloudGuideAnonymousStepOne,
+          copy.cloudGuideAnonymousStepTwo,
+          copy.cloudGuideAnonymousStepThree,
+        ]
+      : [
+          copy.cloudGuideNamedStepOne,
+          copy.cloudGuideNamedStepTwo,
+          copy.cloudGuideNamedStepThree,
+        ];
 
   return (
     <Card style={styles.sectionCard}>
@@ -271,19 +310,65 @@ export function CloudSection({
         title={copy.cloudTitle}
         description={copy.cloudDescription}
         trailing={
-          <Switch
-            value={cloudSyncEnabled}
-            onValueChange={onToggleCloudSync}
-            disabled={cloudSyncEnabledDisabled}
-            trackColor={{
-              false: t.colors.switchTrackOff,
-              true: t.colors.primary,
-            }}
-            thumbColor={t.colors.text}
-          />
+          cloudSessionStatus === 'signed-in' ? (
+            <Switch
+              value={cloudSyncEnabled}
+              onValueChange={onToggleCloudSync}
+              disabled={cloudSyncEnabledDisabled}
+              trackColor={{
+                false: t.colors.switchTrackOff,
+                true: t.colors.primary,
+              }}
+              thumbColor={t.colors.text}
+            />
+          ) : null
         }
       />
       <SettingsMetaGrid items={highlights} dense />
+      {showPathSelector ? (
+        <View style={styles.backupModeBlock}>
+          <SettingsSectionHeader
+            title={copy.cloudPathTitle}
+            description={copy.cloudPathDescription}
+          />
+          <SettingsSegmentedControl
+            selectedValue={backupEntryPath}
+            onChange={setBackupEntryPath}
+            options={[
+              { value: 'first-device', label: copy.cloudPathThisDevice },
+              { value: 'another-device', label: copy.cloudPathAnotherDevice },
+            ]}
+            columns={2}
+            minWidth={130}
+          />
+        </View>
+      ) : null}
+      <View style={styles.backupGuideBlock}>
+        <Text style={styles.backupGuideTitle}>{copy.cloudGuideTitle}</Text>
+        {backupGuideSteps.map((step, index) => (
+          <View key={`${index + 1}-${step}`} style={styles.backupGuideStepRow}>
+            <View style={styles.backupGuideStepBadge}>
+              <Text style={styles.backupGuideStepBadgeText}>
+                {index + 1}
+              </Text>
+            </View>
+            <Text style={styles.backupGuideStepText}>{step}</Text>
+          </View>
+        ))}
+      </View>
+      {cloudActionFeedback ? (
+        <Pressable
+          style={styles.backupSuccessBlock}
+          onPress={onDismissCloudActionFeedback}
+        >
+          <Text style={styles.backupSuccessTitle}>
+            {`${copy.cloudSuccessTitle}: ${cloudActionFeedback.title}`}
+          </Text>
+          <Text style={styles.backupSuccessText}>
+            {cloudActionFeedback.description}
+          </Text>
+        </Pressable>
+      ) : null}
       {showDeveloperCloudConfig ? (
         <View style={styles.settingControlBlock}>
           <FormField
@@ -327,11 +412,31 @@ export function CloudSection({
           </View>
         </View>
       ) : null}
-      {showNamedAccountForm ? (
+      {showConnectAction ? (
+        <View style={styles.buttonStack}>
+          <View style={styles.settingControlBlock}>
+            <SettingsSectionHeader
+              title={copy.cloudFirstDeviceTitle}
+              description={copy.cloudFirstDeviceDescription}
+            />
+            <Button
+              title={
+                isConnectingCloud
+                  ? copy.cloudConnectButtonBusy
+                  : copy.cloudConnectButton
+              }
+              style={styles.buttonStackButton}
+              disabled={!cloudConfigured || isBusy}
+              onPress={onConnectCloud}
+            />
+          </View>
+        </View>
+      ) : null}
+      {showExistingBackupForm ? (
         <View style={styles.settingControlBlock}>
           <SettingsSectionHeader
-            title={copy.cloudIdentityTitle}
-            description={namedAccountDescription}
+            title={copy.cloudExistingBackupTitle}
+            description={copy.cloudIdentityDescriptionSignedOut}
           />
           <FormField
             label={copy.cloudIdentityEmailLabel}
@@ -356,64 +461,92 @@ export function CloudSection({
           />
           <Button
             title={
-              cloudSessionStatus === 'signed-out'
-                ? isSigningInCloudAccount
-                  ? copy.cloudSignInExistingButtonBusy
-                  : copy.cloudSignInExistingButton
-                : isUpgradingCloudAccount
-                ? copy.cloudUpgradeAccountButtonBusy
-                : copy.cloudUpgradeAccountButton
+              isSigningInCloudAccount
+                ? copy.cloudSignInExistingButtonBusy
+                : copy.cloudSignInExistingButton
+            }
+            style={styles.buttonStackButton}
+            disabled={!cloudConfigured || isBusy}
+            onPress={onSignInCloudAccount}
+          />
+          <Button
+            title={
+              isRequestingCloudPasswordReset
+                ? copy.cloudResetPasswordButtonBusy
+                : copy.cloudResetPasswordButton
             }
             variant="ghost"
             style={styles.buttonStackButton}
             disabled={!cloudConfigured || isBusy}
-            onPress={
-              cloudSessionStatus === 'signed-out'
-                ? onSignInCloudAccount
-                : onUpgradeCloudAccount
-            }
+            onPress={onRequestCloudPasswordReset}
           />
         </View>
       ) : null}
-      <View style={styles.buttonStack}>
-        {cloudSessionStatus === 'signed-in' ? (
-          <>
-            <Button
-              title={
-                isSyncingCloud
-                  ? copy.cloudSyncNowButtonBusy
-                  : copy.cloudSyncNowButton
-              }
-              variant="ghost"
-              style={styles.buttonStackButton}
-              disabled={isBusy || !cloudConfigured}
-              onPress={onRunCloudSync}
-            />
-            <Button
-              title={
-                isDisconnectingCloud
-                  ? copy.cloudDisconnectButtonBusy
-                  : copy.cloudDisconnectButton
-              }
-              variant="danger"
-              style={styles.buttonStackButton}
-              disabled={isBusy}
-              onPress={onDisconnectCloud}
-            />
-          </>
-        ) : (
+      {showSaveBackupForm ? (
+        <View style={styles.settingControlBlock}>
+          <SettingsSectionHeader
+            title={copy.cloudSaveBackupTitle}
+            description={copy.cloudIdentityDescriptionAnonymous}
+          />
+          <FormField
+            label={copy.cloudIdentityEmailLabel}
+            value={cloudIdentityEmail}
+            onChangeText={onChangeCloudIdentityEmail}
+            placeholder="dreamer@example.com"
+            helperText={copy.cloudIdentityEmailHint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            keyboardType="email-address"
+            editable={!isBusy}
+          />
+          <FormField
+            label={copy.cloudIdentityPasswordLabel}
+            value={cloudIdentityPassword}
+            onChangeText={onChangeCloudIdentityPassword}
+            helperText={copy.cloudIdentityPasswordHint}
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry
+            editable={!isBusy}
+          />
           <Button
             title={
-              isConnectingCloud
-                ? copy.cloudConnectButtonBusy
-                : copy.cloudConnectButton
+              isUpgradingCloudAccount
+                ? copy.cloudUpgradeAccountButtonBusy
+                : copy.cloudUpgradeAccountButton
             }
             style={styles.buttonStackButton}
             disabled={!cloudConfigured || isBusy}
-            onPress={onConnectCloud}
+            onPress={onUpgradeCloudAccount}
           />
-        )}
-      </View>
+        </View>
+      ) : null}
+      {showNamedAccountActions || showSaveBackupForm ? (
+        <View style={styles.buttonStack}>
+          <Button
+            title={
+              isSyncingCloud
+                ? copy.cloudSyncNowButtonBusy
+                : copy.cloudSyncNowButton
+            }
+            variant="ghost"
+            style={styles.buttonStackButton}
+            disabled={isBusy || !cloudConfigured}
+            onPress={onRunCloudSync}
+          />
+          <Button
+            title={
+              isDisconnectingCloud
+                ? copy.cloudDisconnectButtonBusy
+                : copy.cloudDisconnectButton
+            }
+            variant="danger"
+            style={styles.buttonStackButton}
+            disabled={isBusy}
+            onPress={onDisconnectCloud}
+          />
+        </View>
+      ) : null}
       <SettingsActionRow
         title={copy.cloudLastSyncLabel}
         meta={cloudSyncMetaDescription}

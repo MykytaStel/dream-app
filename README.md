@@ -23,22 +23,17 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.3.1`
+Current release target: `0.4.0`
 
-This release should start the first user-visible cloud foundation on top of the
-current memory-first product:
+This release should turn the cloud foundation into a production-ready backup
+and multi-device experience on top of the current memory-first product:
 
-- session-aware settings
-- local sync metadata on dream records
-- typed sync mappers that match the Supabase schema
-- runtime Supabase config in Settings
-- anonymous cloud session wiring on the real client
-- named email/password account upgrade and sign-in in Settings
-- upload sync for pending local dreams
-- tombstones for delete sync so removed dreams do not resurrect
-- explicit conflict policy for local-vs-remote update/delete races
-- a transition path toward auth, upload, and multi-device sync without breaking
-  offline capture
+- production-ready backup onboarding
+- cleaner account flows for first-device and second-device setup
+- password reset and account recovery path
+- release-safe UX where Supabase setup stays out of the user surface
+- manual QA and rollout hardening for multi-device sync
+- no regressions in offline capture, export, restore, transcription, or analysis
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -63,7 +58,7 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.3.1_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.3.1_PLAN.md)
+[docs/RELEASE_0.4.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.4.0_PLAN.md)
 for the active release target, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
@@ -77,9 +72,9 @@ for the completed path that led into `0.1.0`.
 See [docs/INFRASTRUCTURE_CHECKLIST.md](/Users/mykyta/Documents/projects/dream-app/docs/INFRASTRUCTURE_CHECKLIST.md) for step-by-step rollout.
 Secrets/access requirements are listed in [docs/GITHUB_SECRETS.md](/Users/mykyta/Documents/projects/dream-app/docs/GITHUB_SECRETS.md).
 
-## Cloud Setup For 0.3.1
+## Cloud Setup For 0.4.0
 
-`0.3.1` now ships the cloud backup flow on top of the `0.3.0` foundation
+`0.4.0` will build on the `0.3.x` cloud backup flow
 without adding compile-time app
 secrets.
 
@@ -88,4 +83,4 @@ secrets.
 3. On another device, open the same backup with the same email/password.
 4. Use `Sync now` to upload or pull dream changes.
 5. Keep the Supabase runtime config flow as a developer-only setup path in debug builds.
-6. Treat `0.3.1` as the current cloud release: upload, pull, delete propagation, explicit local-vs-remote conflict policy, and named account sign-in are in.
+6. Treat `0.4.0` as the production-hardening release for cloud backup and multi-device sync.

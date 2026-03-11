@@ -1,5 +1,6 @@
 import { kv } from '../src/services/storage/mmkv';
 import {
+  requestCloudPasswordReset,
   signInToCloudAnonymously,
   signInToCloudWithPassword,
   signOutFromCloud,
@@ -200,6 +201,27 @@ describe('cloud auth service', () => {
       email: 'saved@example.com',
       password: 'secret-pass',
     });
+  });
+
+  test('requests a password reset email through the active Supabase client', async () => {
+    const resetPasswordForEmail = jest.fn(async () => ({
+      data: {},
+      error: null,
+    }));
+
+    mockedGetSupabaseClient.mockReturnValue({
+      auth: {
+        resetPasswordForEmail,
+      },
+    } as never);
+
+    await expect(
+      requestCloudPasswordReset(' DREAMER@example.com '),
+    ).resolves.toBeUndefined();
+
+    expect(resetPasswordForEmail).toHaveBeenCalledWith(
+      'dreamer@example.com',
+    );
   });
 
   test('subscribes to auth state changes and cleans up the listener', async () => {

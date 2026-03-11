@@ -111,6 +111,20 @@ export async function signInToCloudWithPassword(input: {
   return syncCloudSessionFromAuth();
 }
 
+export async function requestCloudPasswordReset(email: string) {
+  const client = getSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase runtime config is missing.');
+  }
+
+  const { error } = await client.auth.resetPasswordForEmail(
+    normalizeEmail(email),
+  );
+  if (error) {
+    throw error;
+  }
+}
+
 export async function upgradeCloudAnonymousSession(input: {
   email: string;
   password: string;

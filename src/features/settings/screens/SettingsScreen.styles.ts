@@ -79,6 +79,70 @@ export function createSettingsScreenStyles(theme: Theme) {
     settingControlBlock: {
       gap: 6,
     },
+    backupModeBlock: {
+      gap: 8,
+    },
+    backupModeHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 18,
+    },
+    backupGuideBlock: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      gap: 8,
+    },
+    backupGuideTitle: {
+      color: theme.colors.text,
+      fontWeight: '700',
+    },
+    backupGuideStepRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 9,
+    },
+    backupGuideStepBadge: {
+      width: 22,
+      height: 22,
+      borderRadius: 999,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+    },
+    backupGuideStepBadgeText: {
+      color: theme.colors.background,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    backupGuideStepText: {
+      flex: 1,
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 18,
+    },
+    backupSuccessBlock: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      gap: 5,
+      borderColor: theme.colors.primary,
+    },
+    backupSuccessTitle: {
+      color: theme.colors.text,
+      fontWeight: '700',
+    },
+    backupSuccessText: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 18,
+    },
     buttonRowButton: {
       flex: 1,
       minWidth: 150,

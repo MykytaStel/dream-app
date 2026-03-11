@@ -8,6 +8,7 @@ import WakeEntryScreen from '../../features/dreams/screens/WakeEntryScreen';
 import MonthlyReportScreen from '../../features/stats/screens/MonthlyReportScreen';
 import PatternDetailScreen from '../../features/stats/screens/PatternDetailScreen';
 import ProgressScreen from '../../features/stats/screens/ProgressScreen';
+import BackupScreen from '../../features/settings/screens/BackupScreen';
 import {
   consumePendingWakeOpenFromReminder,
   isReminderInitialNotificationTarget,
@@ -91,6 +92,14 @@ export default function RootNavigator() {
         }}
       >
         <Stack.Screen name={ROOT_ROUTE_NAMES.Tabs} component={Tabs} />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.Backup}
+          component={BackupScreen}
+          options={{
+            headerShown: true,
+            title: 'Backup',
+          }}
+        />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.WakeEntry}
           component={WakeEntryScreen}

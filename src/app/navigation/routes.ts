@@ -11,6 +11,7 @@ export const TAB_ROUTE_NAMES = {
 
 export const ROOT_ROUTE_NAMES = {
   Tabs: 'Tabs',
+  Backup: 'Backup',
   WakeEntry: 'WakeEntry',
   DreamDetail: 'DreamDetail',
   DreamEditor: 'DreamEditor',
@@ -60,6 +61,7 @@ export type TabParamList = {
 
 export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.Tabs]: NavigatorScreenParams<TabParamList> | undefined;
+  [ROOT_ROUTE_NAMES.Backup]: undefined;
   [ROOT_ROUTE_NAMES.WakeEntry]:
     | {
         source?: 'manual' | 'reminder';

@@ -19,6 +19,8 @@ export const palette = {
     success: '#74D6B0',
     tabIcon: '#8D94AD',
     glow: '#78B8FF',
+    ink: '#0B1220',
+    switchTrackOff: '#444B5A',
   },
   dark: {}
 } as const;

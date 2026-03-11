@@ -32,12 +32,18 @@
 		<true/>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Give $(PRODUCT_NAME) permission to use your microphone. Your record wont be shared without your permission.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>Ionicons.ttf</string>
+		<string>PlayfairDisplay-Bold.ttf</string>
+		<string>Manrope-SemiBold.ttf</string>
+		<string>Manrope-ExtraBold.ttf</string>
+		<string>Manrope-Regular.ttf</string>
+		<string>Manrope-Bold.ttf</string>
+		<string>PlayfairDisplay-ExtraBold.ttf</string>
 	</array>
 	<key>UIBackgroundModes</key>
 	<array>

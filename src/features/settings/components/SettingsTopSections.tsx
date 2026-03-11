@@ -1,10 +1,12 @@
 import React from 'react';
 import { Platform, Pressable, Switch, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { type AppLocale } from '../../../i18n/types';
+import { Theme } from '../../../theme/theme';
 import { type DreamReminderSettings } from '../../reminders/services/dreamReminderService';
 import { SettingsActionRow } from './SettingsActionRow';
 import { SettingsMetaGrid, type SettingsMetaItem } from './SettingsMetaGrid';
@@ -96,6 +98,8 @@ export function ReminderSection({
   onNativeTimePickerChange: (event: any, date?: Date) => void;
   onPreviewWakeFlow: () => void;
 }) {
+  const t = useTheme<Theme>();
+
   return (
     <Card style={styles.sectionCard}>
       <SettingsSectionHeader
@@ -106,8 +110,8 @@ export function ReminderSection({
             value={reminderSettings.enabled}
             onValueChange={onToggleReminder}
             disabled={isApplyingReminder}
-            trackColor={{ false: '#444B5A', true: '#7CC8FF' }}
-            thumbColor="#F7F9FF"
+            trackColor={{ false: t.colors.switchTrackOff, true: t.colors.primary }}
+            thumbColor={t.colors.text}
           />
         }
       />

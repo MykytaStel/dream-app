@@ -23,7 +23,7 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.3.0`
+Current release target: `0.3.1`
 
 This release should start the first user-visible cloud foundation on top of the
 current memory-first product:
@@ -63,7 +63,7 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.3.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.3.0_PLAN.md)
+[docs/RELEASE_0.3.1_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.3.1_PLAN.md)
 for the active release target, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
@@ -77,16 +77,15 @@ for the completed path that led into `0.1.0`.
 See [docs/INFRASTRUCTURE_CHECKLIST.md](/Users/mykyta/Documents/projects/dream-app/docs/INFRASTRUCTURE_CHECKLIST.md) for step-by-step rollout.
 Secrets/access requirements are listed in [docs/GITHUB_SECRETS.md](/Users/mykyta/Documents/projects/dream-app/docs/GITHUB_SECRETS.md).
 
-## Cloud Setup For 0.3.0
+## Cloud Setup For 0.3.1
 
-`0.3.0` can now talk to a real Supabase project without adding compile-time app
+`0.3.1` now ships the cloud backup flow on top of the `0.3.0` foundation
+without adding compile-time app
 secrets.
 
-1. Open `Settings` -> `General` -> `Cloud foundation`.
-2. Paste the project URL and public anon key.
-3. Save config, then connect the anonymous cloud session on the first device.
-4. Upgrade that anonymous session to an email/password account in `Settings` when you want multi-device sync.
-5. On another device, use the same email/password to sign in to the same archive.
-6. Use `Sync now` to upload or pull dream changes.
-7. Run the tombstone SQL migration before testing multi-device delete sync.
-8. Treat `0.3.0` as cloud foundation: upload, pull, delete propagation, explicit local-vs-remote conflict policy, and named account sign-in are in.
+1. On the first device, turn on backup in `Settings` -> `General` -> `Cloud backup`.
+2. Save that backup under an email/password account when you want multi-device sync.
+3. On another device, open the same backup with the same email/password.
+4. Use `Sync now` to upload or pull dream changes.
+5. Keep the Supabase runtime config flow as a developer-only setup path in debug builds.
+6. Treat `0.3.1` as the current cloud release: upload, pull, delete propagation, explicit local-vs-remote conflict policy, and named account sign-in are in.

@@ -41,8 +41,8 @@ type HomeListHeaderProps = {
   spotlightCountLabel: string;
   weeklyValue: string;
   weeklyHint: string;
-  backlogValue: string;
-  backlogHint: string;
+  attentionValue: string;
+  attentionHint: string;
   onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
   onOpenFilterSheet: () => void;
   onClearFilters: () => void;
@@ -78,8 +78,8 @@ export function HomeListHeader({
   spotlightCountLabel,
   weeklyValue,
   weeklyHint,
-  backlogValue,
-  backlogHint,
+  attentionValue,
+  attentionHint,
   onOpenPatternDetail,
   onOpenFilterSheet,
   onClearFilters,
@@ -145,21 +145,6 @@ export function HomeListHeader({
         </Pressable>
       ) : null}
 
-      <View style={styles.statsRow}>
-        <View style={styles.statChip}>
-          <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
-          <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
-        </View>
-        <View style={styles.statChip}>
-          <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
-          <Text style={styles.statValue}>{totalDreams}</Text>
-        </View>
-        <View style={styles.statChip}>
-          <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
-          <Text style={styles.statValue}>{averageWords}</Text>
-        </View>
-      </View>
-
       <Card style={styles.spotlightCard}>
         <View style={styles.spotlightHeader}>
           <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
@@ -207,20 +192,44 @@ export function HomeListHeader({
           )}
         </View>
 
+        <View style={styles.spotlightMetaRow}>
+          <View style={styles.spotlightMetaChip}>
+            <Text style={styles.spotlightMetaLabel}>{copy.homeSpotlightAttentionLabel}</Text>
+            <Text style={styles.spotlightMetaValue}>{attentionValue}</Text>
+          </View>
+        </View>
+
         {isSpotlightExpanded ? (
-          <View style={styles.spotlightSecondaryRow}>
-            <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-              <Text style={styles.spotlightLabel}>{copy.homeSpotlightWeeklyLabel}</Text>
-              <Text style={styles.spotlightCompactValue}>{weeklyValue}</Text>
-              <Text style={styles.spotlightHint}>{weeklyHint}</Text>
+          <>
+            <View style={styles.spotlightSecondaryRow}>
+              <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
+                <Text style={styles.spotlightLabel}>{copy.homeSpotlightWeeklyLabel}</Text>
+                <Text style={styles.spotlightCompactValue}>{weeklyValue}</Text>
+                <Text style={styles.spotlightHint}>{weeklyHint}</Text>
+              </View>
+
+              <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
+                <Text style={styles.spotlightLabel}>{copy.homeSpotlightAttentionLabel}</Text>
+                <Text style={styles.spotlightCompactValue}>{attentionValue}</Text>
+                <Text style={styles.spotlightHint}>{attentionHint}</Text>
+              </View>
             </View>
 
-            <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-              <Text style={styles.spotlightLabel}>{copy.homeSpotlightBacklogLabel}</Text>
-              <Text style={styles.spotlightCompactValue}>{backlogValue}</Text>
-              <Text style={styles.spotlightHint}>{backlogHint}</Text>
+            <View style={styles.statsRow}>
+              <View style={styles.statChip}>
+                <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
+                <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
+              </View>
+              <View style={styles.statChip}>
+                <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
+                <Text style={styles.statValue}>{totalDreams}</Text>
+              </View>
+              <View style={styles.statChip}>
+                <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
+                <Text style={styles.statValue}>{averageWords}</Text>
+              </View>
             </View>
-          </View>
+          </>
         ) : null}
       </Card>
 
@@ -228,33 +237,45 @@ export function HomeListHeader({
         <View style={styles.timelineHeaderCopy}>
           <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
         </View>
-        <View style={styles.timelineHeaderActions}>
-          <View style={styles.timelineCountPill}>
-            <Text style={styles.timelineCountLabel}>{searchResultsLabel}</Text>
+        {hasSearchQuery || hasNonSearchRefinements ? (
+          <View style={styles.timelineHeaderActions}>
+            <View style={styles.timelineCountPill}>
+              <Text style={styles.timelineCountLabel}>{searchResultsLabel}</Text>
+            </View>
           </View>
-        </View>
+        ) : null}
       </View>
 
       <Card style={styles.searchCard}>
-        <FormField
-          placeholder={copy.homeSearchPlaceholder}
-          value={timelineFilters.searchQuery}
-          onChangeText={value =>
-            updateTimelineFilters(current => ({
-              ...current,
-              searchQuery: value,
-            }))
-          }
-          autoCapitalize="none"
-          autoCorrect={false}
-          helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
-        />
+        <View style={styles.searchBarRow}>
+          <FormField
+            placeholder={copy.homeSearchPlaceholder}
+            value={timelineFilters.searchQuery}
+            onChangeText={value =>
+              updateTimelineFilters(current => ({
+                ...current,
+                searchQuery: value,
+              }))
+            }
+            autoCapitalize="none"
+            autoCorrect={false}
+            helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
+            containerStyle={styles.searchFieldContainer}
+            inputStyle={styles.searchFieldInput}
+          />
 
-        <View style={styles.primaryActionsRow}>
           <Pressable style={styles.inlineActionButton} onPress={onOpenFilterSheet}>
             <Text style={styles.inlineActionButtonText}>{copy.homeShowFilters}</Text>
           </Pressable>
         </View>
+
+        {hasSearchQuery ? (
+          <View style={styles.primaryActionsRow}>
+            <Pressable style={styles.inlineActionButton} onPress={onClearSearch}>
+              <Text style={styles.inlineActionButtonText}>{copy.homeClearSearch}</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {canToggleSearchDetails ? (
           <View style={styles.searchDetailsToggleRow}>

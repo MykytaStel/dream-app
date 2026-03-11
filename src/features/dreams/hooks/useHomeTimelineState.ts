@@ -212,7 +212,6 @@ export function useHomeTimelineState({
     [copy, lastViewedDream, locale],
   );
 
-  const backlogValue = transcriptArchiveStats.audioOnly || moodBacklogCount;
   const spotlightPattern = spotlightWord?.label ?? spotlightTheme?.label ?? copy.homeSpotlightNoPattern;
   const spotlightPatternKind: PatternDetailKind | null = spotlightWord
     ? 'word'
@@ -231,13 +230,22 @@ export function useHomeTimelineState({
   const weeklyValue = `${weeklyEntries}/3`;
   const weeklyHint =
     weeklyEntries >= 3 ? copy.homeSpotlightWeeklyOnTrack : copy.homeSpotlightWeeklyOffTrack;
-  const backlogDisplayValue = backlogValue ? String(backlogValue) : copy.homeSpotlightNoBacklog;
-  const backlogHint =
+  const attentionValue =
     transcriptArchiveStats.audioOnly > 0
-      ? copy.homeSpotlightBacklogAudio
+      ? transcriptArchiveStats.audioOnly === 1
+        ? copy.homeSpotlightAttentionAudioSingle
+        : `${transcriptArchiveStats.audioOnly} ${copy.homeSpotlightAttentionAudioPlural}`
       : moodBacklogCount > 0
-        ? copy.homeSpotlightBacklogMood
-        : copy.homeSpotlightNoBacklog;
+        ? moodBacklogCount === 1
+          ? copy.homeSpotlightAttentionMoodSingle
+          : `${moodBacklogCount} ${copy.homeSpotlightAttentionMoodPlural}`
+        : copy.homeSpotlightAttentionClear;
+  const attentionHint =
+    transcriptArchiveStats.audioOnly > 0
+      ? copy.homeSpotlightAttentionAudioHint
+      : moodBacklogCount > 0
+        ? copy.homeSpotlightAttentionMoodHint
+        : copy.homeSpotlightAttentionClearHint;
 
   const activeFilterChips = React.useMemo<HomeFilterChip[]>(
     () =>
@@ -421,8 +429,8 @@ export function useHomeTimelineState({
     spotlightCountLabel,
     weeklyValue,
     weeklyHint,
-    backlogDisplayValue,
-    backlogHint,
+    attentionValue,
+    attentionHint,
     searchResultsLabel,
     savedSearchPresets,
     updateTimelineFilters,

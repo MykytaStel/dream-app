@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Animated,
   FlatList,
   Platform,
   RefreshControl,
@@ -35,15 +34,11 @@ import { useHomeScreenData } from '../hooks/useHomeScreenData';
 import { useHomeSwipeActions } from '../hooks/useHomeSwipeActions';
 import { useHomeTimelineState } from '../hooks/useHomeTimelineState';
 
-const HERO_COLLAPSE_DISTANCE = 132;
-
 export default function HomeScreen() {
   const theme = useTheme<Theme>();
   const insets = useSafeAreaInsets();
   const { locale } = useI18n();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const scrollY = React.useRef(new Animated.Value(0)).current;
-
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const layout = React.useMemo(() => getDreamLayout(theme), [theme]);
@@ -107,8 +102,6 @@ export default function HomeScreen() {
   const showHeroPrompt = showWakeCapturePrompt || hasDraft;
   const showLastViewedShortcut = !showHeroPrompt && Boolean(lastViewedDream);
   const heroInsetTop = insets.top + theme.spacing.sm;
-  const heroExpandedHeight = showHeroPrompt ? 252 : 160;
-  const heroCollapsedHeight = 92;
 
   const openLastViewedDream = React.useCallback(() => {
     if (!lastViewedDream) {
@@ -213,48 +206,68 @@ export default function HomeScreen() {
 
   const listHeader = React.useMemo(
     () => (
-      <HomeListHeader
-        copy={copy}
-        styles={styles}
-        timelineFilters={timeline.timelineFilters}
-        activeFilterChips={timeline.activeFilterChips}
-        visibleDreamCount={timeline.visibleDreams.length}
-        archiveScopedCount={timeline.archiveScopedDreams.length}
-        searchResultsLabel={timeline.searchResultsLabel}
-        lastViewedDreamTitle={
-          showLastViewedShortcut
-            ? lastViewedDream?.title || (lastViewedDream ? copy.untitled : null)
-            : null
-        }
-        lastViewedDreamMeta={showLastViewedShortcut ? timeline.lastViewedDreamMeta : null}
-        onOpenLastDream={showLastViewedShortcut ? openLastViewedDream : null}
-        streak={timeline.streak}
-        totalDreams={timeline.activeDreams.length}
-        averageWords={timeline.averageWords}
-        isSearchPending={timeline.isSearchPending}
-        hasSearchQuery={timeline.hasSearchQuery}
-        hasNonSearchRefinements={timeline.hasNonSearchRefinements}
-        savedSearchPresets={timeline.savedSearchPresets}
-        activeSearchPresetId={timeline.activeSearchPresetId}
-        canSaveSearchPreset={timeline.canSaveSearchPreset}
-        spotlightPattern={timeline.spotlightPattern}
-        spotlightPatternKind={timeline.spotlightPatternKind}
-        spotlightCountLabel={timeline.spotlightCountLabel}
-        weeklyValue={timeline.weeklyValue}
-        weeklyHint={timeline.weeklyHint}
-        backlogValue={timeline.backlogDisplayValue}
-        backlogHint={timeline.backlogHint}
-        onOpenPatternDetail={openPatternDetail}
-        onOpenFilterSheet={() => timeline.setIsFilterSheetOpen(true)}
-        onClearFilters={timeline.clearTimelineFilters}
-        onClearSearch={timeline.clearTimelineSearch}
-        onSaveSearchPreset={timeline.saveCurrentSearchPreset}
-        onApplySearchPreset={timeline.applySearchPreset}
-        onDeleteSearchPreset={timeline.deleteSearchPreset}
-        updateTimelineFilters={timeline.updateTimelineFilters}
-      />
+      <>
+        <HomeHero
+          copy={copy}
+          styles={styles}
+          insetTop={heroInsetTop}
+          greeting={timeline.heroGreeting}
+          dateLabel={timeline.heroDateLabel}
+          prompt={heroPrompt}
+        />
+        <HomeListHeader
+          copy={copy}
+          styles={styles}
+          timelineFilters={timeline.timelineFilters}
+          activeFilterChips={timeline.activeFilterChips}
+          visibleDreamCount={timeline.visibleDreams.length}
+          archiveScopedCount={timeline.archiveScopedDreams.length}
+          searchResultsLabel={timeline.searchResultsLabel}
+          lastViewedDreamTitle={
+            showLastViewedShortcut
+              ? lastViewedDream?.title || (lastViewedDream ? copy.untitled : null)
+              : null
+          }
+          lastViewedDreamMeta={showLastViewedShortcut ? timeline.lastViewedDreamMeta : null}
+          onOpenLastDream={showLastViewedShortcut ? openLastViewedDream : null}
+          streak={timeline.streak}
+          totalDreams={timeline.activeDreams.length}
+          averageWords={timeline.averageWords}
+          isSearchPending={timeline.isSearchPending}
+          hasSearchQuery={timeline.hasSearchQuery}
+          hasNonSearchRefinements={timeline.hasNonSearchRefinements}
+          savedSearchPresets={timeline.savedSearchPresets}
+          activeSearchPresetId={timeline.activeSearchPresetId}
+          canSaveSearchPreset={timeline.canSaveSearchPreset}
+          spotlightPattern={timeline.spotlightPattern}
+          spotlightPatternKind={timeline.spotlightPatternKind}
+          spotlightCountLabel={timeline.spotlightCountLabel}
+          weeklyValue={timeline.weeklyValue}
+          weeklyHint={timeline.weeklyHint}
+          attentionValue={timeline.attentionValue}
+          attentionHint={timeline.attentionHint}
+          onOpenPatternDetail={openPatternDetail}
+          onOpenFilterSheet={() => timeline.setIsFilterSheetOpen(true)}
+          onClearFilters={timeline.clearTimelineFilters}
+          onClearSearch={timeline.clearTimelineSearch}
+          onSaveSearchPreset={timeline.saveCurrentSearchPreset}
+          onApplySearchPreset={timeline.applySearchPreset}
+          onDeleteSearchPreset={timeline.deleteSearchPreset}
+          updateTimelineFilters={timeline.updateTimelineFilters}
+        />
+      </>
     ),
-    [copy, openLastViewedDream, openPatternDetail, showLastViewedShortcut, styles, timeline, lastViewedDream],
+    [
+      copy,
+      heroInsetTop,
+      heroPrompt,
+      lastViewedDream,
+      openLastViewedDream,
+      openPatternDetail,
+      showLastViewedShortcut,
+      styles,
+      timeline,
+    ],
   );
 
   if (loading) {
@@ -322,19 +335,6 @@ export default function HomeScreen() {
 
   return (
     <ScreenContainer scroll={false} padded={false}>
-      <HomeHero
-        copy={copy}
-        styles={styles}
-        scrollY={scrollY}
-        insetTop={heroInsetTop}
-        expandedHeight={heroExpandedHeight}
-        collapsedHeight={heroCollapsedHeight}
-        collapseDistance={HERO_COLLAPSE_DISTANCE}
-        greeting={timeline.heroGreeting}
-        dateLabel={timeline.heroDateLabel}
-        prompt={heroPrompt}
-      />
-
       <FlatList
         data={timeline.displayedDreams}
         keyExtractor={item => item.id}
@@ -355,17 +355,12 @@ export default function HomeScreen() {
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary, theme.colors.accent]}
             progressBackgroundColor={theme.colors.surface}
-            progressViewOffset={heroCollapsedHeight + heroInsetTop - 8}
+            progressViewOffset={heroInsetTop + theme.spacing.lg}
           />
         }
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false },
-        )}
         contentContainerStyle={[
           styles.listContent,
           {
-            paddingTop: heroExpandedHeight + heroInsetTop,
             paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
           },
         ]}

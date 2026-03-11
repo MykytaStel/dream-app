@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { fontFamilies } from '../../../theme/fonts';
 import { Theme } from '../../../theme/theme';
 import { hexToRgba } from '../../../theme/color';
 
@@ -83,6 +84,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       textAlign: 'center',
     },
     title: {
+      fontFamily: fontFamilies.display,
       textAlign: 'center',
       fontSize: 34,
       lineHeight: 40,

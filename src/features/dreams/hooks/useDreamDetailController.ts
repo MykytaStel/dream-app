@@ -123,6 +123,18 @@ export function useDreamDetailController({
     setShowSavedHighlight(false);
   }, []);
 
+  React.useEffect(() => {
+    if (!showSavedHighlight) {
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setShowSavedHighlight(false);
+    }, 2600);
+
+    return () => clearTimeout(timeoutId);
+  }, [showSavedHighlight]);
+
   const toggleSection = React.useCallback(
     (section: keyof DreamDetailSectionsState) => {
       updateSections(current => ({

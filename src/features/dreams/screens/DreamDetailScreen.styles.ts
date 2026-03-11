@@ -1,5 +1,6 @@
 import { StyleSheet } from 'react-native';
 import { createControlPill, createSoftTile } from '../../../theme/surfaces';
+import { fontFamilies } from '../../../theme/fonts';
 import { Theme } from '../../../theme/theme';
 
 export function createDreamDetailScreenStyles(theme: Theme) {
@@ -115,6 +116,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       color: theme.colors.background,
     },
     heroTitle: {
+      fontFamily: fontFamilies.display,
       fontSize: 26,
       lineHeight: 31,
       fontWeight: '700',
@@ -199,8 +201,9 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       lineHeight: 17,
     },
     savedCard: {
-      padding: 12,
-      gap: 8,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      gap: 6,
       borderColor: theme.colors.accent,
       backgroundColor: theme.colors.surface,
     },
@@ -239,7 +242,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     savedDescription: {
       color: theme.colors.textDim,
       fontSize: 12,
-      lineHeight: 17,
+      lineHeight: 16,
     },
     savedDismiss: {
       ...createControlPill(theme, {
@@ -255,16 +258,16 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     savedMetaRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 6,
+      alignItems: 'center',
+      gap: 8,
     },
     savedMetaPill: {
-      flex: 1,
-      minWidth: 136,
+      minWidth: 120,
       gap: 3,
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 12,
-        paddingVertical: 7,
+        paddingVertical: 6,
         paddingHorizontal: 8,
       }),
     },
@@ -277,6 +280,11 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     savedMetaValue: {
       fontWeight: '700',
       fontSize: 13,
+      lineHeight: 16,
+    },
+    savedMetaInline: {
+      color: theme.colors.textDim,
+      fontSize: 12,
       lineHeight: 16,
     },
     sectionCard: {

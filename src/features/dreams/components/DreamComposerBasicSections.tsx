@@ -26,64 +26,57 @@ export function DreamComposerHeroCard({
   hasAudio,
   hasRestoredDraft,
 }: HeroCardProps) {
+  const helperChips = (
+    <View style={styles.helperChipsRow}>
+      <View style={styles.helperChip}>
+        <Text style={styles.helperChipLabel}>{sleepDate}</Text>
+      </View>
+      {hasAudio ? (
+        <View style={styles.helperChip}>
+          <Text style={styles.helperChipLabel}>{copy.attachedAudioTitle}</Text>
+        </View>
+      ) : null}
+      {hasRestoredDraft ? (
+        <View style={styles.helperChip}>
+          <Text style={styles.helperChipLabel}>{copy.recordDraftRestoredTitle}</Text>
+        </View>
+      ) : null}
+    </View>
+  );
+
+  if (isWakeMode) {
+    return (
+      <Card style={[styles.heroCard, styles.heroCardCompact]}>
+        <View style={styles.heroCopyCompact}>
+          <Text style={styles.heroEyebrow}>{copy.quickAddWakeAction}</Text>
+          <SectionHeader title={copy.wakeHeroTitle} />
+        </View>
+        {helperChips}
+      </Card>
+    );
+  }
+
   return (
     <Card style={styles.heroCard}>
-      {!isWakeMode ? <View pointerEvents="none" style={styles.heroGlowLarge} /> : null}
-      {!isWakeMode ? <View pointerEvents="none" style={styles.heroGlowSmall} /> : null}
+      <View pointerEvents="none" style={styles.heroGlowLarge} />
+      <View pointerEvents="none" style={styles.heroGlowSmall} />
       <View style={styles.heroTopRow}>
         <View style={styles.heroCopy}>
-          <Text style={styles.heroEyebrow}>
-            {isEdit ? copy.editTitle : isWakeMode ? copy.quickAddWakeAction : copy.createTitle}
-          </Text>
+          <Text style={styles.heroEyebrow}>{isEdit ? copy.editTitle : copy.createTitle}</Text>
           <SectionHeader
-            title={
-              isEdit
-                ? copy.editHeroTitle
-                : isWakeMode
-                  ? copy.wakeHeroTitle
-                  : copy.createHeroTitle
-            }
-            subtitle={
-              isEdit
-                ? copy.editSubtitle
-                : isWakeMode
-                  ? copy.wakeHeroDescription
-                  : copy.createSubtitle
-            }
+            title={isEdit ? copy.editHeroTitle : copy.createHeroTitle}
+            subtitle={isEdit ? copy.editSubtitle : copy.createSubtitle}
             large
           />
         </View>
-        {!isWakeMode ? (
-          <View style={styles.kaleidoscopeShell}>
-            <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetPrimary]} />
-            <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAccent]} />
-            <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAlt]} />
-          </View>
-        ) : null}
+        <View style={styles.kaleidoscopeShell}>
+          <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetPrimary]} />
+          <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAccent]} />
+          <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAlt]} />
+        </View>
       </View>
 
-      <View style={styles.helperChipsRow}>
-        {isWakeMode ? (
-          <View style={[styles.helperChip, styles.helperChipActive]}>
-            <Text style={[styles.helperChipLabel, styles.helperChipLabelActive]}>
-              {copy.wakeModeChip}
-            </Text>
-          </View>
-        ) : null}
-        <View style={styles.helperChip}>
-          <Text style={styles.helperChipLabel}>{sleepDate}</Text>
-        </View>
-        {hasAudio ? (
-          <View style={styles.helperChip}>
-            <Text style={styles.helperChipLabel}>{copy.attachedAudioTitle}</Text>
-          </View>
-        ) : null}
-        {hasRestoredDraft ? (
-          <View style={styles.helperChip}>
-            <Text style={styles.helperChipLabel}>{copy.recordDraftRestoredTitle}</Text>
-          </View>
-        ) : null}
-      </View>
+      {helperChips}
     </Card>
   );
 }

@@ -425,7 +425,7 @@ export function StatsOverviewSections({
               </View>
 
               <View>
-                <SectionHeader title={copy.snapshotTitle} subtitle={copy.snapshotDescription} />
+                <SectionHeader title={copy.snapshotTitle} />
                 <View style={styles.metricGrid}>
                   <View style={styles.metricTile}>
                     <Text style={styles.metricLabel}>{copy.lastSevenDays}</Text>
@@ -441,7 +441,7 @@ export function StatsOverviewSections({
               </View>
 
               <View style={styles.detailsSubsection}>
-                <SectionHeader title={copy.coverageTitle} subtitle={copy.coverageDescription} />
+                <SectionHeader title={copy.coverageTitle} />
                 <View style={styles.detailsList}>
                   {coverageItems.map(item => (
                     <View key={item.label} style={styles.detailsListRow}>
@@ -462,7 +462,7 @@ export function StatsOverviewSections({
               </View>
 
               <View style={styles.detailsSubsection}>
-                <SectionHeader title={copy.attentionTitle} subtitle={copy.attentionDescription} />
+                <SectionHeader title={copy.attentionTitle} />
                 <View style={styles.detailsList}>
                   {attentionItems.map(item => (
                     <View key={item.label} style={styles.detailsListRow}>

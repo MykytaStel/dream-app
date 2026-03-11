@@ -277,7 +277,7 @@ export function createStatsScreenStyles(theme: Theme) {
     overviewNextStepHint: {
       color: theme.colors.textDim,
       fontSize: 12,
-      lineHeight: 17,
+      lineHeight: 16,
     },
     reportEntryCard: {
       ...createSoftTile(theme, {
@@ -337,10 +337,10 @@ export function createStatsScreenStyles(theme: Theme) {
       textTransform: 'capitalize',
     },
     sectionCard: {
-      gap: 12,
+      gap: 10,
     },
     detailsSubsection: {
-      gap: 6,
+      gap: 4,
     },
     sectionHint: {
       color: theme.colors.textDim,
@@ -349,7 +349,7 @@ export function createStatsScreenStyles(theme: Theme) {
     metricGrid: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 8,
+      gap: 6,
     },
     metricTile: {
       ...createSoftTile(theme, {
@@ -434,13 +434,13 @@ export function createStatsScreenStyles(theme: Theme) {
       justifyContent: 'space-between',
     },
     detailsList: {
-      gap: 8,
+      gap: 6,
     },
     detailsListRow: {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 14,
-        paddingVertical: 10,
+        paddingVertical: 9,
         paddingHorizontal: 13,
       }),
       gap: 5,
@@ -589,7 +589,7 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     detailsToggleCopy: {
       flex: 1,
-      gap: 3,
+      gap: 2,
     },
     detailsToggleTitle: {
       color: theme.colors.text,
@@ -600,7 +600,7 @@ export function createStatsScreenStyles(theme: Theme) {
     detailsToggleDescription: {
       color: theme.colors.textDim,
       fontSize: 12,
-      lineHeight: 17,
+      lineHeight: 16,
     },
     detailsTogglePill: {
       ...createControlPill(theme, {
@@ -618,7 +618,7 @@ export function createStatsScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     detailsSectionContent: {
-      gap: 12,
+      gap: 10,
     },
     compareModeSection: {
       gap: 6,

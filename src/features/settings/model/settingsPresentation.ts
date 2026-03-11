@@ -1,15 +1,21 @@
 import { type AppLocale } from '../../../i18n/types';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { type DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
+import { type CloudSession } from '../../../services/auth/session';
+import { type Dream } from '../../dreams/model/dream';
 import {
   type DreamTranscriptionModelStatus,
   type DreamTranscriptionProgress,
 } from '../../dreams/services/dreamTranscriptionService';
 import { type DreamReminderSettings } from '../../reminders/services/dreamReminderService';
-import { type DreamImportMode, type DreamImportPreview } from '../services/dataImportService';
+import {
+  type DreamImportMode,
+  type DreamImportPreview,
+} from '../services/dataImportService';
 import { type SettingsMetaItem } from '../components/SettingsMetaGrid';
 import { CURRENT_STORAGE_SCHEMA_VERSION } from '../../../services/storage/keys';
 import { DREAM_EXPORT_VERSION } from '../services/dataExportService';
+import { type CloudSyncSnapshot } from '../../../services/cloud/sync';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 
@@ -35,7 +41,10 @@ export function getReminderDate(settings: DreamReminderSettings) {
   return date;
 }
 
-export function formatReminderTime(settings: DreamReminderSettings, locale: AppLocale) {
+export function formatReminderTime(
+  settings: DreamReminderSettings,
+  locale: AppLocale,
+) {
   return getReminderDate(settings).toLocaleTimeString(getPickerLocale(locale), {
     hour: 'numeric',
     minute: '2-digit',
@@ -95,7 +104,11 @@ export function formatBackupTimestamp(value: string, locale: AppLocale) {
   });
 }
 
-export function formatBackupListTitle(value: number, locale: AppLocale, copy: SettingsCopy) {
+export function formatBackupListTitle(
+  value: number,
+  locale: AppLocale,
+  copy: SettingsCopy,
+) {
   const date = new Date(value);
 
   if (Number.isNaN(date.getTime())) {
@@ -112,6 +125,64 @@ export function formatBackupListTitle(value: number, locale: AppLocale, copy: Se
 
 export function formatBackupListMeta(fileName: string) {
   return fileName.replace(/\.json$/i, '');
+}
+
+export function formatCloudSyncMeta(
+  copy: SettingsCopy,
+  snapshot: CloudSyncSnapshot,
+  locale: AppLocale,
+  showDiagnostics = false,
+) {
+  const stateLabel =
+    snapshot.status === 'syncing'
+      ? copy.cloudSyncStateSyncing
+      : snapshot.status === 'success'
+      ? copy.cloudSyncStateSuccess
+      : snapshot.status === 'error'
+      ? copy.cloudSyncStateError
+      : copy.cloudSyncStateIdle;
+
+  const parts = [
+    stateLabel,
+    `${copy.cloudPendingLabel} ${snapshot.pendingCount}`,
+    `${copy.cloudSyncedLabel} ${snapshot.uploadedCount}`,
+    `${copy.cloudPulledLabel} ${snapshot.pulledCount}`,
+  ];
+
+  if (showDiagnostics && snapshot.skippedCount) {
+    parts.push(`${copy.cloudSkippedLabel} ${snapshot.skippedCount}`);
+  }
+
+  if (showDiagnostics && snapshot.conflictsResolvedCount) {
+    parts.push(
+      `${copy.cloudConflictsLabel} ${snapshot.conflictsResolvedCount}`,
+    );
+  }
+
+  if (showDiagnostics && snapshot.localWinsCount) {
+    parts.push(`${copy.cloudLocalWinsLabel} ${snapshot.localWinsCount}`);
+  }
+
+  if (showDiagnostics && snapshot.remoteWinsCount) {
+    parts.push(`${copy.cloudRemoteWinsLabel} ${snapshot.remoteWinsCount}`);
+  }
+
+  if (snapshot.failedCount) {
+    parts.push(`${copy.cloudErrorsLabel} ${snapshot.failedCount}`);
+  }
+
+  const timestamp =
+    typeof snapshot.lastFinishedAt === 'number'
+      ? formatBackupTimestamp(
+          new Date(snapshot.lastFinishedAt).toISOString(),
+          locale,
+        )
+      : copy.cloudLastSyncNever;
+
+  return {
+    title: timestamp,
+    meta: parts.join(' • '),
+  };
 }
 
 export function buildPrivacyHighlights(copy: SettingsCopy): SettingsMetaItem[] {
@@ -145,6 +216,89 @@ export function buildPrivacyHighlights(copy: SettingsCopy): SettingsMetaItem[] {
   ];
 }
 
+export function buildCloudHighlights(
+  copy: SettingsCopy,
+  session: CloudSession,
+  syncEnabled: boolean,
+  dreams: Dream[],
+  cloudConfigured: boolean,
+  showDeveloperConfig = false,
+): SettingsMetaItem[] {
+  const summary = dreams.reduce(
+    (acc, dream) => {
+      switch (dream.syncStatus ?? 'local') {
+        case 'synced':
+          acc.synced += 1;
+          break;
+        case 'error':
+          acc.errors += 1;
+          break;
+        case 'syncing':
+        case 'local':
+        default:
+          acc.pending += 1;
+          break;
+      }
+
+      return acc;
+    },
+    { pending: 0, synced: 0, errors: 0 },
+  );
+
+  return [
+    ...(showDeveloperConfig
+      ? [
+          {
+            label: copy.cloudConfigLabel,
+            value: cloudConfigured
+              ? copy.cloudConfigReady
+              : copy.cloudConfigMissing,
+            icon: 'server-outline',
+          } satisfies SettingsMetaItem,
+        ]
+      : []),
+    {
+      label: copy.cloudSessionLabel,
+      value:
+        session.status === 'signed-in'
+          ? copy.cloudSessionSignedIn
+          : copy.cloudSessionSignedOut,
+      icon: 'cloud-outline',
+    },
+    {
+      label: copy.cloudAccountLabel,
+      value:
+        session.status === 'signed-in'
+          ? session.isAnonymous
+            ? copy.cloudAccountAnonymous
+            : session.email || session.userId
+          : copy.cloudAccountDisconnected,
+      icon: 'person-circle-outline',
+      wide: true,
+    },
+    {
+      label: copy.cloudSyncToggleLabel,
+      value: syncEnabled ? copy.cloudSyncEnabled : copy.cloudSyncDisabled,
+      icon: 'sync-outline',
+    },
+    {
+      label: copy.cloudPendingLabel,
+      value: String(summary.pending),
+      icon: 'cloud-upload-outline',
+    },
+    {
+      label: copy.cloudSyncedLabel,
+      value: String(summary.synced),
+      icon: 'checkmark-done-outline',
+    },
+    {
+      label: copy.cloudErrorsLabel,
+      value: String(summary.errors),
+      icon: 'alert-circle-outline',
+    },
+  ];
+}
+
 export function buildAnalysisHighlights(
   copy: SettingsCopy,
   settings: DreamAnalysisSettings,
@@ -159,10 +313,9 @@ export function buildAnalysisHighlights(
     },
     {
       label: copy.analysisNetworkLabel,
-      value:
-        settings.allowNetwork
-          ? copy.analysisNetworkAllowed
-          : copy.analysisNetworkBlocked,
+      value: settings.allowNetwork
+        ? copy.analysisNetworkAllowed
+        : copy.analysisNetworkBlocked,
     },
   ];
 }
@@ -174,10 +327,9 @@ export function buildTranscriptionHighlights(
   return [
     {
       label: copy.transcriptionStatusLabel,
-      value:
-        status?.installed
-          ? copy.transcriptionStatusInstalled
-          : copy.transcriptionStatusMissing,
+      value: status?.installed
+        ? copy.transcriptionStatusInstalled
+        : copy.transcriptionStatusMissing,
     },
     {
       label: copy.transcriptionSizeLabel,

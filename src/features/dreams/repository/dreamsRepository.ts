@@ -3,6 +3,14 @@ import { DREAMS_STORAGE_KEY } from '../../../services/storage/keys';
 import { Dream, DreamTranscriptSource, DreamTranscriptStatus } from '../model/dream';
 import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
 import {
+  clearDreamDeletionTombstone,
+  saveDreamDeletionTombstone,
+} from './dreamDeletionTombstonesRepository';
+import {
+  DreamSyncBundle,
+  hydrateDreamFromSyncBundle,
+} from '../../../services/api/contracts/dreamSync';
+import {
   sanitizeDream,
   sortDreamsStable,
   validateDreamForSave,
@@ -49,14 +57,41 @@ export function replaceAllDreams(dreams: Dream[]) {
   persistDreams(dreams);
 }
 
-function updateDreamById(id: string, updater: (dream: Dream) => Dream) {
+function removeUndefinedSyncError<T extends Dream>(dream: T): T {
+  if (dream.syncError) {
+    return dream;
+  }
+
+  const nextDream = { ...dream };
+  delete nextDream.syncError;
+  return nextDream as T;
+}
+
+function markDreamAsLocalChange(dream: Dream, changedAt = Date.now()) {
+  return removeUndefinedSyncError({
+    ...dream,
+    updatedAt: Math.max(changedAt, dream.createdAt),
+    syncStatus: 'local',
+    syncError: undefined,
+  });
+}
+
+function updateDreamById(
+  id: string,
+  updater: (dream: Dream) => Dream,
+  options: { markLocalChange?: boolean } = {},
+) {
   const all = listDreams();
   const idx = all.findIndex(dream => dream.id === id);
   if (idx < 0) {
     throw new Error(`Dream not found: ${id}`);
   }
 
-  const nextDream = sanitizeDream(updater(all[idx]));
+  const nextDream = sanitizeDream(
+    options.markLocalChange === false
+      ? updater(all[idx])
+      : markDreamAsLocalChange(updater(all[idx])),
+  );
   all[idx] = nextDream;
   persistDreams(all);
   return nextDream;
@@ -69,8 +104,19 @@ export function saveDream(d: Dream) {
   }
 
   const all = listDreams();
-  const nextDream = sanitizeDream(d);
-  const idx = all.findIndex(x => x.id === nextDream.id);
+  const idx = all.findIndex(x => x.id === d.id);
+  const existingDream = idx >= 0 ? all[idx] : undefined;
+  const nextDream = sanitizeDream(
+    markDreamAsLocalChange(
+      {
+        ...existingDream,
+        ...d,
+        audioRemotePath: d.audioRemotePath ?? existingDream?.audioRemotePath,
+        lastSyncedAt: d.lastSyncedAt ?? existingDream?.lastSyncedAt,
+      },
+      existingDream ? Date.now() : (d.updatedAt ?? d.createdAt),
+    ),
+  );
 
   if (idx >= 0) {
     all[idx] = nextDream;
@@ -79,6 +125,7 @@ export function saveDream(d: Dream) {
   }
 
   persistDreams(all);
+  clearDreamDeletionTombstone(d.id);
 }
 
 export function getDream(id: string): Dream | undefined {
@@ -86,16 +133,17 @@ export function getDream(id: string): Dream | undefined {
 }
 
 export function deleteDream(id: string) {
+  saveDreamDeletionTombstone(id);
   persistDreams(listDreams().filter(dream => dream.id !== id));
 }
 
 export function archiveDream(id: string) {
   const next = listDreams().map(dream =>
     dream.id === id
-      ? {
+      ? markDreamAsLocalChange({
           ...dream,
           archivedAt: Date.now(),
-        }
+        })
       : dream,
   );
   persistDreams(next);
@@ -208,6 +256,67 @@ export function clearDreamAnalysis(id: string) {
     delete nextDream.analysis;
     return nextDream;
   });
+}
+
+export function markDreamSyncing(id: string) {
+  return updateDreamById(
+    id,
+    dream =>
+      removeUndefinedSyncError({
+        ...dream,
+        syncStatus: 'syncing',
+        syncError: undefined,
+      }),
+    { markLocalChange: false },
+  );
+}
+
+export function markDreamSynced(
+  id: string,
+  input: { audioRemotePath?: string; syncedAt?: number } = {},
+) {
+  const syncedAt = input.syncedAt ?? Date.now();
+
+  return updateDreamById(
+    id,
+    dream =>
+      removeUndefinedSyncError({
+        ...dream,
+        audioRemotePath: input.audioRemotePath ?? dream.audioRemotePath,
+        syncStatus: 'synced',
+        lastSyncedAt: syncedAt,
+        syncError: undefined,
+      }),
+    { markLocalChange: false },
+  );
+}
+
+export function markDreamSyncError(id: string, errorMessage?: string) {
+  return updateDreamById(
+    id,
+    dream => ({
+      ...dream,
+      syncStatus: 'error',
+      syncError: errorMessage?.trim() || 'sync-error',
+    }),
+    { markLocalChange: false },
+  );
+}
+
+export function upsertDreamFromSyncBundle(bundle: DreamSyncBundle) {
+  const nextDream = hydrateDreamFromSyncBundle(bundle);
+  const all = listDreams();
+  const idx = all.findIndex(dream => dream.id === nextDream.id);
+
+  if (idx >= 0) {
+    all[idx] = nextDream;
+  } else {
+    all.unshift(nextDream);
+  }
+
+  persistDreams(all);
+  clearDreamDeletionTombstone(nextDream.id);
+  return nextDream;
 }
 
 export function ensurePreviewDream() {

@@ -1,5 +1,6 @@
 import {
   Dream,
+  DreamSyncStatus,
   DreamTranscriptSource,
   DreamTranscriptStatus,
   PreSleepEmotion,
@@ -13,6 +14,7 @@ const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = ['idle', 'processing',
 const TRANSCRIPT_SOURCE_VALUES: DreamTranscriptSource[] = ['generated', 'edited'];
 const ANALYSIS_PROVIDER_VALUES: DreamAnalysisProvider[] = ['manual', 'openai'];
 const ANALYSIS_STATUS_VALUES: DreamAnalysisStatus[] = ['idle', 'ready', 'error'];
+const SYNC_STATUS_VALUES: DreamSyncStatus[] = ['local', 'syncing', 'synced', 'error'];
 const WAKE_EMOTION_VALUES: WakeEmotion[] = [
   'calm',
   'uneasy',
@@ -96,6 +98,14 @@ function normalizeTranscriptSource(rawSource: Dream['transcriptSource']) {
   }
 
   return TRANSCRIPT_SOURCE_VALUES.includes(rawSource) ? rawSource : undefined;
+}
+
+function normalizeSyncStatus(rawStatus: Dream['syncStatus']) {
+  if (!rawStatus) {
+    return undefined;
+  }
+
+  return SYNC_STATUS_VALUES.includes(rawStatus) ? rawStatus : undefined;
 }
 
 function normalizeTranscriptFields(input: Dream) {
@@ -199,6 +209,36 @@ function normalizeAnalysisFields(input: Dream) {
   };
 }
 
+function normalizeSyncFields(input: Dream) {
+  const updatedAt =
+    typeof input.updatedAt === 'number' && Number.isFinite(input.updatedAt)
+      ? Math.max(input.updatedAt, input.createdAt)
+      : input.createdAt;
+  const audioRemotePath = normalizeOptionalText(input.audioRemotePath);
+  let syncStatus = normalizeSyncStatus(input.syncStatus) ?? 'local';
+  const lastSyncedAt =
+    typeof input.lastSyncedAt === 'number' && Number.isFinite(input.lastSyncedAt)
+      ? input.lastSyncedAt
+      : undefined;
+  let syncError = normalizeOptionalText(input.syncError);
+
+  if (syncStatus === 'synced' && !lastSyncedAt) {
+    syncStatus = 'local';
+  }
+
+  if (syncStatus !== 'error') {
+    syncError = undefined;
+  }
+
+  return {
+    updatedAt,
+    audioRemotePath,
+    syncStatus,
+    lastSyncedAt,
+    syncError,
+  };
+}
+
 export function normalizeTag(value: string) {
   return value
     .trim()
@@ -282,9 +322,11 @@ export function validateDreamForSave(input: Pick<Dream, 'text' | 'audioUri' | 's
 
 export function sanitizeDream(input: Dream): Dream {
   const transcriptFields = normalizeTranscriptFields(input);
+  const syncFields = normalizeSyncFields(input);
 
   return {
     ...input,
+    updatedAt: syncFields.updatedAt,
     starredAt:
       typeof input.starredAt === 'number' && Number.isFinite(input.starredAt)
         ? input.starredAt
@@ -296,6 +338,10 @@ export function sanitizeDream(input: Dream): Dream {
     transcriptStatus: transcriptFields.transcriptStatus,
     transcriptSource: transcriptFields.transcriptSource,
     transcriptUpdatedAt: transcriptFields.transcriptUpdatedAt,
+    audioRemotePath: syncFields.audioRemotePath,
+    syncStatus: syncFields.syncStatus,
+    lastSyncedAt: syncFields.lastSyncedAt,
+    syncError: syncFields.syncError,
     analysis: normalizeAnalysisFields(input),
     tags: normalizeTags(input.tags ?? []),
     wakeEmotions: normalizeEmotionSelection(input.wakeEmotions, WAKE_EMOTION_VALUES),

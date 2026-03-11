@@ -270,6 +270,31 @@ describe('storage migrations', () => {
     });
   });
 
+  test('migrates sync metadata into schema v8 defaults', () => {
+    kv.set(
+      DREAMS_STORAGE_KEY,
+      JSON.stringify([
+        {
+          id: 'sync-legacy',
+          createdAt: 1710000000000,
+          sleepDate: '2026-03-05',
+          text: 'Saved dream',
+          tags: [],
+        },
+      ]),
+    );
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 7);
+
+    runStorageMigrations();
+
+    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    expect(migrated[0]).toMatchObject({
+      id: 'sync-legacy',
+      updatedAt: 1710000000000,
+      syncStatus: 'local',
+    });
+  });
+
   test('is idempotent when already on latest schema version', () => {
     kv.set(STORAGE_SCHEMA_VERSION_KEY, CURRENT_STORAGE_SCHEMA_VERSION);
     kv.set(APP_LOCALE_KEY, 'en');

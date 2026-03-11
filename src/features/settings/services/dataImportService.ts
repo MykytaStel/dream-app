@@ -7,7 +7,14 @@ import {
   STORAGE_SCHEMA_VERSION_KEY,
 } from '../../../services/storage/keys';
 import { saveDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
-import { listDreams, replaceAllDreams } from '../../dreams/repository/dreamsRepository';
+import {
+  clearAllDreamDeletionTombstones,
+  clearDreamDeletionTombstonesForDreamIds,
+} from '../../dreams/repository/dreamDeletionTombstonesRepository';
+import {
+  listDreams,
+  replaceAllDreams,
+} from '../../dreams/repository/dreamsRepository';
 import {
   getDreamDraft,
   clearDreamDraft,
@@ -18,6 +25,7 @@ import { applyDreamReminderSettings } from '../../reminders/services/dreamRemind
 import {
   DREAM_EXPORT_VERSION,
   getExportDirectoryPath,
+  type DreamBackup,
   type DreamExportV1,
 } from './dataExportService';
 
@@ -66,18 +74,27 @@ function buildSummaryFromDreams(input: {
 
   return {
     dreamCount: dreams.length,
-    archivedDreamCount: dreams.filter(dream => typeof dream.archivedAt === 'number').length,
-    audioDreamCount: dreams.filter(dream => typeof dream.audioUri === 'string' && dream.audioUri.trim())
-      .length,
+    archivedDreamCount: dreams.filter(
+      dream => typeof dream.archivedAt === 'number',
+    ).length,
+    audioDreamCount: dreams.filter(
+      dream => typeof dream.audioUri === 'string' && dream.audioUri.trim(),
+    ).length,
     transcribedDreamCount: dreams.filter(
       dream => typeof dream.transcript === 'string' && dream.transcript.trim(),
     ).length,
-    editedTranscriptCount: dreams.filter(dream => dream.transcriptSource === 'edited').length,
+    editedTranscriptCount: dreams.filter(
+      dream => dream.transcriptSource === 'edited',
+    ).length,
     analyzedDreamCount: dreams.filter(
       dream =>
-        isRecordShape(dream.analysis) && typeof dream.analysis.status === 'string' && dream.analysis.status === 'ready',
+        isRecordShape(dream.analysis) &&
+        typeof dream.analysis.status === 'string' &&
+        dream.analysis.status === 'ready',
     ).length,
-    starredDreamCount: dreams.filter(dream => typeof dream.starredAt === 'number').length,
+    starredDreamCount: dreams.filter(
+      dream => typeof dream.starredAt === 'number',
+    ).length,
     draftIncluded: Boolean(input.draft),
   };
 }
@@ -146,22 +163,33 @@ function parseDreamExport(value: unknown): DreamExportV1 {
       typeof value.appVersion === 'string' && value.appVersion.trim()
         ? value.appVersion
         : 'unknown',
-    platform: value.platform === 'android' || value.platform === 'ios' ? value.platform : 'ios',
+    platform:
+      value.platform === 'android' || value.platform === 'ios'
+        ? value.platform
+        : 'ios',
     locale: value.locale,
     storageSchemaVersion:
-      typeof value.storageSchemaVersion === 'number' && Number.isFinite(value.storageSchemaVersion)
+      typeof value.storageSchemaVersion === 'number' &&
+      Number.isFinite(value.storageSchemaVersion)
         ? value.storageSchemaVersion
         : CURRENT_STORAGE_SCHEMA_VERSION,
     summary,
     dreams: value.dreams as DreamExportV1['dreams'],
     draft: (draft as DreamDraft | null | undefined) ?? null,
-    reminderSettings: value.reminderSettings as DreamExportV1['reminderSettings'],
-    analysisSettings: value.analysisSettings as DreamExportV1['analysisSettings'],
+    reminderSettings:
+      value.reminderSettings as DreamExportV1['reminderSettings'],
+    analysisSettings:
+      value.analysisSettings as DreamExportV1['analysisSettings'],
   };
 }
 
-function mergeDreamCollections(currentDreams: DreamExportV1['dreams'], importedDreams: DreamExportV1['dreams']) {
-  const merged = new Map(currentDreams.map(dream => [dream.id, dream] as const));
+function mergeDreamCollections(
+  currentDreams: DreamBackup[],
+  importedDreams: DreamBackup[],
+) {
+  const merged = new Map(
+    currentDreams.map(dream => [dream.id, dream] as const),
+  );
 
   for (const dream of importedDreams) {
     merged.set(dream.id, dream);
@@ -235,7 +263,9 @@ export async function listLocalDreamExportFiles() {
   const entries = await RNFS.readDir(directoryPath);
 
   return entries
-    .filter(entry => entry.isFile() && entry.name.toLowerCase().endsWith('.json'))
+    .filter(
+      entry => entry.isFile() && entry.name.toLowerCase().endsWith('.json'),
+    )
     .map(entry => ({
       fileName: entry.name,
       filePath: entry.path,
@@ -257,7 +287,10 @@ async function readDreamImportPayload(filePath: string) {
   return parseDreamExport(parsed);
 }
 
-export async function loadDreamImportPreview(filePath: string, mode: DreamImportMode) {
+export async function loadDreamImportPreview(
+  filePath: string,
+  mode: DreamImportMode,
+) {
   const payload = await readDreamImportPayload(filePath);
   const fileName = filePath.split('/').filter(Boolean).pop() ?? filePath;
   return createPreviewFromPayload(payload, {
@@ -268,7 +301,10 @@ export async function loadDreamImportPreview(filePath: string, mode: DreamImport
   });
 }
 
-export async function restoreDreamImportFromFile(filePath: string, mode: DreamImportMode) {
+export async function restoreDreamImportFromFile(
+  filePath: string,
+  mode: DreamImportMode,
+) {
   const payload = await readDreamImportPayload(filePath);
   const currentDreams = listDreams();
   const nextDreams =
@@ -277,6 +313,13 @@ export async function restoreDreamImportFromFile(filePath: string, mode: DreamIm
       : mergeDreamCollections(currentDreams, payload.dreams);
 
   replaceAllDreams(nextDreams);
+  if (mode === 'replace') {
+    clearAllDreamDeletionTombstones();
+  } else {
+    clearDreamDeletionTombstonesForDreamIds(
+      payload.dreams.map(dream => dream.id),
+    );
+  }
 
   if (mode === 'replace') {
     if (payload.draft) {

@@ -79,6 +79,56 @@ const SETTINGS_COPY_EN = {
   cloudAccountLabel: 'Account',
   cloudAccountDisconnected: 'Not linked yet',
   cloudAccountAnonymous: 'Needs email account',
+  cloudPathTitle: 'What do you need on this device?',
+  cloudPathDescription:
+    'Choose whether this is the device where backup starts or one that should open an existing archive.',
+  cloudPathThisDevice: 'Start here',
+  cloudPathAnotherDevice: 'Open existing',
+  cloudFirstDeviceTitle: 'Start backup on this device',
+  cloudFirstDeviceDescription:
+    'Create the backup on this device first, then save it under an email account if you want another device to open the same archive.',
+  cloudGuideTitle: 'How backup works',
+  cloudGuideStepOne: 'Turn on backup on your first device.',
+  cloudGuideStepTwo: 'Save it under an email account if you want the same archive on another device.',
+  cloudGuideStepThree: 'Open that same backup on another device and run sync.',
+  cloudGuideExistingStepOne:
+    'Enter the same email and password you used for this backup before.',
+  cloudGuideExistingStepTwo:
+    'Open that archive on this device and let sync pull the latest changes.',
+  cloudGuideExistingStepThree:
+    'Keep sync on so edits and deletes continue moving between devices.',
+  cloudGuideAnonymousStepOne: 'This device is already connected to backup.',
+  cloudGuideAnonymousStepTwo: 'Save this backup under an email account next.',
+  cloudGuideAnonymousStepThree: 'Then open the same backup on another device.',
+  cloudGuideNamedStepOne: 'This backup is already linked to your account.',
+  cloudGuideNamedStepTwo: 'Open the same backup with this email on another device.',
+  cloudGuideNamedStepThree: 'Keep sync on so changes move between devices.',
+  cloudSuccessTitle: 'Next step',
+  cloudConnectedSuccessTitle: 'Backup is on for this device',
+  cloudConnectedSuccessDescription:
+    'Save this backup under an email account next if you want another device to open the same archive.',
+  cloudSignedInSuccessTitle: 'Existing backup opened',
+  cloudSignedInSuccessDescription:
+    'This device is now linked to your backup. Run sync now to pull the latest archive changes.',
+  cloudUpgradedSuccessTitle: 'Backup account saved',
+  cloudUpgradedSuccessDescription:
+    'This backup is now linked to your email account. Open the same backup on another device with these credentials.',
+  cloudResetSuccessTitle: 'Check your inbox',
+  cloudResetSuccessDescription:
+    'Open the reset link from that email, then come back and sign in with the new password.',
+  cloudManageAction: 'Open backup and sync',
+  cloudManageMeta: 'Connect devices, sign in, recover password, and run sync.',
+  cloudManageActionDisconnected: 'Turn on backup',
+  cloudManageMetaDisconnected:
+    'Start backup on this device or open an existing archive from another one.',
+  cloudManageActionAnonymous: 'Save backup account',
+  cloudManageMetaAnonymous:
+    'Link this backup to your email next so another device can open the same archive.',
+  backupScreenTitle: 'Backup & sync',
+  backupScreenSubtitle:
+    'Keep one dream archive across devices while capture stays local first.',
+  cloudExistingBackupTitle: 'Open existing backup',
+  cloudSaveBackupTitle: 'Save this backup',
   cloudIdentityTitle: 'Named account',
   cloudIdentityDescriptionSignedOut:
     'Sign in with the same email and password on another device to open the same archive.',
@@ -91,6 +141,9 @@ const SETTINGS_COPY_EN = {
   cloudCredentialsMissingTitle: 'Missing credentials',
   cloudCredentialsMissingDescription:
     'Enter an email and password before continuing.',
+  cloudEmailMissingTitle: 'Missing email',
+  cloudEmailMissingDescription:
+    'Enter the email for the backup account first.',
   cloudSyncToggleLabel: 'Auto sync',
   cloudSyncToggleHint:
     'Auto sync can be enabled only after cloud backup is connected.',
@@ -110,6 +163,8 @@ const SETTINGS_COPY_EN = {
   cloudConnectButtonBusy: 'Connecting...',
   cloudSignInExistingButton: 'Open existing backup',
   cloudSignInExistingButtonBusy: 'Signing in...',
+  cloudResetPasswordButton: 'Send reset email',
+  cloudResetPasswordButtonBusy: 'Sending email...',
   cloudUpgradeAccountButton: 'Save backup account',
   cloudUpgradeAccountButtonBusy: 'Saving account...',
   cloudDisconnectButton: 'Turn off backup',
@@ -129,6 +184,10 @@ const SETTINGS_COPY_EN = {
   cloudConfigErrorTitle: 'Cloud config error',
   cloudConnectErrorTitle: 'Backup connect failed',
   cloudAccountSignInErrorTitle: 'Account sign-in failed',
+  cloudPasswordResetErrorTitle: 'Password reset failed',
+  cloudPasswordResetSuccessTitle: 'Reset email sent',
+  cloudPasswordResetSuccessDescription:
+    'If this backup account exists, check that inbox for the password reset link.',
   cloudAccountUpgradeErrorTitle: 'Account upgrade failed',
   cloudDisconnectErrorTitle: 'Backup disconnect failed',
   cloudFootnote:
@@ -347,6 +406,57 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudAccountLabel: 'Акаунт',
   cloudAccountDisconnected: 'Ще не привʼязано',
   cloudAccountAnonymous: 'Потрібен email-акаунт',
+  cloudPathTitle: 'Що тобі потрібно на цьому пристрої?',
+  cloudPathDescription:
+    'Обери, чи це пристрій, на якому backup починається, чи той, що має відкрити вже існуючий архів.',
+  cloudPathThisDevice: 'Почати тут',
+  cloudPathAnotherDevice: 'Відкрити існуючий',
+  cloudFirstDeviceTitle: 'Почати backup на цьому пристрої',
+  cloudFirstDeviceDescription:
+    'Спершу створи backup на цьому пристрої, а потім збережи його під email-акаунтом, якщо хочеш відкрити той самий архів на іншому пристрої.',
+  cloudGuideTitle: 'Як працює backup',
+  cloudGuideStepOne: 'Увімкни backup на своєму першому пристрої.',
+  cloudGuideStepTwo: 'Збережи його під email-акаунтом, якщо хочеш той самий архів на іншому пристрої.',
+  cloudGuideStepThree: 'Відкрий той самий backup на іншому пристрої й запусти sync.',
+  cloudGuideExistingStepOne:
+    'Введи ту саму пошту і пароль, які вже використовуються для цього backup.',
+  cloudGuideExistingStepTwo:
+    'Відкрий цей архів на пристрої й дай sync підтягнути останні зміни.',
+  cloudGuideExistingStepThree:
+    'Тримай sync увімкненим, щоб редагування і видалення ходили між пристроями.',
+  cloudGuideAnonymousStepOne: 'Цей пристрій уже підключений до backup.',
+  cloudGuideAnonymousStepTwo: 'Тепер збережи цей backup під email-акаунтом.',
+  cloudGuideAnonymousStepThree: 'Після цього відкрий той самий backup на іншому пристрої.',
+  cloudGuideNamedStepOne: 'Цей backup уже привʼязаний до твого акаунта.',
+  cloudGuideNamedStepTwo: 'Відкрий той самий backup з цією поштою на іншому пристрої.',
+  cloudGuideNamedStepThree: 'Тримай sync увімкненим, щоб зміни ходили між пристроями.',
+  cloudSuccessTitle: 'Що далі',
+  cloudConnectedSuccessTitle: 'Backup увімкнено на цьому пристрої',
+  cloudConnectedSuccessDescription:
+    'Тепер збережи цей backup під email-акаунтом, якщо хочеш відкрити той самий архів на іншому пристрої.',
+  cloudSignedInSuccessTitle: 'Існуючий backup відкрито',
+  cloudSignedInSuccessDescription:
+    'Цей пристрій уже підключений до твого backup. Тепер запусти sync, щоб підтягнути останні зміни архіву.',
+  cloudUpgradedSuccessTitle: 'Backup-акаунт збережено',
+  cloudUpgradedSuccessDescription:
+    'Тепер цей backup привʼязаний до твоєї пошти. Відкрий той самий backup на іншому пристрої з цими даними.',
+  cloudResetSuccessTitle: 'Перевір пошту',
+  cloudResetSuccessDescription:
+    'Відкрий посилання зі листа для скидання пароля, а потім повернись сюди й увійди з новим паролем.',
+  cloudManageAction: 'Відкрити backup і sync',
+  cloudManageMeta:
+    'Підключай пристрої, входь в акаунт, відновлюй пароль і запускай sync.',
+  cloudManageActionDisconnected: 'Увімкнути backup',
+  cloudManageMetaDisconnected:
+    'Почни backup на цьому пристрої або відкрий існуючий архів з іншого.',
+  cloudManageActionAnonymous: 'Зберегти backup-акаунт',
+  cloudManageMetaAnonymous:
+    'Тепер привʼяжи цей backup до пошти, щоб інший пристрій міг відкрити той самий архів.',
+  backupScreenTitle: 'Backup і sync',
+  backupScreenSubtitle:
+    'Тримай один архів снів на кількох пристроях, але запис лишається локальним у першу чергу.',
+  cloudExistingBackupTitle: 'Відкрити існуючий backup',
+  cloudSaveBackupTitle: 'Зберегти цей backup',
   cloudIdentityTitle: 'Іменний акаунт',
   cloudIdentityDescriptionSignedOut:
     'Увійди з тією ж поштою і паролем на іншому пристрої, щоб відкрити той самий архів.',
@@ -359,6 +469,9 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudCredentialsMissingTitle: 'Немає даних для входу',
   cloudCredentialsMissingDescription:
     'Введи email і пароль перед продовженням.',
+  cloudEmailMissingTitle: 'Немає email',
+  cloudEmailMissingDescription:
+    'Спершу введи email для backup-акаунта.',
   cloudSyncToggleLabel: 'Автосинк',
   cloudSyncToggleHint:
     'Автосинк можна увімкнути лише після підключення backup.',
@@ -378,6 +491,8 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudConnectButtonBusy: 'Підключення...',
   cloudSignInExistingButton: 'Відкрити існуючий backup',
   cloudSignInExistingButtonBusy: 'Вхід...',
+  cloudResetPasswordButton: 'Надіслати лист для скидання',
+  cloudResetPasswordButtonBusy: 'Надсилаємо лист...',
   cloudUpgradeAccountButton: 'Зберегти backup-акаунт',
   cloudUpgradeAccountButtonBusy: 'Збереження акаунта...',
   cloudDisconnectButton: 'Вимкнути backup',
@@ -397,6 +512,10 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudConfigErrorTitle: 'Помилка cloud-конфігу',
   cloudConnectErrorTitle: 'Не вдалося підключити backup',
   cloudAccountSignInErrorTitle: 'Не вдалося увійти в акаунт',
+  cloudPasswordResetErrorTitle: 'Не вдалося надіслати лист для скидання',
+  cloudPasswordResetSuccessTitle: 'Лист для скидання надіслано',
+  cloudPasswordResetSuccessDescription:
+    'Якщо такий backup-акаунт існує, перевір пошту й відкрий посилання для скидання пароля.',
   cloudAccountUpgradeErrorTitle: 'Не вдалося оновити акаунт',
   cloudDisconnectErrorTitle: 'Не вдалося вимкнути backup',
   cloudFootnote:

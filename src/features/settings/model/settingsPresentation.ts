@@ -276,11 +276,15 @@ export function buildCloudHighlights(
       icon: 'person-circle-outline',
       wide: true,
     },
-    {
-      label: copy.cloudSyncToggleLabel,
-      value: syncEnabled ? copy.cloudSyncEnabled : copy.cloudSyncDisabled,
-      icon: 'sync-outline',
-    },
+    ...(session.status === 'signed-in'
+      ? [
+          {
+            label: copy.cloudSyncToggleLabel,
+            value: syncEnabled ? copy.cloudSyncEnabled : copy.cloudSyncDisabled,
+            icon: 'sync-outline',
+          } satisfies SettingsMetaItem,
+        ]
+      : []),
     {
       label: copy.cloudPendingLabel,
       value: String(summary.pending),
@@ -296,6 +300,43 @@ export function buildCloudHighlights(
       value: String(summary.errors),
       icon: 'alert-circle-outline',
     },
+  ];
+}
+
+export function buildCloudSummaryHighlights(
+  copy: SettingsCopy,
+  session: CloudSession,
+  syncEnabled: boolean,
+): SettingsMetaItem[] {
+  return [
+    {
+      label: copy.cloudSessionLabel,
+      value:
+        session.status === 'signed-in'
+          ? copy.cloudSessionSignedIn
+          : copy.cloudSessionSignedOut,
+      icon: 'cloud-outline',
+    },
+    {
+      label: copy.cloudAccountLabel,
+      value:
+        session.status === 'signed-in'
+          ? session.isAnonymous
+            ? copy.cloudAccountAnonymous
+            : session.email || session.userId
+          : copy.cloudAccountDisconnected,
+      icon: 'person-circle-outline',
+      wide: true,
+    },
+    ...(session.status === 'signed-in'
+      ? [
+          {
+            label: copy.cloudSyncToggleLabel,
+            value: syncEnabled ? copy.cloudSyncEnabled : copy.cloudSyncDisabled,
+            icon: 'sync-outline',
+          } satisfies SettingsMetaItem,
+        ]
+      : []),
   ];
 }
 

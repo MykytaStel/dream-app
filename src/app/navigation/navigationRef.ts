@@ -37,6 +37,15 @@ export function openWakeEntry(params?: RootStackParamList[typeof ROOT_ROUTE_NAME
   return true;
 }
 
+export function openBackupScreen() {
+  if (!navigationRef.isReady()) {
+    return false;
+  }
+
+  navigationRef.navigate(ROOT_ROUTE_NAMES.Backup);
+  return true;
+}
+
 export function openMonthlyReport(
   params?: RootStackParamList[typeof ROOT_ROUTE_NAMES.MonthlyReport],
 ) {

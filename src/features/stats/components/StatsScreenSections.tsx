@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
+import { useTheme } from '@shopify/restyle';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Card } from '../../../components/ui/Card';
@@ -19,6 +20,7 @@ import {
 import { type PatternDreamMatch, type PatternMatchSource } from '../model/patternMatches';
 import { formatCoverageValue, formatSignedDelta } from '../model/statsScreenModel';
 import { createStatsScreenStyles } from '../screens/StatsScreen.styles';
+import { Theme } from '../../../theme/theme';
 import { DreamFingerprintCard, type DreamFingerprintFacet } from './DreamFingerprintCard';
 import { MonthlyReportEntryCard } from './MonthlyReportEntryCard';
 import { PatternGroupCard, type PatternGroupCardItem } from './PatternGroupCard';
@@ -289,6 +291,8 @@ export function StatsOverviewSections({
   coverageItems: ReadonlyArray<{ label: string; value: number; total: number; hint: string }>;
   attentionItems: ReadonlyArray<{ label: string; value: number; hint: string }>;
 }) {
+  const t = useTheme<Theme>();
+
   return (
     <>
       <Animated.View layout={statsLayoutTransition}>
@@ -318,7 +322,7 @@ export function StatsOverviewSections({
               <Ionicons
                 name={isDetailsExpanded ? 'chevron-up' : 'chevron-down'}
                 size={14}
-                color="#F7F9FF"
+                color={t.colors.text}
               />
             </View>
           </Pressable>
@@ -528,6 +532,8 @@ export function StatsThreadsSections({
   onOpenThreadDream: (dreamId: string) => void;
   onClearThread: () => void;
 }) {
+  const t = useTheme<Theme>();
+
   return (
     <>
       <Animated.View layout={statsLayoutTransition}>
@@ -619,7 +625,7 @@ export function StatsThreadsSections({
                             new Date(match.dream.createdAt).toLocaleDateString()}
                         </Text>
                       </View>
-                      <Ionicons name="chevron-forward" size={16} color="#F7F9FF" />
+                      <Ionicons name="chevron-forward" size={16} color={t.colors.text} />
                     </View>
 
                     <Text style={styles.threadMatchPreview}>
@@ -732,6 +738,8 @@ export function StatsMilestonesSection({
   isExpanded: boolean;
   onToggleExpanded: () => void;
 }) {
+  const t = useTheme<Theme>();
+
   return (
     <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.sectionCard}>
@@ -749,7 +757,7 @@ export function StatsMilestonesSection({
             <Ionicons
               name={isExpanded ? 'chevron-up' : 'chevron-down'}
               size={14}
-              color="#F7F9FF"
+              color={t.colors.text}
             />
           </View>
         </Pressable>

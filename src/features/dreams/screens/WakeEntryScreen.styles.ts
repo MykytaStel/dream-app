@@ -245,7 +245,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       justifyContent: 'center',
       backgroundColor: hexToRgba(theme.colors.accent, 0.12),
       borderWidth: 1,
-      borderColor: hexToRgba('#7CC8FF', 0.12),
+      borderColor: hexToRgba(theme.colors.primary, 0.12),
     },
     actionCardCopy: {
       flex: 1,

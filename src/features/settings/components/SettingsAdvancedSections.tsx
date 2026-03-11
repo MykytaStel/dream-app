@@ -1,9 +1,11 @@
 import React from 'react';
 import { Switch, View } from 'react-native';
+import { useTheme } from '@shopify/restyle';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
+import { Theme } from '../../../theme/theme';
 import { type DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import { type DreamImportMode, type LocalDreamExportFile } from '../services/dataImportService';
 import { SettingsActionRow } from './SettingsActionRow';
@@ -27,6 +29,8 @@ export function AnalysisSection({
   analysisHighlights: SettingsMetaItem[];
   onSave: (next: DreamAnalysisSettings) => void;
 }) {
+  const t = useTheme<Theme>();
+
   return (
     <Card style={styles.sectionCard}>
       <SettingsSectionHeader
@@ -41,8 +45,8 @@ export function AnalysisSection({
                 enabled,
               });
             }}
-            trackColor={{ false: '#444B5A', true: '#7CC8FF' }}
-            thumbColor="#F7F9FF"
+            trackColor={{ false: t.colors.switchTrackOff, true: t.colors.primary }}
+            thumbColor={t.colors.text}
           />
         }
       />

@@ -1,10 +1,12 @@
 import React from 'react';
 import { View } from 'react-native';
+import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button } from '../../../../components/ui/Button';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
+import { Theme } from '../../../../theme/theme';
 
 type HomeHeroPrompt = {
   title: string;
@@ -34,6 +36,8 @@ export function HomeHero({
   dateLabel,
   prompt,
 }: HomeHeroProps) {
+  const t = useTheme<Theme>();
+
   return (
     <View
       style={[
@@ -62,7 +66,7 @@ export function HomeHero({
               <View style={styles.heroPromptCard}>
                 <View style={styles.heroPromptHeader}>
                   <View style={styles.heroPromptIconWrap}>
-                    <Ionicons name={prompt.primaryActionIcon} size={16} color="#7CC8FF" />
+                    <Ionicons name={prompt.primaryActionIcon} size={16} color={t.colors.primary} />
                   </View>
                   <View style={styles.heroPromptCopy}>
                     <Text style={styles.heroPromptTitle}>{prompt.title}</Text>

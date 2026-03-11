@@ -29,7 +29,7 @@ export function FormField({
     <View style={[styles.container, containerStyle]}>
       {label ? <Text style={styles.label}>{label}</Text> : null}
       <TextInput
-        placeholderTextColor="#777"
+        placeholderTextColor={t.colors.textDim}
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : 'center'}
         style={[styles.input, invalid ? styles.inputInvalid : null, inputStyle]}

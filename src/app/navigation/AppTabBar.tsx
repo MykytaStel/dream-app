@@ -65,7 +65,7 @@ function QuickAddOption({
         <Ionicons
           name={icon}
           size={18}
-          color={primary ? '#0B1220' : t.colors.primary}
+          color={primary ? t.colors.ink : t.colors.primary}
         />
       </View>
       <View style={styles.quickAddOptionCopy}>
@@ -75,7 +75,7 @@ function QuickAddOption({
       <Ionicons
         name="chevron-forward"
         size={18}
-        color={primary ? '#0B1220' : t.colors.textDim}
+        color={primary ? t.colors.ink : t.colors.textDim}
       />
     </Pressable>
   );
@@ -190,7 +190,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
                   <Ionicons
                     name={TAB_ICONS[routeName]}
                     size={17}
-                    color={isFocused ? '#0B1220' : t.colors.tabIcon}
+                    color={isFocused ? t.colors.ink : t.colors.tabIcon}
                   />
                 </View>
                 <Text
@@ -210,7 +210,17 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
         </Pressable>
       );
     },
-    [activeRouteName, closeQuickAdd, descriptors, labels, navigation, state.routes, styles, t.colors.tabIcon],
+    [
+      activeRouteName,
+      closeQuickAdd,
+      descriptors,
+      labels,
+      navigation,
+      state.routes,
+      styles,
+      t.colors.ink,
+      t.colors.tabIcon,
+    ],
   );
 
   return (
@@ -256,7 +266,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
                 <Ionicons
                   name={isQuickAddOpen ? 'close' : 'add'}
                   size={26}
-                  color="#0B1220"
+                  color={t.colors.ink}
                 />
               </Pressable>
             </View>

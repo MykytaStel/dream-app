@@ -20,6 +20,8 @@ export const theme = createTheme({
     success: palette.light.success,
     tabIcon: palette.light.tabIcon,
     glow: palette.light.glow,
+    ink: palette.light.ink,
+    switchTrackOff: palette.light.switchTrackOff,
   },
   spacing,
   borderRadii: radius,

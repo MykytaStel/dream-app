@@ -164,7 +164,7 @@ export default function WakeEntryScreen() {
               ]}
             >
               <View style={styles.actionCardIconWrap}>
-                <Ionicons name="mic-outline" size={18} color="#7CC8FF" />
+                <Ionicons name="mic-outline" size={18} color={t.colors.primary} />
               </View>
               <View style={styles.actionCardCopy}>
                 <Text style={styles.actionCardTitle}>{copy.wakeEntrySpeakAction}</Text>
@@ -183,7 +183,7 @@ export default function WakeEntryScreen() {
                 ]}
               >
                 <View style={styles.actionCardIconWrap}>
-                  <Ionicons name="document-text-outline" size={18} color="#7CC8FF" />
+                  <Ionicons name="document-text-outline" size={18} color={t.colors.primary} />
                 </View>
                 <View style={styles.actionCardCopy}>
                   <Text style={styles.actionCardTitle}>{copy.wakeEntryDraftAction}</Text>

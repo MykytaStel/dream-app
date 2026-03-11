@@ -1,5 +1,6 @@
 import React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
+import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Card } from '../../../../components/ui/Card';
 import { FormField } from '../../../../components/ui/FormField';
@@ -13,6 +14,7 @@ import {
 } from '../../model/homeTimeline';
 import { type PatternDetailKind } from '../../../../app/navigation/routes';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
+import { Theme } from '../../../../theme/theme';
 import { type HomeFilterChip } from './homeTypes';
 import { HomeSearchPresetChip } from './HomeSearchPresetChip';
 
@@ -89,6 +91,7 @@ export function HomeListHeader({
   onDeleteSearchPreset,
   updateTimelineFilters,
 }: HomeListHeaderProps) {
+  const t = useTheme<Theme>();
   const [isSpotlightExpanded, setIsSpotlightExpanded] = React.useState(false);
   const [isSearchDetailsExpanded, setIsSearchDetailsExpanded] = React.useState(false);
   const orderedSearchPresets = React.useMemo(() => {
@@ -128,7 +131,7 @@ export function HomeListHeader({
             <Ionicons
               name="return-up-forward-outline"
               size={15}
-              color="#7CC8FF"
+              color={t.colors.primary}
             />
           </View>
           <View style={styles.heroShortcutCopy}>
@@ -163,7 +166,7 @@ export function HomeListHeader({
             <Ionicons
               name={isSpotlightExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}
               size={14}
-              color="#A7B3D1"
+              color={t.colors.textDim}
             />
           </Pressable>
         </View>

@@ -11,6 +11,9 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       overflow: 'hidden',
       position: 'relative',
     },
+    heroCardCompact: {
+      gap: 8,
+    },
     heroGlowLarge: {
       position: 'absolute',
       width: 180,
@@ -40,6 +43,9 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     heroCopy: {
       flex: 1,
       gap: layout.rowGap,
+    },
+    heroCopyCompact: {
+      gap: 4,
     },
     heroEyebrow: {
       color: theme.colors.accent,

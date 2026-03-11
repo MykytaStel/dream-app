@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { fontFamilies } from '../../../theme/fonts';
 import { Theme } from '../../../theme/theme';
 import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 import { getDreamLayout } from '../constants/layout';
@@ -114,23 +115,14 @@ export function createHomeScreenStyles(theme: Theme) {
       overflow: 'hidden',
       padding: 14,
       position: 'relative',
-    },
-    heroOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      zIndex: 2,
-      paddingHorizontal: theme.spacing.md,
-      backgroundColor: theme.colors.background,
-      overflow: 'hidden',
+      marginBottom: 2,
     },
     heroFrame: {
       justifyContent: 'flex-start',
       gap: 12,
       position: 'relative',
       zIndex: 1,
-      paddingBottom: 8,
+      paddingBottom: 2,
     },
     heroGlowLarge: {
       position: 'absolute',
@@ -311,6 +303,7 @@ export function createHomeScreenStyles(theme: Theme) {
       letterSpacing: 0.4,
     },
     heroTitle: {
+      fontFamily: fontFamilies.display,
       fontSize: 28,
       lineHeight: 32,
       fontWeight: '700',
@@ -369,6 +362,7 @@ export function createHomeScreenStyles(theme: Theme) {
     statsRow: {
       flexDirection: 'row',
       gap: 8,
+      marginTop: 2,
     },
     timelineHeaderRow: {
       flexDirection: 'row',
@@ -439,6 +433,34 @@ export function createHomeScreenStyles(theme: Theme) {
       flexDirection: 'row',
       gap: 7,
       flexWrap: 'wrap',
+    },
+    spotlightMetaRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    spotlightMetaChip: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 6,
+        paddingHorizontal: 10,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    spotlightMetaLabel: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+    },
+    spotlightMetaValue: {
+      color: theme.colors.text,
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '700',
     },
     spotlightTile: {
       ...createSoftTile(theme),
@@ -526,7 +548,22 @@ export function createHomeScreenStyles(theme: Theme) {
       gap: 8,
     },
     searchCard: {
-      gap: 10,
+      gap: 8,
+      paddingVertical: 14,
+      paddingHorizontal: 14,
+    },
+    searchBarRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 8,
+    },
+    searchFieldContainer: {
+      flex: 1,
+      gap: 4,
+    },
+    searchFieldInput: {
+      paddingVertical: 10,
+      minHeight: 0,
     },
     searchDetailsToggleRow: {
       alignItems: 'flex-start',
@@ -554,6 +591,7 @@ export function createHomeScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 8,
       flexWrap: 'wrap',
+      marginTop: -2,
     },
     resultCount: {
       color: theme.colors.textDim,
@@ -623,7 +661,16 @@ export function createHomeScreenStyles(theme: Theme) {
       paddingRight: 4,
     },
     filterGroup: {
-      gap: 8,
+      gap: 6,
+    },
+    filterGroupGrid: {
+      flexDirection: 'row',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    filterGroupGridItem: {
+      flex: 1,
+      minWidth: 148,
     },
     filterGroupLabel: {
       color: theme.colors.textDim,
@@ -693,7 +740,7 @@ export function createHomeScreenStyles(theme: Theme) {
       flex: 1,
     },
     filterSheetCard: {
-      gap: 12,
+      gap: 10,
       borderTopLeftRadius: theme.borderRadii.xl,
       borderTopRightRadius: theme.borderRadii.xl,
       borderWidth: 1,
@@ -705,7 +752,12 @@ export function createHomeScreenStyles(theme: Theme) {
       paddingBottom: 24,
     },
     filterSheetHeader: {
-      gap: 10,
+      gap: 8,
+    },
+    filterSheetHeaderActions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
     },
     filterSheetHandle: {
       alignSelf: 'center',
@@ -715,11 +767,16 @@ export function createHomeScreenStyles(theme: Theme) {
       backgroundColor: theme.colors.border,
     },
     filterSheetBody: {
-      gap: 14,
+      gap: 12,
       paddingBottom: 8,
     },
     filterSheetScroll: {
       maxHeight: 460,
+    },
+    filterAdvancedMeta: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      fontWeight: '600',
     },
     dreamHeaderRow: {
       flexDirection: 'row',

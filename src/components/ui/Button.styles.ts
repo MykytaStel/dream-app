@@ -1,6 +1,7 @@
 import { StyleSheet, ViewStyle } from 'react-native';
 import { Theme } from '../../theme/theme';
 import { hexToRgba } from '../../theme/color';
+import { fontFamilies } from '../../theme/fonts';
 
 type ButtonVariant = 'primary' | 'ghost' | 'danger';
 type ButtonSize = 'sm' | 'md' | 'lg';
@@ -52,6 +53,7 @@ export function createButtonStyles(
       gap: 7,
     },
     label: {
+      fontFamily: fontFamilies.sans,
       textAlign: 'center',
       fontWeight: '700',
       fontSize: labelSize,

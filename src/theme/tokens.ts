@@ -1,3 +1,5 @@
+import { fontFamilies } from './fonts';
+
 export const palette = {
   light: {
     bg: '#141826',
@@ -24,9 +26,25 @@ export const palette = {
 export const radius = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as const;
 export const spacing = { xs: 6, sm: 10, md: 14, lg: 18, xl: 24, xxl: 32, xxxl: 40 } as const;
 export const typography = {
-  h1: { fontSize: 30, lineHeight: 36, fontWeight: '700', letterSpacing: -0.3 },
-  h2: { fontSize: 22, lineHeight: 28, fontWeight: '700' },
-  h3: { fontSize: 18, lineHeight: 24, fontWeight: '600' },
-  body: { fontSize: 16, lineHeight: 22 },
-  small: { fontSize: 13, lineHeight: 18, opacity: 0.85 },
+  h1: {
+    fontFamily: fontFamilies.display,
+    fontSize: 30,
+    lineHeight: 36,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  h2: {
+    fontFamily: fontFamilies.display,
+    fontSize: 22,
+    lineHeight: 28,
+    fontWeight: '700',
+  },
+  h3: {
+    fontFamily: fontFamilies.sans,
+    fontSize: 18,
+    lineHeight: 24,
+    fontWeight: '600',
+  },
+  body: { fontFamily: fontFamilies.sans, fontSize: 16, lineHeight: 22 },
+  small: { fontFamily: fontFamilies.sans, fontSize: 13, lineHeight: 18, opacity: 0.85 },
 } as const;

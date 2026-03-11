@@ -6,6 +6,7 @@ import { SectionHeader } from '../../../../components/ui/SectionHeader';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import {
+  DEFAULT_HOME_TIMELINE_FILTERS,
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
   type HomeEntryTypeFilter,
@@ -92,13 +93,26 @@ export function HomeFilterSheet({
 }: HomeFilterSheetProps) {
   const [tagQuery, setTagQuery] = React.useState('');
   const [showAllTags, setShowAllTags] = React.useState(false);
+  const hasAdvancedFilters =
+    timelineFilters.transcript !== 'all' ||
+    timelineFilters.dateRange !== 'all' ||
+    timelineFilters.sortOrder !== 'newest' ||
+    timelineFilters.tags.length > 0;
+  const hasAnyFilters =
+    timelineFilters.archive !== DEFAULT_HOME_TIMELINE_FILTERS.archive ||
+    timelineFilters.starredOnly !== DEFAULT_HOME_TIMELINE_FILTERS.starredOnly ||
+    timelineFilters.mood !== DEFAULT_HOME_TIMELINE_FILTERS.mood ||
+    timelineFilters.entryType !== DEFAULT_HOME_TIMELINE_FILTERS.entryType ||
+    hasAdvancedFilters;
+  const [showAdvancedFilters, setShowAdvancedFilters] = React.useState(hasAdvancedFilters);
 
   React.useEffect(() => {
     if (!visible) {
       setTagQuery('');
       setShowAllTags(false);
+      setShowAdvancedFilters(hasAdvancedFilters);
     }
-  }, [visible]);
+  }, [hasAdvancedFilters, visible]);
 
   const normalizedTagQuery = tagQuery.trim().toLowerCase();
   const filteredTags = React.useMemo(
@@ -137,7 +151,17 @@ export function HomeFilterSheet({
           <View style={styles.filterSheetHeader}>
             <View style={styles.filterSheetHandle} />
             <SectionHeader title={copy.homeRefineLabel} />
-            <Button title={copy.homeHideFilters} variant="ghost" size="sm" onPress={onClose} />
+            <View style={styles.filterSheetHeaderActions}>
+              {hasAnyFilters ? (
+                <Button
+                  title={copy.homeClearFilters}
+                  variant="ghost"
+                  size="sm"
+                  onPress={() => updateTimelineFilters(() => DEFAULT_HOME_TIMELINE_FILTERS)}
+                />
+              ) : null}
+              <Button title={copy.homeHideFilters} variant="ghost" size="sm" onPress={onClose} />
+            </View>
           </View>
 
           <ScrollView
@@ -145,31 +169,37 @@ export function HomeFilterSheet({
             contentContainerStyle={styles.filterSheetBody}
             showsVerticalScrollIndicator={false}
           >
-            <FilterGroup
-              label={copy.homeArchiveFilterLabel}
-              options={homeFilters}
-              value={timelineFilters.archive === 'archived' ? 'all' : timelineFilters.archive}
-              styles={styles}
-              onSelect={value =>
-                updateTimelineFilters(current => ({
-                  ...current,
-                  archive: value,
-                }))
-              }
-            />
+            <View style={styles.filterGroupGrid}>
+              <View style={styles.filterGroupGridItem}>
+                <FilterGroup
+                  label={copy.homeArchiveFilterLabel}
+                  options={homeFilters}
+                  value={timelineFilters.archive === 'archived' ? 'all' : timelineFilters.archive}
+                  styles={styles}
+                  onSelect={value =>
+                    updateTimelineFilters(current => ({
+                      ...current,
+                      archive: value,
+                    }))
+                  }
+                />
+              </View>
 
-            <FilterGroup
-              label={copy.homeFilterStarred}
-              options={starredFilterOptions}
-              value={timelineFilters.starredOnly ? 'starred' : 'all'}
-              styles={styles}
-              onSelect={value =>
-                updateTimelineFilters(current => ({
-                  ...current,
-                  starredOnly: value === 'starred',
-                }))
-              }
-            />
+              <View style={styles.filterGroupGridItem}>
+                <FilterGroup
+                  label={copy.homeFilterStarred}
+                  options={starredFilterOptions}
+                  value={timelineFilters.starredOnly ? 'starred' : 'all'}
+                  styles={styles}
+                  onSelect={value =>
+                    updateTimelineFilters(current => ({
+                      ...current,
+                      starredOnly: value === 'starred',
+                    }))
+                  }
+                />
+              </View>
+            </View>
 
             <FilterGroup
               label={copy.homeMoodFilterLabel}
@@ -197,130 +227,153 @@ export function HomeFilterSheet({
               }
             />
 
-            <FilterGroup
-              label={copy.homeTranscriptFilterLabel}
-              options={transcriptFilters}
-              value={timelineFilters.transcript}
-              styles={styles}
-              onSelect={value =>
-                updateTimelineFilters(current => ({
-                  ...current,
-                  transcript: value,
-                }))
-              }
-            />
+            <Pressable
+              style={({ pressed }) => [
+                styles.searchDetailsToggleButton,
+                pressed ? styles.spotlightToggleButtonPressed : null,
+              ]}
+              onPress={() => setShowAdvancedFilters(current => !current)}
+            >
+              <Text style={styles.inlineActionButtonText}>
+                {showAdvancedFilters ? copy.homeHideFilters : copy.homeShowFilters}
+              </Text>
+              <Text style={styles.filterAdvancedMeta}>
+                {copy.homeSearchShowDetails}
+              </Text>
+            </Pressable>
 
-            {availableTags.length > 0 ? (
-              <View style={styles.filterGroup}>
-                <Text style={styles.filterGroupLabel}>{copy.homeTagFilterLabel}</Text>
-                <FormField
-                  placeholder={copy.homeTagSearchPlaceholder}
-                  value={tagQuery}
-                  onChangeText={setTagQuery}
-                  autoCapitalize="none"
-                  autoCorrect={false}
+            {showAdvancedFilters ? (
+              <>
+                <FilterGroup
+                  label={copy.homeTranscriptFilterLabel}
+                  options={transcriptFilters}
+                  value={timelineFilters.transcript}
+                  styles={styles}
+                  onSelect={value =>
+                    updateTimelineFilters(current => ({
+                      ...current,
+                      transcript: value,
+                    }))
+                  }
                 />
-                {selectedTags.length > 0 ? (
-                  <View style={styles.filterSelectionBlock}>
-                    <Text style={styles.filterGroupMetaLabel}>{copy.homeTagSelectedLabel}</Text>
-                    <View style={styles.filterRow}>
-                      {selectedTags.map(tag => (
-                        <Pressable
-                          key={`selected-${tag}`}
-                          style={[styles.filterButton, styles.filterButtonActive]}
-                          onPress={() =>
-                            updateTimelineFilters(current => ({
-                              ...current,
-                              tags: current.tags.filter(value => value !== tag),
-                            }))
-                          }
-                        >
-                          <Text style={[styles.filterButtonLabel, styles.filterButtonLabelActive]}>
-                            {tag}
-                          </Text>
-                        </Pressable>
-                      ))}
-                    </View>
-                  </View>
-                ) : null}
-                <View style={styles.filterRow}>
-                  {visibleUnselectedTags.map(tag => {
-                    const active = timelineFilters.tags.includes(tag);
 
-                    return (
+                {availableTags.length > 0 ? (
+                  <View style={styles.filterGroup}>
+                    <Text style={styles.filterGroupLabel}>{copy.homeTagFilterLabel}</Text>
+                    <FormField
+                      placeholder={copy.homeTagSearchPlaceholder}
+                      value={tagQuery}
+                      onChangeText={setTagQuery}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                      containerStyle={styles.searchFieldContainer}
+                      inputStyle={styles.searchFieldInput}
+                    />
+                    {selectedTags.length > 0 ? (
+                      <View style={styles.filterSelectionBlock}>
+                        <Text style={styles.filterGroupMetaLabel}>{copy.homeTagSelectedLabel}</Text>
+                        <View style={styles.filterRow}>
+                          {selectedTags.map(tag => (
+                            <Pressable
+                              key={`selected-${tag}`}
+                              style={[styles.filterButton, styles.filterButtonActive]}
+                              onPress={() =>
+                                updateTimelineFilters(current => ({
+                                  ...current,
+                                  tags: current.tags.filter(value => value !== tag),
+                                }))
+                              }
+                            >
+                              <Text
+                                style={[styles.filterButtonLabel, styles.filterButtonLabelActive]}
+                              >
+                                {tag}
+                              </Text>
+                            </Pressable>
+                          ))}
+                        </View>
+                      </View>
+                    ) : null}
+                    <View style={styles.filterRow}>
+                      {visibleUnselectedTags.map(tag => {
+                        const active = timelineFilters.tags.includes(tag);
+
+                        return (
+                          <Pressable
+                            key={tag}
+                            style={[styles.filterButton, active ? styles.filterButtonActive : null]}
+                            onPress={() =>
+                              updateTimelineFilters(current => ({
+                                ...current,
+                                tags: current.tags.includes(tag)
+                                  ? current.tags.filter(value => value !== tag)
+                                  : [...current.tags, tag],
+                              }))
+                            }
+                          >
+                            <Text
+                              style={[
+                                styles.filterButtonLabel,
+                                active ? styles.filterButtonLabelActive : null,
+                              ]}
+                            >
+                              {tag}
+                            </Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                    {!selectedTags.length && !visibleUnselectedTags.length ? (
+                      <Text style={styles.filterEmptyText}>{copy.homeTagsEmpty}</Text>
+                    ) : null}
+                    {hiddenTagCount > 0 && !normalizedTagQuery ? (
                       <Pressable
-                        key={tag}
-                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
-                        onPress={() =>
-                          updateTimelineFilters(current => ({
-                            ...current,
-                            tags: current.tags.includes(tag)
-                              ? current.tags.filter(value => value !== tag)
-                              : [...current.tags, tag],
-                          }))
-                        }
+                        style={styles.filterMoreButton}
+                        onPress={() => setShowAllTags(true)}
                       >
-                        <Text
-                          style={[
-                            styles.filterButtonLabel,
-                            active ? styles.filterButtonLabelActive : null,
-                          ]}
-                        >
-                          {tag}
+                        <Text style={styles.filterMoreButtonText}>
+                          {`${copy.homeTagsShowMore} (${hiddenTagCount})`}
                         </Text>
                       </Pressable>
-                    );
-                  })}
-                </View>
-                {!selectedTags.length && !visibleUnselectedTags.length ? (
-                  <Text style={styles.filterEmptyText}>{copy.homeTagsEmpty}</Text>
+                    ) : null}
+                    {showAllTags && unselectedTags.length > 12 && !normalizedTagQuery ? (
+                      <Pressable
+                        style={styles.filterMoreButton}
+                        onPress={() => setShowAllTags(false)}
+                      >
+                        <Text style={styles.filterMoreButtonText}>{copy.homeTagsShowLess}</Text>
+                      </Pressable>
+                    ) : null}
+                  </View>
                 ) : null}
-                {hiddenTagCount > 0 && !normalizedTagQuery ? (
-                  <Pressable
-                    style={styles.filterMoreButton}
-                    onPress={() => setShowAllTags(true)}
-                  >
-                    <Text style={styles.filterMoreButtonText}>
-                      {`${copy.homeTagsShowMore} (${hiddenTagCount})`}
-                    </Text>
-                  </Pressable>
-                ) : null}
-                {showAllTags && unselectedTags.length > 12 && !normalizedTagQuery ? (
-                  <Pressable
-                    style={styles.filterMoreButton}
-                    onPress={() => setShowAllTags(false)}
-                  >
-                    <Text style={styles.filterMoreButtonText}>{copy.homeTagsShowLess}</Text>
-                  </Pressable>
-                ) : null}
-              </View>
+
+                <FilterGroup
+                  label={copy.homeDateRangeFilterLabel}
+                  options={dateRangeFilters}
+                  value={timelineFilters.dateRange}
+                  styles={styles}
+                  onSelect={value =>
+                    updateTimelineFilters(current => ({
+                      ...current,
+                      dateRange: value,
+                    }))
+                  }
+                />
+
+                <FilterGroup
+                  label={copy.homeSortFilterLabel}
+                  options={sortOptions}
+                  value={timelineFilters.sortOrder}
+                  styles={styles}
+                  onSelect={value =>
+                    updateTimelineFilters(current => ({
+                      ...current,
+                      sortOrder: value,
+                    }))
+                  }
+                />
+              </>
             ) : null}
-
-            <FilterGroup
-              label={copy.homeDateRangeFilterLabel}
-              options={dateRangeFilters}
-              value={timelineFilters.dateRange}
-              styles={styles}
-              onSelect={value =>
-                updateTimelineFilters(current => ({
-                  ...current,
-                  dateRange: value,
-                }))
-              }
-            />
-
-            <FilterGroup
-              label={copy.homeSortFilterLabel}
-              options={sortOptions}
-              value={timelineFilters.sortOrder}
-              styles={styles}
-              onSelect={value =>
-                updateTimelineFilters(current => ({
-                  ...current,
-                  sortOrder: value,
-                }))
-              }
-            />
           </ScrollView>
         </View>
       </View>

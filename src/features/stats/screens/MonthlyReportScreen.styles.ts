@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { fontFamilies } from '../../../theme/fonts';
 import { Theme } from '../../../theme/theme';
 import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 
@@ -81,6 +82,7 @@ export function createMonthlyReportScreenStyles(theme: Theme) {
       textTransform: 'uppercase',
     },
     heroMonthTitle: {
+      fontFamily: fontFamilies.display,
       fontSize: 32,
       lineHeight: 38,
       fontWeight: '700',

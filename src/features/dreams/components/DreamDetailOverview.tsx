@@ -194,16 +194,17 @@ export function DreamDetailOverview({
             </View>
 
             <View style={styles.savedMetaRow}>
-              <View style={styles.savedMetaPill}>
-                <Text style={styles.savedMetaLabel}>{copy.detailSavedPatternLabel}</Text>
-                <Text numberOfLines={1} style={styles.savedMetaValue}>
-                  {viewModel.strongestSignal ?? copy.homeSpotlightNoPattern}
-                </Text>
-              </View>
-              <View style={styles.savedMetaPill}>
-                <Text style={styles.savedMetaLabel}>{copy.detailSavedRelatedLabel}</Text>
-                <Text style={styles.savedMetaValue}>{String(viewModel.relatedCount)}</Text>
-              </View>
+              {viewModel.strongestSignal ? (
+                <View style={styles.savedMetaPill}>
+                  <Text style={styles.savedMetaLabel}>{copy.detailSavedPatternLabel}</Text>
+                  <Text numberOfLines={1} style={styles.savedMetaValue}>
+                    {viewModel.strongestSignal}
+                  </Text>
+                </View>
+              ) : null}
+              <Text style={styles.savedMetaInline}>
+                {`${viewModel.relatedCount} ${copy.detailSavedRelatedLabel.toLowerCase()}`}
+              </Text>
             </View>
           </Card>
         </Animated.View>

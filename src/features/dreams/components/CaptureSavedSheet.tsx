@@ -12,6 +12,7 @@ import { getDreamCopy } from '../../../constants/copy/dreams';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { createControlPill } from '../../../theme/surfaces';
 import { Theme } from '../../../theme/theme';
+import { fontFamilies } from '../../../theme/fonts';
 import { Dream } from '../model/dream';
 
 type CaptureSavedSheetProps = {
@@ -133,7 +134,6 @@ export function CaptureSavedSheet({
               >
                 <Text style={styles.footerActionLabel}>{copy.postSaveContinueLater}</Text>
               </Pressable>
-              <Text style={styles.footerHint}>{copy.postSaveFooterHint}</Text>
             </View>
           </Card>
         </Animated.View>
@@ -226,6 +226,7 @@ function createStyles(theme: Theme, bottomInset: number) {
       textTransform: 'uppercase',
     },
     title: {
+      fontFamily: fontFamilies.display,
       fontSize: 24,
       lineHeight: 28,
       fontWeight: '700',
@@ -275,7 +276,6 @@ function createStyles(theme: Theme, bottomInset: number) {
       gap: 8,
     },
     footerActions: {
-      gap: 8,
       alignItems: 'center',
     },
     footerAction: {
@@ -290,13 +290,6 @@ function createStyles(theme: Theme, bottomInset: number) {
       color: theme.colors.textDim,
       fontSize: 13,
       fontWeight: '700',
-    },
-    footerHint: {
-      color: theme.colors.textDim,
-      fontSize: 12,
-      lineHeight: 17,
-      textAlign: 'center',
-      opacity: 0.82,
     },
   });
 }

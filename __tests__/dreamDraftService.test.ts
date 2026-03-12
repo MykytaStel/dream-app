@@ -2,6 +2,7 @@ import { kv } from '../src/services/storage/mmkv';
 import {
   clearDreamDraft,
   getDreamDraft,
+  getDreamDraftSnapshot,
   saveDreamDraft,
 } from '../src/features/dreams/services/dreamDraftService';
 
@@ -11,11 +12,14 @@ describe('dream draft service', () => {
   });
 
   test('saves and restores normalized draft data', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1_762_361_234_567);
+
     saveDreamDraft({
       title: '  Unfinished title ',
       text: ' Raw note ',
       sleepDate: '2026-03-06',
       audioUri: 'file:///draft.m4a',
+      entryMode: 'wake',
       mood: 'positive',
       wakeEmotions: ['calm', 'curious', 'calm'],
       stressLevel: 1,
@@ -33,6 +37,8 @@ describe('dream draft service', () => {
       text: ' Raw note ',
       sleepDate: '2026-03-06',
       audioUri: 'file:///draft.m4a',
+      entryMode: 'wake',
+      updatedAt: 1_762_361_234_567,
       mood: 'positive',
       wakeEmotions: ['calm', 'curious'],
       stressLevel: 1,
@@ -43,6 +49,17 @@ describe('dream draft service', () => {
       importantEvents: '  travel ',
       healthNotes: '  tired ',
       tags: ['blue-sky', 'lucid-dream'],
+    });
+
+    expect(getDreamDraftSnapshot(getDreamDraft())).toEqual({
+      resumeMode: 'wake',
+      hasAudio: true,
+      hasText: true,
+      wordCount: 2,
+      hasWakeSignals: true,
+      hasContext: true,
+      hasTags: true,
+      updatedAt: 1_762_361_234_567,
     });
   });
 
@@ -85,5 +102,29 @@ describe('dream draft service', () => {
 
     clearDreamDraft();
     expect(getDreamDraft()).toBeNull();
+  });
+
+  test('infers a safe resume mode for older drafts without stored entry mode', () => {
+    saveDreamDraft({
+      title: '',
+      text: '',
+      sleepDate: '2026-03-06',
+      audioUri: 'file:///draft.m4a',
+      mood: undefined,
+      wakeEmotions: undefined,
+      stressLevel: undefined,
+      preSleepEmotions: undefined,
+      alcoholTaken: undefined,
+      caffeineLate: undefined,
+      medications: '',
+      importantEvents: '',
+      healthNotes: '',
+      tags: [],
+      updatedAt: 123,
+    });
+
+    const draft = getDreamDraft();
+    expect(draft?.entryMode).toBeUndefined();
+    expect(getDreamDraftSnapshot(draft)?.resumeMode).toBe('voice');
   });
 });

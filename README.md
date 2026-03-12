@@ -23,14 +23,14 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.5.0`
+Current release target: `0.5.1`
 
-This release should build on the stable backup baseline and move the product
-back toward daily dream value instead of more infrastructure work:
+This release should tighten the first minute after waking so capture quality
+goes up without dragging the app back into settings-heavy or backend-heavy UI:
 
-- stronger post-capture reflection and revisit loops
-- clearer dream-detail follow-up surfaces
-- smarter archive resurfacing and memory cues
+- faster one-hand wake capture
+- stronger draft recovery and continue-where-I-left-off states
+- transcript and refine work pulled closer to capture
 - no regression in backup, sync, export, restore, transcription, or analysis
 - keep cloud as a stable capability, not the center of the product surface
 
@@ -57,8 +57,10 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.5.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.0_PLAN.md)
-for the active release target, and
+[docs/RELEASE_0.5.1_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.1_PLAN.md)
+for the active release target,
+[docs/ROADMAP_0.5.1_TO_0.6.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.5.1_TO_0.6.0.md)
+for the broader feature/backend/UI/UX range from `0.5.1` to `0.6.0`, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
 

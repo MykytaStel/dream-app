@@ -4,15 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Animated, {
-  Easing,
-  FadeInDown,
-  useAnimatedStyle,
-  useSharedValue,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../../components/ui/Text';
 import { getDreamCopy } from '../../../constants/copy/dreams';
@@ -23,7 +14,15 @@ import {
   type RootStackParamList,
 } from '../../../app/navigation/routes';
 import { openNewDreamTab } from '../../../app/navigation/navigationRef';
-import { getDreamDraft } from '../services/dreamDraftService';
+import {
+  getDreamDraft,
+  getDreamDraftSnapshot,
+  type DreamDraftSnapshot,
+} from '../services/dreamDraftService';
+import {
+  getDreamDraftResumeDescription,
+  getDreamDraftSummaryLabels,
+} from '../model/dreamDraftPresentation';
 import { createWakeEntryScreenStyles } from './WakeEntryScreen.styles';
 
 type IdleCallbackHandle = number;
@@ -39,54 +38,33 @@ export default function WakeEntryScreen() {
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.WakeEntry>>();
-  const [hasDraft, setHasDraft] = React.useState(false);
-  const rotation = useSharedValue(0);
-  const pulse = useSharedValue(0);
+  const [draftSnapshot, setDraftSnapshot] = React.useState<DreamDraftSnapshot | null>(null);
+  const draftSummary = React.useMemo(
+    () => getDreamDraftSummaryLabels(draftSnapshot, copy),
+    [copy, draftSnapshot],
+  );
+  const draftHint = React.useMemo(
+    () => getDreamDraftResumeDescription(draftSnapshot, copy),
+    [copy, draftSnapshot],
+  );
 
   React.useEffect(() => {
-    setHasDraft(Boolean(getDreamDraft()));
+    setDraftSnapshot(getDreamDraftSnapshot(getDreamDraft()));
   }, []);
 
-  React.useEffect(() => {
-    rotation.value = withRepeat(
-      withTiming(1, { duration: 9000, easing: Easing.linear }),
-      -1,
-      false,
-    );
-    pulse.value = withRepeat(
-      withSequence(
-        withTiming(1, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
-        withTiming(0, { duration: 1600, easing: Easing.inOut(Easing.quad) }),
-      ),
-      -1,
-      false,
-    );
-  }, [pulse, rotation]);
-
-  const outerHaloStyle = useAnimatedStyle(() => ({
-    opacity: 0.12 + pulse.value * 0.16,
-    transform: [{ scale: 1 + pulse.value * 0.08 }],
-  }));
-  const innerHaloStyle = useAnimatedStyle(() => ({
-    opacity: 0.12 + pulse.value * 0.12,
-    transform: [{ scale: 1 + pulse.value * 0.05 }],
-  }));
-  const orbFloatStyle = useAnimatedStyle(() => ({
-    transform: [{ translateY: pulse.value * -4 }, { scale: 1 + pulse.value * 0.015 }],
-  }));
-  const clusterRotationStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value * 360}deg` }],
-  }));
-
   const handoffToComposer = React.useCallback(
-    (entryMode: 'voice' | 'wake') => {
+    (entryMode: 'default' | 'voice' | 'wake', autoStartRecording = false) => {
       navigation.goBack();
       const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
       const openComposer = () => {
         openNewDreamTab(
           entryMode === 'voice'
-            ? { entryMode, launchKey: Date.now() }
-            : { entryMode: 'wake' },
+            ? {
+                entryMode,
+                autoStartRecording,
+                launchKey: autoStartRecording ? Date.now() : undefined,
+              }
+            : { entryMode },
         );
       };
 
@@ -99,6 +77,13 @@ export default function WakeEntryScreen() {
     },
     [navigation],
   );
+
+  const draftPrimaryIcon =
+    draftSnapshot?.resumeMode === 'voice'
+      ? 'mic-outline'
+      : draftSnapshot?.resumeMode === 'wake'
+        ? 'sunny-outline'
+        : 'create-outline';
 
   return (
     <View style={styles.root}>
@@ -130,47 +115,96 @@ export default function WakeEntryScreen() {
         </View>
 
         <View style={styles.main}>
-          <Animated.View entering={FadeInDown.duration(220)} style={styles.hero}>
+          <View style={styles.hero}>
             <Text style={styles.eyebrow}>{copy.wakeEntryKicker}</Text>
             <Text style={styles.title}>{copy.wakeEntryTitle}</Text>
             <Text style={styles.description}>{copy.wakeEntryDescription}</Text>
-          </Animated.View>
+          </View>
 
-          <Animated.View entering={FadeInDown.delay(40).duration(240)} style={styles.stage}>
-            <View style={styles.orbStage}>
-              <Animated.View style={[styles.haloOuter, outerHaloStyle]} />
-              <Animated.View style={[styles.haloInner, innerHaloStyle]} />
+          <View style={styles.actionDeck}>
+            {draftSnapshot ? (
+              <Pressable
+                accessibilityHint={draftHint}
+                accessibilityLabel={copy.wakeEntryDraftAction}
+                accessibilityRole="button"
+                onPress={() => handoffToComposer(draftSnapshot.resumeMode)}
+                style={({ pressed }) => [
+                  styles.primaryActionCard,
+                  pressed ? styles.primaryActionCardPressed : null,
+                ]}
+              >
+                <View style={styles.primaryActionHeader}>
+                  <View style={styles.primaryActionIconWrap}>
+                    <Ionicons name={draftPrimaryIcon} size={20} color={t.colors.ink} />
+                  </View>
+                  <View style={styles.primaryActionCopy}>
+                    <Text style={styles.primaryActionTitle}>{copy.wakeEntryDraftAction}</Text>
+                    <Text style={styles.primaryActionHint}>{draftHint}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={t.colors.ink} />
+                </View>
+                {draftSummary.length ? (
+                  <View style={styles.primaryActionMetaRow}>
+                    {draftSummary.map(label => (
+                      <View key={label} style={styles.primaryActionMetaChip}>
+                        <Text style={styles.primaryActionMetaLabel}>{label}</Text>
+                      </View>
+                    ))}
+                  </View>
+                ) : null}
+              </Pressable>
+            ) : (
               <Pressable
                 accessibilityHint={copy.wakeEntryOrbHint}
                 accessibilityLabel={copy.wakeEntryWriteAction}
                 accessibilityRole="button"
                 onPress={() => handoffToComposer('wake')}
                 style={({ pressed }) => [
-                  styles.orbPressable,
-                  pressed ? styles.orbPressablePressed : null,
+                  styles.primaryActionCard,
+                  pressed ? styles.primaryActionCardPressed : null,
                 ]}
               >
-                <Animated.View style={[styles.orbSurface, orbFloatStyle]}>
-                  <View pointerEvents="none" style={styles.orbAura} />
-                  <View pointerEvents="none" style={styles.orbAuraSecondary} />
-                  <Animated.View style={[styles.kaleidoscopeCluster, clusterRotationStyle]}>
-                    <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetPrimary]} />
-                    <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAccent]} />
-                    <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAlt]} />
-                  </Animated.View>
-                  <Text style={styles.orbLabel}>{copy.wakeEntryOrbAction}</Text>
-                </Animated.View>
+                <View style={styles.primaryActionHeader}>
+                  <View style={styles.primaryActionIconWrap}>
+                    <Ionicons name="create-outline" size={20} color={t.colors.ink} />
+                  </View>
+                  <View style={styles.primaryActionCopy}>
+                    <Text style={styles.primaryActionTitle}>{copy.wakeEntryWriteAction}</Text>
+                    <Text style={styles.primaryActionHint}>{copy.wakeEntryOrbHint}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={20} color={t.colors.ink} />
+                </View>
+                <View style={styles.primaryActionMetaRow}>
+                  <View style={styles.primaryActionMetaChip}>
+                    <Text style={styles.primaryActionMetaLabel}>{copy.wakeModeChip}</Text>
+                  </View>
+                </View>
               </Pressable>
-            </View>
-            <Text style={styles.orbHint}>{copy.wakeEntryOrbHint}</Text>
-          </Animated.View>
+            )}
 
-          <Animated.View entering={FadeInDown.delay(70).duration(240)} style={styles.actions}>
-            <Text style={styles.alternateLabel}>{copy.wakeEntryAlternateTitle}</Text>
-
+            <View style={styles.secondaryActions}>
+              {draftSnapshot ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => handoffToComposer('wake')}
+                  style={({ pressed }) => [
+                    styles.actionCard,
+                    pressed ? styles.actionCardPressed : null,
+                  ]}
+                >
+                  <View style={styles.actionCardIconWrap}>
+                    <Ionicons name="create-outline" size={18} color={t.colors.primary} />
+                  </View>
+                  <View style={styles.actionCardCopy}>
+                    <Text style={styles.actionCardTitle}>{copy.wakeEntryWriteAction}</Text>
+                    <Text style={styles.actionCardHint}>{copy.wakeEntryOrbHint}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+                </Pressable>
+              ) : null}
             <Pressable
               accessibilityRole="button"
-              onPress={() => handoffToComposer('voice')}
+              onPress={() => handoffToComposer('voice', true)}
               style={({ pressed }) => [
                 styles.actionCard,
                 pressed ? styles.actionCardPressed : null,
@@ -179,33 +213,14 @@ export default function WakeEntryScreen() {
               <View style={styles.actionCardIconWrap}>
                 <Ionicons name="mic-outline" size={18} color={t.colors.primary} />
               </View>
-              <View style={styles.actionCardCopy}>
-                <Text style={styles.actionCardTitle}>{copy.wakeEntrySpeakAction}</Text>
-                <Text style={styles.actionCardHint}>{copy.wakeEntrySpeakHint}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
-            </Pressable>
-
-            {hasDraft ? (
-              <Pressable
-                accessibilityRole="button"
-                onPress={() => handoffToComposer('wake')}
-                style={({ pressed }) => [
-                  styles.actionCard,
-                  pressed ? styles.actionCardPressed : null,
-                ]}
-              >
-                <View style={styles.actionCardIconWrap}>
-                  <Ionicons name="document-text-outline" size={18} color={t.colors.primary} />
-                </View>
                 <View style={styles.actionCardCopy}>
-                  <Text style={styles.actionCardTitle}>{copy.wakeEntryDraftAction}</Text>
-                  <Text style={styles.actionCardHint}>{copy.wakeEntryDraftHint}</Text>
+                  <Text style={styles.actionCardTitle}>{copy.wakeEntrySpeakAction}</Text>
+                  <Text style={styles.actionCardHint}>{copy.wakeEntrySpeakHint}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
               </Pressable>
-            ) : null}
-          </Animated.View>
+            </View>
+          </View>
         </View>
       </View>
     </View>

@@ -9,7 +9,12 @@ import { Text } from '../../components/ui/Text';
 import { getDreamCopy } from '../../constants/copy/dreams';
 import { useI18n } from '../../i18n/I18nProvider';
 import { Theme } from '../../theme/theme';
-import { getDreamDraft } from '../../features/dreams/services/dreamDraftService';
+import {
+  getDreamDraft,
+  getDreamDraftSnapshot,
+  type DreamDraftSnapshot,
+} from '../../features/dreams/services/dreamDraftService';
+import { getDreamDraftResumeDescription } from '../../features/dreams/model/dreamDraftPresentation';
 import { createTabsStyles } from './tabs.styles';
 import { getTabRouteLabels, TAB_ROUTE_NAMES } from './routes';
 
@@ -89,19 +94,23 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
   const labels = React.useMemo(() => getTabRouteLabels(locale), [locale]);
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const [isQuickAddOpen, setIsQuickAddOpen] = React.useState(false);
-  const [hasDraft, setHasDraft] = React.useState(false);
+  const [draftSnapshot, setDraftSnapshot] = React.useState<DreamDraftSnapshot | null>(null);
   const activeRouteName = state.routes[state.index]?.name;
   const addFocused = activeRouteName === TAB_ROUTE_NAMES.New;
   const quickAddActive = isQuickAddOpen || addFocused;
   const leftRoutes = SIDE_ROUTE_NAMES.slice(0, 2);
   const rightRoutes = SIDE_ROUTE_NAMES.slice(2);
+  const draftResumeDescription = React.useMemo(
+    () => getDreamDraftResumeDescription(draftSnapshot, copy),
+    [copy, draftSnapshot],
+  );
 
   React.useEffect(() => {
     if (!isQuickAddOpen) {
       return;
     }
 
-    setHasDraft(Boolean(getDreamDraft()));
+    setDraftSnapshot(getDreamDraftSnapshot(getDreamDraft()));
   }, [isQuickAddOpen]);
 
   const closeQuickAdd = React.useCallback(() => {
@@ -109,19 +118,23 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
   }, []);
 
   const openQuickAdd = React.useCallback(() => {
-    setHasDraft(Boolean(getDreamDraft()));
+    setDraftSnapshot(getDreamDraftSnapshot(getDreamDraft()));
     setIsQuickAddOpen(true);
   }, []);
 
   const openComposer = React.useCallback(
-    (entryMode: 'default' | 'voice' | 'wake') => {
+    (
+      entryMode: 'default' | 'voice' | 'wake',
+      options?: { autoStartRecording?: boolean },
+    ) => {
       closeQuickAdd();
       navigation.dispatch(
         TabActions.jumpTo(
           TAB_ROUTE_NAMES.New,
           {
             entryMode,
-            launchKey: Date.now(),
+            autoStartRecording: options?.autoStartRecording,
+            launchKey: options?.autoStartRecording ? Date.now() : undefined,
           },
         ),
       );
@@ -309,10 +322,10 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
             </View>
 
             <View style={styles.quickAddOptions}>
-              <QuickAddOption
-                description={copy.quickAddWakeHint}
-                icon="sunny-outline"
-                onPress={() => openComposer('wake')}
+                <QuickAddOption
+                  description={copy.quickAddWakeHint}
+                  icon="sunny-outline"
+                  onPress={() => openComposer('wake')}
                 primary
                 styles={styles}
                 title={copy.quickAddWakeAction}
@@ -320,7 +333,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
               <QuickAddOption
                 description={copy.quickAddVoiceHint}
                 icon="mic-outline"
-                onPress={() => openComposer('voice')}
+                onPress={() => openComposer('voice', { autoStartRecording: true })}
                 styles={styles}
                 title={copy.quickAddVoiceAction}
               />
@@ -331,11 +344,11 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
                 styles={styles}
                 title={copy.quickAddTextAction}
               />
-              {hasDraft ? (
+              {draftSnapshot ? (
                 <QuickAddOption
-                  description={copy.quickAddContinueHint}
+                  description={draftResumeDescription}
                   icon="document-text-outline"
-                  onPress={() => openComposer('default')}
+                  onPress={() => openComposer(draftSnapshot.resumeMode)}
                   styles={styles}
                   title={copy.homeContinueDraft}
                 />

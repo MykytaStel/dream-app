@@ -1,7 +1,11 @@
 import React from 'react';
+import { View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Button } from '../../../components/ui/Button';
+import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
+import { SectionHeader } from '../../../components/ui/SectionHeader';
+import { Text } from '../../../components/ui/Text';
 import { ScreenStateCard } from './ScreenStateCard';
 import {
   getDreamCopy,
@@ -13,6 +17,7 @@ import {
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { createNewDreamScreenStyles } from '../screens/NewDreamScreen.styles';
+import { getDreamDraftSummaryLabels } from '../model/dreamDraftPresentation';
 import {
   DreamComposerCoreCard,
   DreamComposerHeroCard,
@@ -31,6 +36,7 @@ import {
   formatLocalAssetName,
   useDreamComposerForm,
 } from './useDreamComposerForm';
+import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 
 export function DreamComposer({
   mode,
@@ -65,6 +71,19 @@ export function DreamComposer({
     () => formatLocalAssetName(form.audioUri),
     [form.audioUri],
   );
+  const restoredDraftSnapshot = React.useMemo(
+    () => getDreamDraftSnapshot(form.initialDraft),
+    [form.initialDraft],
+  );
+  const restoredDraftLabels = React.useMemo(
+    () => getDreamDraftSummaryLabels(restoredDraftSnapshot, copy),
+    [copy, restoredDraftSnapshot],
+  );
+  const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(form.hasRestoredDraft);
+
+  React.useEffect(() => {
+    setShowRestoredDraftCard(form.hasRestoredDraft);
+  }, [form.hasRestoredDraft]);
 
   const refineActions = [
     ...(!form.isWakeMode
@@ -109,6 +128,37 @@ export function DreamComposer({
         hasAudio={Boolean(form.audioUri)}
         hasRestoredDraft={form.hasRestoredDraft}
       />
+
+      {showRestoredDraftCard ? (
+        <Card style={styles.card}>
+          <View style={styles.sectionAccentRow}>
+            <View style={styles.sectionAccentPrimary} />
+            <View style={styles.sectionAccentSecondary} />
+          </View>
+          <SectionHeader
+            title={copy.recordDraftRestoredTitle}
+            subtitle={copy.recordDraftRestoredDescription}
+          />
+          {restoredDraftLabels.length ? (
+            <View style={styles.helperChipsRow}>
+              {restoredDraftLabels.map(label => (
+                <View key={label} style={styles.helperChip}>
+                  <Text style={styles.helperChipLabel}>{label}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          <Button
+            title={copy.recordDraftStartFreshAction}
+            onPress={() => {
+              form.discardDraftAndReset();
+              setShowRestoredDraftCard(false);
+            }}
+            variant="ghost"
+            size="sm"
+          />
+        </Card>
+      ) : null}
 
       {form.isBusy ? (
         <ScreenStateCard

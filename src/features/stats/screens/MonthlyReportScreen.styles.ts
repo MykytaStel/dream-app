@@ -320,6 +320,12 @@ export function createMonthlyReportScreenStyles(theme: Theme) {
       gap: 6,
       borderColor: theme.colors.accent,
     },
+    signalCardPressable: {
+      overflow: 'hidden',
+    },
+    signalCardPressed: {
+      opacity: 0.95,
+    },
     signalLeadValue: {
       fontSize: 24,
       lineHeight: 30,
@@ -359,6 +365,45 @@ export function createMonthlyReportScreenStyles(theme: Theme) {
       color: theme.colors.textDim,
       fontSize: 11,
       lineHeight: 15,
+    },
+    signalAction: {
+      color: theme.colors.accent,
+      fontSize: 11,
+      lineHeight: 15,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.45,
+    },
+    savedThreadsList: {
+      gap: 8,
+    },
+    savedThreadRow: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+    },
+    savedThreadCopy: {
+      flex: 1,
+      gap: 3,
+    },
+    savedThreadTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+    savedThreadMeta: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
     calmGrid: {
       flexDirection: 'row',

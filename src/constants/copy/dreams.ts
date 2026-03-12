@@ -361,6 +361,18 @@ const DREAM_COPY_EN = {
   detailTranscriptionErrorTitle: 'Transcription failed',
   detailTranscriptionErrorDescription:
     'The voice note is still saved locally. Try again in a quieter moment or after the model finishes downloading.',
+  detailTranscriptSyncLocal:
+    'This saved transcript is newer on this device and may not have reached your other device yet.',
+  detailTranscriptSyncing:
+    'This saved transcript is still moving through sync. Give it a moment before checking another device.',
+  detailTranscriptSyncError:
+    'This saved transcript is still safe on this device, but the last sync did not finish.',
+  detailAudioSyncLocal:
+    'This voice note is still saved only on this device until backup catches up.',
+  detailAudioSyncing:
+    'This voice note is still moving through backup. Give it a moment before checking another device.',
+  detailAudioSyncError:
+    'This voice note is still safe on this device, but the last backup sync did not finish.',
   detailTagsEmpty: 'No tags attached yet.',
   detailRelatedTitle: 'Nearby dreams',
   detailRelatedDescription:
@@ -894,6 +906,18 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailTranscriptionErrorTitle: 'Помилка транскрипції',
   detailTranscriptionErrorDescription:
     'Голосова нотатка все ще збережена локально. Спробуй ще раз у тихішому середовищі або після завершення завантаження моделі.',
+  detailTranscriptSyncLocal:
+    'Цей збережений транскрипт новіший на цьому пристрої й може ще не дійти до іншого.',
+  detailTranscriptSyncing:
+    'Цей збережений транскрипт ще проходить через sync. Дай йому трохи часу, перш ніж перевіряти інший пристрій.',
+  detailTranscriptSyncError:
+    'Цей збережений транскрипт у безпеці на цьому пристрої, але останній sync не завершився.',
+  detailAudioSyncLocal:
+    'Ця голосова нотатка поки збережена лише на цьому пристрої, доки backup не наздожене.',
+  detailAudioSyncing:
+    'Ця голосова нотатка ще проходить через backup. Дай їй трохи часу, перш ніж перевіряти інший пристрій.',
+  detailAudioSyncError:
+    'Ця голосова нотатка у безпеці на цьому пристрої, але останній backup sync не завершився.',
   detailTagsEmpty: 'Теги ще не додані.',
   detailRelatedTitle: 'Поруч сни',
   detailRelatedDescription:

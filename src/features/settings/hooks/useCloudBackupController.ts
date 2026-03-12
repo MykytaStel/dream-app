@@ -26,8 +26,18 @@ import {
 import { getCloudSyncSnapshot, runCloudSync } from '../../../services/cloud/sync';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
 import {
+  listLocalDreamExportFiles,
+  loadDreamImportPreview,
+  type DreamImportPreview,
+  type LocalDreamExportFile,
+} from '../services/dataImportService';
+import {
+  buildBackupContentTrustItems,
+  buildBackupTimelineItems,
   buildCloudHighlights,
   buildCloudSummaryHighlights,
+  buildRestorePreviewItems,
+  formatBackupTimestamp,
   formatCloudSyncMeta,
 } from '../model/settingsPresentation';
 
@@ -65,6 +75,12 @@ export function useCloudBackupController({
   const [cloudSyncSnapshot, setCloudSyncSnapshot] = React.useState(() =>
     getCloudSyncSnapshot(),
   );
+  const [latestLocalBackupFile, setLatestLocalBackupFile] =
+    React.useState<LocalDreamExportFile | null>(null);
+  const [latestLocalBackupPreview, setLatestLocalBackupPreview] =
+    React.useState<DreamImportPreview | null>(null);
+  const [latestLocalBackupPreviewError, setLatestLocalBackupPreviewError] =
+    React.useState<string | null>(null);
   const [isConnectingCloud, setIsConnectingCloud] = React.useState(false);
   const [isSigningInCloudAccount, setIsSigningInCloudAccount] =
     React.useState(false);
@@ -100,6 +116,54 @@ export function useCloudBackupController({
   const cloudSyncMeta = React.useMemo(
     () => formatCloudSyncMeta(copy, cloudSyncSnapshot, locale, __DEV__),
     [cloudSyncSnapshot, copy, locale],
+  );
+  const backupTimelineItems = React.useMemo(
+    () =>
+      buildBackupTimelineItems({
+        copy,
+        locale,
+        snapshot: cloudSyncSnapshot,
+        dreams: cloudDreams,
+        session: cloudSession,
+        latestBackupFile: latestLocalBackupFile,
+        latestBackupPreview: latestLocalBackupPreview,
+      }),
+    [
+      cloudDreams,
+      cloudSession,
+      cloudSyncSnapshot,
+      copy,
+      latestLocalBackupFile,
+      latestLocalBackupPreview,
+      locale,
+    ],
+  );
+  const backupContentTrustItems = React.useMemo(
+    () =>
+      buildBackupContentTrustItems({
+        copy,
+        dreams: cloudDreams,
+        session: cloudSession,
+      }),
+    [cloudDreams, cloudSession, copy],
+  );
+  const latestLocalBackupPreviewMeta = React.useMemo(
+    () =>
+      latestLocalBackupPreview
+        ? `${copy.restoreDreamCountLabel} ${
+            latestLocalBackupPreview.summary.dreamCount
+          } • ${formatBackupTimestamp(latestLocalBackupPreview.exportedAt, locale)}`
+        : null,
+    [copy.restoreDreamCountLabel, latestLocalBackupPreview, locale],
+  );
+  const latestLocalBackupPreviewItems = React.useMemo(
+    () =>
+      latestLocalBackupPreview
+        ? buildRestorePreviewItems(copy, latestLocalBackupPreview, locale, {
+            compact: true,
+          })
+        : [],
+    [copy, latestLocalBackupPreview, locale],
   );
   const cloudManageAction = React.useMemo(() => {
     if (cloudSession.status === 'signed-out') {
@@ -139,10 +203,33 @@ export function useCloudBackupController({
     setCloudSyncSnapshot(getCloudSyncSnapshot());
   }, []);
 
+  const refreshLatestLocalBackupPreview = React.useCallback(async () => {
+    try {
+      const files = await listLocalDreamExportFiles();
+      const latestFile = files[0] ?? null;
+      setLatestLocalBackupFile(latestFile);
+      setLatestLocalBackupPreviewError(null);
+
+      if (!latestFile) {
+        setLatestLocalBackupPreview(null);
+        return;
+      }
+
+      const preview = await loadDreamImportPreview(latestFile.filePath, 'replace');
+      setLatestLocalBackupPreview(preview);
+    } catch (error) {
+      setLatestLocalBackupPreview(null);
+      setLatestLocalBackupPreviewError(
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+  }, []);
+
   useFocusEffect(
     React.useCallback(() => {
       refreshCloudState();
-    }, [refreshCloudState]),
+      refreshLatestLocalBackupPreview().catch(() => undefined);
+    }, [refreshCloudState, refreshLatestLocalBackupPreview]),
   );
 
   const getCloudCredentials = React.useCallback(() => {
@@ -458,6 +545,13 @@ export function useCloudBackupController({
     clearCloudActionFeedback,
     cloudHighlights,
     cloudSummaryHighlights,
+    backupTimelineItems,
+    backupContentTrustItems,
+    latestLocalBackupFile,
+    latestLocalBackupPreview,
+    latestLocalBackupPreviewError,
+    latestLocalBackupPreviewMeta,
+    latestLocalBackupPreviewItems,
     cloudManageActionTitle: cloudManageAction.title,
     cloudManageActionMeta: cloudManageAction.meta,
     cloudSyncMetaTitle: cloudSyncMeta.title,

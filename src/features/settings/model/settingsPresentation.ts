@@ -11,6 +11,7 @@ import { type DreamReminderSettings } from '../../reminders/services/dreamRemind
 import {
   type DreamImportMode,
   type DreamImportPreview,
+  type LocalDreamExportFile,
 } from '../services/dataImportService';
 import { type SettingsMetaItem } from '../components/SettingsMetaGrid';
 import { CURRENT_STORAGE_SCHEMA_VERSION } from '../../../services/storage/keys';
@@ -18,6 +19,30 @@ import { DREAM_EXPORT_VERSION } from '../services/dataExportService';
 import { type CloudSyncSnapshot } from '../../../services/cloud/sync';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
+
+export type BackupTimelineItem = {
+  key: 'sync' | 'snapshot' | 'device';
+  title: string;
+  meta: string;
+  value: string;
+};
+
+export type BackupContentTrustItem = {
+  key: 'audio' | 'transcript';
+  title: string;
+  meta: string;
+  value: string;
+};
+
+function fillTemplate(
+  template: string,
+  replacements: Record<string, string | number>,
+) {
+  return Object.entries(replacements).reduce(
+    (result, [key, value]) => result.replace(`{${key}}`, String(value)),
+    template,
+  );
+}
 
 export function getSettingsFooterMeta(copy: SettingsCopy) {
   return `${copy.footerStorageMetaPrefix} ${CURRENT_STORAGE_SCHEMA_VERSION} • ${copy.footerExportMetaPrefix} v${DREAM_EXPORT_VERSION}`;
@@ -183,6 +208,215 @@ export function formatCloudSyncMeta(
     title: timestamp,
     meta: parts.join(' • '),
   };
+}
+
+function getDreamFreshnessTimestamp(dream: Dream) {
+  return Math.max(
+    dream.updatedAt ?? 0,
+    dream.createdAt ?? 0,
+    dream.transcriptUpdatedAt ?? 0,
+    dream.lastSyncedAt ?? 0,
+    dream.analysis?.generatedAt ?? 0,
+  );
+}
+
+export function buildBackupTimelineItems(input: {
+  copy: SettingsCopy;
+  locale: AppLocale;
+  snapshot: CloudSyncSnapshot;
+  dreams: Dream[];
+  session: CloudSession;
+  latestBackupFile: LocalDreamExportFile | null;
+  latestBackupPreview: DreamImportPreview | null;
+}): BackupTimelineItem[] {
+  const {
+    copy,
+    locale,
+    snapshot,
+    dreams,
+    session,
+    latestBackupFile,
+    latestBackupPreview,
+  } = input;
+  const syncedDreamCount = dreams.filter(dream => dream.syncStatus === 'synced').length;
+  const pendingDreamCount = dreams.filter(
+    dream => (dream.syncStatus ?? 'local') === 'local' || dream.syncStatus === 'syncing',
+  ).length;
+  const errorDreamCount = dreams.filter(dream => dream.syncStatus === 'error').length;
+  const freshestDreamTimestamp = dreams.reduce(
+    (latest, dream) => Math.max(latest, getDreamFreshnessTimestamp(dream)),
+    0,
+  );
+
+  const syncValue =
+    typeof snapshot.lastSuccessAt === 'number'
+      ? formatBackupTimestamp(new Date(snapshot.lastSuccessAt).toISOString(), locale)
+      : copy.cloudLastSyncNever;
+  const syncMetaParts = [
+    snapshot.status === 'syncing'
+      ? copy.cloudSyncStateSyncing
+      : snapshot.status === 'error'
+        ? copy.cloudSyncStateError
+        : snapshot.status === 'success'
+          ? copy.cloudSyncStateSuccess
+          : copy.cloudSyncStateIdle,
+    `${copy.cloudPendingLabel} ${snapshot.pendingCount}`,
+    `${copy.cloudSyncedLabel} ${snapshot.uploadedCount}`,
+    `${copy.cloudPulledLabel} ${snapshot.pulledCount}`,
+  ];
+
+  if (snapshot.failedCount) {
+    syncMetaParts.push(`${copy.cloudErrorsLabel} ${snapshot.failedCount}`);
+  }
+
+  const snapshotValue = latestBackupPreview
+    ? formatBackupTimestamp(latestBackupPreview.exportedAt, locale)
+    : latestBackupFile
+      ? formatBackupTimestamp(new Date(latestBackupFile.modifiedAt).toISOString(), locale)
+      : copy.backupTimelineSnapshotMissing;
+  const snapshotMeta = latestBackupPreview
+    ? `${copy.restoreDreamCountLabel} ${latestBackupPreview.summary.dreamCount} • ${copy.restoreAppVersionLabel} ${latestBackupPreview.appVersion}`
+    : latestBackupFile
+      ? latestBackupFile.fileName
+      : copy.backupTimelineSnapshotMissingMeta;
+
+  let deviceValue = copy.backupTimelineDeviceLocalOnly;
+  if (session.status === 'signed-in') {
+    if (errorDreamCount > 0 || snapshot.status === 'error') {
+      deviceValue = copy.backupTimelineDeviceNeedsAttention;
+    } else if (pendingDreamCount > 0) {
+      deviceValue =
+        pendingDreamCount === 1
+          ? copy.backupTimelineDeviceAheadSingle
+          : copy.backupTimelineDeviceAheadPlural.replace('{count}', String(pendingDreamCount));
+    } else if (typeof snapshot.lastSuccessAt === 'number') {
+      deviceValue = copy.backupTimelineDeviceCaughtUp;
+    } else {
+      deviceValue = copy.backupTimelineDeviceWaitingFirstSync;
+    }
+  }
+
+  const freshnessAnchor =
+    freshestDreamTimestamp > 0
+      ? formatBackupTimestamp(new Date(freshestDreamTimestamp).toISOString(), locale)
+      : copy.backupTimelineDeviceNoLocalChanges;
+  const deviceMetaParts = [
+    `${copy.cloudPendingLabel} ${pendingDreamCount}`,
+    `${copy.cloudSyncedLabel} ${syncedDreamCount}`,
+  ];
+  if (errorDreamCount) {
+    deviceMetaParts.push(`${copy.cloudErrorsLabel} ${errorDreamCount}`);
+  }
+  deviceMetaParts.push(
+    `${copy.backupTimelineDeviceFreshnessLabel} ${freshnessAnchor}`,
+  );
+
+  return [
+    {
+      key: 'sync',
+      title: copy.backupTimelineSyncTitle,
+      meta: syncMetaParts.join(' • '),
+      value: syncValue,
+    },
+    {
+      key: 'snapshot',
+      title: copy.backupTimelineSnapshotTitle,
+      meta: snapshotMeta,
+      value: snapshotValue,
+    },
+    {
+      key: 'device',
+      title: copy.backupTimelineDeviceTitle,
+      meta: deviceMetaParts.join(' • '),
+      value: deviceValue,
+    },
+  ];
+}
+
+export function buildBackupContentTrustItems(input: {
+  copy: SettingsCopy;
+  dreams: Dream[];
+  session: CloudSession;
+}): BackupContentTrustItem[] {
+  const { copy, dreams, session } = input;
+  const signedIn = session.status === 'signed-in';
+  const audioDreams = dreams.filter(dream => Boolean(dream.audioUri?.trim()));
+  const uploadedAudioCount = audioDreams.filter(dream =>
+    Boolean(dream.audioRemotePath?.trim()),
+  ).length;
+  const audioStillLocalCount = signedIn
+    ? audioDreams.filter(dream => !dream.audioRemotePath?.trim()).length
+    : audioDreams.length;
+
+  const transcriptDreams = dreams.filter(dream => Boolean(dream.transcript?.trim()));
+  const editedTranscriptCount = transcriptDreams.filter(
+    dream => dream.transcriptSource === 'edited',
+  ).length;
+  const transcriptStillLocalCount = signedIn
+    ? transcriptDreams.filter(dream => {
+        const transcriptTimestamp =
+          dream.transcriptUpdatedAt ?? dream.updatedAt ?? dream.createdAt;
+        return (
+          dream.syncStatus !== 'synced' ||
+          transcriptTimestamp > (dream.lastSyncedAt ?? 0)
+        );
+      }).length
+    : transcriptDreams.length;
+
+  const audioValue =
+    audioDreams.length === 0
+      ? copy.backupContentTrustAudioEmpty
+      : !signedIn
+      ? copy.backupContentTrustLocalOnly
+      : audioStillLocalCount === 0
+      ? copy.backupContentTrustAudioAllBackedUp
+      : audioStillLocalCount === 1
+      ? copy.backupContentTrustAudioStillLocalSingle
+      : fillTemplate(copy.backupContentTrustAudioStillLocalPlural, {
+          count: audioStillLocalCount,
+        });
+  const audioMeta =
+    audioDreams.length === 0
+      ? copy.backupContentTrustAudioEmptyMeta
+      : fillTemplate(copy.backupContentTrustAudioMeta, {
+          total: audioDreams.length,
+          synced: uploadedAudioCount,
+        });
+
+  const transcriptValue =
+    transcriptDreams.length === 0
+      ? copy.backupContentTrustTranscriptEmpty
+      : !signedIn
+      ? copy.backupContentTrustLocalOnly
+      : transcriptStillLocalCount === 0
+      ? copy.backupContentTrustTranscriptCaughtUp
+      : transcriptStillLocalCount === 1
+      ? copy.backupContentTrustTranscriptStillLocalSingle
+      : fillTemplate(copy.backupContentTrustTranscriptStillLocalPlural, {
+          count: transcriptStillLocalCount,
+        });
+  const transcriptMeta =
+    transcriptDreams.length === 0
+      ? copy.backupContentTrustTranscriptEmptyMeta
+      : fillTemplate(copy.backupContentTrustTranscriptMeta, {
+          total: transcriptDreams.length,
+          edited: editedTranscriptCount,
+        });
+
+  return [
+    {
+      key: 'audio',
+      title: copy.backupContentTrustAudioTitle,
+      meta: audioMeta,
+      value: audioValue,
+    },
+    {
+      key: 'transcript',
+      title: copy.backupContentTrustTranscriptTitle,
+      meta: transcriptMeta,
+      value: transcriptValue,
+    },
+  ];
 }
 
 export function buildPrivacyHighlights(copy: SettingsCopy): SettingsMetaItem[] {
@@ -406,7 +640,44 @@ export function buildRestorePreviewItems(
   copy: SettingsCopy,
   preview: DreamImportPreview,
   locale: AppLocale,
+  options: { compact?: boolean } = {},
 ): SettingsMetaItem[] {
+  if (options.compact) {
+    return [
+      {
+        label: copy.restoreDreamCountLabel,
+        value: String(preview.summary.dreamCount),
+      },
+      {
+        label: copy.restoreNewCountLabel,
+        value: String(preview.diff.newDreamCount),
+      },
+      {
+        label: copy.restoreResultCountLabel,
+        value: String(preview.diff.resultingDreamCount),
+      },
+      {
+        label: copy.restoreDraftLabel,
+        value: preview.summary.draftIncluded
+          ? copy.restoreDraftPresent
+          : copy.restoreDraftMissing,
+      },
+      {
+        label: copy.restoreSettingsLabel,
+        value:
+          preview.settingsAction === 'replace'
+            ? copy.restoreSettingsReplace
+            : copy.restoreSettingsKeepCurrent,
+        wide: true,
+      },
+      {
+        label: copy.restoreExportedAtLabel,
+        value: formatBackupTimestamp(preview.exportedAt, locale),
+        wide: true,
+      },
+    ];
+  }
+
   return [
     {
       label: copy.restoreCurrentCountLabel,

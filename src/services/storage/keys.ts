@@ -10,6 +10,7 @@ export const LAST_VIEWED_DREAM_STORAGE_KEY = 'last-viewed-dream';
 export const HOME_SEARCH_PRESETS_STORAGE_KEY = 'home-search-presets';
 export const MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY =
   'monthly-report-saved-months';
+export const PINNED_DREAM_THREADS_STORAGE_KEY = 'pinned-dream-threads';
 export const APP_LOCALE_KEY = 'app-locale';
 export const DREAM_ANALYSIS_SETTINGS_KEY = 'dream-analysis-settings';
 export const CLOUD_SESSION_STORAGE_KEY = 'cloud-session';

@@ -196,6 +196,12 @@ export function DreamDetailSections({
                 </Text>
               )}
 
+              {viewModel.transcriptSyncHint ? (
+                <View style={styles.syncNoteCard}>
+                  <Text style={styles.syncNoteText}>{viewModel.transcriptSyncHint}</Text>
+                </View>
+              ) : null}
+
               <View style={styles.actionGroup}>
                 {isEditingTranscript ? (
                   <>
@@ -268,6 +274,11 @@ export function DreamDetailSections({
               <View style={styles.utilityRows}>
                 <InfoRow label={copy.detailAudioPathLabel} value={audioFileLabel ?? dream.audioUri} />
               </View>
+              {viewModel.audioSyncHint ? (
+                <View style={styles.syncNoteCard}>
+                  <Text style={styles.syncNoteText}>{viewModel.audioSyncHint}</Text>
+                </View>
+              ) : null}
               <View style={styles.actionGroup}>
                 <Button
                   title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}

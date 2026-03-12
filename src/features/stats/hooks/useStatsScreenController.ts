@@ -27,6 +27,7 @@ import {
   getDreamAchievementSummary,
   getDreamAchievements,
 } from '../model/achievements';
+import { buildSavedDreamThreadShelfItems } from '../model/dreamThread';
 import { getMonthlyReportData, getMonthlyReportMonths } from '../model/monthlyReport';
 import {
   buildRecentActivityBars,
@@ -51,6 +52,7 @@ import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 import { type DreamFingerprintFacet } from '../components/DreamFingerprintCard';
 import { type PatternGroupCardItem } from '../components/PatternGroupCard';
 import { type MemoryMode } from '../components/StatsScreenSections';
+import { getSavedDreamThreads } from '../services/dreamThreadShelfService';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
 export type InsightMode = 'snapshot' | 'compare';
@@ -86,6 +88,7 @@ export function useStatsScreenController({
   const [meta, setMeta] = React.useState<DreamsMeta>(() => getDreamsMeta());
   const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
   const [analysisSettings, setAnalysisSettings] = React.useState(() => getDreamAnalysisSettings());
+  const [savedThreadRecords, setSavedThreadRecords] = React.useState(() => getSavedDreamThreads());
   const [loading, setLoading] = React.useState(meta.totalCount > 0);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedRange, setSelectedRange] = React.useState<InsightRange>('all');
@@ -105,6 +108,7 @@ export function useStatsScreenController({
         const nextMeta = getDreamsMeta();
         setMeta(nextMeta);
         setAnalysisSettings(getDreamAnalysisSettings());
+        setSavedThreadRecords(getSavedDreamThreads());
 
         if (mode === 'initial') {
           setLoading(nextMeta.totalCount > 0);
@@ -614,6 +618,18 @@ export function useStatsScreenController({
     }
   }, [isThreadsMode, patternGroups, selectedPatternGroup]);
 
+  const savedThreadItems = React.useMemo(
+    () =>
+      isThreadsMode
+        ? buildSavedDreamThreadShelfItems({
+            records: savedThreadRecords,
+            dreams: scopedDreams,
+            statsCopy: copy,
+          })
+        : [],
+    [copy, isThreadsMode, savedThreadRecords, scopedDreams],
+  );
+
   return {
     loading,
     loadError,
@@ -651,6 +667,7 @@ export function useStatsScreenController({
     coverageItems,
     attentionItems,
     workQueueItems,
+    savedThreadItems,
     weeklyGoalTarget,
     weeklyGoalComplete,
     achievements,

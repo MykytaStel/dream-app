@@ -1,13 +1,18 @@
 import React from 'react';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
+import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
+import { SettingsActionRow } from '../components/SettingsActionRow';
+import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import { useCloudBackupController } from '../hooks/useCloudBackupController';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { CloudSection } from '../components/SettingsTopSections';
@@ -93,6 +98,60 @@ export default function BackupScreen() {
         onToggleCloudSync={controller.onToggleCloudSync}
         onDismissCloudActionFeedback={controller.clearCloudActionFeedback}
       />
+      <Card style={styles.sectionCard}>
+        <SectionHeader
+          title={copy.backupTimelineTitle}
+          subtitle={copy.backupTimelineDescription}
+        />
+        {controller.backupTimelineItems.map(item => (
+          <SettingsActionRow
+            key={item.key}
+            title={item.title}
+            meta={item.meta}
+            value={item.value}
+          />
+        ))}
+
+        {controller.latestLocalBackupPreview ? (
+          <>
+            <View style={styles.restorePreviewBlock}>
+              <Text style={styles.restoreLabel}>{copy.restorePreviewTitle}</Text>
+              <Text style={styles.restoreHint}>
+                {controller.latestLocalBackupPreviewMeta ?? copy.restoreDescription}
+              </Text>
+            </View>
+            <View style={styles.restorePreviewBlock}>
+              <SettingsMetaGrid items={controller.latestLocalBackupPreviewItems} />
+            </View>
+          </>
+        ) : controller.latestLocalBackupPreviewError ? (
+          <View style={styles.restoreEmptyBlock}>
+            <Text style={styles.restoreEmptyTitle}>{copy.restoreErrorTitle}</Text>
+            <Text style={styles.restoreHint}>
+              {controller.latestLocalBackupPreviewError}
+            </Text>
+          </View>
+        ) : (
+          <View style={styles.restoreEmptyBlock}>
+            <Text style={styles.restoreEmptyTitle}>{copy.backupTimelineSnapshotMissing}</Text>
+            <Text style={styles.restoreHint}>{copy.backupTimelineSnapshotMissingMeta}</Text>
+          </View>
+        )}
+      </Card>
+      <Card style={styles.sectionCard}>
+        <SectionHeader
+          title={copy.backupContentTrustTitle}
+          subtitle={copy.backupContentTrustDescription}
+        />
+        {controller.backupContentTrustItems.map(item => (
+          <SettingsActionRow
+            key={item.key}
+            title={item.title}
+            meta={item.meta}
+            value={item.value}
+          />
+        ))}
+      </Card>
     </ScreenContainer>
   );
 }

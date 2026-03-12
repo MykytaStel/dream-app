@@ -12,6 +12,7 @@ import {
   buildMonthlyReportShareLines,
   getMonthlyReportViewModel,
 } from '../model/monthlyReportPresentation';
+import { buildSavedDreamThreadShelfItems } from '../model/dreamThread';
 import {
   getMonthlyReportData,
   getMonthlyReportMonths,
@@ -22,6 +23,7 @@ import {
   getSavedMonthlyReportMonths,
   toggleSavedMonthlyReportMonth,
 } from '../services/monthlyReportShelfService';
+import { getSavedDreamThreads } from '../services/dreamThreadShelfService';
 
 type IdleCallbackHandle = number;
 type IdleSchedulerShape = {
@@ -52,6 +54,7 @@ export function useMonthlyReportController({
   );
   const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
   const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
+  const [savedThreadRecords, setSavedThreadRecords] = React.useState(() => getSavedDreamThreads());
   const [loading, setLoading] = React.useState(meta.totalCount > 0);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
@@ -72,6 +75,7 @@ export function useMonthlyReportController({
         setMeta(nextMeta);
         setMonths(nextMonths);
         setSavedMonths(getSavedMonthlyReportMonths());
+        setSavedThreadRecords(getSavedDreamThreads());
         setLoading(nextMeta.totalCount > 0);
         trackLocalSurfaceLoad('monthly_report_refresh', startedAt, nextMeta.totalCount);
 
@@ -148,6 +152,17 @@ export function useMonthlyReportController({
         : null,
     [copy, isSavedForLater, localeTag, preSleepEmotionLabels, report, wakeEmotionLabels],
   );
+  const savedThreadItems = React.useMemo(
+    () =>
+      report
+        ? buildSavedDreamThreadShelfItems({
+            records: savedThreadRecords,
+            dreams: report.dreams,
+            statsCopy: copy,
+          })
+        : [],
+    [copy, report, savedThreadRecords],
+  );
 
   const onToggleSaveForLater = React.useCallback(() => {
     if (!report) {
@@ -182,6 +197,7 @@ export function useMonthlyReportController({
     months,
     report,
     viewModel,
+    savedThreadItems,
     loading,
     loadError,
     selectedMonthKey,

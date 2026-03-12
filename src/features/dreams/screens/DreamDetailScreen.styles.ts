@@ -372,6 +372,19 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       fontSize: 14,
       lineHeight: 21,
     },
+    syncNoteCard: {
+      paddingVertical: 9,
+      paddingHorizontal: 11,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: `${theme.colors.border}66`,
+    },
+    syncNoteText: {
+      color: theme.colors.textDim,
+      fontSize: 13,
+      lineHeight: 19,
+    },
     contextNoteCard: {
       gap: 8,
       paddingVertical: 12,

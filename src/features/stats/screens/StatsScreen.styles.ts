@@ -568,11 +568,49 @@ export function createStatsScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 17,
     },
+    savedThreadsBlock: {
+      gap: 10,
+    },
+    savedThreadsList: {
+      gap: 8,
+    },
+    savedThreadRow: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+    },
+    savedThreadCopy: {
+      flex: 1,
+      gap: 3,
+    },
+    savedThreadTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+    savedThreadMeta: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
     threadHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'flex-start',
       gap: 12,
+    },
+    threadHeaderCopy: {
+      flex: 1,
+      minWidth: 0,
     },
     threadLeadCard: {
       ...createSoftTile(theme, {
@@ -582,10 +620,23 @@ export function createStatsScreenStyles(theme: Theme) {
         paddingHorizontal: 12,
       }),
       gap: 10,
-      borderColor: theme.colors.accent,
+      borderColor: theme.colors.border,
     },
     threadLeadHeader: {
       gap: 10,
+    },
+    threadOpenAction: {
+      alignSelf: 'flex-start',
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 10,
+        paddingVertical: 7,
+      }),
+    },
+    threadOpenActionText: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: '700',
     },
     threadLeadCopy: {
       gap: 4,
@@ -632,8 +683,7 @@ export function createStatsScreenStyles(theme: Theme) {
         paddingHorizontal: 12,
       }),
       gap: 8,
-      borderColor: theme.colors.accent,
-      backgroundColor: theme.colors.surfaceAlt,
+      borderColor: theme.colors.border,
     },
     threadMatchHeader: {
       flexDirection: 'row',

@@ -58,6 +58,53 @@ export function createPatternDetailScreenStyles(theme: Theme) {
       fontSize: 14,
       lineHeight: 20,
     },
+    summaryGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    summaryCard: {
+      flexBasis: '48%',
+      flexGrow: 1,
+      minWidth: 132,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 10,
+      paddingHorizontal: 11,
+      gap: 4,
+    },
+    summaryLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.45,
+      textTransform: 'uppercase',
+    },
+    summaryValue: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+    },
+    saveThreadButton: {
+      alignSelf: 'flex-start',
+      borderRadius: theme.borderRadii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 7,
+      paddingHorizontal: 12,
+    },
+    saveThreadButtonPressed: {
+      opacity: 0.95,
+    },
+    saveThreadButtonText: {
+      color: theme.colors.text,
+      fontSize: 12,
+      fontWeight: '700',
+    },
     metaRow: {
       flexDirection: 'row',
       gap: 8,
@@ -101,7 +148,8 @@ export function createPatternDetailScreenStyles(theme: Theme) {
     },
     rowHeader: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
       gap: 12,
     },
     dateBadge: {
@@ -143,6 +191,19 @@ export function createPatternDetailScreenStyles(theme: Theme) {
     rowMeta: {
       color: theme.colors.textDim,
       fontSize: 12,
+    },
+    timelineMarkerChip: {
+      borderRadius: theme.borderRadii.pill,
+      borderWidth: 1,
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 5,
+      paddingHorizontal: 9,
+    },
+    timelineMarkerText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
     },
     previewWrap: {
       flexDirection: 'row',

@@ -191,6 +191,7 @@ export function useDreamComposerForm({
       text,
       sleepDate,
       audioUri,
+      entryMode,
       mood,
       wakeEmotions,
       stressLevel,
@@ -206,6 +207,7 @@ export function useDreamComposerForm({
     alcoholTaken,
     audioUri,
     caffeineLate,
+    entryMode,
     healthNotes,
     importantEvents,
     medications,
@@ -315,6 +317,14 @@ export function useDreamComposerForm({
     setHasTriedSave(false);
     setLastActionError(null);
     clearDreamDraft();
+  }
+
+  function discardDraftAndReset() {
+    resetForm();
+    setShowMoodSection(isWakeMode);
+    setShowContextSection(false);
+    setShowTagsSection(false);
+    setShowMetaSection(!isWakeMode);
   }
 
   function onSave() {
@@ -458,6 +468,7 @@ export function useDreamComposerForm({
     addTag,
     removeTag,
     onSave,
+    discardDraftAndReset,
     toggleWakeEmotion: (value: WakeEmotion) =>
       setWakeEmotions(current => toggleSelection(current, value)),
     togglePreSleepEmotion: (value: PreSleepEmotion) =>

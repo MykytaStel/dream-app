@@ -15,6 +15,7 @@ import { Theme } from '../../../theme/theme';
 import { fontFamilies } from '../../../theme/fonts';
 import { Dream } from '../model/dream';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
+import { getPostSaveFollowUps } from '../model/postSaveFollowUp';
 
 type CaptureSavedSheetProps = {
   visible: boolean;
@@ -33,45 +34,6 @@ function formatSavedDreamTitle(dream: Dream | null, fallback: string) {
   return dream.title?.trim() || fallback;
 }
 
-function getPostSaveFollowUp(
-  dream: Dream | null,
-  copy: ReturnType<typeof getDreamCopy>,
-): {
-  actionLabel: string;
-  description: string;
-  focusSection: DreamDetailFocusSection;
-  icon: string;
-  title: string;
-} {
-  if (dream?.audioUri && !dream.transcript?.trim()) {
-    return {
-      actionLabel: copy.postSaveFollowUpTranscriptAction,
-      description: copy.postSaveFollowUpTranscriptDescription,
-      focusSection: 'transcript',
-      icon: 'document-text-outline',
-      title: copy.postSaveFollowUpTranscriptTitle,
-    };
-  }
-
-  if (!dream?.text?.trim()) {
-    return {
-      actionLabel: copy.postSaveFollowUpRefineAction,
-      description: copy.postSaveFollowUpRefineDescription,
-      focusSection: 'written',
-      icon: 'create-outline',
-      title: copy.postSaveFollowUpRefineTitle,
-    };
-  }
-
-  return {
-    actionLabel: copy.postSaveFollowUpReflectionAction,
-    description: copy.postSaveFollowUpReflectionDescription,
-    focusSection: 'reflection',
-    icon: 'sparkles-outline',
-    title: copy.postSaveFollowUpReflectionTitle,
-  };
-}
-
 export function CaptureSavedSheet({
   visible,
   dream,
@@ -87,7 +49,9 @@ export function CaptureSavedSheet({
   const styles = React.useMemo(() => createStyles(t, insets.bottom), [insets.bottom, t]);
   const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
   const title = formatSavedDreamTitle(dream, copy.untitled);
-  const followUp = React.useMemo(() => getPostSaveFollowUp(dream, copy), [copy, dream]);
+  const followUps = React.useMemo(() => getPostSaveFollowUps(dream, copy), [copy, dream]);
+  const primaryFollowUp = followUps[0];
+  const secondaryFollowUp = followUps[1] ?? null;
   const savedDate = dream?.sleepDate
     ? new Date(`${dream.sleepDate}T00:00:00`).toLocaleDateString(localeKey, {
         month: 'short',
@@ -146,25 +110,45 @@ export function CaptureSavedSheet({
             <View style={styles.followUpCard}>
               <View style={styles.followUpHeader}>
                 <View style={styles.followUpIconWrap}>
-                  <Ionicons name={followUp.icon} size={16} color={t.colors.accent} />
+                  <Ionicons name={primaryFollowUp.icon} size={16} color={t.colors.accent} />
                 </View>
                 <View style={styles.followUpCopy}>
                   <Text style={styles.followUpLabel}>{copy.postSaveNextStepLabel}</Text>
-                  <Text style={styles.followUpTitle}>{followUp.title}</Text>
+                  <Text style={styles.followUpTitle}>{primaryFollowUp.title}</Text>
                 </View>
               </View>
-              <Text style={styles.followUpDescription}>{followUp.description}</Text>
+              <Text style={styles.followUpDescription}>{primaryFollowUp.description}</Text>
             </View>
 
             <View style={styles.actions}>
               <Button
-                title={followUp.actionLabel}
-                onPress={() => onOpenDetail(followUp.focusSection)}
+                title={primaryFollowUp.actionLabel}
+                onPress={() => onOpenDetail(primaryFollowUp.focusSection)}
                 variant="ghost"
                 icon="arrow-forward-outline"
                 iconPosition="right"
                 size="md"
               />
+              {secondaryFollowUp ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => onOpenDetail(secondaryFollowUp.focusSection)}
+                  style={({ pressed }) => [
+                    styles.secondaryFollowUpRow,
+                    pressed ? styles.secondaryFollowUpRowPressed : null,
+                  ]}
+                >
+                  <View style={styles.secondaryFollowUpCopy}>
+                    <Text style={styles.secondaryFollowUpLabel}>{copy.postSaveThenLabel}</Text>
+                    <Text style={styles.secondaryFollowUpTitle}>
+                      {secondaryFollowUp.title}
+                    </Text>
+                  </View>
+                  <Text style={styles.secondaryFollowUpAction}>
+                    {secondaryFollowUp.actionLabel}
+                  </Text>
+                </Pressable>
+              ) : null}
               <Button
                 title={
                   prefersVoiceCapture
@@ -375,6 +359,46 @@ function createStyles(theme: Theme, bottomInset: number) {
     },
     actions: {
       gap: 8,
+    },
+    secondaryFollowUpRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      borderRadius: theme.borderRadii.lg,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+      paddingVertical: 11,
+      paddingHorizontal: 14,
+    },
+    secondaryFollowUpRowPressed: {
+      opacity: 0.84,
+    },
+    secondaryFollowUpCopy: {
+      flex: 1,
+      gap: 2,
+    },
+    secondaryFollowUpLabel: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    secondaryFollowUpTitle: {
+      color: theme.colors.text,
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '700',
+    },
+    secondaryFollowUpAction: {
+      color: theme.colors.primary,
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '700',
+      textAlign: 'right',
     },
     footerActions: {
       alignItems: 'center',

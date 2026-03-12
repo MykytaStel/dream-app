@@ -434,6 +434,7 @@ const DREAM_COPY_EN = {
   recordDraftRestoredTitle: 'Draft restored',
   recordDraftRestoredDescription:
     'Your unfinished capture is still here. Keep writing or save it when ready.',
+  recordDraftStartFreshAction: 'Start fresh',
   recordLoadingTitle: 'Working on it',
   recordLoadingDescription: 'Please wait while the action is completing.',
   recordErrorTitle: 'Action failed',
@@ -525,6 +526,7 @@ const DREAM_COPY_EN = {
   postSaveFollowUpTranscriptDescription:
     'Open this dream and clean up the transcript while the memory is still close.',
   postSaveFollowUpTranscriptAction: 'Work on transcript',
+  postSaveThenLabel: 'Then',
   postSaveCaptureAnother: 'Keep capturing',
   postSaveRecordAnother: 'Record another',
   postSaveOpenDetail: 'Open this dream',
@@ -965,6 +967,7 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   recordDraftRestoredTitle: 'Чернетку відновлено',
   recordDraftRestoredDescription:
     'Незавершений запис збережено локально. Продовжуй редагування або збережи, коли будеш готовий.',
+  recordDraftStartFreshAction: 'Почати заново',
   recordLoadingTitle: 'Виконується дія',
   recordLoadingDescription: 'Зачекай, поки операція завершиться.',
   recordErrorTitle: 'Дія не виконалась',
@@ -1052,6 +1055,7 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   postSaveFollowUpTranscriptDescription:
     'Відкрий цей сон і дороби транскрипт, поки спогад ще близько.',
   postSaveFollowUpTranscriptAction: 'Попрацювати з транскриптом',
+  postSaveThenLabel: 'Потім',
   postSaveCaptureAnother: 'Продовжити запис',
   postSaveRecordAnother: 'Записати голос ще раз',
   postSaveOpenDetail: 'Відкрити цей сон',

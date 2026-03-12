@@ -17,24 +17,30 @@ export default function NewDreamScreen() {
   const route = useRoute<RouteProp<TabParamList, typeof TAB_ROUTE_NAMES.New>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const entryMode = route.params?.entryMode ?? 'default';
+  const shouldAutoStartRecording =
+    route.params?.entryMode === 'voice' && route.params?.autoStartRecording === true;
   const composerKey = React.useMemo(
-    () => `${entryMode}:${route.params?.source ?? 'none'}:${route.params?.launchKey ?? 'initial'}`,
-    [entryMode, route.params?.launchKey, route.params?.source],
+    () =>
+      `${entryMode}:${route.params?.source ?? 'none'}:${route.params?.launchKey ?? 'initial'}:${
+        shouldAutoStartRecording ? 'autostart' : 'manual'
+      }`,
+    [entryMode, route.params?.launchKey, route.params?.source, shouldAutoStartRecording],
   );
   const [savedDream, setSavedDream] = React.useState<Dream | null>(null);
   const [isSavedSheetVisible, setIsSavedSheetVisible] = React.useState(false);
   const [autoStartRecordingKey, setAutoStartRecordingKey] = React.useState<number | undefined>(
-    route.params?.entryMode === 'voice' ? route.params.launchKey ?? Date.now() : undefined,
+    shouldAutoStartRecording ? route.params?.launchKey ?? Date.now() : undefined,
   );
 
   React.useEffect(() => {
-    if (route.params?.entryMode !== 'voice') {
+    if (!shouldAutoStartRecording) {
+      setAutoStartRecordingKey(undefined);
       return;
     }
 
-    const nextKey = route.params.launchKey ?? Date.now();
+    const nextKey = route.params?.launchKey ?? Date.now();
     setAutoStartRecordingKey(current => (current === nextKey ? current : nextKey));
-  }, [route.params?.entryMode, route.params?.launchKey]);
+  }, [route.params?.launchKey, shouldAutoStartRecording]);
 
   const prefersVoiceCapture = route.params?.entryMode === 'voice';
 

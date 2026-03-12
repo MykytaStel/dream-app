@@ -26,6 +26,8 @@ import { HomeFilterSheet } from '../components/home/HomeFilterSheet';
 import { HomeHero } from '../components/home/HomeHero';
 import { HomeListHeader } from '../components/home/HomeListHeader';
 import { isWakeCaptureWindow } from '../model/homeOverview';
+import { getDreamDraftResumeDescription } from '../model/dreamDraftPresentation';
+import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 import { createHomeScreenStyles } from './HomeScreen.styles';
 import { useHomeScreenData } from '../hooks/useHomeScreenData';
 import { useHomeSwipeActions } from '../hooks/useHomeSwipeActions';
@@ -82,6 +84,11 @@ export default function HomeScreen() {
         : null,
     [lastViewedDream],
   );
+  const draftSnapshot = React.useMemo(() => getDreamDraftSnapshot(draft), [draft]);
+  const draftResumeDescription = React.useMemo(
+    () => getDreamDraftResumeDescription(draftSnapshot, copy),
+    [copy, draftSnapshot],
+  );
   const swipeActions = useHomeSwipeActions({
     copy,
     navigation,
@@ -118,12 +125,23 @@ export default function HomeScreen() {
       launchKey: Date.now(),
     });
   }, []);
+  const openDraftCapture = React.useCallback(() => {
+    if (!draftSnapshot) {
+      openDefaultCapture();
+      return;
+    }
+
+    openNewDreamTab({
+      entryMode: draftSnapshot.resumeMode,
+      autoStartRecording: false,
+    });
+  }, [draftSnapshot, openDefaultCapture]);
   const openWakeCapture = React.useCallback(() => {
     openWakeEntry({ source: 'manual' });
   }, []);
   const openRecommendedCapture = React.useCallback(() => {
     if (draft) {
-      openDefaultCapture();
+      openDraftCapture();
       return;
     }
 
@@ -133,16 +151,17 @@ export default function HomeScreen() {
     }
 
     openDefaultCapture();
-  }, [draft, openDefaultCapture, openWakeCapture, showWakeCapturePrompt]);
+  }, [draft, openDefaultCapture, openDraftCapture, openWakeCapture, showWakeCapturePrompt]);
   const heroPrompt = React.useMemo(
     () =>
       draft
         ? {
             title: copy.homeContinueDraft,
-            description: copy.recordDraftRestoredDescription,
+            description: draftResumeDescription,
             primaryActionLabel: copy.homeContinueDraft,
-            primaryActionIcon: 'document-text-outline',
-            onPrimaryAction: openDefaultCapture,
+            primaryActionIcon:
+              draftSnapshot?.resumeMode === 'voice' ? 'mic-outline' : 'document-text-outline',
+            onPrimaryAction: openDraftCapture,
             secondaryActionLabel: showWakeCapturePrompt ? copy.quickAddWakeAction : undefined,
             secondaryActionIcon: showWakeCapturePrompt ? 'sunny-outline' : undefined,
             onSecondaryAction: showWakeCapturePrompt ? openWakeCapture : undefined,
@@ -151,9 +170,10 @@ export default function HomeScreen() {
     [
       copy.homeContinueDraft,
       copy.quickAddWakeAction,
-      copy.recordDraftRestoredDescription,
       draft,
-      openDefaultCapture,
+      draftResumeDescription,
+      draftSnapshot?.resumeMode,
+      openDraftCapture,
       openWakeCapture,
       showWakeCapturePrompt,
     ],

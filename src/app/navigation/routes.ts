@@ -52,6 +52,7 @@ export type TabParamList = {
   [TAB_ROUTE_NAMES.New]:
     | {
         entryMode?: 'default' | 'voice' | 'wake';
+        autoStartRecording?: boolean;
         source?: 'manual' | 'reminder';
         launchKey?: number;
       }

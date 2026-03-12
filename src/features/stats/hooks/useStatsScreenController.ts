@@ -1,6 +1,11 @@
 import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { listDreams } from '../../dreams/repository/dreamsRepository';
+import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
+import {
+  getDreamsMeta,
+  listDreams,
+  type DreamsMeta,
+} from '../../dreams/repository/dreamsRepository';
 import {
   getDreamPreSleepEmotionLabels,
   getDreamWakeEmotionLabels,
@@ -32,15 +37,20 @@ import {
   formatEntryCountLabel,
   formatMonthTitle,
   getAchievementContent,
+  getMemoryNudge,
+  getMemoryWorkQueue,
   getPreviousRangeDreams,
   summarizeScopedDreams,
+  type MemoryWorkQueueItem,
   type InsightRange,
+  type MemoryNudge,
   type PatternGroupKey,
 } from '../model/statsScreenModel';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
 import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 import { type DreamFingerprintFacet } from '../components/DreamFingerprintCard';
 import { type PatternGroupCardItem } from '../components/PatternGroupCard';
+import { type MemoryMode } from '../components/StatsScreenSections';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
 export type InsightMode = 'snapshot' | 'compare';
@@ -48,20 +58,36 @@ export type InsightMode = 'snapshot' | 'compare';
 type UseStatsScreenControllerArgs = {
   locale: AppLocale;
   copy: StatsCopy;
+  selectedMemoryMode: MemoryMode;
   openPatternDetail: (signal: string, kind: PatternDetailKind) => void;
+};
+
+type IdleCallbackHandle = number;
+type IdleSchedulerShape = {
+  requestIdleCallback?: (callback: () => void) => IdleCallbackHandle;
+  cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
 };
 
 export function useStatsScreenController({
   locale,
   copy,
+  selectedMemoryMode,
   openPatternDetail,
 }: UseStatsScreenControllerArgs) {
+  const isOverviewMode = selectedMemoryMode === 'overview';
+  const isThreadsMode = selectedMemoryMode === 'threads';
+  const isMonthlyMode = selectedMemoryMode === 'monthly';
+  const hydrationRequestRef = React.useRef(0);
   const preSleepEmotionLabels = React.useMemo(
     () => getDreamPreSleepEmotionLabels(locale),
     [locale],
   );
   const wakeEmotionLabels = React.useMemo(() => getDreamWakeEmotionLabels(locale), [locale]);
-  const [dreams, setDreams] = React.useState(() => listDreams());
+  const [meta, setMeta] = React.useState<DreamsMeta>(() => getDreamsMeta());
+  const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
+  const [analysisSettings, setAnalysisSettings] = React.useState(() => getDreamAnalysisSettings());
+  const [loading, setLoading] = React.useState(meta.totalCount > 0);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedRange, setSelectedRange] = React.useState<InsightRange>('all');
   const [selectedMode, setSelectedMode] = React.useState<InsightMode>('snapshot');
   const [selectedPatternGroup, setSelectedPatternGroup] =
@@ -69,15 +95,94 @@ export function useStatsScreenController({
   const [isDetailsExpanded, setIsDetailsExpanded] = React.useState(false);
   const [isMilestonesExpanded, setIsMilestonesExpanded] = React.useState(false);
 
+  const refreshDreams = React.useCallback(
+    (mode: 'initial' | 'silent' = 'silent') => {
+      const startedAt = Date.now();
+      setLoadError(null);
+
+      try {
+        const requestId = ++hydrationRequestRef.current;
+        const nextMeta = getDreamsMeta();
+        setMeta(nextMeta);
+        setAnalysisSettings(getDreamAnalysisSettings());
+
+        if (mode === 'initial') {
+          setLoading(nextMeta.totalCount > 0);
+        }
+
+        trackLocalSurfaceLoad('memory_refresh', startedAt, nextMeta.totalCount);
+
+        const runHydration = () => {
+          try {
+            const nextDreams = listDreams();
+
+            React.startTransition(() => {
+              if (hydrationRequestRef.current !== requestId) {
+                return;
+              }
+
+              setDreams(nextDreams);
+              setLoading(false);
+              setLoadError(null);
+            });
+          } catch (error) {
+            if (hydrationRequestRef.current !== requestId) {
+              return;
+            }
+
+            if (mode === 'initial') {
+              setDreams([]);
+            }
+            setLoading(false);
+            setLoadError(String(error));
+          }
+        };
+
+        const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
+        if (typeof scheduler.requestIdleCallback === 'function') {
+          scheduler.requestIdleCallback(runHydration);
+          return;
+        }
+
+        setTimeout(runHydration, 0);
+      } catch (error) {
+        setLoading(false);
+        setLoadError(String(error));
+      }
+    },
+    [],
+  );
+
+  React.useEffect(() => {
+    const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let idleHandle: IdleCallbackHandle | null = null;
+
+    if (typeof scheduler.requestIdleCallback === 'function') {
+      idleHandle = scheduler.requestIdleCallback(() => {
+        refreshDreams('initial');
+      });
+    } else {
+      timeoutId = setTimeout(() => {
+        refreshDreams('initial');
+      }, 0);
+    }
+
+    return () => {
+      if (idleHandle !== null && typeof scheduler.cancelIdleCallback === 'function') {
+        scheduler.cancelIdleCallback(idleHandle);
+      }
+
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [refreshDreams]);
+
   useFocusEffect(
     React.useCallback(() => {
-      const startedAt = Date.now();
-      const nextDreams = listDreams();
-      React.startTransition(() => {
-        setDreams(nextDreams);
-      });
-      trackLocalSurfaceLoad('memory_refresh', startedAt, nextDreams.length);
-    }, []),
+      refreshDreams('silent');
+    }, [refreshDreams]),
   );
 
   const scopedDreams = React.useMemo(
@@ -93,37 +198,67 @@ export function useStatsScreenController({
     () => summarizeScopedDreams(previousScopedDreams),
     [previousScopedDreams],
   );
-  const overallLastSevenDays = React.useMemo(() => getEntriesLastSevenDays(dreams), [dreams]);
-  const sleepContextStats = React.useMemo(() => getSleepContextStats(scopedDreams), [scopedDreams]);
+  const overallLastSevenDays = React.useMemo(
+    () => (isOverviewMode ? getEntriesLastSevenDays(dreams) : 0),
+    [dreams, isOverviewMode],
+  );
+  const sleepContextStats = React.useMemo(
+    () =>
+      isOverviewMode
+        ? getSleepContextStats(scopedDreams)
+        : {
+            withContext: 0,
+            withStress: 0,
+            withPreSleepEmotions: 0,
+            caffeineLate: 0,
+            alcoholTaken: 0,
+          },
+    [isOverviewMode, scopedDreams],
+  );
   const wakeEmotionSignals = React.useMemo(
-    () => getTopWakeEmotionSignals(scopedDreams, 6),
-    [scopedDreams],
+    () => ((isOverviewMode || isMonthlyMode) ? getTopWakeEmotionSignals(scopedDreams, 6) : []),
+    [isMonthlyMode, isOverviewMode, scopedDreams],
   );
   const preSleepEmotionSignals = React.useMemo(
-    () => getTopPreSleepEmotionSignals(scopedDreams, 6),
-    [scopedDreams],
+    () => (isOverviewMode ? getTopPreSleepEmotionSignals(scopedDreams, 6) : []),
+    [isOverviewMode, scopedDreams],
   );
   const transcriptArchiveStats = React.useMemo(
-    () => getTranscriptArchiveStats(scopedDreams),
-    [scopedDreams],
+    () =>
+      isOverviewMode
+        ? getTranscriptArchiveStats(scopedDreams)
+        : {
+            audioOnly: 0,
+            withTranscript: 0,
+            editedTranscript: 0,
+          },
+    [isOverviewMode, scopedDreams],
   );
   const recurringThemes = React.useMemo(
-    () => getRecurringReflectionSignals(scopedDreams, { limit: 6 }),
-    [scopedDreams],
+    () =>
+      isOverviewMode || isThreadsMode
+        ? getRecurringReflectionSignals(scopedDreams, { limit: 6 })
+        : [],
+    [isOverviewMode, isThreadsMode, scopedDreams],
   );
   const recurringSymbols = React.useMemo(
     () =>
-      getRecurringReflectionSignals(scopedDreams, {
-        limit: 6,
-        transcriptOnly: true,
-      }),
-    [scopedDreams],
+      isThreadsMode
+        ? getRecurringReflectionSignals(scopedDreams, {
+            limit: 6,
+            transcriptOnly: true,
+          })
+        : [],
+    [isThreadsMode, scopedDreams],
   );
   const recurringWords = React.useMemo(
-    () => getRecurringWordSignals(scopedDreams, 6),
-    [scopedDreams],
+    () => ((isOverviewMode || isThreadsMode) ? getRecurringWordSignals(scopedDreams, 6) : []),
+    [isOverviewMode, isThreadsMode, scopedDreams],
   );
-  const achievements = React.useMemo(() => getDreamAchievements(dreams), [dreams]);
+  const achievements = React.useMemo(
+    () => (isOverviewMode ? getDreamAchievements(dreams) : []),
+    [dreams, isOverviewMode],
+  );
   const achievementSummary = React.useMemo(
     () => getDreamAchievementSummary(achievements),
     [achievements],
@@ -231,10 +366,19 @@ export function useStatsScreenController({
 
     return null;
   }, [copy.reflectionThemeCountLabel, openPatternDetail, topTheme, topWord]);
+  const memoryNudge = React.useMemo<MemoryNudge | null>(
+    () =>
+      isOverviewMode || isThreadsMode
+        ? getMemoryNudge(scopedDreams, copy, recurringThemes, recurringWords, recurringSymbols)
+        : null,
+    [copy, isOverviewMode, isThreadsMode, recurringSymbols, recurringThemes, recurringWords, scopedDreams],
+  );
 
   const fingerprintFacets = React.useMemo<DreamFingerprintFacet[]>(
     () =>
-      [
+      !isOverviewMode
+        ? []
+        : [
         topTheme
           ? {
               key: 'theme',
@@ -275,6 +419,7 @@ export function useStatsScreenController({
       copy.fingerprintSymbolLabel,
       copy.fingerprintThemeLabel,
       copy.fingerprintWakeLabel,
+      isOverviewMode,
       locale,
       openPatternDetail,
       preSleepEmotionLabels,
@@ -290,12 +435,14 @@ export function useStatsScreenController({
     [fingerprintFacets],
   );
   const monthlyReportMonths = React.useMemo(
-    () => getMonthlyReportMonths(dreams, locale === 'uk' ? 'uk-UA' : 'en-US'),
-    [dreams, locale],
+    () =>
+      isMonthlyMode ? getMonthlyReportMonths(dreams, locale === 'uk' ? 'uk-UA' : 'en-US') : [],
+    [dreams, isMonthlyMode, locale],
   );
   const latestMonthlyReport = React.useMemo(
-    () => getMonthlyReportData(dreams, monthlyReportMonths[0]?.key),
-    [dreams, monthlyReportMonths],
+    () =>
+      isMonthlyMode ? getMonthlyReportData(dreams, monthlyReportMonths[0]?.key) : null,
+    [dreams, isMonthlyMode, monthlyReportMonths],
   );
   const latestMonthlyReportTitle = latestMonthlyReport
     ? formatMonthTitle(latestMonthlyReport.month.year, latestMonthlyReport.month.month, locale)
@@ -314,11 +461,14 @@ export function useStatsScreenController({
     ].filter((value): value is string => Boolean(value));
   }, [latestMonthlyReport, wakeEmotionLabels]);
   const activityBars = React.useMemo(
-    () => buildRecentActivityBars(scopedDreams, selectedRange, locale),
-    [locale, scopedDreams, selectedRange],
+    () => (isOverviewMode ? buildRecentActivityBars(scopedDreams, selectedRange, locale) : []),
+    [isOverviewMode, locale, scopedDreams, selectedRange],
   );
   const coverageItems = React.useMemo(
-    () => [
+    () =>
+      !isOverviewMode
+        ? []
+        : [
       {
         label: copy.coverageTranscriptsLabel,
         value: scopedSummary.transcribedDreams,
@@ -338,10 +488,20 @@ export function useStatsScreenController({
         hint: copy.coverageContextHint,
       },
     ],
-    [copy, scopedDreams.length, scopedSummary.taggedEntries, scopedSummary.transcribedDreams, sleepContextStats.withContext],
+    [
+      copy,
+      isOverviewMode,
+      scopedDreams.length,
+      scopedSummary.taggedEntries,
+      scopedSummary.transcribedDreams,
+      sleepContextStats.withContext,
+    ],
   );
   const attentionItems = React.useMemo(
-    () => [
+    () =>
+      !isOverviewMode
+        ? []
+        : [
       {
         label: copy.attentionAudioLabel,
         value: transcriptArchiveStats.audioOnly,
@@ -362,7 +522,14 @@ export function useStatsScreenController({
           entriesWithoutContext > 0 ? copy.attentionContextHint : copy.attentionAllSetHint,
       },
     ],
-    [copy, entriesWithoutContext, entriesWithoutMood, transcriptArchiveStats.audioOnly],
+    [copy, entriesWithoutContext, entriesWithoutMood, isOverviewMode, transcriptArchiveStats.audioOnly],
+  );
+  const workQueueItems = React.useMemo<MemoryWorkQueueItem[]>(
+    () =>
+      !isOverviewMode
+        ? []
+        : getMemoryWorkQueue(scopedDreams, copy, analysisSettings),
+    [analysisSettings, copy, isOverviewMode, scopedDreams],
   );
   const patternGroups = React.useMemo<
     Array<{
@@ -373,7 +540,10 @@ export function useStatsScreenController({
       empty: string;
     }>
   >(
-    () => [
+    () =>
+      !isThreadsMode
+        ? []
+        : [
       {
         key: 'themes',
         label: copy.recurringThemes,
@@ -410,6 +580,7 @@ export function useStatsScreenController({
     ],
     [
       copy,
+      isThreadsMode,
       locale,
       openPatternDetail,
       recurringSymbols,
@@ -434,12 +605,19 @@ export function useStatsScreenController({
   }, [canCompare, selectedMode]);
 
   React.useEffect(() => {
+    if (!isThreadsMode) {
+      return;
+    }
+
     if (!patternGroups.some(group => group.key === selectedPatternGroup)) {
       setSelectedPatternGroup(patternGroups[0]?.key ?? 'themes');
     }
-  }, [patternGroups, selectedPatternGroup]);
+  }, [isThreadsMode, patternGroups, selectedPatternGroup]);
 
   return {
+    loading,
+    loadError,
+    meta,
     dreams,
     scopedDreams,
     selectedRange,
@@ -459,6 +637,7 @@ export function useStatsScreenController({
     compareMetrics,
     activityBars,
     topSignal,
+    memoryNudge,
     coverageGap,
     latestMonthlyReport,
     latestMonthlyReportTitle,
@@ -471,6 +650,7 @@ export function useStatsScreenController({
     overallLastSevenDays,
     coverageItems,
     attentionItems,
+    workQueueItems,
     weeklyGoalTarget,
     weeklyGoalComplete,
     achievements,

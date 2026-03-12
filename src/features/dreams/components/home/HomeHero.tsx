@@ -28,7 +28,7 @@ type HomeHeroProps = {
   prompt?: HomeHeroPrompt | null;
 };
 
-export function HomeHero({
+export const HomeHero = React.memo(function HomeHero({
   copy,
   styles,
   insetTop,
@@ -104,4 +104,4 @@ export function HomeHero({
       </View>
     </View>
   );
-}
+});

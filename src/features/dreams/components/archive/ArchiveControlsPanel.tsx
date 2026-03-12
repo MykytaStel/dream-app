@@ -10,6 +10,7 @@ import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { Theme } from '../../../../theme/theme';
 import {
   type ArchiveFilter,
+  type ArchiveRevisitCue,
   type ArchiveViewMode,
 } from '../../model/archiveBrowser';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
@@ -30,9 +31,11 @@ type ArchiveControlsPanelProps = {
   hasHardReset: boolean;
   onReset: () => void;
   visibleEntriesLabel: string;
+  revisitCue: ArchiveRevisitCue | null;
   browseModes: ReadonlyArray<{ key: ArchiveViewMode; label: string }>;
   viewMode: ArchiveViewMode;
   onChangeViewMode: (mode: ArchiveViewMode) => void;
+  onOpenRevisitDream: (dreamId: string) => void;
 };
 
 export function ArchiveControlsPanel({
@@ -47,9 +50,11 @@ export function ArchiveControlsPanel({
   hasHardReset,
   onReset,
   visibleEntriesLabel,
+  revisitCue,
   browseModes,
   viewMode,
   onChangeViewMode,
+  onOpenRevisitDream,
 }: ArchiveControlsPanelProps) {
   const theme = useTheme<Theme>();
 
@@ -98,15 +103,21 @@ export function ArchiveControlsPanel({
             })}
           </ScrollView>
 
-          <View style={styles.controlsFooterRow}>
-            {hasHardReset ? (
-              <Pressable style={styles.controlsActionChip} onPress={onReset}>
-                <Text style={styles.controlsActionChipText}>{copy.archiveResetView}</Text>
-              </Pressable>
-            ) : (
-              <View />
-            )}
-          </View>
+          {hasHardReset || isSearchPending ? (
+            <View style={styles.controlsFooterRow}>
+              {hasHardReset ? (
+                <Pressable style={styles.controlsActionChip} onPress={onReset}>
+                  <Text style={styles.controlsActionChipText}>{copy.archiveResetView}</Text>
+                </Pressable>
+              ) : null}
+
+              {isSearchPending ? (
+                <View style={styles.controlsMetaChip}>
+                  <Text style={styles.controlsMetaChipText}>{copy.timelineLoadingTitle}</Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
         </Card>
       </Animated.View>
 
@@ -117,11 +128,6 @@ export function ArchiveControlsPanel({
       >
         <View style={styles.resultsToolbarMeta}>
           <Text style={styles.resultsToolbarText}>{visibleEntriesLabel}</Text>
-          {isSearchPending ? (
-            <View style={styles.controlsMetaChip}>
-              <Text style={styles.controlsMetaChipText}>{copy.timelineLoadingTitle}</Text>
-            </View>
-          ) : null}
         </View>
         <View style={styles.browseModeChips}>
           {browseModes.map(option => {
@@ -146,6 +152,44 @@ export function ArchiveControlsPanel({
           })}
         </View>
       </Animated.View>
+
+      {revisitCue ? (
+        <Animated.View
+          entering={FadeInDown.delay(86).duration(220)}
+          layout={archiveControlsLayoutTransition}
+        >
+          <Pressable
+            style={({ pressed }) => [
+              styles.revisitInlineCard,
+              pressed ? styles.revisitCardPressed : null,
+            ]}
+            onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
+          >
+            <View style={styles.revisitInlineMain}>
+              <Text style={styles.revisitInlineLabel}>{copy.archiveRevisitLabel}</Text>
+              <Text style={styles.revisitInlineTitle} numberOfLines={1}>
+                {revisitCue.title}
+              </Text>
+            </View>
+
+            <View style={styles.revisitInlineMeta}>
+              <View style={styles.revisitBadge}>
+                <Ionicons
+                  name={revisitCue.icon}
+                  size={12}
+                  color={theme.colors.accent}
+                />
+                <Text style={styles.revisitBadgeText}>{revisitCue.contextLabel}</Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={theme.colors.textDim}
+              />
+            </View>
+          </Pressable>
+        </Animated.View>
+      ) : null}
     </>
   );
 }

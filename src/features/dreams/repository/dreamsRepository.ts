@@ -1,5 +1,9 @@
 import { kv } from '../../../services/storage/mmkv';
-import { DREAMS_STORAGE_KEY } from '../../../services/storage/keys';
+import {
+  DREAMS_INDEX_STORAGE_KEY,
+  DREAMS_META_STORAGE_KEY,
+  DREAMS_STORAGE_KEY,
+} from '../../../services/storage/keys';
 import { Dream, DreamTranscriptSource, DreamTranscriptStatus } from '../model/dream';
 import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
 import {
@@ -19,12 +23,121 @@ import {
 const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 let dreamCache: Dream[] | null = null;
 let dreamCacheRaw: string | null = null;
+let dreamIndexCache: DreamListItem[] | null = null;
+let dreamIndexCacheRaw: string | null = null;
+let dreamMetaCache: DreamsMeta | null = null;
+let dreamMetaCacheRaw: string | null = null;
+
+export type DreamListItem = {
+  id: string;
+  createdAt: number;
+  updatedAt?: number;
+  archivedAt?: number;
+  starredAt?: number;
+  sleepDate?: string;
+  title?: string;
+  mood?: Dream['mood'];
+  hasAudio: boolean;
+  transcriptPreview?: string;
+  textPreview?: string;
+};
+
+export type DreamsMeta = {
+  totalCount: number;
+  activeCount: number;
+  archivedCount: number;
+  starredCount: number;
+  audioOnlyCount: number;
+  latestSleepDate?: string;
+  monthKeys: string[];
+};
+
+function toLocalDateKey(epoch: number) {
+  const date = new Date(epoch);
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function getDreamMonthKey(dream: Pick<Dream, 'createdAt' | 'sleepDate'>) {
+  const dateKey = dream.sleepDate || toLocalDateKey(dream.createdAt);
+  return dateKey.slice(0, 7);
+}
+
+function buildDreamListItem(dream: Dream): DreamListItem {
+  const textPreview = dream.text?.trim() || undefined;
+  const transcriptPreview = dream.transcript?.trim() || undefined;
+
+  return {
+    id: dream.id,
+    createdAt: dream.createdAt,
+    updatedAt: dream.updatedAt,
+    archivedAt: dream.archivedAt,
+    starredAt: dream.starredAt,
+    sleepDate: dream.sleepDate,
+    title: dream.title?.trim() || undefined,
+    mood: dream.mood,
+    hasAudio: Boolean(dream.audioUri?.trim()),
+    transcriptPreview,
+    textPreview,
+  };
+}
+
+function buildDreamsMeta(dreams: Dream[]): DreamsMeta {
+  const monthKeys = Array.from(new Set(dreams.map(getDreamMonthKey))).sort((a, b) =>
+    b.localeCompare(a),
+  );
+
+  return {
+    totalCount: dreams.length,
+    activeCount: dreams.filter(dream => typeof dream.archivedAt !== 'number').length,
+    archivedCount: dreams.filter(dream => typeof dream.archivedAt === 'number').length,
+    starredCount: dreams.filter(dream => typeof dream.starredAt === 'number').length,
+    audioOnlyCount: dreams.filter(
+      dream =>
+        Boolean(dream.audioUri?.trim()) &&
+        !dream.text?.trim() &&
+        !dream.transcript?.trim(),
+    ).length,
+    latestSleepDate: dreams[0]?.sleepDate,
+    monthKeys,
+  };
+}
+
+function persistDreamIndex(dreams: Dream[]) {
+  const index = dreams.map(buildDreamListItem);
+  const raw = JSON.stringify(index);
+  kv.set(DREAMS_INDEX_STORAGE_KEY, raw);
+  dreamIndexCache = index;
+  dreamIndexCacheRaw = raw;
+}
+
+function persistDreamsMeta(dreams: Dream[]) {
+  const meta = buildDreamsMeta(dreams);
+  const raw = JSON.stringify(meta);
+  kv.set(DREAMS_META_STORAGE_KEY, raw);
+  dreamMetaCache = meta;
+  dreamMetaCacheRaw = raw;
+}
+
+function resetDreamIndexCache() {
+  dreamIndexCache = null;
+  dreamIndexCacheRaw = null;
+}
+
+function resetDreamMetaCache() {
+  dreamMetaCache = null;
+  dreamMetaCacheRaw = null;
+}
 
 export function listDreams(): Dream[] {
   const raw = kv.getString(DREAMS_STORAGE_KEY);
   if (!raw) {
     dreamCache = [];
     dreamCacheRaw = null;
+    kv.remove(DREAMS_INDEX_STORAGE_KEY);
+    kv.remove(DREAMS_META_STORAGE_KEY);
+    resetDreamIndexCache();
+    resetDreamMetaCache();
     return [];
   }
 
@@ -49,8 +162,131 @@ function persistDreams(dreams: Dream[]) {
   const normalized = sortDreamsStable(dreams.map(sanitizeDream));
   const raw = JSON.stringify(normalized);
   kv.set(DREAMS_STORAGE_KEY, raw);
+  persistDreamIndex(normalized);
+  persistDreamsMeta(normalized);
   dreamCache = normalized;
   dreamCacheRaw = raw;
+}
+
+function normalizeDreamListItem(raw: Partial<DreamListItem>): DreamListItem | null {
+  if (!raw.id || typeof raw.id !== 'string') {
+    return null;
+  }
+
+  const createdAt =
+    typeof raw.createdAt === 'number' && Number.isFinite(raw.createdAt)
+      ? raw.createdAt
+      : undefined;
+  if (!createdAt) {
+    return null;
+  }
+
+  return {
+    id: raw.id,
+    createdAt,
+    updatedAt:
+      typeof raw.updatedAt === 'number' && Number.isFinite(raw.updatedAt)
+        ? raw.updatedAt
+        : undefined,
+    archivedAt:
+      typeof raw.archivedAt === 'number' && Number.isFinite(raw.archivedAt)
+        ? raw.archivedAt
+        : undefined,
+    starredAt:
+      typeof raw.starredAt === 'number' && Number.isFinite(raw.starredAt)
+        ? raw.starredAt
+        : undefined,
+    sleepDate: typeof raw.sleepDate === 'string' ? raw.sleepDate : undefined,
+    title: typeof raw.title === 'string' ? raw.title : undefined,
+    mood:
+      raw.mood === 'neutral' || raw.mood === 'positive' || raw.mood === 'negative'
+        ? raw.mood
+        : undefined,
+    hasAudio: Boolean(raw.hasAudio),
+    transcriptPreview:
+      typeof raw.transcriptPreview === 'string' ? raw.transcriptPreview : undefined,
+    textPreview: typeof raw.textPreview === 'string' ? raw.textPreview : undefined,
+  };
+}
+
+export function listDreamListItems(): DreamListItem[] {
+  const raw = kv.getString(DREAMS_INDEX_STORAGE_KEY);
+  if (!raw) {
+    const dreams = listDreams();
+    persistDreamIndex(dreams);
+    return dreamIndexCache ?? [];
+  }
+
+  if (dreamIndexCache && dreamIndexCacheRaw === raw) {
+    return dreamIndexCache;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Array<Partial<DreamListItem>>;
+    const normalized = parsed
+      .map(normalizeDreamListItem)
+      .filter((item): item is DreamListItem => Boolean(item))
+      .sort((left, right) => {
+        const leftUpdatedAt = left.updatedAt ?? left.createdAt;
+        const rightUpdatedAt = right.updatedAt ?? right.createdAt;
+        return rightUpdatedAt - leftUpdatedAt;
+      });
+    dreamIndexCache = normalized;
+    dreamIndexCacheRaw = raw;
+    return normalized;
+  } catch {
+    resetDreamIndexCache();
+    const dreams = listDreams();
+    persistDreamIndex(dreams);
+    return dreamIndexCache ?? [];
+  }
+}
+
+function normalizeDreamsMeta(raw: Partial<DreamsMeta>): DreamsMeta | null {
+  if (typeof raw.totalCount !== 'number' || !Array.isArray(raw.monthKeys)) {
+    return null;
+  }
+
+  return {
+    totalCount: raw.totalCount,
+    activeCount: typeof raw.activeCount === 'number' ? raw.activeCount : 0,
+    archivedCount: typeof raw.archivedCount === 'number' ? raw.archivedCount : 0,
+    starredCount: typeof raw.starredCount === 'number' ? raw.starredCount : 0,
+    audioOnlyCount: typeof raw.audioOnlyCount === 'number' ? raw.audioOnlyCount : 0,
+    latestSleepDate:
+      typeof raw.latestSleepDate === 'string' ? raw.latestSleepDate : undefined,
+    monthKeys: raw.monthKeys.filter((value): value is string => typeof value === 'string'),
+  };
+}
+
+export function getDreamsMeta(): DreamsMeta {
+  const raw = kv.getString(DREAMS_META_STORAGE_KEY);
+  if (!raw) {
+    const dreams = listDreams();
+    persistDreamsMeta(dreams);
+    return dreamMetaCache ?? buildDreamsMeta(dreams);
+  }
+
+  if (dreamMetaCache && dreamMetaCacheRaw === raw) {
+    return dreamMetaCache;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Partial<DreamsMeta>;
+    const normalized = normalizeDreamsMeta(parsed);
+    if (!normalized) {
+      throw new Error('invalid-dreams-meta');
+    }
+
+    dreamMetaCache = normalized;
+    dreamMetaCacheRaw = raw;
+    return normalized;
+  } catch {
+    resetDreamMetaCache();
+    const dreams = listDreams();
+    persistDreamsMeta(dreams);
+    return dreamMetaCache ?? buildDreamsMeta(dreams);
+  }
 }
 
 export function replaceAllDreams(dreams: Dream[]) {

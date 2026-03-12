@@ -1,6 +1,8 @@
 import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type AppLocale } from '../../../i18n/types';
 import { Dream, Mood } from './dream';
+import { getRelatedDreams } from './relatedDreams';
+import { getDreamResurfacingMatch, type DreamResurfacingWindow } from './resurfacingCue';
 import {
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
@@ -10,6 +12,15 @@ import {
   type HomeTranscriptFilter,
 } from './homeTimeline';
 import { type HomeFilterChip, type HomeOption } from '../components/home/homeTypes';
+
+export type HomeRevisitCue = {
+  dreamId: string;
+  title: string;
+  reason: string;
+  contextLabel: string;
+  actionLabel: string;
+  icon: string;
+};
 
 export function getContextGreeting(copy: DreamCopy, now = new Date()) {
   const hour = now.getHours();
@@ -245,4 +256,114 @@ export function formatLastViewedDreamMeta(
       day: 'numeric',
     },
   )}`;
+}
+
+const HOME_REVISIT_MIN_AGE_MS = 6 * 60 * 60 * 1000;
+
+function getHomeRevisitTitle(dream: Dream, copy: DreamCopy) {
+  return dream.title?.trim() || copy.untitled;
+}
+
+function getHomeResurfacingWindowLabel(
+  window: DreamResurfacingWindow,
+  copy: DreamCopy,
+) {
+  switch (window) {
+    case 'week':
+      return copy.homeSpotlightRevisitTimeWeek;
+    case 'month':
+      return copy.homeSpotlightRevisitTimeMonth;
+    case 'quarter':
+      return copy.homeSpotlightRevisitTimeQuarter;
+    case 'half-year':
+      return copy.homeSpotlightRevisitTimeHalfYear;
+    case 'year':
+      return copy.homeSpotlightRevisitTimeYear;
+  }
+}
+
+export function getHomeRevisitCue(
+  dreams: Dream[],
+  copy: DreamCopy,
+  now = Date.now(),
+): HomeRevisitCue | null {
+  const candidates = dreams
+    .filter(dream => now - dream.createdAt >= HOME_REVISIT_MIN_AGE_MS)
+    .map(dream => {
+      const relatedCount = getRelatedDreams(dream, dreams).length;
+      const hasAnalysis = Boolean(dream.analysis?.summary?.trim());
+      const hasTranscript = Boolean(dream.transcript?.trim());
+      const resurfacingMatch = getDreamResurfacingMatch(dream, now);
+      const hasSignal = Boolean(
+        dream.tags.length || dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length,
+      );
+      const score =
+        (typeof dream.starredAt === 'number' ? 40 : 0) +
+        relatedCount * 10 +
+        (hasAnalysis ? 7 : 0) +
+        (hasTranscript ? 5 : 0) +
+        (resurfacingMatch?.score ?? 0) +
+        (hasSignal ? 3 : 0);
+
+      let reason = copy.homeSpotlightRevisitReasonSignal;
+      let contextLabel = copy.homeSpotlightRevisitContextSignal;
+      let actionLabel = copy.homeSpotlightRevisitAction;
+      let icon = 'flash-outline';
+
+      if (relatedCount > 0) {
+        reason = `${copy.homeSpotlightRevisitReasonThreadPrefix}${relatedCount}${copy.homeSpotlightRevisitReasonThreadSuffix}`;
+        contextLabel = copy.homeSpotlightRevisitContextThread;
+        actionLabel = copy.homeSpotlightRevisitActionThread;
+        icon = 'git-compare-outline';
+      } else if (hasAnalysis) {
+        reason = copy.homeSpotlightRevisitReasonAnalysis;
+        contextLabel = copy.homeSpotlightRevisitContextAnalysis;
+        actionLabel = copy.homeSpotlightRevisitActionAnalysis;
+        icon = 'sparkles-outline';
+      } else if (hasTranscript) {
+        reason = copy.homeSpotlightRevisitReasonTranscript;
+        contextLabel = copy.homeSpotlightRevisitContextTranscript;
+        actionLabel = copy.homeSpotlightRevisitActionTranscript;
+        icon = 'document-text-outline';
+      } else if (resurfacingMatch) {
+        reason = `${copy.homeSpotlightRevisitReasonTimePrefix}${getHomeResurfacingWindowLabel(
+          resurfacingMatch.window,
+          copy,
+        )}${copy.homeSpotlightRevisitReasonTimeSuffix}`;
+        contextLabel = copy.homeSpotlightRevisitContextTime;
+        actionLabel = copy.homeSpotlightRevisitActionTime;
+        icon = 'time-outline';
+      }
+
+      return {
+        dream,
+        score,
+        reason,
+        contextLabel,
+        actionLabel,
+        icon,
+      };
+    })
+    .filter(candidate => candidate.score > 0)
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      return right.dream.createdAt - left.dream.createdAt;
+    });
+
+  const topCandidate = candidates[0];
+  if (!topCandidate) {
+    return null;
+  }
+
+  return {
+    dreamId: topCandidate.dream.id,
+    title: getHomeRevisitTitle(topCandidate.dream, copy),
+    reason: topCandidate.reason,
+    contextLabel: topCandidate.contextLabel,
+    actionLabel: topCandidate.actionLabel,
+    icon: topCandidate.icon,
+  };
 }

@@ -5,18 +5,26 @@ import {
   TAB_BAR_BOTTOM_OFFSET,
   TAB_BAR_SIDE_OFFSET,
   getTabBarHeight,
+  getTabBarReservedSpace,
 } from './tabBarLayout';
 
 export function createTabsStyles(theme: Theme, bottomInset: number) {
   const barHeight = getTabBarHeight(bottomInset);
   const bottomPadding = Math.max(Math.min(bottomInset, 8), 6);
+  const reservedSpace = getTabBarReservedSpace(bottomInset);
 
   return StyleSheet.create({
+    tabBarRoot: {
+      height: reservedSpace,
+      overflow: 'visible',
+      zIndex: 100,
+    },
     tabBarShell: {
       position: 'absolute',
       left: TAB_BAR_SIDE_OFFSET,
       right: TAB_BAR_SIDE_OFFSET,
       bottom: TAB_BAR_BOTTOM_OFFSET,
+      zIndex: 100,
       height: barHeight,
       paddingTop: 7,
       paddingBottom: bottomPadding,

@@ -255,6 +255,55 @@ export function createStatsScreenStyles(theme: Theme) {
       borderColor: theme.colors.accent,
       backgroundColor: theme.colors.surfaceAlt,
     },
+    memoryNudgeCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 16,
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+      }),
+      gap: 6,
+      borderColor: `${theme.colors.accent}88`,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    memoryNudgeHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    memoryNudgeBadge: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 8,
+        paddingVertical: 5,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderColor: `${theme.colors.accent}55`,
+      backgroundColor: 'rgba(124, 200, 255, 0.08)',
+    },
+    memoryNudgeBadgeText: {
+      color: theme.colors.accent,
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: '700',
+    },
+    memoryNudgeActionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      marginTop: 2,
+    },
+    memoryNudgeActionText: {
+      color: theme.colors.accent,
+      fontSize: 11,
+      lineHeight: 15,
+      fontWeight: '700',
+    },
     storyLabel: {
       color: theme.colors.textDim,
       fontSize: 11,
@@ -338,6 +387,27 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     sectionCard: {
       gap: 10,
+    },
+    workQueueList: {
+      gap: 8,
+    },
+    workQueueCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      gap: 6,
+      borderColor: `${theme.colors.accent}55`,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    workQueueDreamTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 20,
+      fontWeight: '700',
+      flex: 1,
     },
     detailsSubsection: {
       gap: 4,
@@ -482,6 +552,21 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     patternGroupList: {
       gap: 12,
+    },
+    patternSelectionSummary: {
+      gap: 3,
+      paddingTop: 2,
+    },
+    patternSelectionLabel: {
+      color: theme.colors.text,
+      fontSize: 16,
+      lineHeight: 21,
+      fontWeight: '700',
+    },
+    patternSelectionDescription: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
     threadHeaderRow: {
       flexDirection: 'row',

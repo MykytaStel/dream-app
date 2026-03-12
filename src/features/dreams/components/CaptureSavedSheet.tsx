@@ -14,6 +14,7 @@ import { createControlPill } from '../../../theme/surfaces';
 import { Theme } from '../../../theme/theme';
 import { fontFamilies } from '../../../theme/fonts';
 import { Dream } from '../model/dream';
+import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 
 type CaptureSavedSheetProps = {
   visible: boolean;
@@ -21,7 +22,7 @@ type CaptureSavedSheetProps = {
   prefersVoiceCapture: boolean;
   onClose: () => void;
   onCaptureAnother: () => void;
-  onOpenDetail: () => void;
+  onOpenDetail: (focusSection?: DreamDetailFocusSection) => void;
 };
 
 function formatSavedDreamTitle(dream: Dream | null, fallback: string) {
@@ -30,6 +31,45 @@ function formatSavedDreamTitle(dream: Dream | null, fallback: string) {
   }
 
   return dream.title?.trim() || fallback;
+}
+
+function getPostSaveFollowUp(
+  dream: Dream | null,
+  copy: ReturnType<typeof getDreamCopy>,
+): {
+  actionLabel: string;
+  description: string;
+  focusSection: DreamDetailFocusSection;
+  icon: string;
+  title: string;
+} {
+  if (dream?.audioUri && !dream.transcript?.trim()) {
+    return {
+      actionLabel: copy.postSaveFollowUpTranscriptAction,
+      description: copy.postSaveFollowUpTranscriptDescription,
+      focusSection: 'transcript',
+      icon: 'document-text-outline',
+      title: copy.postSaveFollowUpTranscriptTitle,
+    };
+  }
+
+  if (!dream?.text?.trim()) {
+    return {
+      actionLabel: copy.postSaveFollowUpRefineAction,
+      description: copy.postSaveFollowUpRefineDescription,
+      focusSection: 'written',
+      icon: 'create-outline',
+      title: copy.postSaveFollowUpRefineTitle,
+    };
+  }
+
+  return {
+    actionLabel: copy.postSaveFollowUpReflectionAction,
+    description: copy.postSaveFollowUpReflectionDescription,
+    focusSection: 'reflection',
+    icon: 'sparkles-outline',
+    title: copy.postSaveFollowUpReflectionTitle,
+  };
 }
 
 export function CaptureSavedSheet({
@@ -47,6 +87,7 @@ export function CaptureSavedSheet({
   const styles = React.useMemo(() => createStyles(t, insets.bottom), [insets.bottom, t]);
   const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
   const title = formatSavedDreamTitle(dream, copy.untitled);
+  const followUp = React.useMemo(() => getPostSaveFollowUp(dream, copy), [copy, dream]);
   const savedDate = dream?.sleepDate
     ? new Date(`${dream.sleepDate}T00:00:00`).toLocaleDateString(localeKey, {
         month: 'short',
@@ -102,7 +143,28 @@ export function CaptureSavedSheet({
               ) : null}
             </View>
 
+            <View style={styles.followUpCard}>
+              <View style={styles.followUpHeader}>
+                <View style={styles.followUpIconWrap}>
+                  <Ionicons name={followUp.icon} size={16} color={t.colors.accent} />
+                </View>
+                <View style={styles.followUpCopy}>
+                  <Text style={styles.followUpLabel}>{copy.postSaveNextStepLabel}</Text>
+                  <Text style={styles.followUpTitle}>{followUp.title}</Text>
+                </View>
+              </View>
+              <Text style={styles.followUpDescription}>{followUp.description}</Text>
+            </View>
+
             <View style={styles.actions}>
+              <Button
+                title={followUp.actionLabel}
+                onPress={() => onOpenDetail(followUp.focusSection)}
+                variant="ghost"
+                icon="arrow-forward-outline"
+                iconPosition="right"
+                size="md"
+              />
               <Button
                 title={
                   prefersVoiceCapture
@@ -111,14 +173,6 @@ export function CaptureSavedSheet({
                 }
                 onPress={onCaptureAnother}
                 icon={prefersVoiceCapture ? 'mic-outline' : 'add-outline'}
-                size="md"
-              />
-              <Button
-                title={copy.postSaveOpenDetail}
-                onPress={onOpenDetail}
-                variant="ghost"
-                icon="arrow-forward-outline"
-                iconPosition="right"
                 size="md"
               />
             </View>
@@ -271,6 +325,53 @@ function createStyles(theme: Theme, bottomInset: number) {
       color: theme.colors.textDim,
       fontSize: 13,
       lineHeight: 18,
+    },
+    followUpCard: {
+      gap: 8,
+      borderRadius: theme.borderRadii.xl,
+      borderWidth: 1,
+      borderColor: 'rgba(124, 200, 255, 0.16)',
+      backgroundColor: 'rgba(124, 200, 255, 0.08)',
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+    },
+    followUpHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    followUpIconWrap: {
+      width: 30,
+      height: 30,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: 'rgba(124, 200, 255, 0.12)',
+      borderWidth: 1,
+      borderColor: 'rgba(124, 200, 255, 0.18)',
+    },
+    followUpCopy: {
+      flex: 1,
+      gap: 2,
+    },
+    followUpLabel: {
+      color: theme.colors.accent,
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    followUpTitle: {
+      color: theme.colors.text,
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '700',
+    },
+    followUpDescription: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
     actions: {
       gap: 8,

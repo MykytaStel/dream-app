@@ -65,26 +65,23 @@ export function ArchiveMonthPanel({
       <Card style={styles.toolbarCard}>
         <View pointerEvents="none" style={styles.toolbarGlowLarge} />
         <View pointerEvents="none" style={styles.toolbarGlowSmall} />
-        <View pointerEvents="none" style={styles.toolbarVisualShell}>
-          <View style={[styles.toolbarFacet, styles.toolbarFacetPrimary]} />
-          <View style={[styles.toolbarFacet, styles.toolbarFacetAccent]} />
-          <View style={[styles.toolbarFacet, styles.toolbarFacetAlt]} />
-        </View>
 
         <View style={styles.monthToolbar}>
-          <Pressable
-            style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
-            disabled={!canGoOlder}
-            onPress={() => onMoveMonth('older')}
-            accessibilityRole="button"
-            accessibilityLabel={copy.archivePreviousMonth}
-          >
-            <Ionicons
-              name="chevron-back"
-              size={16}
-              color={canGoOlder ? theme.colors.text : theme.colors.textDim}
-            />
-          </Pressable>
+          <View style={styles.monthPagerSlot}>
+            <Pressable
+              style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
+              disabled={!canGoOlder}
+              onPress={() => onMoveMonth('older')}
+              accessibilityRole="button"
+              accessibilityLabel={copy.archivePreviousMonth}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={16}
+                color={canGoOlder ? theme.colors.text : theme.colors.textDim}
+              />
+            </Pressable>
+          </View>
           <Animated.View
             key={`archive-month-${selectedMonthKey}`}
             entering={FadeInDown.duration(180)}
@@ -93,20 +90,35 @@ export function ArchiveMonthPanel({
           >
             <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
             <Text style={styles.monthMetaText}>{monthMetaText}</Text>
+
+            {!selectedDate ? (
+              <Pressable style={styles.monthInlineToggleButton} onPress={onToggleCalendar}>
+                <Ionicons
+                  name={isCalendarExpanded ? 'calendar-clear-outline' : 'calendar-outline'}
+                  size={13}
+                  color={theme.colors.text}
+                />
+                <Text style={styles.monthInlineToggleButtonText}>
+                  {isCalendarExpanded ? copy.archiveCalendarHideGrid : copy.archiveCalendarShowGrid}
+                </Text>
+              </Pressable>
+            ) : null}
           </Animated.View>
-          <Pressable
-            style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
-            disabled={!canGoNewer}
-            onPress={() => onMoveMonth('newer')}
-            accessibilityRole="button"
-            accessibilityLabel={copy.archiveNextMonth}
-          >
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={canGoNewer ? theme.colors.text : theme.colors.textDim}
-            />
-          </Pressable>
+          <View style={styles.monthPagerSlot}>
+            <Pressable
+              style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
+              disabled={!canGoNewer}
+              onPress={() => onMoveMonth('newer')}
+              accessibilityRole="button"
+              accessibilityLabel={copy.archiveNextMonth}
+            >
+              <Ionicons
+                name="chevron-forward"
+                size={16}
+                color={canGoNewer ? theme.colors.text : theme.colors.textDim}
+              />
+            </Pressable>
+          </View>
         </View>
 
         {quickJumpMonthKeys.length > 1 ? (
@@ -144,27 +156,25 @@ export function ArchiveMonthPanel({
           </Animated.View>
         ) : null}
 
-        <View style={styles.selectedDateRow}>
-          {selectedDate ? (
+        {selectedDate ? (
+          <View style={styles.selectedDateRow}>
             <View style={styles.selectedDateChip}>
               <Text style={styles.selectedDateText}>
                 {formatSelectedDate(selectedDate, localeKey)}
               </Text>
             </View>
-          ) : null}
 
-          {selectedDate ? (
             <Pressable style={styles.clearDateChip} onPress={onClearDate}>
               <Text style={styles.clearDateChipText}>{copy.archiveAllDates}</Text>
             </Pressable>
-          ) : null}
 
-          <Pressable style={styles.controlsActionChip} onPress={onToggleCalendar}>
-            <Text style={styles.controlsActionChipText}>
-              {isCalendarExpanded ? copy.archiveCalendarHideGrid : copy.archiveCalendarShowGrid}
-            </Text>
-          </Pressable>
-        </View>
+            <Pressable style={styles.controlsActionChip} onPress={onToggleCalendar}>
+              <Text style={styles.controlsActionChipText}>
+                {isCalendarExpanded ? copy.archiveCalendarHideGrid : copy.archiveCalendarShowGrid}
+              </Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {isCalendarExpanded ? (
           <Animated.View

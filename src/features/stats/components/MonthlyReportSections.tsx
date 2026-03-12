@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
@@ -15,13 +16,17 @@ type MonthlyReportSectionsProps = {
   copy: MonthlyReportCopyShape;
   styles: MonthlyReportScreenStyles;
   viewModel: MonthlyReportViewModel;
+  onOpenRevisitDream: (dreamId: string) => void;
 };
 
 export function MonthlyReportSections({
   copy,
   styles,
   viewModel,
+  onOpenRevisitDream,
 }: MonthlyReportSectionsProps) {
+  const revisitCue = viewModel.revisitCue;
+
   return (
     <>
       <Animated.View entering={FadeInDown.duration(220)} layout={monthlyReportLayoutTransition}>
@@ -47,7 +52,32 @@ export function MonthlyReportSections({
         </Card>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(30).duration(220)} layout={monthlyReportLayoutTransition}>
+      {revisitCue ? (
+        <Animated.View entering={FadeInDown.delay(20).duration(220)} layout={monthlyReportLayoutTransition}>
+          <Card style={styles.sectionCard}>
+            <SectionHeader
+              title={copy.monthlyReportRevisitTitle}
+              subtitle={copy.monthlyReportRevisitDescription}
+            />
+            <View style={styles.revisitCard}>
+              <View style={styles.revisitBadge}>
+                <Text style={styles.revisitBadgeText}>{revisitCue.badgeLabel}</Text>
+              </View>
+              <Text style={styles.revisitDreamTitle}>{revisitCue.dreamTitle}</Text>
+              <Text style={styles.revisitReason}>{revisitCue.reason}</Text>
+              <Button
+                title={revisitCue.actionLabel}
+                variant="ghost"
+                size="sm"
+                style={styles.revisitAction}
+                onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
+              />
+            </View>
+          </Card>
+        </Animated.View>
+      ) : null}
+
+      <Animated.View entering={FadeInDown.delay(40).duration(220)} layout={monthlyReportLayoutTransition}>
         <Card style={styles.sectionCard}>
           <SectionHeader
             title={copy.monthlyReportSignalsTitle}
@@ -70,7 +100,7 @@ export function MonthlyReportSections({
         </Card>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(60).duration(220)} layout={monthlyReportLayoutTransition}>
+      <Animated.View entering={FadeInDown.delay(70).duration(220)} layout={monthlyReportLayoutTransition}>
         <Card style={styles.sectionCard}>
           <SectionHeader
             title={copy.monthlyReportGentleTitle}

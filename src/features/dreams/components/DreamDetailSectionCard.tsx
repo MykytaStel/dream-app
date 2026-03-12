@@ -2,10 +2,9 @@ import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Animated, { FadeInDown, FadeOutUp, LinearTransition } from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
-import { createControlPill } from '../../../theme/surfaces';
 import { Theme } from '../../../theme/theme';
 
 type DreamDetailSectionCardProps = {
@@ -13,18 +12,18 @@ type DreamDetailSectionCardProps = {
   meta?: string;
   expanded: boolean;
   onToggle: () => void;
+  collapsible?: boolean;
   children: React.ReactNode;
 };
 
-const sectionLayoutTransition = LinearTransition.springify()
-  .damping(18)
-  .stiffness(180);
+const sectionLayoutTransition = LinearTransition.duration(160);
 
 export function DreamDetailSectionCard({
   title,
   meta,
   expanded,
   onToggle,
+  collapsible = true,
   children,
 }: DreamDetailSectionCardProps) {
   const theme = useTheme<Theme>();
@@ -33,32 +32,30 @@ export function DreamDetailSectionCard({
   return (
     <Card style={styles.card}>
       <Pressable
-        onPress={onToggle}
+        onPress={collapsible ? onToggle : undefined}
         style={({ pressed }) => [styles.header, pressed ? styles.headerPressed : null]}
-        accessibilityRole="button"
-        accessibilityState={{ expanded }}
+        accessibilityRole={collapsible ? 'button' : undefined}
+        accessibilityState={collapsible ? { expanded } : undefined}
       >
-        <Text style={styles.title}>{title}</Text>
-        <View style={styles.headerAside}>
-          {meta ? (
-            <View style={styles.metaChip}>
-              <Text style={styles.metaLabel}>{meta}</Text>
-            </View>
-          ) : null}
-          <View style={styles.toggleChip}>
+        <View style={styles.headerLead}>
+          <View style={styles.titleWrap}>
+            <Text style={styles.title}>{title}</Text>
+            {meta ? <Text style={styles.metaInline}>{meta}</Text> : null}
+          </View>
+        </View>
+        {collapsible ? (
+          <View style={styles.headerAside}>
             <Ionicons
               name={expanded ? 'chevron-up' : 'chevron-down'}
-              size={16}
+              size={18}
               color={theme.colors.textDim}
             />
           </View>
-        </View>
+        ) : null}
       </Pressable>
 
-      {expanded ? (
+      {expanded || !collapsible ? (
         <Animated.View
-          entering={FadeInDown.duration(180)}
-          exiting={FadeOutUp.duration(150)}
           layout={sectionLayoutTransition}
           style={styles.content}
         >
@@ -72,54 +69,46 @@ export function DreamDetailSectionCard({
 function createStyles(theme: Theme) {
   return StyleSheet.create({
     card: {
-      padding: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 13,
       gap: 10,
     },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       gap: 12,
     },
     headerPressed: {
       opacity: 0.96,
     },
-    headerAside: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    title: {
+    headerLead: {
       flex: 1,
-      fontWeight: '700',
-      fontSize: 14,
-      lineHeight: 19,
+      minWidth: 0,
     },
-    metaChip: {
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 4,
-        paddingHorizontal: 8,
-      }),
+    titleWrap: {
+      flex: 1,
+      gap: 2,
+      minWidth: 0,
     },
-    metaLabel: {
-      color: theme.colors.textDim,
-      fontSize: 9,
-      fontWeight: '700',
-    },
-    toggleChip: {
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 4,
-        paddingHorizontal: 4,
-      }),
-      width: 26,
-      height: 26,
+    headerAside: {
+      minHeight: 30,
       alignItems: 'center',
       justifyContent: 'center',
     },
+    title: {
+      fontWeight: '700',
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    metaInline: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 15,
+    },
     content: {
       gap: 10,
+      paddingTop: 4,
     },
   });
 }

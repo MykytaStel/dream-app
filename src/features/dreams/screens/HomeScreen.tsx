@@ -1,67 +1,107 @@
 import React from 'react';
 import {
   FlatList,
-  Platform,
+  Pressable,
   RefreshControl,
   View,
 } from 'react-native';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Card } from '../../../components/ui/Card';
-import { ListItemSeparator } from '../../../components/ui/ListItemSeparator';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
-import { getDreamCopy, getDreamMoodLabels } from '../../../constants/copy/dreams';
-import {
-  type RootStackParamList,
-} from '../../../app/navigation/routes';
+import { Text } from '../../../components/ui/Text';
+import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
+import { type RootStackParamList } from '../../../app/navigation/routes';
 import { openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
-import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { ScreenStateCard } from '../components/ScreenStateCard';
+import { getDreamCopy, getDreamMoodLabels } from '../../../constants/copy/dreams';
+import { getDreamLayout } from '../constants/layout';
 import { HomeDreamRow } from '../components/home/HomeDreamRow';
 import { HomeFilterSheet } from '../components/home/HomeFilterSheet';
 import { HomeHero } from '../components/home/HomeHero';
 import { HomeListHeader } from '../components/home/HomeListHeader';
-import { getDreamLayout } from '../constants/layout';
-import type { Dream } from '../model/dream';
 import { isWakeCaptureWindow } from '../model/homeOverview';
 import { createHomeScreenStyles } from './HomeScreen.styles';
 import { useHomeScreenData } from '../hooks/useHomeScreenData';
 import { useHomeSwipeActions } from '../hooks/useHomeSwipeActions';
 import { useHomeTimelineState } from '../hooks/useHomeTimelineState';
+import { type Dream } from '../model/dream';
+import { type DreamListItem } from '../repository/dreamsRepository';
+
+function formatPreview(dream: DreamListItem, copy: ReturnType<typeof getDreamCopy>) {
+  const text = dream.textPreview?.trim();
+  if (text) {
+    return text;
+  }
+
+  const transcript = dream.transcriptPreview?.trim();
+  if (transcript) {
+    return transcript;
+  }
+
+  if (dream.hasAudio) {
+    return copy.audioOnlyPreview;
+  }
+
+  return copy.noDetailsPreview;
+}
 
 export default function HomeScreen() {
   const theme = useTheme<Theme>();
+  const layout = React.useMemo(() => getDreamLayout(theme), [theme]);
   const insets = useSafeAreaInsets();
   const { locale } = useI18n();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const layout = React.useMemo(() => getDreamLayout(theme), [theme]);
   const styles = createHomeScreenStyles(theme);
-
-  const data = useHomeScreenData();
   const {
+    dreamListItems,
     dreams,
     draft,
-    loading,
-    loadError,
-    refreshing,
-    lastViewedDream,
     savedSearchPresets,
     setSavedSearchPresets,
+    lastViewedDream,
+    detailsReady,
+    loading,
+    refreshing,
+    loadError,
     refreshDreams,
-  } = data;
-  const swipe = useHomeSwipeActions({
+  } = useHomeScreenData();
+  const dreamIds = React.useMemo(() => dreams.map(dream => dream.id), [dreams]);
+  const showWakeCapturePrompt = isWakeCaptureWindow();
+  const fullLastViewedDream = React.useMemo(
+    () =>
+      lastViewedDream && 'tags' in lastViewedDream
+        ? lastViewedDream
+        : null,
+    [lastViewedDream],
+  );
+  const swipeActions = useHomeSwipeActions({
     copy,
     navigation,
     refreshDreams,
-    dreamIds: dreams.map(dream => dream.id),
+    dreamIds,
   });
+  const {
+    closeActiveSwipe,
+    closePreviousSwipe,
+    closeSwipe,
+    bindSwipeMethods,
+    onSwipeClosed,
+    onSwipeOpened,
+    openDreamDetail,
+    openDreamEditor,
+    openDreamQuickActions,
+    toggleArchiveFromList,
+    removeDreamFromList,
+    openPatternDetail,
+  } = swipeActions;
   const timeline = useHomeTimelineState({
     dreams,
     copy,
@@ -69,101 +109,198 @@ export default function HomeScreen() {
     moodLabels,
     savedSearchPresets,
     setSavedSearchPresets,
-    lastViewedDream,
-    closeActiveSwipe: swipe.closeActiveSwipe,
-  });
-  const {
-    bindSwipeMethods,
+    lastViewedDream: fullLastViewedDream,
     closeActiveSwipe,
-    closePreviousSwipe,
-    closeSwipe,
-    onSwipeClosed,
-    onSwipeOpened,
-    openDreamDetail,
-    openDreamEditor,
-    openDreamQuickActions,
-    openPatternDetail,
-    removeDreamFromList,
-    toggleArchiveFromList,
-  } = swipe;
-
-  useFocusEffect(
-    React.useCallback(() => {
-      refreshDreams(loading ? 'initial' : 'silent');
-
-      return () => {
-        closeActiveSwipe();
-      };
-    }, [closeActiveSwipe, loading, refreshDreams]),
-  );
-
-  const hasDraft = Boolean(draft);
-  const showWakeCapturePrompt = isWakeCaptureWindow();
-  const showHeroPrompt = showWakeCapturePrompt || hasDraft;
-  const showLastViewedShortcut = !showHeroPrompt && Boolean(lastViewedDream);
-  const heroInsetTop = insets.top + theme.spacing.sm;
-
-  const openLastViewedDream = React.useCallback(() => {
-    if (!lastViewedDream) {
-      return;
-    }
-
-    openDreamDetail(lastViewedDream.id);
-  }, [lastViewedDream, openDreamDetail]);
-
-  const onPullToRefresh = React.useCallback(() => {
-    closeActiveSwipe();
-    refreshDreams('refresh');
-  }, [closeActiveSwipe, refreshDreams]);
-
-  const openDraftCapture = React.useCallback(() => {
+  });
+  const openDefaultCapture = React.useCallback(() => {
     openNewDreamTab({
       entryMode: 'default',
       launchKey: Date.now(),
     });
   }, []);
+  const openWakeCapture = React.useCallback(() => {
+    openWakeEntry({ source: 'manual' });
+  }, []);
+  const openRecommendedCapture = React.useCallback(() => {
+    if (draft) {
+      openDefaultCapture();
+      return;
+    }
 
-  const heroPrompt = React.useMemo(() => {
     if (showWakeCapturePrompt) {
-      return {
-        title: copy.wakeHeroTitle,
-        description: copy.quickAddWakeHint,
-        primaryActionLabel: copy.quickAddWakeAction,
-        primaryActionIcon: 'sunny-outline',
-        onPrimaryAction: () => openWakeEntry({ source: 'manual' }),
-        secondaryActionLabel: hasDraft ? copy.homeContinueDraft : undefined,
-        secondaryActionIcon: hasDraft ? 'document-text-outline' : undefined,
-        onSecondaryAction: hasDraft ? openDraftCapture : undefined,
-      };
+      openWakeCapture();
+      return;
     }
 
-    if (hasDraft) {
-      return {
-        title: copy.recordDraftRestoredTitle,
-        description: copy.recordDraftRestoredDescription,
-        primaryActionLabel: copy.homeContinueDraft,
-        primaryActionIcon: 'document-text-outline',
-        onPrimaryAction: openDraftCapture,
-      };
-    }
+    openDefaultCapture();
+  }, [draft, openDefaultCapture, openWakeCapture, showWakeCapturePrompt]);
+  const heroPrompt = React.useMemo(
+    () =>
+      draft
+        ? {
+            title: copy.homeContinueDraft,
+            description: copy.recordDraftRestoredDescription,
+            primaryActionLabel: copy.homeContinueDraft,
+            primaryActionIcon: 'document-text-outline',
+            onPrimaryAction: openDefaultCapture,
+            secondaryActionLabel: showWakeCapturePrompt ? copy.quickAddWakeAction : undefined,
+            secondaryActionIcon: showWakeCapturePrompt ? 'sunny-outline' : undefined,
+            onSecondaryAction: showWakeCapturePrompt ? openWakeCapture : undefined,
+          }
+        : null,
+    [
+      copy.homeContinueDraft,
+      copy.quickAddWakeAction,
+      copy.recordDraftRestoredDescription,
+      draft,
+      openDefaultCapture,
+      openWakeCapture,
+      showWakeCapturePrompt,
+    ],
+  );
+  const listHeader = React.useMemo(
+    () => (
+      <>
+        <HomeHero
+          copy={copy}
+          styles={styles}
+          insetTop={insets.top + theme.spacing.sm}
+          greeting={timeline.heroGreeting}
+          dateLabel={timeline.heroDateLabel}
+          prompt={heroPrompt}
+        />
 
-    return null;
-  }, [
-    copy.homeContinueDraft,
-    copy.quickAddWakeAction,
-    copy.quickAddWakeHint,
-    copy.recordDraftRestoredDescription,
-    copy.recordDraftRestoredTitle,
-    copy.wakeHeroTitle,
-    hasDraft,
-    openDraftCapture,
-    showWakeCapturePrompt,
-  ]);
+        <HomeListHeader
+          copy={copy}
+          styles={styles}
+          timelineFilters={timeline.timelineFilters}
+          activeFilterChips={timeline.activeFilterChips}
+          visibleDreamCount={timeline.visibleDreams.length}
+          archiveScopedCount={timeline.archiveScopedDreams.length}
+          searchResultsLabel={timeline.searchResultsLabel}
+          lastViewedDreamTitle={lastViewedDream?.title || copy.untitled}
+          lastViewedDreamMeta={timeline.lastViewedDreamMeta}
+          onOpenLastDream={
+            lastViewedDream
+              ? () => openDreamDetail(lastViewedDream.id)
+              : null
+          }
+          streak={timeline.streak}
+          totalDreams={timeline.activeDreams.length}
+          averageWords={timeline.averageWords}
+          isSearchPending={timeline.isSearchPending}
+          isFilterMutationPending={timeline.isFilterMutationPending}
+          hasSearchQuery={timeline.hasSearchQuery}
+          hasNonSearchRefinements={timeline.hasNonSearchRefinements}
+          savedSearchPresets={timeline.savedSearchPresets}
+          activeSearchPresetId={timeline.activeSearchPresetId}
+          canSaveSearchPreset={timeline.canSaveSearchPreset}
+          spotlightPattern={timeline.spotlightPattern}
+          spotlightPatternKind={timeline.spotlightPatternKind}
+          spotlightCountLabel={timeline.spotlightCountLabel}
+          revisitCue={timeline.revisitCue}
+          weeklyValue={timeline.weeklyValue}
+          weeklyHint={timeline.weeklyHint}
+          attentionValue={timeline.attentionValue}
+          attentionHint={timeline.attentionHint}
+          onOpenRevisitDream={openDreamDetail}
+          onOpenPatternDetail={openPatternDetail}
+          onOpenFilterSheet={() => timeline.setIsFilterSheetOpen(true)}
+          onClearFilters={timeline.clearTimelineFilters}
+          onClearSearch={timeline.clearTimelineSearch}
+          onSaveSearchPreset={timeline.saveCurrentSearchPreset}
+          onApplySearchPreset={timeline.applySearchPreset}
+          onDeleteSearchPreset={timeline.deleteSearchPreset}
+          updateTimelineFilters={timeline.updateTimelineFilters}
+        />
 
-  const renderDreamRow = React.useCallback(
-    ({ item }: { item: Dream }) => (
+        <HomeFilterSheet
+          visible={timeline.isFilterSheetOpen}
+          copy={copy}
+          styles={styles}
+          timelineFilters={timeline.timelineFilters}
+          homeFilters={timeline.homeFilters}
+          moodFilters={timeline.moodFilters}
+          typeFilters={timeline.typeFilters}
+          transcriptFilters={timeline.transcriptFilters}
+          availableTags={timeline.availableTags}
+          dateRangeFilters={timeline.dateRangeFilters}
+          sortOptions={timeline.sortOptions}
+          onClose={() => timeline.setIsFilterSheetOpen(false)}
+          updateTimelineFilters={timeline.updateTimelineFilters}
+        />
+      </>
+    ),
+    [
+      copy,
+      openDreamDetail,
+      openPatternDetail,
+      heroPrompt,
+      insets.top,
+      lastViewedDream,
+      styles,
+      theme.spacing.sm,
+      timeline,
+    ],
+  );
+  const onPullToRefresh = React.useCallback(() => {
+    closeActiveSwipe();
+    refreshDreams('refresh');
+  }, [closeActiveSwipe, refreshDreams]);
+  const renderListItem = React.useCallback(
+    ({ item: dream }: { item: DreamListItem }) => (
+      <Pressable
+        onPress={() =>
+          navigation.navigate('DreamDetail', {
+            dreamId: dream.id,
+          })
+        }
+        style={({ pressed }) => [
+          styles.dreamPressable,
+          pressed ? styles.dreamPressablePressed : null,
+        ]}
+      >
+        <Card style={styles.dreamCard}>
+          <View style={styles.dreamHeaderRow}>
+            <View style={styles.dreamHeaderCopy}>
+              <View style={styles.titleRow}>
+                <Text style={styles.title} numberOfLines={1}>
+                  {dream.title || copy.untitled}
+                </Text>
+              </View>
+              <View style={styles.timestampRow}>
+                {dream.mood ? (
+                  <View style={styles.moodPill}>
+                    <Text style={styles.moodPillText}>{moodLabels[dream.mood]}</Text>
+                  </View>
+                ) : null}
+                <Text style={styles.timestamp}>
+                  {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
+                </Text>
+              </View>
+            </View>
+          </View>
+
+          <View style={styles.previewPanel}>
+            <View
+              style={[
+                styles.previewAccent,
+                { backgroundColor: theme.colors.primary },
+              ]}
+            />
+            <Text style={styles.preview} numberOfLines={4}>
+              {formatPreview(dream, copy)}
+            </Text>
+          </View>
+        </Card>
+      </Pressable>
+    ),
+    [copy, moodLabels, navigation, styles, theme.colors.primary],
+  );
+  const renderDream = React.useCallback(
+    ({ item: dream }: { item: Dream }) => (
       <HomeDreamRow
-        dream={item}
+        dream={dream}
         copy={copy}
         searchQuery={timeline.deferredSearchQuery}
         moodLabels={moodLabels}
@@ -204,109 +341,6 @@ export default function HomeScreen() {
     ],
   );
 
-  const listHeader = React.useMemo(
-    () => (
-      <>
-        <HomeHero
-          copy={copy}
-          styles={styles}
-          insetTop={heroInsetTop}
-          greeting={timeline.heroGreeting}
-          dateLabel={timeline.heroDateLabel}
-          prompt={heroPrompt}
-        />
-        <HomeListHeader
-          copy={copy}
-          styles={styles}
-          timelineFilters={timeline.timelineFilters}
-          activeFilterChips={timeline.activeFilterChips}
-          visibleDreamCount={timeline.visibleDreams.length}
-          archiveScopedCount={timeline.archiveScopedDreams.length}
-          searchResultsLabel={timeline.searchResultsLabel}
-          lastViewedDreamTitle={
-            showLastViewedShortcut
-              ? lastViewedDream?.title || (lastViewedDream ? copy.untitled : null)
-              : null
-          }
-          lastViewedDreamMeta={showLastViewedShortcut ? timeline.lastViewedDreamMeta : null}
-          onOpenLastDream={showLastViewedShortcut ? openLastViewedDream : null}
-          streak={timeline.streak}
-          totalDreams={timeline.activeDreams.length}
-          averageWords={timeline.averageWords}
-          isSearchPending={timeline.isSearchPending}
-          hasSearchQuery={timeline.hasSearchQuery}
-          hasNonSearchRefinements={timeline.hasNonSearchRefinements}
-          savedSearchPresets={timeline.savedSearchPresets}
-          activeSearchPresetId={timeline.activeSearchPresetId}
-          canSaveSearchPreset={timeline.canSaveSearchPreset}
-          spotlightPattern={timeline.spotlightPattern}
-          spotlightPatternKind={timeline.spotlightPatternKind}
-          spotlightCountLabel={timeline.spotlightCountLabel}
-          weeklyValue={timeline.weeklyValue}
-          weeklyHint={timeline.weeklyHint}
-          attentionValue={timeline.attentionValue}
-          attentionHint={timeline.attentionHint}
-          onOpenPatternDetail={openPatternDetail}
-          onOpenFilterSheet={() => timeline.setIsFilterSheetOpen(true)}
-          onClearFilters={timeline.clearTimelineFilters}
-          onClearSearch={timeline.clearTimelineSearch}
-          onSaveSearchPreset={timeline.saveCurrentSearchPreset}
-          onApplySearchPreset={timeline.applySearchPreset}
-          onDeleteSearchPreset={timeline.deleteSearchPreset}
-          updateTimelineFilters={timeline.updateTimelineFilters}
-        />
-      </>
-    ),
-    [
-      copy,
-      heroInsetTop,
-      heroPrompt,
-      lastViewedDream,
-      openLastViewedDream,
-      openPatternDetail,
-      showLastViewedShortcut,
-      styles,
-      timeline,
-    ],
-  );
-
-  if (loading) {
-    return (
-      <ScreenContainer scroll={false}>
-        <Card style={styles.heroCard}>
-          <SkeletonBlock width="26%" height={12} />
-          <SkeletonBlock width="52%" height={26} />
-          <SkeletonBlock width="72%" height={16} />
-          <View style={styles.statsRow}>
-            <SkeletonBlock width="31%" height={56} />
-            <SkeletonBlock width="31%" height={56} />
-            <SkeletonBlock width="31%" height={56} />
-          </View>
-        </Card>
-        {Array.from({ length: 3 }).map((_, index) => (
-          <Card key={`home-skeleton-${index}`} style={styles.skeletonCard}>
-            <View style={styles.skeletonHeaderRow}>
-              <SkeletonBlock style={styles.skeletonDateBadge} />
-              <View style={styles.skeletonHeaderCopy}>
-                <SkeletonBlock width="72%" height={16} />
-                <SkeletonBlock width="48%" height={12} />
-              </View>
-            </View>
-            <View style={styles.skeletonPreviewBlock}>
-              <SkeletonBlock width="92%" height={12} />
-              <SkeletonBlock width="84%" height={12} />
-              <SkeletonBlock width="66%" height={12} />
-            </View>
-            <View style={styles.skeletonFooterRow}>
-              <SkeletonBlock width="34%" height={24} />
-              <SkeletonBlock width="26%" height={24} />
-            </View>
-          </Card>
-        ))}
-      </ScreenContainer>
-    );
-  }
-
   if (loadError) {
     return (
       <ScreenContainer scroll={false} style={styles.emptyContainer}>
@@ -315,19 +349,104 @@ export default function HomeScreen() {
           title={copy.timelineErrorTitle}
           subtitle={copy.timelineErrorDescription}
           actionLabel={copy.actionRetry}
-          onAction={() => refreshDreams('initial')}
+          onAction={() => refreshDreams('silent')}
         />
       </ScreenContainer>
     );
   }
 
-  if (!dreams.length && !draft) {
+  if (loading) {
+    return (
+      <ScreenContainer scroll={false}>
+        <Card style={styles.heroCard}>
+          <SkeletonBlock width="22%" height={12} />
+          <SkeletonBlock width="42%" height={28} />
+          <SkeletonBlock width="72%" height={16} />
+          <SkeletonBlock width="100%" height={44} />
+        </Card>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Card key={`home-loading-${index}`} style={styles.skeletonCard}>
+            <View style={styles.skeletonHeaderRow}>
+              <SkeletonBlock style={styles.skeletonDateBadge} />
+              <View style={styles.skeletonHeaderCopy}>
+                <SkeletonBlock width="70%" height={16} />
+                <SkeletonBlock width="46%" height={12} />
+              </View>
+            </View>
+            <View style={styles.skeletonPreviewBlock}>
+              <SkeletonBlock width="94%" height={12} />
+              <SkeletonBlock width="82%" height={12} />
+              <SkeletonBlock width="68%" height={12} />
+            </View>
+          </Card>
+        ))}
+      </ScreenContainer>
+    );
+  }
+
+  if (!dreamListItems.length && !draft) {
     return (
       <ScreenContainer scroll={false} style={styles.emptyContainer}>
         <ScreenStateCard
           variant="empty"
           title={copy.emptyTitle}
           subtitle={copy.emptyDescription}
+          actionLabel={showWakeCapturePrompt ? copy.quickAddWakeAction : copy.createTitle}
+          onAction={openRecommendedCapture}
+        />
+      </ScreenContainer>
+    );
+  }
+
+  if (!detailsReady) {
+    const latestSleepDate = dreamListItems[0]?.sleepDate ?? null;
+
+    return (
+      <ScreenContainer scroll={false} padded={false}>
+        <FlatList
+          data={dreamListItems}
+          keyExtractor={item => item.id}
+          ListHeaderComponent={
+            <HomeHero
+              copy={copy}
+              styles={styles}
+              insetTop={insets.top + theme.spacing.sm}
+              greeting={timeline.heroGreeting}
+              dateLabel={timeline.heroDateLabel}
+              prompt={heroPrompt}
+            />
+          }
+          showsVerticalScrollIndicator={false}
+          initialNumToRender={8}
+          maxToRenderPerBatch={10}
+          windowSize={7}
+          removeClippedSubviews
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={onPullToRefresh}
+              tintColor={theme.colors.primary}
+              colors={[theme.colors.primary, theme.colors.accent]}
+              progressBackgroundColor={theme.colors.surface}
+            />
+          }
+          contentContainerStyle={[
+            styles.listContent,
+            {
+              paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
+            },
+          ]}
+          ListEmptyComponent={
+            <Card style={styles.emptyCard}>
+              <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
+              <Text style={styles.heroSubtitle}>
+                {latestSleepDate
+                  ? `${copy.homeLastDreamMetaPrefix} ${latestSleepDate}`
+                  : copy.homeSearchEmptyDescription}
+              </Text>
+            </Card>
+          }
+          renderItem={renderListItem}
         />
       </ScreenContainer>
     );
@@ -338,16 +457,12 @@ export default function HomeScreen() {
       <FlatList
         data={timeline.displayedDreams}
         keyExtractor={item => item.id}
-        renderItem={renderDreamRow}
         ListHeaderComponent={listHeader}
-        ItemSeparatorComponent={ListItemSeparator}
         showsVerticalScrollIndicator={false}
-        removeClippedSubviews={Platform.OS === 'android'}
-        initialNumToRender={6}
-        maxToRenderPerBatch={8}
-        updateCellsBatchingPeriod={40}
+        initialNumToRender={8}
+        maxToRenderPerBatch={10}
         windowSize={7}
-        scrollEventThrottle={16}
+        removeClippedSubviews
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -355,7 +470,6 @@ export default function HomeScreen() {
             tintColor={theme.colors.primary}
             colors={[theme.colors.primary, theme.colors.accent]}
             progressBackgroundColor={theme.colors.surface}
-            progressViewOffset={heroInsetTop + theme.spacing.lg}
           />
         }
         contentContainerStyle={[
@@ -364,22 +478,7 @@ export default function HomeScreen() {
             paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
           },
         ]}
-      />
-
-      <HomeFilterSheet
-        visible={timeline.isFilterSheetOpen}
-        copy={copy}
-        styles={styles}
-        timelineFilters={timeline.timelineFilters}
-        homeFilters={timeline.homeFilters}
-        moodFilters={timeline.moodFilters}
-        typeFilters={timeline.typeFilters}
-        transcriptFilters={timeline.transcriptFilters}
-        availableTags={timeline.availableTags}
-        dateRangeFilters={timeline.dateRangeFilters}
-        sortOptions={timeline.sortOptions}
-        onClose={() => timeline.setIsFilterSheetOpen(false)}
-        updateTimelineFilters={timeline.updateTimelineFilters}
+        renderItem={renderDream}
       />
     </ScreenContainer>
   );

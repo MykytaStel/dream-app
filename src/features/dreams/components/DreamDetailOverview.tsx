@@ -2,7 +2,7 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated, { LinearTransition } from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
@@ -14,15 +14,14 @@ import {
 } from '../model/dreamDetailPresentation';
 import type { DreamDetailScreenStyles } from '../screens/DreamDetailScreen.styles';
 
-const detailLayoutTransition = LinearTransition.springify()
-  .damping(18)
-  .stiffness(180);
+const detailLayoutTransition = LinearTransition.duration(180);
 
 type DreamDetailOverviewProps = {
   dream: Dream;
   copy: DreamDetailCopy;
   styles: DreamDetailScreenStyles;
   viewModel: DreamDetailViewModel;
+  wakeEmotionLabels: Record<string, string>;
   showSavedHighlight: boolean;
   onDismissSavedHighlight: () => void;
   onBack: () => void;
@@ -37,6 +36,7 @@ export function DreamDetailOverview({
   copy,
   styles,
   viewModel,
+  wakeEmotionLabels,
   showSavedHighlight,
   onDismissSavedHighlight,
   onBack,
@@ -46,133 +46,107 @@ export function DreamDetailOverview({
   onToggleArchiveDream,
 }: DreamDetailOverviewProps) {
   const theme = useTheme<Theme>();
+  const wakeHighlights = React.useMemo(() => {
+    const moodLabel = viewModel.moodLabel?.toLowerCase();
+    return (dream.wakeEmotions ?? [])
+      .map(emotion => wakeEmotionLabels[emotion] ?? emotion)
+      .filter(label => label.toLowerCase() !== moodLabel)
+      .slice(0, 2);
+  }, [dream.wakeEmotions, viewModel.moodLabel, wakeEmotionLabels]);
 
   return (
     <>
-      <Animated.View entering={FadeInDown.duration(240)} layout={detailLayoutTransition}>
-        <Card style={styles.heroCard}>
-          <View pointerEvents="none" style={styles.heroGlowLarge} />
-          <View pointerEvents="none" style={styles.heroGlowSmall} />
+      <Animated.View layout={detailLayoutTransition} style={styles.heroShell}>
+        <View style={styles.heroTopBar}>
+          <Pressable
+            style={styles.backButton}
+            onPress={onBack}
+            accessibilityLabel={copy.detailBack}
+          >
+            <Ionicons name="chevron-back" size={18} color={theme.colors.text} />
+          </Pressable>
 
-          <View style={styles.heroTopBar}>
+          <View style={styles.heroIconActions}>
             <Pressable
-              style={styles.backButton}
-              onPress={onBack}
-              accessibilityLabel={copy.detailBack}
-            >
-              <Ionicons name="chevron-back" size={18} color={theme.colors.text} />
-            </Pressable>
-
-            {viewModel.moodLabel ? (
-              <View style={styles.statusChip}>
-                <View
-                  style={[
-                    styles.statusDot,
-                    { backgroundColor: moodColor(theme, dream.mood) },
-                  ]}
-                />
-                <Text style={styles.statusChipLabel}>{viewModel.moodLabel}</Text>
-              </View>
-            ) : (
-              <View style={styles.heroTopBarSpacer} />
-            )}
-          </View>
-
-          <View style={styles.heroHeader}>
-            <Text style={styles.heroTitle}>{dream.title || copy.untitled}</Text>
-            <Text style={styles.heroSubtitle}>{viewModel.heroSubtitle}</Text>
-          </View>
-
-          {viewModel.heroPreview ? (
-            <Text numberOfLines={3} style={styles.heroPreviewText}>
-              {viewModel.heroPreview}
-            </Text>
-          ) : null}
-
-          <View style={styles.heroQuickActions}>
-            <Pressable
-              onPress={onEditDream}
               style={({ pressed }) => [
-                styles.heroActionPill,
-                pressed ? styles.heroActionPillPressed : null,
+                styles.heroIconButton,
+                pressed ? styles.heroIconButtonPressed : null,
               ]}
-              accessibilityRole="button"
+              onPress={onEditDream}
               accessibilityLabel={copy.detailEdit}
             >
-              <Ionicons name="create-outline" size={15} color={theme.colors.text} />
-              <Text style={styles.heroActionLabel}>{copy.detailActionEdit}</Text>
+              <Ionicons name="create-outline" size={17} color={theme.colors.text} />
             </Pressable>
-
             <Pressable
-              onPress={onToggleStarDream}
               style={({ pressed }) => [
-                styles.heroActionPill,
-                viewModel.starred ? styles.heroActionPillActive : null,
-                pressed ? styles.heroActionPillPressed : null,
+                styles.heroIconButton,
+                viewModel.starred ? styles.heroIconButtonActive : null,
+                pressed ? styles.heroIconButtonPressed : null,
               ]}
-              accessibilityRole="button"
+              onPress={onToggleStarDream}
               accessibilityLabel={viewModel.starred ? copy.detailUnstar : copy.detailStar}
             >
-              <Ionicons
-                name={viewModel.starred ? 'star' : 'star-outline'}
-                size={15}
-                color={viewModel.starred ? theme.colors.background : theme.colors.primary}
-              />
-              <Text
-                style={[
-                  styles.heroActionLabel,
-                  viewModel.starred ? styles.heroActionLabelActive : null,
-                ]}
-              >
-                {copy.detailActionImportant}
-              </Text>
+              <Ionicons name="star-outline" size={17} color={theme.colors.text} />
             </Pressable>
-
             <Pressable
-              onPress={onToggleArchiveDream}
               style={({ pressed }) => [
-                styles.heroActionPill,
-                viewModel.archived ? styles.heroActionPillActive : null,
-                pressed ? styles.heroActionPillPressed : null,
+                styles.heroIconButton,
+                viewModel.archived ? styles.heroIconButtonActive : null,
+                pressed ? styles.heroIconButtonPressed : null,
               ]}
-              accessibilityRole="button"
+              onPress={onToggleArchiveDream}
               accessibilityLabel={viewModel.archived ? copy.detailUnarchive : copy.detailArchive}
             >
-              <Ionicons
-                name={viewModel.archived ? 'refresh-outline' : 'archive-outline'}
-                size={15}
-                color={viewModel.archived ? theme.colors.background : theme.colors.textDim}
-              />
-              <Text
-                style={[
-                  styles.heroActionLabel,
-                  viewModel.archived ? styles.heroActionLabelActive : null,
-                ]}
-              >
-                {viewModel.archived ? copy.detailActionRestore : copy.detailActionArchive}
-              </Text>
+              <Ionicons name="archive-outline" size={17} color={theme.colors.text} />
             </Pressable>
-          </View>
-
-          <View style={styles.heroFooter}>
             <Pressable
               style={({ pressed }) => [
-                styles.heroDeleteAction,
-                pressed ? styles.heroDeleteActionPressed : null,
+                styles.heroIconButton,
+                styles.heroIconButtonDanger,
+                pressed ? styles.heroIconButtonPressed : null,
               ]}
               onPress={onDeleteDream}
-              accessibilityRole="button"
               accessibilityLabel={copy.detailDelete}
             >
-              <Ionicons name="trash-outline" size={14} color={theme.colors.danger} />
-              <Text style={styles.heroDeleteActionLabel}>{copy.detailActionDelete}</Text>
+              <Ionicons name="trash-outline" size={17} color={theme.colors.danger} />
             </Pressable>
           </View>
-        </Card>
+        </View>
+
+        <View style={styles.heroHeader}>
+          <Text style={styles.heroTitle}>{dream.title || copy.untitled}</Text>
+          <Text style={styles.heroSubtitle}>{viewModel.heroSubtitle}</Text>
+        </View>
+
+        <View style={styles.heroMetaRow}>
+          {viewModel.moodLabel ? (
+            <View style={styles.heroMoodPill}>
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: moodColor(theme, dream.mood) },
+                ]}
+              />
+              <Text style={styles.statusChipLabel}>{viewModel.moodLabel}</Text>
+            </View>
+          ) : null}
+          {viewModel.starred ? (
+            <Text style={styles.heroMetaText}>{copy.starredTag}</Text>
+          ) : null}
+          {viewModel.archived ? (
+            <Text style={styles.heroMetaText}>{copy.archivedTag}</Text>
+          ) : null}
+          {wakeHighlights.map(label => (
+            <View key={label} style={styles.heroMetaChip}>
+              <Text style={styles.heroMetaChipLabel}>{label}</Text>
+            </View>
+          ))}
+        </View>
+
       </Animated.View>
 
       {showSavedHighlight ? (
-        <Animated.View entering={FadeInDown.delay(40).duration(220)} layout={detailLayoutTransition}>
+        <Animated.View layout={detailLayoutTransition}>
           <Card style={styles.savedCard}>
             <View style={styles.savedHeader}>
               <View style={styles.savedLead}>
@@ -209,24 +183,6 @@ export function DreamDetailOverview({
           </Card>
         </Animated.View>
       ) : null}
-
-      <Animated.View entering={FadeInDown.delay(55).duration(220)} layout={detailLayoutTransition}>
-        <Card style={styles.summaryCard}>
-          <View style={styles.glanceGrid}>
-            {viewModel.glanceCards.map(item => (
-              <View key={item.key} style={styles.glanceCard}>
-                <View style={styles.glanceHeader}>
-                  <View style={styles.glanceIconShell}>
-                    <Ionicons name={item.icon} size={14} color={theme.colors.textDim} />
-                  </View>
-                  <Text style={styles.glanceLabel}>{item.label}</Text>
-                </View>
-                <Text style={styles.glanceValue}>{item.value}</Text>
-              </View>
-            ))}
-          </View>
-        </Card>
-      </Animated.View>
     </>
   );
 }

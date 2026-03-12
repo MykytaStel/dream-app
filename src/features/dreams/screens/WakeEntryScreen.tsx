@@ -1,5 +1,5 @@
 import React from 'react';
-import { InteractionManager, Pressable, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
@@ -25,6 +25,11 @@ import {
 import { openNewDreamTab } from '../../../app/navigation/navigationRef';
 import { getDreamDraft } from '../services/dreamDraftService';
 import { createWakeEntryScreenStyles } from './WakeEntryScreen.styles';
+
+type IdleCallbackHandle = number;
+type IdleSchedulerShape = {
+  requestIdleCallback?: (callback: () => void) => IdleCallbackHandle;
+};
 
 export default function WakeEntryScreen() {
   const t = useTheme<Theme>();
@@ -76,13 +81,21 @@ export default function WakeEntryScreen() {
   const handoffToComposer = React.useCallback(
     (entryMode: 'voice' | 'wake') => {
       navigation.goBack();
-      InteractionManager.runAfterInteractions(() => {
+      const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
+      const openComposer = () => {
         openNewDreamTab(
           entryMode === 'voice'
             ? { entryMode, launchKey: Date.now() }
             : { entryMode: 'wake' },
         );
-      });
+      };
+
+      if (typeof scheduler.requestIdleCallback === 'function') {
+        scheduler.requestIdleCallback(openComposer);
+        return;
+      }
+
+      setTimeout(openComposer, 0);
     },
     [navigation],
   );

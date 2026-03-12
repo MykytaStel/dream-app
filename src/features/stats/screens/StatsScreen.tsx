@@ -3,6 +3,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
+import { Card } from '../../../components/ui/Card';
+import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
 import {
@@ -85,6 +87,7 @@ export default function StatsScreen() {
   const controller = useStatsScreenController({
     locale,
     copy,
+    selectedMemoryMode,
     openPatternDetail,
   });
 
@@ -132,13 +135,45 @@ export default function StatsScreen() {
   const shouldShowScopedEmptyState =
     selectedMemoryMode !== 'monthly' && !controller.scopedDreams.length;
 
-  if (!controller.dreams.length) {
+  if (controller.loading && controller.meta.totalCount > 0) {
+    return (
+      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+        <Card style={styles.heroCard}>
+          <SkeletonBlock width="38%" height={14} />
+          <SkeletonBlock width="58%" height={26} />
+          <SkeletonBlock width="100%" height={34} />
+        </Card>
+        <Card style={styles.sectionCard}>
+          <SkeletonBlock width="42%" height={16} />
+          <SkeletonBlock width="100%" height={88} />
+        </Card>
+        <Card style={styles.sectionCard}>
+          <SkeletonBlock width="34%" height={16} />
+          <SkeletonBlock width="100%" height={132} />
+        </Card>
+      </ScreenContainer>
+    );
+  }
+
+  if (!controller.meta.totalCount) {
     return (
       <ScreenContainer scroll={false} style={styles.emptyContainer}>
         <ScreenStateCard
           variant="empty"
           title={copy.emptyTitle}
           subtitle={copy.emptyDescription}
+        />
+      </ScreenContainer>
+    );
+  }
+
+  if (controller.loadError) {
+    return (
+      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+        <ScreenStateCard
+          variant="error"
+          title={dreamCopy.timelineErrorTitle}
+          subtitle={dreamCopy.timelineErrorDescription}
         />
       </ScreenContainer>
     );
@@ -157,6 +192,13 @@ export default function StatsScreen() {
         rangeOptions={controller.rangeOptions}
         selectedRangeLabel={controller.selectedRangeLabel}
         topSignal={controller.topSignal}
+        memoryNudge={controller.memoryNudge}
+        onOpenMemoryNudge={(dreamId, focusSection) =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            dreamId,
+            focusSection,
+          })
+        }
         coverageGap={controller.coverageGap}
       />
 
@@ -187,6 +229,13 @@ export default function StatsScreen() {
               overallLastSevenDays={controller.overallLastSevenDays}
               coverageItems={controller.coverageItems}
               attentionItems={controller.attentionItems}
+              workQueueItems={controller.workQueueItems}
+              onOpenWorkQueueItem={(dreamId, focusSection) =>
+                navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+                  dreamId,
+                  focusSection,
+                })
+              }
             />
           ) : null}
 

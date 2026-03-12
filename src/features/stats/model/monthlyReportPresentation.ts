@@ -1,3 +1,8 @@
+import type { Dream } from '../../dreams/model/dream';
+import {
+  getDreamResurfacingMatch,
+  type DreamResurfacingWindow,
+} from '../../dreams/model/resurfacingCue';
 import type { MonthlyReportData } from './monthlyReport';
 
 export type MonthlyReportCopyShape = {
@@ -33,6 +38,17 @@ export type MonthlyReportCopyShape = {
   monthlyReportSymbolLabel: string;
   monthlyReportWakeLabel: string;
   monthlyReportPreSleepLabel: string;
+  monthlyReportRevisitTitle: string;
+  monthlyReportRevisitDescription: string;
+  memoryNudgeTimeReasonPrefix: string;
+  memoryNudgeTimeReasonSuffix: string;
+  memoryNudgeTimeBadge: string;
+  memoryNudgeTimeWeek: string;
+  memoryNudgeTimeMonth: string;
+  memoryNudgeTimeQuarter: string;
+  memoryNudgeTimeHalfYear: string;
+  memoryNudgeTimeYear: string;
+  memoryNudgeActionTime: string;
 };
 
 export type MonthlyReportSignalView = {
@@ -52,6 +68,14 @@ export type MonthlyReportCalmTileView = {
   value: number;
 };
 
+export type MonthlyReportRevisitCueView = {
+  dreamId: string;
+  dreamTitle: string;
+  badgeLabel: string;
+  reason: string;
+  actionLabel: string;
+};
+
 export type MonthlyReportViewModel = {
   monthTitle: string;
   coverText: string;
@@ -64,6 +88,7 @@ export type MonthlyReportViewModel = {
   leadSignal: MonthlyReportSignalView;
   secondarySignals: MonthlyReportSignalView[];
   calmTiles: MonthlyReportCalmTileView[];
+  revisitCue: MonthlyReportRevisitCueView | null;
 };
 
 export function formatMonthTitle(year: number, month: number, locale: string) {
@@ -116,6 +141,87 @@ export function buildMonthlyReportShareLines(input: {
   ].filter((value): value is string => Boolean(value));
 }
 
+function getMonthlyReportDreamTitle(dream: Dream, copy: MonthlyReportCopyShape) {
+  const title = dream.title?.trim();
+  if (title) {
+    return title;
+  }
+
+  const firstLine = dream.text
+    ?.split('\n')
+    .map(line => line.trim())
+    .find(Boolean);
+  if (firstLine) {
+    return firstLine.length <= 42 ? firstLine : `${firstLine.slice(0, 39)}...`;
+  }
+
+  return copy.monthlyReportTitle;
+}
+
+function getResurfacingWindowLabel(
+  window: DreamResurfacingWindow,
+  copy: MonthlyReportCopyShape,
+) {
+  switch (window) {
+    case 'week':
+      return copy.memoryNudgeTimeWeek;
+    case 'month':
+      return copy.memoryNudgeTimeMonth;
+    case 'quarter':
+      return copy.memoryNudgeTimeQuarter;
+    case 'half-year':
+      return copy.memoryNudgeTimeHalfYear;
+    case 'year':
+      return copy.memoryNudgeTimeYear;
+  }
+}
+
+export function getMonthlyReportRevisitCue(
+  report: MonthlyReportData,
+  copy: MonthlyReportCopyShape,
+  now = Date.now(),
+): MonthlyReportRevisitCueView | null {
+  const candidate = report.dreams
+    .map(dream => ({
+      dream,
+      match: getDreamResurfacingMatch(dream, now),
+    }))
+    .filter(
+      (
+        value,
+      ): value is {
+        dream: Dream;
+        match: NonNullable<ReturnType<typeof getDreamResurfacingMatch>>;
+      } => value.match !== null,
+    )
+    .sort((left, right) => {
+      if (right.match.score !== left.match.score) {
+        return right.match.score - left.match.score;
+      }
+
+      if (left.match.distance !== right.match.distance) {
+        return left.match.distance - right.match.distance;
+      }
+
+      return right.dream.createdAt - left.dream.createdAt;
+    })[0];
+
+  if (!candidate) {
+    return null;
+  }
+
+  return {
+    dreamId: candidate.dream.id,
+    dreamTitle: getMonthlyReportDreamTitle(candidate.dream, copy),
+    badgeLabel: copy.memoryNudgeTimeBadge,
+    reason: `${copy.memoryNudgeTimeReasonPrefix}${getResurfacingWindowLabel(
+      candidate.match.window,
+      copy,
+    )}${copy.memoryNudgeTimeReasonSuffix}`,
+    actionLabel: copy.memoryNudgeActionTime,
+  };
+}
+
 export function getMonthlyReportViewModel(input: {
   report: MonthlyReportData;
   locale: string;
@@ -123,8 +229,17 @@ export function getMonthlyReportViewModel(input: {
   wakeEmotionLabels: Record<string, string>;
   preSleepEmotionLabels: Record<string, string>;
   isSavedForLater: boolean;
+  now?: number;
 }) : MonthlyReportViewModel {
-  const { report, locale, copy, wakeEmotionLabels, preSleepEmotionLabels, isSavedForLater } = input;
+  const {
+    report,
+    locale,
+    copy,
+    wakeEmotionLabels,
+    preSleepEmotionLabels,
+    isSavedForLater,
+    now,
+  } = input;
   const monthTitle = formatMonthTitle(report.month.year, report.month.month, locale);
   const coverSignals = getMonthlyReportCoverSignals({
     report,
@@ -210,6 +325,7 @@ export function getMonthlyReportViewModel(input: {
       value: report.contextCount,
     },
   ];
+  const revisitCue = getMonthlyReportRevisitCue(report, copy, now);
 
   return {
     monthTitle,
@@ -223,5 +339,6 @@ export function getMonthlyReportViewModel(input: {
     leadSignal,
     secondarySignals,
     calmTiles,
+    revisitCue,
   };
 }

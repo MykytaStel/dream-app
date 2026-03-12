@@ -2,6 +2,8 @@ export const STORAGE_SCHEMA_VERSION_KEY = 'storage-schema-version';
 export const CURRENT_STORAGE_SCHEMA_VERSION = 8;
 
 export const DREAMS_STORAGE_KEY = 'dreams';
+export const DREAMS_INDEX_STORAGE_KEY = 'dreams-index';
+export const DREAMS_META_STORAGE_KEY = 'dreams-meta';
 export const DREAM_DELETION_TOMBSTONES_STORAGE_KEY = 'dream-deletion-tombstones';
 export const DREAM_DRAFT_STORAGE_KEY = 'dream-draft';
 export const LAST_VIEWED_DREAM_STORAGE_KEY = 'last-viewed-dream';

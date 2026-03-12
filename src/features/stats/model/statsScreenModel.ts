@@ -1,17 +1,42 @@
 import { getStatsCopy } from '../../../constants/copy/stats';
 import { type AppLocale } from '../../../i18n/types';
+import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { Dream } from '../../dreams/model/dream';
+import { getPatternDreamMatches } from './patternMatches';
 import {
   countDreamWords,
   getDreamDate,
 } from '../../dreams/model/dreamAnalytics';
-import type { PatternDetailKind } from '../../../app/navigation/routes';
+import {
+  getDreamResurfacingMatch,
+  type DreamResurfacingWindow,
+} from '../../dreams/model/resurfacingCue';
+import type { DreamDetailFocusSection, PatternDetailKind } from '../../../app/navigation/routes';
 import type { DreamAchievementId } from './achievements';
 import type { DreamReflectionSignal, DreamWordSignal } from './dreamReflection';
 import type { PatternGroupCardItem } from '../components/PatternGroupCard';
 
 export type InsightRange = 'all' | '30d' | '7d';
 export type PatternGroupKey = 'themes' | 'words' | 'symbols';
+export type MemoryNudge = {
+  dreamId: string;
+  dreamTitle: string;
+  reason: string;
+  badgeLabel: string;
+  actionLabel: string;
+  focusSection: DreamDetailFocusSection;
+  icon: string;
+};
+
+export type MemoryWorkQueueItem = {
+  dreamId: string;
+  dreamTitle: string;
+  reason: string;
+  badgeLabel: string;
+  actionLabel: string;
+  focusSection: DreamDetailFocusSection;
+  icon: string;
+};
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
 
@@ -207,6 +232,285 @@ export function formatMonthTitle(year: number, month: number, locale: AppLocale)
     month: 'long',
     year: 'numeric',
   });
+}
+
+function getDreamTitle(dream: Dream) {
+  return dream.title?.trim() || 'Untitled';
+}
+
+function hasAnalysisContext(dream: Dream) {
+  const context = dream.sleepContext;
+  if (!context) {
+    return false;
+  }
+
+  return Boolean(
+    context.preSleepEmotions?.length ||
+      typeof context.stressLevel === 'number' ||
+      typeof context.alcoholTaken === 'boolean' ||
+      typeof context.caffeineLate === 'boolean' ||
+      context.medications?.trim() ||
+      context.importantEvents?.trim() ||
+      context.healthNotes?.trim(),
+  );
+}
+
+function getAnalysisMaterialScore(dream: Dream) {
+  const textWords = countDreamWords(dream.text);
+  const transcriptWords = countDreamWords(dream.transcript);
+  const tagScore = dream.tags.length * 8;
+  const contextScore = hasAnalysisContext(dream) ? 12 : 0;
+  const moodScore = dream.mood ? 6 : 0;
+
+  return textWords + transcriptWords + tagScore + contextScore + moodScore;
+}
+
+function getResurfacingWindowLabel(
+  window: DreamResurfacingWindow,
+  copy: StatsCopy,
+) {
+  switch (window) {
+    case 'week':
+      return copy.memoryNudgeTimeWeek;
+    case 'month':
+      return copy.memoryNudgeTimeMonth;
+    case 'quarter':
+      return copy.memoryNudgeTimeQuarter;
+    case 'half-year':
+      return copy.memoryNudgeTimeHalfYear;
+    case 'year':
+      return copy.memoryNudgeTimeYear;
+  }
+}
+
+export function getMemoryNudge(
+  dreams: Dream[],
+  copy: StatsCopy,
+  recurringThemes: DreamReflectionSignal[],
+  recurringWords: DreamWordSignal[],
+  recurringSymbols: DreamReflectionSignal[],
+  now = Date.now(),
+): MemoryNudge | null {
+  const topTheme = recurringThemes[0];
+  if (topTheme) {
+    const match = getPatternDreamMatches(dreams, topTheme.label, 'theme')[0];
+    if (match) {
+      return {
+        dreamId: match.dream.id,
+        dreamTitle: getDreamTitle(match.dream),
+        reason: `${copy.memoryNudgeThemeReasonPrefix}${topTheme.label}${copy.memoryNudgeThemeReasonSuffix}`,
+        badgeLabel: copy.memoryNudgeThemeBadge,
+        actionLabel: copy.memoryNudgeActionReflection,
+        focusSection: 'reflection',
+        icon: 'sparkles-outline',
+      };
+    }
+  }
+
+  const topWord = recurringWords[0];
+  if (topWord) {
+    const match = getPatternDreamMatches(dreams, topWord.label, 'word')[0];
+    if (match) {
+      return {
+        dreamId: match.dream.id,
+        dreamTitle: getDreamTitle(match.dream),
+        reason: `${copy.memoryNudgeWordReasonPrefix}${topWord.label}${copy.memoryNudgeWordReasonSuffix}`,
+        badgeLabel: copy.memoryNudgeWordBadge,
+        actionLabel: copy.memoryNudgeActionReflection,
+        focusSection: 'reflection',
+        icon: 'git-compare-outline',
+      };
+    }
+  }
+
+  const topSymbol = recurringSymbols[0];
+  if (topSymbol) {
+    const match = getPatternDreamMatches(dreams, topSymbol.label, 'symbol')[0];
+    if (match) {
+      return {
+        dreamId: match.dream.id,
+        dreamTitle: getDreamTitle(match.dream),
+        reason: `${copy.memoryNudgeSymbolReasonPrefix}${topSymbol.label}${copy.memoryNudgeSymbolReasonSuffix}`,
+        badgeLabel: copy.memoryNudgeSymbolBadge,
+        actionLabel: copy.memoryNudgeActionReflection,
+        focusSection: 'reflection',
+        icon: 'shapes-outline',
+      };
+    }
+  }
+
+  const resurfacingCandidate = dreams
+    .map(dream => ({
+      dream,
+      match: getDreamResurfacingMatch(dream, now),
+    }))
+    .filter(
+      (candidate): candidate is { dream: Dream; match: NonNullable<ReturnType<typeof getDreamResurfacingMatch>> } =>
+        candidate.match !== null,
+    )
+    .sort((left, right) => {
+      if (right.match.score !== left.match.score) {
+        return right.match.score - left.match.score;
+      }
+
+      if (left.match.distance !== right.match.distance) {
+        return left.match.distance - right.match.distance;
+      }
+
+      return right.dream.createdAt - left.dream.createdAt;
+    })[0];
+  if (resurfacingCandidate) {
+    return {
+      dreamId: resurfacingCandidate.dream.id,
+      dreamTitle: getDreamTitle(resurfacingCandidate.dream),
+      reason: `${copy.memoryNudgeTimeReasonPrefix}${getResurfacingWindowLabel(
+        resurfacingCandidate.match.window,
+        copy,
+      )}${copy.memoryNudgeTimeReasonSuffix}`,
+      badgeLabel: copy.memoryNudgeTimeBadge,
+      actionLabel: copy.memoryNudgeActionTime,
+      focusSection: 'written',
+      icon: 'time-outline',
+    };
+  }
+
+  const transcriptCandidate = dreams
+    .filter(dream => dream.audioUri && !dream.transcript?.trim() && !dream.text?.trim())
+    .sort((left, right) => right.createdAt - left.createdAt)[0];
+  if (transcriptCandidate) {
+    return {
+      dreamId: transcriptCandidate.id,
+      dreamTitle: getDreamTitle(transcriptCandidate),
+      reason: copy.memoryNudgeTranscriptReason,
+      badgeLabel: copy.memoryNudgeTranscriptBadge,
+      actionLabel: copy.memoryNudgeActionTranscript,
+      focusSection: 'transcript',
+      icon: 'document-text-outline',
+    };
+  }
+
+  return null;
+}
+
+export function getMemoryWorkQueue(
+  dreams: Dream[],
+  copy: StatsCopy,
+  analysisSettings: DreamAnalysisSettings,
+): MemoryWorkQueueItem[] {
+  const queue: MemoryWorkQueueItem[] = [];
+  const usedDreamIds = new Set<string>();
+
+  const push = (item: MemoryWorkQueueItem | null) => {
+    if (!item || usedDreamIds.has(item.dreamId)) {
+      return;
+    }
+
+    usedDreamIds.add(item.dreamId);
+    queue.push(item);
+  };
+
+  const transcriptGenerateCandidate = dreams
+    .filter(dream => dream.audioUri && !dream.transcript?.trim() && dream.transcriptStatus !== 'processing')
+    .sort((left, right) => {
+      const rightUpdatedAt = right.transcriptUpdatedAt ?? right.updatedAt ?? right.createdAt;
+      const leftUpdatedAt = left.transcriptUpdatedAt ?? left.updatedAt ?? left.createdAt;
+      return rightUpdatedAt - leftUpdatedAt;
+    })[0];
+  push(
+    transcriptGenerateCandidate
+      ? {
+          dreamId: transcriptGenerateCandidate.id,
+          dreamTitle: getDreamTitle(transcriptGenerateCandidate),
+          reason:
+            transcriptGenerateCandidate.transcriptStatus === 'error'
+              ? copy.workQueueTranscriptRetryReason
+              : copy.workQueueTranscriptGenerateReason,
+          badgeLabel: copy.memoryNudgeTranscriptBadge,
+          actionLabel:
+            transcriptGenerateCandidate.transcriptStatus === 'error'
+              ? copy.workQueueTranscriptActionRetry
+              : copy.workQueueTranscriptActionGenerate,
+          focusSection: 'transcript',
+          icon: 'document-text-outline',
+        }
+      : null,
+  );
+
+  const transcriptEditCandidate = dreams
+    .filter(dream => dream.audioUri && dream.transcript?.trim() && dream.transcriptSource !== 'edited')
+    .sort((left, right) => {
+      const rightUpdatedAt = right.transcriptUpdatedAt ?? right.updatedAt ?? right.createdAt;
+      const leftUpdatedAt = left.transcriptUpdatedAt ?? left.updatedAt ?? left.createdAt;
+      return rightUpdatedAt - leftUpdatedAt;
+    })[0];
+  push(
+    transcriptEditCandidate
+      ? {
+          dreamId: transcriptEditCandidate.id,
+          dreamTitle: getDreamTitle(transcriptEditCandidate),
+          reason: copy.workQueueTranscriptEditReason,
+          badgeLabel: copy.memoryNudgeTranscriptBadge,
+          actionLabel: copy.workQueueTranscriptActionEdit,
+          focusSection: 'transcript',
+          icon: 'create-outline',
+        }
+      : null,
+  );
+
+  if (analysisSettings.enabled && analysisSettings.provider === 'manual') {
+    const analysisCandidate = dreams
+      .filter(dream => {
+        if (dream.analysis?.status === 'ready') {
+          return false;
+        }
+
+        if (dream.audioUri && !dream.transcript?.trim()) {
+          return false;
+        }
+
+        return getAnalysisMaterialScore(dream) >= 20;
+      })
+      .sort((left, right) => {
+        const leftStatusScore = left.analysis?.status === 'error' ? 1 : 0;
+        const rightStatusScore = right.analysis?.status === 'error' ? 1 : 0;
+        if (rightStatusScore !== leftStatusScore) {
+          return rightStatusScore - leftStatusScore;
+        }
+
+        const scoreDiff = getAnalysisMaterialScore(right) - getAnalysisMaterialScore(left);
+        if (scoreDiff !== 0) {
+          return scoreDiff;
+        }
+
+        const rightUpdatedAt =
+          right.analysis?.generatedAt ?? right.updatedAt ?? right.transcriptUpdatedAt ?? right.createdAt;
+        const leftUpdatedAt =
+          left.analysis?.generatedAt ?? left.updatedAt ?? left.transcriptUpdatedAt ?? left.createdAt;
+        return rightUpdatedAt - leftUpdatedAt;
+      })[0];
+
+    push(
+      analysisCandidate
+        ? {
+            dreamId: analysisCandidate.id,
+            dreamTitle: getDreamTitle(analysisCandidate),
+            reason:
+              analysisCandidate.analysis?.status === 'error'
+                ? copy.workQueueAnalysisRetryReason
+                : copy.workQueueAnalysisReason,
+            badgeLabel: copy.workQueueAnalysisBadge,
+            actionLabel:
+              analysisCandidate.analysis?.status === 'error'
+                ? copy.workQueueAnalysisActionRetry
+                : copy.workQueueAnalysisActionGenerate,
+            focusSection: 'analysis',
+            icon: 'sparkles-outline',
+          }
+        : null,
+    );
+  }
+
+  return queue;
 }
 
 function getReflectionSourceLabel(source: DreamReflectionSignal['source'], copy: StatsCopy) {

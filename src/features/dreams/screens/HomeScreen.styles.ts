@@ -486,6 +486,31 @@ export function createHomeScreenStyles(theme: Theme) {
       opacity: 0.96,
       transform: [{ scale: 0.992 }],
     },
+    spotlightCueHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 10,
+      flexWrap: 'wrap',
+    },
+    spotlightCueBadge: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 5,
+        paddingHorizontal: 8,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderColor: `${theme.colors.accent}55`,
+      backgroundColor: 'rgba(124, 200, 255, 0.08)',
+    },
+    spotlightCueBadgeText: {
+      color: theme.colors.accent,
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: '700',
+    },
     spotlightLabel: {
       color: theme.colors.textDim,
       fontSize: 10,
@@ -509,6 +534,20 @@ export function createHomeScreenStyles(theme: Theme) {
       color: theme.colors.textDim,
       fontSize: 11,
       lineHeight: 15,
+    },
+    spotlightActionHint: {
+      color: theme.colors.accent,
+      fontSize: 11,
+      lineHeight: 15,
+      fontWeight: '700',
+      marginTop: 2,
+    },
+    spotlightCueActionRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      marginTop: 3,
     },
     statChip: {
       ...createSoftTile(theme, {

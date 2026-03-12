@@ -12,6 +12,7 @@ import {
   formatLastViewedDreamMeta,
   formatResultCount,
   getContextGreeting,
+  getHomeRevisitCue,
 } from '../model/homeOverview';
 import {
   getAverageWords,
@@ -68,6 +69,7 @@ export function useHomeTimelineState({
   lastViewedDream,
   closeActiveSwipe,
 }: UseHomeTimelineStateArgs) {
+  const [isFilterMutationPending, startFilterMutation] = React.useTransition();
   const [timelineFilters, setTimelineFilters] = React.useState<HomeTimelineFilters>(
     DEFAULT_HOME_TIMELINE_FILTERS,
   );
@@ -207,6 +209,10 @@ export function useHomeTimelineState({
 
   const heroGreeting = React.useMemo(() => getContextGreeting(copy), [copy]);
   const heroDateLabel = React.useMemo(() => formatHeroDateLabel(locale), [locale]);
+  const revisitCue = React.useMemo(
+    () => getHomeRevisitCue(activeDreams, copy),
+    [activeDreams, copy],
+  );
   const lastViewedDreamMeta = React.useMemo(
     () => formatLastViewedDreamMeta(lastViewedDream, copy, locale),
     [copy, lastViewedDream, locale],
@@ -309,23 +315,29 @@ export function useHomeTimelineState({
   const updateTimelineFilters = React.useCallback(
     (updater: (current: HomeTimelineFilters) => HomeTimelineFilters) => {
       closeActiveSwipe();
-      setTimelineFilters(current => updater(current));
+      startFilterMutation(() => {
+        setTimelineFilters(current => updater(current));
+      });
     },
-    [closeActiveSwipe],
+    [closeActiveSwipe, startFilterMutation],
   );
 
   const clearTimelineFilters = React.useCallback(() => {
     closeActiveSwipe();
-    setTimelineFilters(DEFAULT_HOME_TIMELINE_FILTERS);
-  }, [closeActiveSwipe]);
+    startFilterMutation(() => {
+      setTimelineFilters(DEFAULT_HOME_TIMELINE_FILTERS);
+    });
+  }, [closeActiveSwipe, startFilterMutation]);
 
   const clearTimelineSearch = React.useCallback(() => {
     closeActiveSwipe();
-    setTimelineFilters(current => ({
-      ...current,
-      searchQuery: '',
-    }));
-  }, [closeActiveSwipe]);
+    startFilterMutation(() => {
+      setTimelineFilters(current => ({
+        ...current,
+        searchQuery: '',
+      }));
+    });
+  }, [closeActiveSwipe, startFilterMutation]);
 
   const saveCurrentSearchPreset = React.useCallback(() => {
     if (!canSaveSearchPreset) {
@@ -363,9 +375,11 @@ export function useHomeTimelineState({
   const applySearchPreset = React.useCallback(
     (preset: HomeSearchPreset) => {
       closeActiveSwipe();
-      setTimelineFilters(preset.filters);
+      startFilterMutation(() => {
+        setTimelineFilters(preset.filters);
+      });
     },
-    [closeActiveSwipe],
+    [closeActiveSwipe, startFilterMutation],
   );
 
   const deleteSearchPreset = React.useCallback(
@@ -414,6 +428,7 @@ export function useHomeTimelineState({
     displayedDreams,
     deferredSearchQuery: deferredTimelineFilters.searchQuery,
     isSearchPending,
+    isFilterMutationPending,
     activeFilterChips,
     hasSearchQuery,
     hasNonSearchRefinements,
@@ -421,6 +436,7 @@ export function useHomeTimelineState({
     canSaveSearchPreset,
     heroGreeting,
     heroDateLabel,
+    revisitCue,
     lastViewedDreamMeta,
     streak,
     averageWords,

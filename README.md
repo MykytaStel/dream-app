@@ -23,17 +23,16 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.4.0`
+Current release target: `0.5.0`
 
-This release should turn the cloud foundation into a production-ready backup
-and multi-device experience on top of the current memory-first product:
+This release should build on the stable backup baseline and move the product
+back toward daily dream value instead of more infrastructure work:
 
-- production-ready backup onboarding
-- cleaner account flows for first-device and second-device setup
-- password reset and account recovery path
-- release-safe UX where Supabase setup stays out of the user surface
-- manual QA and rollout hardening for multi-device sync
-- no regressions in offline capture, export, restore, transcription, or analysis
+- stronger post-capture reflection and revisit loops
+- clearer dream-detail follow-up surfaces
+- smarter archive resurfacing and memory cues
+- no regression in backup, sync, export, restore, transcription, or analysis
+- keep cloud as a stable capability, not the center of the product surface
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -58,7 +57,7 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.4.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.4.0_PLAN.md)
+[docs/RELEASE_0.5.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.0_PLAN.md)
 for the active release target, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
@@ -72,15 +71,14 @@ for the completed path that led into `0.1.0`.
 See [docs/INFRASTRUCTURE_CHECKLIST.md](/Users/mykyta/Documents/projects/dream-app/docs/INFRASTRUCTURE_CHECKLIST.md) for step-by-step rollout.
 Secrets/access requirements are listed in [docs/GITHUB_SECRETS.md](/Users/mykyta/Documents/projects/dream-app/docs/GITHUB_SECRETS.md).
 
-## Cloud Setup For 0.4.0
+## Cloud Baseline After 0.4.0
 
-`0.4.0` will build on the `0.3.x` cloud backup flow
-without adding compile-time app
-secrets.
+`0.4.0` established the production-ready backup baseline without adding
+compile-time app secrets.
 
 1. On the first device, turn on backup in `Settings` -> `General` -> `Cloud backup`.
 2. Save that backup under an email/password account when you want multi-device sync.
 3. On another device, open the same backup with the same email/password.
 4. Use `Sync now` to upload or pull dream changes.
 5. Keep the Supabase runtime config flow as a developer-only setup path in debug builds.
-6. Treat `0.4.0` as the production-hardening release for cloud backup and multi-device sync.
+6. Treat `0.4.0` as the stable cloud baseline while `0.5.0` shifts back to user-facing product value.

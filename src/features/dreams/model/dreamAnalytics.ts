@@ -1,6 +1,8 @@
 import { Dream, Mood, PreSleepEmotion, WakeEmotion } from './dream';
 
-export function getDreamDate(dream: Dream) {
+type DreamDateLike = Pick<Dream, 'createdAt' | 'sleepDate'>;
+
+export function getDreamDate(dream: DreamDateLike) {
   const value = dream.sleepDate ?? new Date(dream.createdAt).toISOString().slice(0, 10);
   return new Date(`${value}T00:00:00`);
 }
@@ -9,7 +11,7 @@ export function countDreamWords(text?: string) {
   return text?.trim() ? text.trim().split(/\s+/).length : 0;
 }
 
-export function getCurrentStreak(dreams: Dream[]) {
+export function getCurrentStreak(dreams: DreamDateLike[]) {
   const uniqueDays = Array.from(
     new Set(dreams.map(dream => getDreamDate(dream).toISOString().slice(0, 10))),
   ).sort((a, b) => b.localeCompare(a));
@@ -46,7 +48,7 @@ export function getCurrentStreak(dreams: Dream[]) {
   return streak;
 }
 
-export function getEntriesLastSevenDays(dreams: Dream[]) {
+export function getEntriesLastSevenDays(dreams: DreamDateLike[]) {
   const cutoff = new Date();
   cutoff.setHours(0, 0, 0, 0);
   cutoff.setDate(cutoff.getDate() - 6);

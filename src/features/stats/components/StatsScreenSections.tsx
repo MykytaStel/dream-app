@@ -13,6 +13,7 @@ import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
 import type { DreamCopy } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
+import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 import {
   type DreamAchievementId,
   type DreamAchievementProgress,
@@ -113,6 +114,8 @@ export function StatsHeroSection({
   rangeOptions,
   selectedRangeLabel,
   topSignal,
+  memoryNudge,
+  onOpenMemoryNudge,
   coverageGap,
 }: {
   copy: StatsCopy;
@@ -125,8 +128,19 @@ export function StatsHeroSection({
   rangeOptions: ReadonlyArray<{ key: string; label: string }>;
   selectedRangeLabel: string;
   topSignal: { label: string; hint: string; onPress?: () => void } | null;
+  memoryNudge: {
+    dreamId: string;
+    dreamTitle: string;
+    reason: string;
+    badgeLabel: string;
+    actionLabel: string;
+    focusSection: DreamDetailFocusSection;
+    icon: string;
+  } | null;
+  onOpenMemoryNudge: (dreamId: string, focusSection: DreamDetailFocusSection) => void;
   coverageGap: { label: string; value: number } | null;
 }) {
+  const t = useTheme<Theme>();
   return (
     <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.heroCard}>
@@ -200,6 +214,34 @@ export function StatsHeroSection({
                 </Text>
               </Pressable>
 
+              {memoryNudge ? (
+                <Pressable
+                  onPress={() => onOpenMemoryNudge(memoryNudge.dreamId, memoryNudge.focusSection)}
+                  style={({ pressed }) => [
+                    styles.memoryNudgeCard,
+                    pressed ? styles.insightCardPressed : null,
+                  ]}
+                >
+                  <View style={styles.memoryNudgeHeader}>
+                    <Text style={styles.storyLabel}>{copy.memoryNudgeLabel}</Text>
+                    <View style={styles.memoryNudgeBadge}>
+                      <Ionicons name={memoryNudge.icon} size={12} color={t.colors.accent} />
+                      <Text style={styles.memoryNudgeBadgeText}>{memoryNudge.badgeLabel}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.storyValue} numberOfLines={2}>
+                    {memoryNudge.dreamTitle}
+                  </Text>
+                  <Text style={styles.storyHint} numberOfLines={3}>
+                    {memoryNudge.reason}
+                  </Text>
+                  <View style={styles.memoryNudgeActionRow}>
+                    <Text style={styles.memoryNudgeActionText}>{memoryNudge.actionLabel}</Text>
+                    <Ionicons name="arrow-forward-outline" size={14} color={t.colors.accent} />
+                  </View>
+                </Pressable>
+              ) : null}
+
               <Text style={styles.overviewNextStepHint}>
                 {`${copy.overviewNextStepLabel}: ${
                   coverageGap?.value ? coverageGap.label : copy.overviewNextStepEmpty
@@ -246,6 +288,34 @@ export function StatsHeroSection({
                   </Text>
                 </View>
               </View>
+
+              {memoryNudge ? (
+                <Pressable
+                  onPress={() => onOpenMemoryNudge(memoryNudge.dreamId, memoryNudge.focusSection)}
+                  style={({ pressed }) => [
+                    styles.memoryNudgeCard,
+                    pressed ? styles.insightCardPressed : null,
+                  ]}
+                >
+                  <View style={styles.memoryNudgeHeader}>
+                    <Text style={styles.storyLabel}>{copy.memoryNudgeLabel}</Text>
+                    <View style={styles.memoryNudgeBadge}>
+                      <Ionicons name={memoryNudge.icon} size={12} color={t.colors.accent} />
+                      <Text style={styles.memoryNudgeBadgeText}>{memoryNudge.badgeLabel}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.storyValue} numberOfLines={2}>
+                    {memoryNudge.dreamTitle}
+                  </Text>
+                  <Text style={styles.storyHint} numberOfLines={3}>
+                    {memoryNudge.reason}
+                  </Text>
+                  <View style={styles.memoryNudgeActionRow}>
+                    <Text style={styles.memoryNudgeActionText}>{memoryNudge.actionLabel}</Text>
+                    <Ionicons name="arrow-forward-outline" size={14} color={t.colors.accent} />
+                  </View>
+                </Pressable>
+              ) : null}
             </View>
           </Animated.View>
         ) : null}
@@ -272,6 +342,8 @@ export function StatsOverviewSections({
   overallLastSevenDays,
   coverageItems,
   attentionItems,
+  workQueueItems,
+  onOpenWorkQueueItem,
 }: {
   copy: StatsCopy;
   styles: StatsStyles;
@@ -290,6 +362,16 @@ export function StatsOverviewSections({
   overallLastSevenDays: number;
   coverageItems: ReadonlyArray<{ label: string; value: number; total: number; hint: string }>;
   attentionItems: ReadonlyArray<{ label: string; value: number; hint: string }>;
+  workQueueItems: ReadonlyArray<{
+    dreamId: string;
+    dreamTitle: string;
+    reason: string;
+    badgeLabel: string;
+    actionLabel: string;
+    focusSection: DreamDetailFocusSection;
+    icon: string;
+  }>;
+  onOpenWorkQueueItem: (dreamId: string, focusSection: DreamDetailFocusSection) => void;
 }) {
   const t = useTheme<Theme>();
 
@@ -310,6 +392,42 @@ export function StatsOverviewSections({
 
       <Animated.View layout={statsLayoutTransition}>
         <Card style={styles.sectionCard}>
+          {workQueueItems.length ? (
+            <View style={styles.detailsSubsection}>
+              <SectionHeader
+                title={copy.workQueueTitle}
+                subtitle={copy.workQueueDescription}
+              />
+              <View style={styles.workQueueList}>
+                {workQueueItems.map(item => (
+                  <Pressable
+                    key={`${item.focusSection}:${item.dreamId}`}
+                    onPress={() => onOpenWorkQueueItem(item.dreamId, item.focusSection)}
+                    style={({ pressed }) => [
+                      styles.workQueueCard,
+                      pressed ? styles.insightCardPressed : null,
+                    ]}
+                  >
+                    <View style={styles.memoryNudgeHeader}>
+                      <Text style={styles.workQueueDreamTitle} numberOfLines={1}>
+                        {item.dreamTitle}
+                      </Text>
+                      <View style={styles.memoryNudgeBadge}>
+                        <Ionicons name={item.icon} size={12} color={t.colors.accent} />
+                        <Text style={styles.memoryNudgeBadgeText}>{item.badgeLabel}</Text>
+                      </View>
+                    </View>
+                    <Text style={styles.storyHint}>{item.reason}</Text>
+                    <View style={styles.memoryNudgeActionRow}>
+                      <Text style={styles.memoryNudgeActionText}>{item.actionLabel}</Text>
+                      <Ionicons name="arrow-forward-outline" size={14} color={t.colors.accent} />
+                    </View>
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
           <Pressable style={styles.detailsToggleRow} onPress={onToggleDetails}>
             <View style={styles.detailsToggleCopy}>
               <Text style={styles.detailsToggleTitle}>{copy.detailsTitle}</Text>
@@ -546,14 +664,24 @@ export function StatsThreadsSections({
             }))}
             selectedValue={selectedPatternGroup}
             onChange={onSelectPatternGroup}
+            minWidth={72}
           />
+
+          {activePatternGroup ? (
+            <View style={styles.patternSelectionSummary}>
+              <Text style={styles.patternSelectionLabel}>{activePatternGroup.label}</Text>
+              <Text style={styles.patternSelectionDescription}>
+                {activePatternGroup.description}
+              </Text>
+            </View>
+          ) : null}
 
           <View style={styles.patternGroupList}>
             {activePatternGroup ? (
               <PatternGroupCard
                 key={activePatternGroup.key}
-                title={activePatternGroup.label}
-                description={activePatternGroup.description}
+                title=""
+                description=""
                 items={activePatternGroup.values}
                 emptyLabel={activePatternGroup.empty}
                 leadLabel={copy.patternsTopLabel}

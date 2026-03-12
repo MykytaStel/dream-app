@@ -60,6 +60,50 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   })} · ${date.toLocaleDateString(localeKey, {
     weekday: 'short',
   })}`;
+  const compactMonthLabel = date.toLocaleDateString(localeKey, { month: 'short' });
+  const compactDayLabel = String(date.getDate());
+  const compactMeta = [...matchReasons.slice(0, 1), ...pills.slice(0, 2)].join(' • ');
+  const preview = formatArchivePreview(dream, copy);
+
+  if (isCompact) {
+    return (
+      <Pressable
+        onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: dream.id })}
+        style={({ pressed }) => [
+          styles.listRowPressable,
+          pressed ? styles.listRowPressed : null,
+        ]}
+      >
+        <Card style={[styles.listRowCard, styles.listRowCardCompact]}>
+          <View style={styles.compactDateBlock}>
+            <Text style={styles.compactDayLabel}>{compactDayLabel}</Text>
+            <Text style={styles.compactMonthLabel}>{compactMonthLabel}</Text>
+          </View>
+
+          <View style={styles.compactContent}>
+            <View style={styles.compactTitleRow}>
+              <Text style={styles.rowTitleCompact} numberOfLines={1}>
+                {dream.title || copy.untitled}
+              </Text>
+              <Ionicons name="chevron-forward" size={15} color={theme.colors.textDim} />
+            </View>
+
+            <Text style={styles.compactDateMeta}>{rowDateLabel}</Text>
+
+            <Text style={styles.rowPreviewCompact} numberOfLines={1}>
+              {preview}
+            </Text>
+
+            {compactMeta ? (
+              <Text style={styles.compactStatusText} numberOfLines={1}>
+                {compactMeta}
+              </Text>
+            ) : null}
+          </View>
+        </Card>
+      </Pressable>
+    );
+  }
 
   return (
     <Pressable
@@ -69,48 +113,34 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
         pressed ? styles.listRowPressed : null,
       ]}
     >
-      <Card style={[styles.listRowCard, isCompact ? styles.listRowCardCompact : null]}>
-        <View style={styles.rowTop}>
-          <View style={styles.rowCopy}>
-            <Text style={[styles.rowTitle, isCompact ? styles.rowTitleCompact : null]}>
-              {dream.title || copy.untitled}
-            </Text>
-            <View style={styles.rowMetaRow}>
-              <View style={styles.rowDateChip}>
-                <Text
-                  style={[
-                    styles.rowDateChipText,
-                    isCompact ? styles.rowDateChipTextCompact : null,
-                  ]}
-                >
-                  {rowDateLabel}
-                </Text>
-              </View>
+      <Card style={styles.listRowCard}>
+        <View style={styles.comfortableTop}>
+          <View style={styles.comfortableDateWrap}>
+            <View style={styles.rowDateChip}>
+              <Text style={styles.rowDateChipText}>{rowDateLabel}</Text>
             </View>
+            {matchReasons[0] ? (
+              <View style={styles.matchReasonPill}>
+                <Text style={styles.matchReasonPillText}>{matchReasons[0]}</Text>
+              </View>
+            ) : null}
           </View>
+
           <View style={styles.rowChevron}>
             <Ionicons name="chevron-forward" size={16} color={theme.colors.textDim} />
           </View>
         </View>
 
-        <View style={[styles.rowPreviewWrap, isCompact ? styles.rowPreviewWrapCompact : null]}>
-          <Text
-            style={[styles.rowPreview, isCompact ? styles.rowPreviewCompact : null]}
-            numberOfLines={isCompact ? 1 : 2}
-          >
-            {formatArchivePreview(dream, copy)}
+        <View style={styles.rowCopy}>
+          <Text style={styles.rowTitle} numberOfLines={2}>
+            {dream.title || copy.untitled}
           </Text>
-        </View>
-
-        {matchReasons.length ? (
-          <View style={styles.matchReasonsRow}>
-            {matchReasons.map(label => (
-              <View key={`${dream.id}-match-${label}`} style={styles.matchReasonPill}>
-                <Text style={styles.matchReasonPillText}>{label}</Text>
-              </View>
-            ))}
+          <View style={styles.rowPreviewPanel}>
+            <Text style={styles.rowPreview} numberOfLines={3}>
+              {preview}
+            </Text>
           </View>
-        ) : null}
+        </View>
 
         {pills.length ? (
           <View style={styles.pillsRow}>

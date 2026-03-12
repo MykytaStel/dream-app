@@ -21,7 +21,10 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { Dream, Mood } from '../../dreams/model/dream';
 import { getDreamDate } from '../../dreams/model/dreamAnalytics';
-import { listDreams } from '../../dreams/repository/dreamsRepository';
+import {
+  getDreamsMeta,
+  listDreams,
+} from '../../dreams/repository/dreamsRepository';
 import {
   getPatternDreamMatches,
   type PatternMatchSource,
@@ -183,11 +186,53 @@ export default function PatternDetailScreen() {
   const route =
     useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.PatternDetail>>();
   const { signal, kind } = route.params;
-  const [dreams, setDreams] = React.useState(() => listDreams());
+  const [dreams, setDreams] = React.useState<Dream[]>([]);
+  const [loading, setLoading] = React.useState(() => getDreamsMeta().totalCount > 0);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
-      setDreams(listDreams());
+      let cancelled = false;
+      setLoadError(null);
+      setLoading(getDreamsMeta().totalCount > 0);
+
+      const runHydration = () => {
+        try {
+          const nextDreams = listDreams();
+          React.startTransition(() => {
+            if (cancelled) {
+              return;
+            }
+            setDreams(nextDreams);
+            setLoading(false);
+          });
+        } catch (error) {
+          if (cancelled) {
+            return;
+          }
+          setLoading(false);
+          setLoadError(String(error));
+        }
+      };
+
+      const scheduler = globalThis as typeof globalThis & {
+        requestIdleCallback?: (callback: () => void) => number;
+        cancelIdleCallback?: (handle: number) => void;
+      };
+
+      if (typeof scheduler.requestIdleCallback === 'function') {
+        const idleHandle = scheduler.requestIdleCallback(runHydration);
+        return () => {
+          cancelled = true;
+          scheduler.cancelIdleCallback?.(idleHandle);
+        };
+      }
+
+      const timeoutId = setTimeout(runHydration, 0);
+      return () => {
+        cancelled = true;
+        clearTimeout(timeoutId);
+      };
     }, []),
   );
 
@@ -223,11 +268,25 @@ export default function PatternDetailScreen() {
 
       {!matches.length ? (
         <View style={styles.emptyWrap}>
-          <ScreenStateCard
-            variant="empty"
-            title={statsCopy.patternDetailEmptyTitle}
-            subtitle={statsCopy.patternDetailEmptyDescription}
-          />
+          {loading ? (
+            <ScreenStateCard
+              variant="loading"
+              title={dreamCopy.timelineLoadingTitle}
+              subtitle={dreamCopy.timelineLoadingDescription}
+            />
+          ) : loadError ? (
+            <ScreenStateCard
+              variant="error"
+              title={dreamCopy.timelineErrorTitle}
+              subtitle={dreamCopy.timelineErrorDescription}
+            />
+          ) : (
+            <ScreenStateCard
+              variant="empty"
+              title={statsCopy.patternDetailEmptyTitle}
+              subtitle={statsCopy.patternDetailEmptyDescription}
+            />
+          )}
         </View>
       ) : (
         <Text style={styles.sectionTitle}>{statsCopy.patternDetailMatchesTitle}</Text>

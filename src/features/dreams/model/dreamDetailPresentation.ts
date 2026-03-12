@@ -8,11 +8,16 @@ import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionS
 import type { Dream } from './dream';
 import { countDreamWords } from './dreamAnalytics';
 import { getRelatedSignalSummaries, type RelatedDream } from './relatedDreams';
+import {
+  getDreamResurfacingMatch,
+  type DreamResurfacingWindow,
+} from './resurfacingCue';
 
 export type DreamDetailCopy = ReturnType<typeof getDreamCopy>;
 export type DreamMoodLabels = ReturnType<typeof getDreamMoodLabels>;
 
 export type DreamDetailSectionsState = {
+  reflection: boolean;
   written: boolean;
   emotions: boolean;
   transcript: boolean;
@@ -28,6 +33,15 @@ export type DreamDetailGlanceCard = {
   icon: string;
   label: string;
   value: string;
+};
+
+export type DreamDetailReflectionPrompt = {
+  key: string;
+  icon: string;
+  title: string;
+  body: string;
+  actionLabel: string;
+  actionKind: 'edit' | 'related' | 'analysis' | 'transcript';
 };
 
 export type DreamDetailViewModel = {
@@ -52,6 +66,8 @@ export type DreamDetailViewModel = {
   relatedMetaLabel?: string;
   analysisMetaLabel?: string;
   stateMetaLabel?: string;
+  followUpPrompt: DreamDetailReflectionPrompt | null;
+  reflectionPrompts: DreamDetailReflectionPrompt[];
   glanceCards: DreamDetailGlanceCard[];
 };
 
@@ -115,6 +131,7 @@ export function hasEmotionSnapshot(dream: Dream) {
 
 export function createEmptyDetailSectionsState(): DreamDetailSectionsState {
   return {
+    reflection: false,
     written: false,
     emotions: false,
     transcript: false,
@@ -138,6 +155,7 @@ export function createDefaultExpandedSections(dream: Dream): DreamDetailSections
   );
 
   return {
+    reflection: true,
     written: true,
     emotions: false,
     transcript: hasTranscriptSurface && hasTranscriptContent && !hasRawText,
@@ -152,11 +170,19 @@ export function createDefaultExpandedSections(dream: Dream): DreamDetailSections
 export function getHeroPreview(dream: Dream, copy: DreamDetailCopy) {
   const text = dream.text?.trim();
   if (text) {
+    if (text.length < 18 || !/\s/.test(text)) {
+      return null;
+    }
+
     return text.length > 160 ? `${text.slice(0, 157)}...` : text;
   }
 
   const transcript = dream.transcript?.trim();
   if (transcript) {
+    if (transcript.length < 18 || !/\s/.test(transcript)) {
+      return null;
+    }
+
     const visible = transcript.length > 136 ? `${transcript.slice(0, 133)}...` : transcript;
     return `${copy.transcriptPreviewPrefix}: ${visible}`;
   }
@@ -233,7 +259,7 @@ export function getRelatedMatchesLabel(count: number, copy: DreamDetailCopy) {
     return copy.detailRelatedSummaryEmpty;
   }
 
-  return String(count);
+  return count === 1 ? '1' : String(count);
 }
 
 export function countSleepSignals(dream: Dream) {
@@ -289,6 +315,205 @@ export function formatTranscriptionProgress(
   return `${baseLabel} ${progress.progress}%`;
 }
 
+function truncateReflectionSummary(summary: string) {
+  const normalized = summary.trim().replace(/\s+/g, ' ');
+  if (normalized.length <= 110) {
+    return normalized;
+  }
+
+  return `${normalized.slice(0, 107)}...`;
+}
+
+function getDetailResurfacingWindowLabel(
+  window: DreamResurfacingWindow,
+  copy: DreamDetailCopy,
+) {
+  switch (window) {
+    case 'week':
+      return copy.homeSpotlightRevisitTimeWeek;
+    case 'month':
+      return copy.homeSpotlightRevisitTimeMonth;
+    case 'quarter':
+      return copy.homeSpotlightRevisitTimeQuarter;
+    case 'half-year':
+      return copy.homeSpotlightRevisitTimeHalfYear;
+    case 'year':
+      return copy.homeSpotlightRevisitTimeYear;
+  }
+}
+
+export function getDreamDetailFollowUpPrompt({
+  dream,
+  copy,
+  now = Date.now(),
+}: {
+  dream: Dream;
+  copy: DreamDetailCopy;
+  now?: number;
+}): DreamDetailReflectionPrompt | null {
+  const wordCount = countDreamWords(dream.text);
+  const hasTranscript = Boolean(dream.transcript?.trim());
+  const transcriptPending = dream.transcriptStatus === 'processing';
+
+  if (dream.audioUri && !hasTranscript && !transcriptPending) {
+    return {
+      key: 'follow-up-transcript',
+      icon: 'document-text-outline',
+      title: copy.postSaveFollowUpTranscriptTitle,
+      body: copy.postSaveFollowUpTranscriptDescription,
+      actionLabel:
+        dream.transcriptStatus === 'error'
+          ? copy.detailTranscribeRetry
+          : copy.detailTranscribeAudio,
+      actionKind: 'transcript',
+    };
+  }
+
+  if (dream.audioUri && hasTranscript && dream.transcriptSource !== 'edited') {
+    return {
+      key: 'follow-up-transcript-edit',
+      icon: 'create-outline',
+      title: copy.detailReflectionTranscriptTitle,
+      body: copy.detailReflectionTranscriptBody,
+      actionLabel: copy.detailGeneratedTranscriptEdit,
+      actionKind: 'transcript',
+    };
+  }
+
+  if (!hasTranscript && wordCount > 0 && wordCount < 40) {
+    return {
+      key: 'follow-up-refine',
+      icon: 'create-outline',
+      title: copy.postSaveFollowUpRefineTitle,
+      body: copy.postSaveFollowUpRefineDescription,
+      actionLabel: copy.postSaveFollowUpRefineAction,
+      actionKind: 'edit',
+    };
+  }
+
+  const resurfacingMatch = getDreamResurfacingMatch(dream, now);
+  if (resurfacingMatch && (dream.text?.trim() || dream.transcript?.trim())) {
+    return {
+      key: 'follow-up-resurfacing',
+      icon: 'time-outline',
+      title: copy.detailReflectionResurfaceTitle,
+      body: `${copy.detailReflectionResurfacePrefix}${getDetailResurfacingWindowLabel(
+        resurfacingMatch.window,
+        copy,
+      )}${copy.detailReflectionResurfaceSuffix}`,
+      actionLabel: copy.detailReflectionActionEdit,
+      actionKind: 'edit',
+    };
+  }
+
+  return null;
+}
+
+export function getDreamDetailReflectionPrompts({
+  dream,
+  copy,
+  moodLabel,
+  strongestSignal,
+  relatedDreams,
+  includeCaptureFallback = true,
+}: {
+  dream: Dream;
+  copy: DreamDetailCopy;
+  moodLabel?: string;
+  strongestSignal: string | null;
+  relatedDreams: RelatedDream[];
+  includeCaptureFallback?: boolean;
+}): DreamDetailReflectionPrompt[] {
+  const prompts: DreamDetailReflectionPrompt[] = [];
+
+  if (strongestSignal) {
+    prompts.push({
+      key: 'signal',
+      icon: 'flash-outline',
+      title: copy.detailReflectionSignalTitle,
+      body: `${copy.detailReflectionSignalPrefix}${strongestSignal}${copy.detailReflectionSignalSuffix}`,
+      actionLabel: copy.detailReflectionActionEdit,
+      actionKind: 'edit',
+    });
+  }
+
+  if (moodLabel) {
+    prompts.push({
+      key: 'emotion',
+      icon: 'heart-outline',
+      title: copy.detailReflectionEmotionTitle,
+      body: `${copy.detailReflectionEmotionWithMoodPrefix}${moodLabel}${copy.detailReflectionEmotionWithMoodSuffix}`,
+      actionLabel: copy.detailReflectionActionEdit,
+      actionKind: 'edit',
+    });
+  } else if (dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length) {
+    prompts.push({
+      key: 'emotion',
+      icon: 'heart-outline',
+      title: copy.detailReflectionEmotionTitle,
+      body: copy.detailReflectionEmotionBody,
+      actionLabel: copy.detailReflectionActionEdit,
+      actionKind: 'edit',
+    });
+  }
+
+  if (relatedDreams.length) {
+    prompts.push({
+      key: 'thread',
+      icon: 'git-compare-outline',
+      title: copy.detailReflectionThreadTitle,
+      body: `${copy.detailReflectionThreadPrefix}${relatedDreams.length} ${
+        relatedDreams.length === 1
+          ? copy.detailRelatedMatchSingular
+          : copy.detailRelatedMatchPlural
+      }${copy.detailReflectionThreadSuffix}`,
+      actionLabel: copy.detailReflectionActionRelated,
+      actionKind: 'related',
+    });
+  }
+
+  if (dream.analysis?.summary?.trim()) {
+    prompts.push({
+      key: 'analysis',
+      icon: 'sparkles-outline',
+      title: copy.detailReflectionAnalysisTitle,
+      body: `${copy.detailReflectionAnalysisPrefix}${truncateReflectionSummary(
+        dream.analysis.summary,
+      )}${copy.detailReflectionAnalysisSuffix}`,
+      actionLabel: copy.detailReflectionActionAnalysis,
+      actionKind: 'analysis',
+    });
+  }
+
+  if (
+    includeCaptureFallback &&
+    prompts.length < 3 &&
+    (dream.audioUri || countDreamWords(dream.text) < 40)
+  ) {
+    prompts.push({
+      key: 'capture',
+      icon: 'create-outline',
+      title: copy.detailReflectionCaptureTitle,
+      body: copy.detailReflectionCaptureBody,
+      actionLabel: copy.detailReflectionActionEdit,
+      actionKind: 'edit',
+    });
+  }
+
+  if (!prompts.length) {
+    prompts.push({
+      key: 'fallback',
+      icon: 'bookmark-outline',
+      title: copy.detailReflectionFallbackTitle,
+      body: copy.detailReflectionFallbackBody,
+      actionLabel: copy.detailReflectionActionEdit,
+      actionKind: 'edit',
+    });
+  }
+
+  return prompts.slice(0, 3);
+}
+
 export function getDreamDetailViewModel({
   dream,
   copy,
@@ -296,6 +521,7 @@ export function getDreamDetailViewModel({
   analysisSettings,
   relatedDreams,
   isTranscribingAudio,
+  now,
 }: {
   dream: Dream;
   copy: DreamDetailCopy;
@@ -303,6 +529,7 @@ export function getDreamDetailViewModel({
   analysisSettings: DreamAnalysisSettings;
   relatedDreams: RelatedDream[];
   isTranscribingAudio: boolean;
+  now?: number;
 }): DreamDetailViewModel {
   const archived = typeof dream.archivedAt === 'number';
   const starred = typeof dream.starredAt === 'number';
@@ -360,6 +587,19 @@ export function getDreamDetailViewModel({
             ? copy.detailAnalysisSummaryPlanned
             : undefined;
   const stateMetaLabel = stateSignalsCount ? String(stateSignalsCount) : undefined;
+  const followUpPrompt = getDreamDetailFollowUpPrompt({
+    dream,
+    copy,
+    now,
+  });
+  const reflectionPrompts = getDreamDetailReflectionPrompts({
+    dream,
+    copy,
+    moodLabel,
+    strongestSignal,
+    relatedDreams,
+    includeCaptureFallback: followUpPrompt?.key !== 'follow-up-refine',
+  });
 
   const glanceCards: DreamDetailGlanceCard[] = [
     {
@@ -414,6 +654,8 @@ export function getDreamDetailViewModel({
     relatedMetaLabel,
     analysisMetaLabel,
     stateMetaLabel,
+    followUpPrompt,
+    reflectionPrompts,
     glanceCards,
   };
 }

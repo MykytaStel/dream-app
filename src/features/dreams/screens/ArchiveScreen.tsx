@@ -9,12 +9,16 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { ScreenStateCard } from '../components/ScreenStateCard';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
+import { Card } from '../../../components/ui/Card';
+import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { getDreamCopy, getDreamMoodLabels } from '../../../constants/copy/dreams';
 import { type RootStackParamList } from '../../../app/navigation/routes';
+import { openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
+import { isWakeCaptureWindow } from '../model/homeOverview';
 import { createArchiveScreenStyles } from './ArchiveScreen.styles';
 import { useArchiveScreenData } from '../hooks/useArchiveScreenData';
 import { useArchiveBrowseState } from '../hooks/useArchiveBrowseState';
@@ -36,6 +40,7 @@ export default function ArchiveScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const listRef = React.useRef<SectionList<Dream, ArchiveSection>>(null);
+  const showWakeCapturePrompt = isWakeCaptureWindow();
 
   const scrollArchiveToTop = React.useCallback(() => {
     requestAnimationFrame(() => {
@@ -46,6 +51,17 @@ export default function ArchiveScreen() {
       list?.scrollToOffset?.({ animated: true, offset: 0 });
     });
   }, []);
+  const openEmptyStateCapture = React.useCallback(() => {
+    if (showWakeCapturePrompt) {
+      openWakeEntry({ source: 'manual' });
+      return;
+    }
+
+    openNewDreamTab({
+      entryMode: 'default',
+      launchKey: Date.now(),
+    });
+  }, [showWakeCapturePrompt]);
 
   const data = useArchiveScreenData();
   const browse = useArchiveBrowseState({
@@ -116,9 +132,13 @@ export default function ArchiveScreen() {
               hasHardReset={browse.hasHardReset}
               onReset={browse.resetArchiveView}
               visibleEntriesLabel={browse.visibleEntriesLabel}
+              revisitCue={browse.revisitCue}
               browseModes={browse.browseModes}
               viewMode={browse.viewMode}
               onChangeViewMode={browse.setViewMode}
+              onOpenRevisitDream={dreamId =>
+                navigation.navigate('DreamDetail', { dreamId })
+              }
             />
           </>
         ) : null}
@@ -136,16 +156,59 @@ export default function ArchiveScreen() {
         ) : null}
       </View>
     ),
-    [browse, copy, styles],
+    [browse, copy, navigation, styles],
   );
 
-  if (!data.dreams.length) {
+  if (data.loading && data.meta.totalCount > 0) {
+    return (
+      <ScreenContainer scroll={false}>
+        <Card style={styles.toolbarCard}>
+          <SkeletonBlock width="44%" height={24} />
+          <SkeletonBlock width="28%" height={14} />
+          <SkeletonBlock width="100%" height={44} />
+        </Card>
+        <Card style={styles.controlsCard}>
+          <SkeletonBlock width="100%" height={42} />
+          <View style={styles.controlsMetaRow}>
+            <SkeletonBlock width={72} height={28} />
+            <SkeletonBlock width={84} height={28} />
+            <SkeletonBlock width={68} height={28} />
+          </View>
+        </Card>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Card key={`archive-loading-${index}`} style={styles.controlsCard}>
+            <SkeletonBlock width="36%" height={16} />
+            <SkeletonBlock width="76%" height={12} />
+            <SkeletonBlock width="100%" height={76} />
+          </Card>
+        ))}
+      </ScreenContainer>
+    );
+  }
+
+  if (data.loadError) {
+    return (
+      <ScreenContainer scroll={false}>
+        <ScreenStateCard
+          variant="error"
+          title={copy.timelineErrorTitle}
+          subtitle={copy.timelineErrorDescription}
+          actionLabel={copy.actionRetry}
+          onAction={() => data.refreshArchive('initial')}
+        />
+      </ScreenContainer>
+    );
+  }
+
+  if (!data.meta.totalCount) {
     return (
       <ScreenContainer scroll={false}>
         <ScreenStateCard
           variant="empty"
           title={copy.archiveEmptyTitle}
           subtitle={copy.archiveEmptyDescription}
+          actionLabel={showWakeCapturePrompt ? copy.quickAddWakeAction : copy.createTitle}
+          onAction={openEmptyStateCapture}
         />
       </ScreenContainer>
     );

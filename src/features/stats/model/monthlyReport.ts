@@ -67,14 +67,12 @@ function parseMonthKey(value: string) {
   return { year, month };
 }
 
-export function getMonthlyReportMonths(dreams: Dream[], locale: string): MonthlyReportMonth[] {
-  const seen = new Set<string>();
-
-  dreams.forEach(dream => {
-    seen.add(toMonthKey(getDreamDate(dream)));
-  });
-
-  return Array.from(seen)
+export function getMonthlyReportMonthsFromKeys(
+  monthKeys: string[],
+  locale: string,
+): MonthlyReportMonth[] {
+  return monthKeys
+    .slice()
     .sort((a, b) => b.localeCompare(a))
     .map(key => {
       const parsed = parseMonthKey(key);
@@ -93,6 +91,16 @@ export function getMonthlyReportMonths(dreams: Dream[], locale: string): Monthly
       };
     })
     .filter((value): value is MonthlyReportMonth => value !== null);
+}
+
+export function getMonthlyReportMonths(dreams: Dream[], locale: string): MonthlyReportMonth[] {
+  const seen = new Set<string>();
+
+  dreams.forEach(dream => {
+    seen.add(toMonthKey(getDreamDate(dream)));
+  });
+
+  return getMonthlyReportMonthsFromKeys(Array.from(seen), locale);
 }
 
 export function getMonthlyReportData(

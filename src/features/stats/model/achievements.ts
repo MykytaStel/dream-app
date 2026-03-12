@@ -1,6 +1,11 @@
 import { Dream } from '../../dreams/model/dream';
 import { resolveDreamSleepDate } from '../../dreams/model/dreamRules';
 
+type DreamAchievementSource = Pick<Dream, 'createdAt' | 'sleepDate'> & {
+  audioUri?: string;
+  hasAudio?: boolean;
+};
+
 export type DreamAchievementId =
   | 'first-dream'
   | 'three-day-streak'
@@ -24,7 +29,7 @@ function toUtcDayValue(value: string) {
   return Date.parse(`${value}T00:00:00.000Z`);
 }
 
-export function getLongestRecordedStreak(dreams: Dream[]) {
+export function getLongestRecordedStreak(dreams: DreamAchievementSource[]) {
   const uniqueDays = Array.from(
     new Set(dreams.map(dream => resolveDreamSleepDate(dream.sleepDate, dream.createdAt))),
   ).sort((a, b) => a.localeCompare(b));
@@ -53,9 +58,13 @@ export function getLongestRecordedStreak(dreams: Dream[]) {
   return longest;
 }
 
-export function getDreamAchievements(dreams: Dream[]): DreamAchievementProgress[] {
+export function getDreamAchievements(
+  dreams: DreamAchievementSource[],
+): DreamAchievementProgress[] {
   const totalDreams = dreams.length;
-  const voiceDreams = dreams.filter(dream => Boolean(dream.audioUri?.trim())).length;
+  const voiceDreams = dreams.filter(
+    dream => dream.hasAudio || Boolean(dream.audioUri?.trim()),
+  ).length;
   const longestStreak = getLongestRecordedStreak(dreams);
 
   return [

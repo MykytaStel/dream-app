@@ -3,6 +3,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import {
+  type DreamDetailFocusSection,
   ROOT_ROUTE_NAMES,
   TAB_ROUTE_NAMES,
   type RootStackParamList,
@@ -48,7 +49,7 @@ export default function NewDreamScreen() {
     }
   }
 
-  function handleOpenDetail() {
+  function handleOpenDetail(focusSection?: DreamDetailFocusSection) {
     if (!savedDream) {
       closeSavedSheet();
       return;
@@ -58,6 +59,7 @@ export default function NewDreamScreen() {
     navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
       dreamId: savedDream.id,
       justSaved: true,
+      focusSection,
     });
   }
 

@@ -1,54 +1,38 @@
 import { StyleSheet } from 'react-native';
 import { createControlPill, createSoftTile } from '../../../theme/surfaces';
-import { fontFamilies } from '../../../theme/fonts';
 import { Theme } from '../../../theme/theme';
 
 export function createDreamDetailScreenStyles(theme: Theme) {
   return StyleSheet.create({
-    heroCard: {
-      gap: 8,
-      overflow: 'hidden',
-      position: 'relative',
-      padding: 14,
-      backgroundColor: theme.colors.surface,
-    },
-    heroGlowLarge: {
-      position: 'absolute',
-      width: 200,
-      height: 200,
-      borderRadius: 999,
-      backgroundColor: theme.colors.auroraMid,
-      opacity: 0.06,
-      top: -82,
-      right: -58,
-    },
-    heroGlowSmall: {
-      position: 'absolute',
-      width: 140,
-      height: 140,
-      borderRadius: 999,
-      backgroundColor: theme.colors.primary,
-      opacity: 0.06,
-      bottom: -52,
-      left: -34,
+    heroShell: {
+      gap: 12,
+      paddingHorizontal: 4,
+      paddingTop: 2,
+      paddingBottom: 6,
     },
     heroTopBar: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      gap: 8,
-    },
-    heroTopBarSpacer: {
-      minWidth: 40,
-      minHeight: 24,
-    },
-    heroQuickActions: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      flexWrap: 'wrap',
-      gap: 8,
+      gap: 12,
     },
     backButton: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 10,
+        paddingHorizontal: 10,
+      }),
+      width: 44,
+      height: 44,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    heroIconActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    heroIconButton: {
       ...createControlPill(theme, {
         tone: 'background',
         paddingVertical: 9,
@@ -59,151 +43,86 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       alignItems: 'center',
       justifyContent: 'center',
     },
-    backLabel: {
-      color: theme.colors.text,
-      fontWeight: '700',
-      fontSize: 16,
-      lineHeight: 18,
+    heroIconButtonActive: {
+      borderColor: `${theme.colors.accent}44`,
+      backgroundColor: theme.colors.surfaceAlt,
     },
-    statusChip: {
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 4,
-        paddingHorizontal: 8,
-      }),
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
+    heroIconButtonDanger: {
+      borderColor: `${theme.colors.danger}44`,
     },
-    statusChipLabel: {
-      color: theme.colors.textDim,
-      fontSize: 9,
-      fontWeight: '700',
-    },
-    statusDot: {
-      width: 8,
-      height: 8,
-      borderRadius: 999,
+    heroIconButtonPressed: {
+      opacity: 0.92,
     },
     heroHeader: {
-      gap: 5,
+      gap: 4,
     },
-    heroActionPill: {
+    heroTitle: {
+      color: theme.colors.text,
+      fontSize: 28,
+      lineHeight: 34,
+      fontWeight: '700',
+      includeFontPadding: false,
+    },
+    heroSubtitle: {
+      color: theme.colors.textDim,
+      fontSize: 15,
+      lineHeight: 21,
+    },
+    heroMetaRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      alignItems: 'center',
+      gap: 10,
+      minHeight: 22,
+    },
+    statusChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    heroMoodPill: {
       ...createControlPill(theme, {
         tone: 'background',
-        paddingVertical: 7,
+        paddingVertical: 5,
         paddingHorizontal: 10,
       }),
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
     },
-    heroActionPillActive: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
-    },
-    heroActionPillPressed: {
-      opacity: 0.95,
-      transform: [{ scale: 0.985 }],
-    },
-    heroActionLabel: {
-      color: theme.colors.text,
-      fontSize: 11,
-      fontWeight: '700',
-      lineHeight: 15,
-    },
-    heroActionLabelActive: {
-      color: theme.colors.background,
-    },
-    heroTitle: {
-      fontFamily: fontFamilies.display,
-      fontSize: 26,
-      lineHeight: 31,
-      fontWeight: '700',
-      includeFontPadding: false,
-    },
-    heroSubtitle: {
+    statusChipLabel: {
       color: theme.colors.textDim,
-      fontSize: 12,
-      lineHeight: 17,
-    },
-    heroPreviewText: {
-      color: theme.colors.text,
-      fontSize: 12,
+      fontSize: 13,
       lineHeight: 18,
-      maxWidth: '92%',
+      fontWeight: '600',
     },
-    heroFooter: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      paddingTop: 2,
+    statusDot: {
+      width: 8,
+      height: 8,
+      borderRadius: 999,
     },
-    heroDeleteAction: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-      paddingVertical: 4,
-      paddingHorizontal: 2,
+    heroMetaText: {
+      color: theme.colors.textDim,
+      fontSize: 13,
+      lineHeight: 18,
     },
-    heroDeleteActionPressed: {
-      opacity: 0.72,
-    },
-    heroDeleteActionLabel: {
-      color: theme.colors.danger,
-      fontSize: 11,
-      fontWeight: '700',
-      lineHeight: 15,
-    },
-    summaryCard: {
-      padding: 12,
-      gap: 8,
-      backgroundColor: theme.colors.surfaceElevated,
-    },
-    glanceGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 6,
-    },
-    glanceCard: {
-      ...createSoftTile(theme, {
-        tone: 'surface',
-        radius: 14,
-        paddingVertical: 8,
+    heroMetaChip: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 4,
         paddingHorizontal: 9,
       }),
-      flex: 1,
-      minWidth: 124,
-      gap: 5,
     },
-    glanceHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    glanceIconShell: {
-      width: 20,
-      height: 20,
-      borderRadius: 999,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.surfaceAlt,
-    },
-    glanceLabel: {
+    heroMetaChipLabel: {
       color: theme.colors.textDim,
-      fontSize: 9,
-      textTransform: 'uppercase',
-      letterSpacing: 0.6,
-      fontWeight: '700',
-    },
-    glanceValue: {
-      fontWeight: '700',
-      fontSize: 13,
+      fontSize: 12,
       lineHeight: 17,
+      fontWeight: '600',
     },
     savedCard: {
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      gap: 6,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      gap: 8,
       borderColor: theme.colors.accent,
       backgroundColor: theme.colors.surface,
     },
@@ -227,7 +146,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       }),
       width: 28,
       height: 28,
-      borderColor: `${theme.colors.accent}44`,
+      borderColor: `${theme.colors.accent}33`,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -275,7 +194,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       color: theme.colors.textDim,
       fontSize: 9,
       textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      letterSpacing: 0.4,
     },
     savedMetaValue: {
       fontWeight: '700',
@@ -287,159 +206,256 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 16,
     },
-    sectionCard: {
+    detailSheet: {
+      padding: 0,
+      gap: 0,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.surfaceElevated,
+      borderColor: `${theme.colors.border}CC`,
+      shadowOpacity: 0.04,
+    },
+    sheetSection: {
+      paddingHorizontal: 16,
+      paddingVertical: 16,
       gap: 12,
     },
-    sectionTitle: {
-      fontWeight: '700',
-      fontSize: 16,
-      lineHeight: 21,
+    sheetDivider: {
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: `${theme.colors.border}88`,
+      marginHorizontal: 16,
     },
-    subsectionLabel: {
+    sheetHeading: {
+      color: theme.colors.text,
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: '700',
+    },
+    glanceGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+    },
+    glanceCell: {
+      minWidth: 120,
+      flexBasis: '47%',
+      flexGrow: 1,
+      gap: 4,
+      paddingVertical: 8,
+      paddingHorizontal: 10,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surface,
+    },
+    glanceLabel: {
       color: theme.colors.textDim,
       fontSize: 11,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      letterSpacing: 0.6,
+      lineHeight: 16,
     },
-    bodyText: {
+    glanceValue: {
       color: theme.colors.text,
-      lineHeight: 20,
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: '700',
     },
-    mutedText: {
+    featuredPanel: {
+      gap: 10,
+      paddingVertical: 14,
+      paddingHorizontal: 14,
+      borderRadius: 18,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: `${theme.colors.border}AA`,
+    },
+    revisitPanel: {
+      gap: 10,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: `${theme.colors.border}66`,
+    },
+    featuredEyebrow: {
       color: theme.colors.textDim,
+      fontSize: 12,
       lineHeight: 17,
+      fontWeight: '700',
     },
-    statusText: {
-      lineHeight: 20,
+    featuredTitle: {
+      color: theme.colors.text,
+      fontSize: 20,
+      lineHeight: 26,
+      fontWeight: '700',
+    },
+    featuredBody: {
+      color: theme.colors.text,
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    featuredMutedBody: {
       color: theme.colors.textDim,
+      fontSize: 16,
+      lineHeight: 24,
+    },
+    featuredAction: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+      }),
+      alignSelf: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    featuredActionPressed: {
+      opacity: 0.94,
+    },
+    featuredActionText: {
+      color: theme.colors.text,
+      fontSize: 13,
+      lineHeight: 18,
+      fontWeight: '700',
+    },
+    utilityRows: {
+      gap: 8,
+      paddingVertical: 2,
+    },
+    contextFactsCard: {
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: `${theme.colors.border}88`,
+    },
+    supportBlock: {
+      gap: 8,
+    },
+    settingsNotice: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: `${theme.colors.border}88`,
+    },
+    settingsNoticePressed: {
+      opacity: 0.94,
+    },
+    settingsNoticeCopy: {
+      flex: 1,
+      gap: 3,
+    },
+    settingsNoticeTitle: {
+      color: theme.colors.text,
+      fontSize: 14,
+      lineHeight: 20,
+      fontWeight: '700',
+    },
+    settingsNoticeBody: {
+      color: theme.colors.textDim,
+      fontSize: 13,
+      lineHeight: 19,
+    },
+    supportHeading: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+      fontWeight: '700',
+    },
+    supportText: {
+      color: theme.colors.textDim,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    contextNoteCard: {
+      gap: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderRadius: 16,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: `${theme.colors.accent}22`,
+    },
+    contextNoteText: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 22,
     },
     statusErrorText: {
-      lineHeight: 20,
       color: theme.colors.danger,
+      fontSize: 14,
+      lineHeight: 21,
+    },
+    actionGroup: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
     },
     tagsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 6,
-    },
-    contextRows: {
       gap: 8,
     },
     relatedList: {
-      gap: 10,
+      gap: 8,
     },
-    relatedCarousel: {
-      marginHorizontal: -4,
-    },
-    relatedCarouselContent: {
-      paddingHorizontal: 4,
-      gap: 7,
-    },
-    relatedCard: {
-      gap: 7,
-      ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 14,
-        paddingVertical: 9,
-        paddingHorizontal: 9,
-      }),
-      width: 198,
-    },
-    relatedCardPressed: {
-      opacity: 0.96,
-      transform: [{ scale: 0.994 }],
-    },
-    relatedHeader: {
+    relatedRow: {
       flexDirection: 'row',
+      alignItems: 'center',
       justifyContent: 'space-between',
-      alignItems: 'flex-start',
       gap: 12,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      borderRadius: 14,
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: `${theme.colors.border}88`,
+    },
+    relatedRowPressed: {
+      opacity: 0.95,
     },
     relatedCopy: {
       flex: 1,
       gap: 3,
     },
     relatedTitle: {
+      color: theme.colors.text,
+      fontSize: 15,
+      lineHeight: 21,
       fontWeight: '700',
     },
     relatedMeta: {
       color: theme.colors.textDim,
-      fontSize: 11,
-    },
-    relatedSharedLabel: {
-      color: theme.colors.textDim,
-      fontSize: 11,
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    sectionMutedActionRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 6,
-    },
-    audioCard: {
-      gap: 5,
-      ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 14,
-        paddingVertical: 9,
-        paddingHorizontal: 9,
-      }),
-    },
-    audioPath: {
-      color: theme.colors.textDim,
       fontSize: 13,
-    },
-    progressBadge: {
-      alignSelf: 'flex-start',
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 9,
-      }),
-    },
-    progressBadgeLabel: {
-      color: theme.colors.textDim,
-      fontSize: 11,
-      fontWeight: '600',
-    },
-    transcriptMetaCard: {
-      gap: 7,
-      ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 14,
-        paddingVertical: 9,
-        paddingHorizontal: 9,
-      }),
-    },
-    analysisStateCard: {
-      gap: 5,
-      ...createSoftTile(theme, {
-        tone: 'alt',
-        radius: 14,
-        paddingVertical: 9,
-        paddingHorizontal: 9,
-      }),
-    },
-    analysisStateLabel: {
-      color: theme.colors.textDim,
-      fontSize: 10,
-      textTransform: 'uppercase',
-      letterSpacing: 0.6,
-    },
-    analysisStateText: {
       lineHeight: 18,
-      color: theme.colors.text,
-    },
-    analysisActionsRow: {
-      gap: 6,
     },
     transcriptEditorInput: {
       minHeight: 150,
     },
-    transcriptActions: {
-      gap: 6,
+    supportingPromptList: {
+      gap: 10,
+    },
+    supportingPromptRow: {
+      gap: 4,
+      paddingTop: 10,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: `${theme.colors.border}66`,
+    },
+    supportingPromptTitle: {
+      color: theme.colors.text,
+      fontSize: 13,
+      fontWeight: '700',
+      lineHeight: 18,
+    },
+    supportingPromptBody: {
+      color: theme.colors.textDim,
+      fontSize: 14,
+      lineHeight: 20,
     },
   });
 }

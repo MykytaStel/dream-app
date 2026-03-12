@@ -10,9 +10,15 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import { getDreamCopy } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
 import { Theme } from '../../../theme/theme';
-import { listDreams } from '../../dreams/repository/dreamsRepository';
+import { ScreenStateCard } from '../../dreams/components/ScreenStateCard';
+import {
+  getDreamsMeta,
+  listDreamListItems,
+  type DreamListItem,
+} from '../../dreams/repository/dreamsRepository';
 import {
   getDreamAchievements,
   getDreamAchievementSummary,
@@ -55,22 +61,57 @@ function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof g
 export default function ProgressScreen() {
   const t = useTheme<Theme>();
   const { locale } = useI18n();
+  const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.Progress>>();
   const styles = createProgressScreenStyles(t);
-  const [dreams, setDreams] = React.useState(() => listDreams());
+  const [dreams, setDreams] = React.useState<DreamListItem[]>(() => listDreamListItems());
+  const [loading, setLoading] = React.useState(() => getDreamsMeta().totalCount > 0);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
       const startedAt = Date.now();
-      const nextDreams = listDreams();
-      React.startTransition(() => {
-        setDreams(nextDreams);
-      });
-      trackLocalSurfaceLoad('progress_refresh', startedAt, nextDreams.length);
+      setLoadError(null);
+
+      try {
+        const nextDreams = listDreamListItems();
+        React.startTransition(() => {
+          setDreams(nextDreams);
+          setLoading(false);
+        });
+        trackLocalSurfaceLoad('progress_refresh', startedAt, nextDreams.length);
+      } catch (error) {
+        setLoading(false);
+        setLoadError(String(error));
+      }
     }, []),
   );
+
+  if (loading && !dreams.length) {
+    return (
+      <ScreenContainer scroll={false}>
+        <ScreenStateCard
+          variant="loading"
+          title={copy.progressLoadingTitle}
+          subtitle={copy.progressLoadingDescription}
+        />
+      </ScreenContainer>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <ScreenContainer scroll={false}>
+        <ScreenStateCard
+          variant="error"
+          title={dreamCopy.timelineErrorTitle}
+          subtitle={dreamCopy.timelineErrorDescription}
+        />
+      </ScreenContainer>
+    );
+  }
 
   const achievements = getDreamAchievements(dreams);
   const achievementSummary = getDreamAchievementSummary(achievements);

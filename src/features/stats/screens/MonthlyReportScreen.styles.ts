@@ -203,6 +203,45 @@ export function createMonthlyReportScreenStyles(theme: Theme) {
     sectionCard: {
       gap: 12,
     },
+    revisitCard: {
+      ...createSoftTile(theme, {
+        tone: 'alt',
+        radius: 16,
+        paddingVertical: 14,
+        paddingHorizontal: 14,
+      }),
+      gap: 10,
+      borderColor: theme.colors.accent,
+    },
+    revisitBadge: {
+      alignSelf: 'flex-start',
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 10,
+        paddingVertical: 6,
+      }),
+    },
+    revisitBadgeText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    revisitDreamTitle: {
+      fontFamily: fontFamilies.display,
+      fontSize: 24,
+      lineHeight: 30,
+      fontWeight: '700',
+      includeFontPadding: false,
+    },
+    revisitReason: {
+      color: theme.colors.textDim,
+      fontSize: 14,
+      lineHeight: 20,
+    },
+    revisitAction: {
+      alignSelf: 'flex-start',
+      minWidth: 160,
+    },
     metricLeadTile: {
       ...createSoftTile(theme, {
         tone: 'alt',

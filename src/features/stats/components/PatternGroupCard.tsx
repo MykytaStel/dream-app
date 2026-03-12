@@ -36,13 +36,16 @@ export function PatternGroupCard({
   const styles = React.useMemo(() => createStyles(theme), [theme]);
   const leadItem = items[0];
   const secondaryItems = items.slice(1, 5);
+  const showHeader = Boolean(title || description);
 
   return (
     <View style={styles.groupCard}>
-      <View style={styles.header}>
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
-      </View>
+      {showHeader ? (
+        <View style={styles.header}>
+          {title ? <Text style={styles.title}>{title}</Text> : null}
+          {description ? <Text style={styles.description}>{description}</Text> : null}
+        </View>
+      ) : null}
 
       {!leadItem ? (
         <Text style={styles.emptyText}>{emptyLabel}</Text>

@@ -12,6 +12,7 @@ import { type HomeSearchPreset } from '../../services/homeSearchPresetService';
 import {
   type HomeTimelineFilters,
 } from '../../model/homeTimeline';
+import { type HomeRevisitCue } from '../../model/homeOverview';
 import { type PatternDetailKind } from '../../../../app/navigation/routes';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 import { Theme } from '../../../../theme/theme';
@@ -33,6 +34,7 @@ type HomeListHeaderProps = {
   totalDreams: number;
   averageWords: number;
   isSearchPending: boolean;
+  isFilterMutationPending: boolean;
   hasSearchQuery: boolean;
   hasNonSearchRefinements: boolean;
   savedSearchPresets: HomeSearchPreset[];
@@ -41,10 +43,12 @@ type HomeListHeaderProps = {
   spotlightPattern: string;
   spotlightPatternKind: PatternDetailKind | null;
   spotlightCountLabel: string;
+  revisitCue: HomeRevisitCue | null;
   weeklyValue: string;
   weeklyHint: string;
   attentionValue: string;
   attentionHint: string;
+  onOpenRevisitDream: (dreamId: string) => void;
   onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
   onOpenFilterSheet: () => void;
   onClearFilters: () => void;
@@ -55,7 +59,7 @@ type HomeListHeaderProps = {
   updateTimelineFilters: (updater: (current: HomeTimelineFilters) => HomeTimelineFilters) => void;
 };
 
-export function HomeListHeader({
+export const HomeListHeader = React.memo(function HomeListHeader({
   copy,
   styles,
   timelineFilters,
@@ -70,6 +74,7 @@ export function HomeListHeader({
   totalDreams,
   averageWords,
   isSearchPending,
+  isFilterMutationPending,
   hasSearchQuery,
   hasNonSearchRefinements,
   savedSearchPresets,
@@ -78,10 +83,12 @@ export function HomeListHeader({
   spotlightPattern,
   spotlightPatternKind,
   spotlightCountLabel,
+  revisitCue,
   weeklyValue,
   weeklyHint,
   attentionValue,
   attentionHint,
+  onOpenRevisitDream,
   onOpenPatternDetail,
   onOpenFilterSheet,
   onClearFilters,
@@ -94,6 +101,13 @@ export function HomeListHeader({
   const t = useTheme<Theme>();
   const [isSpotlightExpanded, setIsSpotlightExpanded] = React.useState(false);
   const [isSearchDetailsExpanded, setIsSearchDetailsExpanded] = React.useState(false);
+  const hasAttentionCue = attentionValue !== copy.homeSpotlightAttentionClear;
+  const showSpotlightCard = Boolean(spotlightPatternKind || revisitCue || hasAttentionCue);
+  const showLastViewedShortcut =
+    Boolean(lastViewedDreamTitle && onOpenLastDream) &&
+    !showSpotlightCard &&
+    !hasSearchQuery &&
+    !hasNonSearchRefinements;
   const orderedSearchPresets = React.useMemo(() => {
     if (!activeSearchPresetId) {
       return savedSearchPresets;
@@ -119,7 +133,7 @@ export function HomeListHeader({
 
   return (
     <View style={styles.listHeaderContent}>
-      {lastViewedDreamTitle && onOpenLastDream ? (
+      {showLastViewedShortcut ? (
         <Pressable
           onPress={onOpenLastDream}
           style={({ pressed }) => [
@@ -148,93 +162,126 @@ export function HomeListHeader({
         </Pressable>
       ) : null}
 
-      <Card style={styles.spotlightCard}>
-        <View style={styles.spotlightHeader}>
-          <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
-          <Pressable
-            style={({ pressed }) => [
-              styles.spotlightToggleButton,
-              pressed ? styles.spotlightToggleButtonPressed : null,
-            ]}
-            onPress={() => setIsSpotlightExpanded(current => !current)}
-          >
-            <Text style={styles.spotlightToggleButtonText}>
-              {isSpotlightExpanded
-                ? copy.homeSpotlightHideDetails
-                : copy.homeSpotlightShowDetails}
-            </Text>
-            <Ionicons
-              name={isSpotlightExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}
-              size={14}
-              color={t.colors.textDim}
-            />
-          </Pressable>
-        </View>
+      {showSpotlightCard ? (
+        <Card style={styles.spotlightCard}>
+          <View style={styles.spotlightHeader}>
+            <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
+            <Pressable
+              style={({ pressed }) => [
+                styles.spotlightToggleButton,
+                pressed ? styles.spotlightToggleButtonPressed : null,
+              ]}
+              onPress={() => setIsSpotlightExpanded(current => !current)}
+            >
+              <Text style={styles.spotlightToggleButtonText}>
+                {isSpotlightExpanded
+                  ? copy.homeSpotlightHideDetails
+                  : copy.homeSpotlightShowDetails}
+              </Text>
+              <Ionicons
+                name={isSpotlightExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}
+                size={14}
+                color={t.colors.textDim}
+              />
+            </Pressable>
+          </View>
 
-        <View style={styles.spotlightLeadRow}>
           {spotlightPatternKind ? (
+            <View style={styles.spotlightLeadRow}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.spotlightTile,
+                  styles.spotlightTileLead,
+                  styles.spotlightTileFeatured,
+                  pressed ? styles.spotlightTilePressed : null,
+                ]}
+                onPress={() => onOpenPatternDetail(spotlightPattern, spotlightPatternKind)}
+              >
+                <Text style={styles.spotlightLabel}>{copy.homeSpotlightPatternLabel}</Text>
+                <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
+                <Text style={styles.spotlightHint}>{spotlightCountLabel}</Text>
+              </Pressable>
+            </View>
+          ) : null}
+
+          {hasAttentionCue ? (
+            <View style={styles.spotlightMetaRow}>
+              <View style={styles.spotlightMetaChip}>
+                <Text style={styles.spotlightMetaLabel}>{copy.homeSpotlightAttentionLabel}</Text>
+                <Text style={styles.spotlightMetaValue}>{attentionValue}</Text>
+              </View>
+            </View>
+          ) : null}
+
+          {revisitCue ? (
             <Pressable
               style={({ pressed }) => [
                 styles.spotlightTile,
                 styles.spotlightTileLead,
-                styles.spotlightTileFeatured,
                 pressed ? styles.spotlightTilePressed : null,
               ]}
-              onPress={() => onOpenPatternDetail(spotlightPattern, spotlightPatternKind)}
+              onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
             >
-              <Text style={styles.spotlightLabel}>{copy.homeSpotlightPatternLabel}</Text>
-              <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
-              <Text style={styles.spotlightHint}>{spotlightCountLabel}</Text>
+              <View style={styles.spotlightCueHeader}>
+                <Text style={styles.spotlightLabel}>{copy.homeSpotlightRevisitLabel}</Text>
+                <View style={styles.spotlightCueBadge}>
+                  <Ionicons
+                    name={revisitCue.icon}
+                    size={12}
+                    color={t.colors.accent}
+                  />
+                  <Text style={styles.spotlightCueBadgeText}>{revisitCue.contextLabel}</Text>
+                </View>
+              </View>
+              <Text style={styles.spotlightValue}>{revisitCue.title}</Text>
+              <Text style={styles.spotlightHint}>{revisitCue.reason}</Text>
+              <View style={styles.spotlightCueActionRow}>
+                <Text style={styles.spotlightActionHint}>{revisitCue.actionLabel}</Text>
+                <Ionicons
+                  name="arrow-forward-outline"
+                  size={14}
+                  color={t.colors.accent}
+                />
+              </View>
             </Pressable>
-          ) : (
-            <View style={[styles.spotlightTile, styles.spotlightTileLead, styles.spotlightTileFeatured]}>
-              <Text style={styles.spotlightLabel}>{copy.homeSpotlightPatternLabel}</Text>
-              <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
-              <Text style={styles.spotlightHint}>{copy.homeSpotlightNoPattern}</Text>
-            </View>
-          )}
-        </View>
+          ) : null}
 
-        <View style={styles.spotlightMetaRow}>
-          <View style={styles.spotlightMetaChip}>
-            <Text style={styles.spotlightMetaLabel}>{copy.homeSpotlightAttentionLabel}</Text>
-            <Text style={styles.spotlightMetaValue}>{attentionValue}</Text>
-          </View>
-        </View>
+          {isSpotlightExpanded ? (
+            <>
+              <View style={styles.spotlightSecondaryRow}>
+                <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
+                  <Text style={styles.spotlightLabel}>{copy.homeSpotlightWeeklyLabel}</Text>
+                  <Text style={styles.spotlightCompactValue}>{weeklyValue}</Text>
+                  <Text style={styles.spotlightHint}>{weeklyHint}</Text>
+                </View>
 
-        {isSpotlightExpanded ? (
-          <>
-            <View style={styles.spotlightSecondaryRow}>
-              <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-                <Text style={styles.spotlightLabel}>{copy.homeSpotlightWeeklyLabel}</Text>
-                <Text style={styles.spotlightCompactValue}>{weeklyValue}</Text>
-                <Text style={styles.spotlightHint}>{weeklyHint}</Text>
+                {hasAttentionCue ? (
+                  <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
+                    <Text style={styles.spotlightLabel}>{copy.homeSpotlightAttentionLabel}</Text>
+                    <Text style={styles.spotlightCompactValue}>{attentionValue}</Text>
+                    <Text style={styles.spotlightHint}>{attentionHint}</Text>
+                  </View>
+                ) : null}
               </View>
 
-              <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-                <Text style={styles.spotlightLabel}>{copy.homeSpotlightAttentionLabel}</Text>
-                <Text style={styles.spotlightCompactValue}>{attentionValue}</Text>
-                <Text style={styles.spotlightHint}>{attentionHint}</Text>
+              <View style={styles.statsRow}>
+                <View style={styles.statChip}>
+                  <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
+                  <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
+                </View>
+                <View style={styles.statChip}>
+                  <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
+                  <Text style={styles.statValue}>{totalDreams}</Text>
+                </View>
+                <View style={styles.statChip}>
+                  <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
+                  <Text style={styles.statValue}>{averageWords}</Text>
+                </View>
               </View>
-            </View>
-
-            <View style={styles.statsRow}>
-              <View style={styles.statChip}>
-                <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
-                <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
-              </View>
-              <View style={styles.statChip}>
-                <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
-                <Text style={styles.statValue}>{totalDreams}</Text>
-              </View>
-              <View style={styles.statChip}>
-                <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
-                <Text style={styles.statValue}>{averageWords}</Text>
-              </View>
-            </View>
-          </>
-        ) : null}
-      </Card>
+            </>
+          ) : null}
+        </Card>
+      ) : null}
 
       <View style={styles.timelineHeaderRow}>
         <View style={styles.timelineHeaderCopy}>
@@ -262,7 +309,11 @@ export function HomeListHeader({
             }
             autoCapitalize="none"
             autoCorrect={false}
-            helperText={isSearchPending ? copy.timelineLoadingDescription : undefined}
+            helperText={
+              isSearchPending || isFilterMutationPending
+                ? copy.timelineLoadingDescription
+                : undefined
+            }
             containerStyle={styles.searchFieldContainer}
             inputStyle={styles.searchFieldInput}
           />
@@ -388,4 +439,4 @@ export function HomeListHeader({
       ) : null}
     </View>
   );
-}
+});

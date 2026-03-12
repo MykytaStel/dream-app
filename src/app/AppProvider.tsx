@@ -3,13 +3,10 @@ import { ThemeProvider } from '@shopify/restyle';
 import { theme } from '../theme/theme';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { ensurePreviewDream } from '../features/dreams/repository/dreamsRepository';
 import { syncDreamReminderState } from '../features/reminders/services/dreamReminderService';
 import { observability } from '../services/observability';
 import { OBS_EVENTS } from '../services/observability/events';
 import { I18nProvider } from '../i18n/I18nProvider';
-import { startCloudAuthSessionSync } from '../services/auth/cloudAuth';
-import { maybeRunCloudSyncOnLaunch } from '../services/cloud/sync';
 import { runStorageMigrations } from '../services/storage/migrations';
 
 const qc = new QueryClient();
@@ -23,7 +20,6 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
       observability.captureError(error, { event: 'storage_migration_failed' });
     }
 
-    ensurePreviewDream();
     observability.trackEvent(OBS_EVENTS.AppOpened);
     syncDreamReminderState().catch(error => {
       observability.captureError(error, {
@@ -57,24 +53,6 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
     return () => {
       maybeErrorUtils.setGlobalHandler?.(previous);
     };
-  }, []);
-
-  React.useEffect(() => {
-    return startCloudAuthSessionSync({
-      onError: error => {
-        observability.captureError(error, {
-          event: 'cloud_auth_session_sync_failed',
-        });
-      },
-    });
-  }, []);
-
-  React.useEffect(() => {
-    maybeRunCloudSyncOnLaunch().catch(error => {
-      observability.captureError(error, {
-        event: 'cloud_sync_launch_failed',
-      });
-    });
   }, []);
 
   return (

@@ -13,13 +13,14 @@ import {
   type DreamTranscriptionProgress,
   transcribeDreamAudio,
 } from '../services/dreamTranscriptionService';
-import { getRelatedDreams } from '../model/relatedDreams';
+import { getRelatedDreams, type RelatedDream } from '../model/relatedDreams';
 import {
   createDefaultExpandedSections,
   createEmptyDetailSectionsState,
   type DreamDetailCopy,
   type DreamDetailSectionsState,
 } from '../model/dreamDetailPresentation';
+import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 import {
   archiveDream,
   clearDreamAnalysis,
@@ -36,14 +37,36 @@ import {
 type UseDreamDetailControllerArgs = {
   dreamId: string;
   justSaved: boolean;
+  focusSection?: DreamDetailFocusSection;
   copy: DreamDetailCopy;
   onAcknowledgeSaved: () => void;
   onDeleteComplete: () => void;
 };
 
+type IdleCallbackHandle = number;
+type IdleSchedulerShape = {
+  requestIdleCallback?: (callback: () => void) => IdleCallbackHandle;
+  cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
+};
+
+function applyFocusedSection(
+  sections: DreamDetailSectionsState,
+  focusSection?: DreamDetailFocusSection,
+) {
+  if (!focusSection) {
+    return sections;
+  }
+
+  return {
+    ...sections,
+    [focusSection]: true,
+  };
+}
+
 export function useDreamDetailController({
   dreamId,
   justSaved,
+  focusSection,
   copy,
   onAcknowledgeSaved,
   onDeleteComplete,
@@ -55,19 +78,24 @@ export function useDreamDetailController({
   const [isEditingTranscript, setIsEditingTranscript] = React.useState(false);
   const [transcriptDraft, setTranscriptDraft] = React.useState('');
   const [expandedSections, setExpandedSections] = React.useState<DreamDetailSectionsState | null>(
-    () => (dream ? createDefaultExpandedSections(dream) : null),
+    () => (dream ? applyFocusedSection(createDefaultExpandedSections(dream), focusSection) : null),
   );
   const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
     getDreamAnalysisSettings(),
   );
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = React.useState(false);
+  const [relatedDreams, setRelatedDreams] = React.useState<RelatedDream[]>([]);
   const [transcriptionProgress, setTranscriptionProgress] =
     React.useState<DreamTranscriptionProgress | null>(null);
 
   const refreshDream = React.useCallback(() => {
     const nextDream = getDream(dreamId);
     setDream(nextDream);
-    setExpandedSections(nextDream ? createDefaultExpandedSections(nextDream) : null);
+    setExpandedSections(
+      nextDream
+        ? applyFocusedSection(createDefaultExpandedSections(nextDream), focusSection)
+        : null,
+    );
     setAnalysisSettings(getDreamAnalysisSettings());
     setTranscriptDraft(nextDream?.transcript ?? '');
     setIsPlayingAudio(false);
@@ -75,11 +103,12 @@ export function useDreamDetailController({
     setIsEditingTranscript(false);
     setTranscriptionProgress(null);
     setShowSavedHighlight(Boolean(justSaved));
+    setRelatedDreams([]);
 
     if (nextDream) {
       saveLastViewedDream(nextDream.id);
     }
-  }, [dreamId, justSaved]);
+  }, [dreamId, focusSection, justSaved]);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -95,10 +124,46 @@ export function useDreamDetailController({
     }, [justSaved, onAcknowledgeSaved, refreshDream]),
   );
 
-  const relatedDreams = React.useMemo(
-    () => (dream ? getRelatedDreams(dream, listDreams()) : []),
-    [dream],
-  );
+  React.useEffect(() => {
+    if (!dream) {
+      setRelatedDreams([]);
+      return;
+    }
+
+    let cancelled = false;
+
+    const runHydration = () => {
+      try {
+        const nextRelatedDreams = getRelatedDreams(dream, listDreams());
+        React.startTransition(() => {
+          if (cancelled) {
+            return;
+          }
+
+          setRelatedDreams(nextRelatedDreams);
+        });
+      } catch {
+        if (!cancelled) {
+          setRelatedDreams([]);
+        }
+      }
+    };
+
+    const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
+    if (typeof scheduler.requestIdleCallback === 'function') {
+      const idleHandle = scheduler.requestIdleCallback(runHydration);
+      return () => {
+        cancelled = true;
+        scheduler.cancelIdleCallback?.(idleHandle);
+      };
+    }
+
+    const timeoutId = setTimeout(runHydration, 0);
+    return () => {
+      cancelled = true;
+      clearTimeout(timeoutId);
+    };
+  }, [dream]);
 
   const sections = React.useMemo(
     () =>
@@ -112,11 +177,13 @@ export function useDreamDetailController({
       setExpandedSections(current => {
         const base =
           current ??
-          (dream ? createDefaultExpandedSections(dream) : createEmptyDetailSectionsState());
+          (dream
+            ? applyFocusedSection(createDefaultExpandedSections(dream), focusSection)
+            : createEmptyDetailSectionsState());
         return updater(base);
       });
     },
-    [dream],
+    [dream, focusSection],
   );
 
   const dismissSavedHighlight = React.useCallback(() => {

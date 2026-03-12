@@ -44,6 +44,7 @@ export function getTabRouteLabels(locale: AppLocale) {
 
 export type TabRouteName = keyof typeof TAB_ROUTE_NAMES;
 export type PatternDetailKind = 'word' | 'theme' | 'symbol';
+export type DreamDetailFocusSection = 'reflection' | 'written' | 'transcript' | 'analysis';
 
 export type TabParamList = {
   [TAB_ROUTE_NAMES.Home]: undefined;
@@ -70,6 +71,7 @@ export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.DreamDetail]: {
     dreamId: string;
     justSaved?: boolean;
+    focusSection?: DreamDetailFocusSection;
   };
   [ROOT_ROUTE_NAMES.DreamEditor]: {
     dreamId: string;

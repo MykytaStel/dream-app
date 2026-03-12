@@ -5,6 +5,7 @@ import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import {
+  getDreamCopy,
   getDreamPreSleepEmotionLabels,
   getDreamWakeEmotionLabels,
 } from '../../../constants/copy/dreams';
@@ -21,6 +22,7 @@ export default function MonthlyReportScreen() {
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createMonthlyReportScreenStyles(theme), [theme]);
   const { locale } = useI18n();
+  const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const wakeEmotionLabels = React.useMemo(() => getDreamWakeEmotionLabels(locale), [locale]);
   const preSleepEmotionLabels = React.useMemo(
@@ -37,6 +39,30 @@ export default function MonthlyReportScreen() {
     wakeEmotionLabels,
     preSleepEmotionLabels,
   });
+
+  if (controller.loading && controller.meta.totalCount > 0) {
+    return (
+      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+        <ScreenStateCard
+          variant="loading"
+          title={statsCopy.monthlyReportLoadingTitle}
+          subtitle={statsCopy.monthlyReportLoadingDescription}
+        />
+      </ScreenContainer>
+    );
+  }
+
+  if (controller.loadError) {
+    return (
+      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+        <ScreenStateCard
+          variant="error"
+          title={dreamCopy.timelineErrorTitle}
+          subtitle={dreamCopy.timelineErrorDescription}
+        />
+      </ScreenContainer>
+    );
+  }
 
   if (!controller.months.length || !controller.report || !controller.viewModel) {
     return (
@@ -73,6 +99,12 @@ export default function MonthlyReportScreen() {
         copy={statsCopy}
         styles={styles}
         viewModel={controller.viewModel}
+        onOpenRevisitDream={dreamId =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            dreamId,
+            focusSection: 'written',
+          })
+        }
       />
     </ScreenContainer>
   );

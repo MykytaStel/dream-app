@@ -2,17 +2,32 @@ import React from 'react';
 import { Share } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
-import { listDreams } from '../../dreams/repository/dreamsRepository';
+import {
+  getDreamsMeta,
+  listDreams,
+  type DreamsMeta,
+} from '../../dreams/repository/dreamsRepository';
 import type { MonthlyReportCopyShape } from '../model/monthlyReportPresentation';
 import {
   buildMonthlyReportShareLines,
   getMonthlyReportViewModel,
 } from '../model/monthlyReportPresentation';
-import { getMonthlyReportData, getMonthlyReportMonths } from '../model/monthlyReport';
+import {
+  getMonthlyReportData,
+  getMonthlyReportMonths,
+  getMonthlyReportMonthsFromKeys,
+  type MonthlyReportMonth,
+} from '../model/monthlyReport';
 import {
   getSavedMonthlyReportMonths,
   toggleSavedMonthlyReportMonth,
 } from '../services/monthlyReportShelfService';
+
+type IdleCallbackHandle = number;
+type IdleSchedulerShape = {
+  requestIdleCallback?: (callback: () => void) => IdleCallbackHandle;
+  cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
+};
 
 type UseMonthlyReportControllerArgs = {
   locale: string;
@@ -30,32 +45,80 @@ export function useMonthlyReportController({
   preSleepEmotionLabels,
 }: UseMonthlyReportControllerArgs) {
   const localeTag = locale === 'uk' ? 'uk-UA' : 'en-US';
-  const [dreams, setDreams] = React.useState(() => listDreams());
-  const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
-
-  const months = React.useMemo(
-    () => getMonthlyReportMonths(dreams, localeTag),
-    [dreams, localeTag],
+  const hydrationRequestRef = React.useRef(0);
+  const [meta, setMeta] = React.useState<DreamsMeta>(() => getDreamsMeta());
+  const [months, setMonths] = React.useState<MonthlyReportMonth[]>(() =>
+    getMonthlyReportMonthsFromKeys(meta.monthKeys, localeTag),
   );
+  const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
+  const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
+  const [loading, setLoading] = React.useState(meta.totalCount > 0);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
 
   const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | undefined>(
-    initialMonthKey ?? months[0]?.key,
+    initialMonthKey ?? getMonthlyReportMonthsFromKeys(meta.monthKeys, localeTag)[0]?.key,
   );
 
   useFocusEffect(
     React.useCallback(() => {
       const startedAt = Date.now();
-      const nextDreams = listDreams();
-      React.startTransition(() => {
-        setDreams(nextDreams);
-      });
-      setSavedMonths(getSavedMonthlyReportMonths());
-      trackLocalSurfaceLoad('monthly_report_refresh', startedAt, nextDreams.length);
-    }, []),
+      setLoadError(null);
+
+      try {
+        const requestId = ++hydrationRequestRef.current;
+        const nextMeta = getDreamsMeta();
+        const nextMonths = getMonthlyReportMonthsFromKeys(nextMeta.monthKeys, localeTag);
+
+        setMeta(nextMeta);
+        setMonths(nextMonths);
+        setSavedMonths(getSavedMonthlyReportMonths());
+        setLoading(nextMeta.totalCount > 0);
+        trackLocalSurfaceLoad('monthly_report_refresh', startedAt, nextMeta.totalCount);
+
+        const runHydration = () => {
+          try {
+            const nextDreams = listDreams();
+
+            React.startTransition(() => {
+              if (hydrationRequestRef.current !== requestId) {
+                return;
+              }
+
+              setDreams(nextDreams);
+              setMonths(getMonthlyReportMonths(nextDreams, localeTag));
+              setLoading(false);
+              setLoadError(null);
+            });
+          } catch (error) {
+            if (hydrationRequestRef.current !== requestId) {
+              return;
+            }
+
+            setDreams([]);
+            setLoading(false);
+            setLoadError(String(error));
+          }
+        };
+
+        const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
+        if (typeof scheduler.requestIdleCallback === 'function') {
+          scheduler.requestIdleCallback(runHydration);
+          return;
+        }
+
+        setTimeout(runHydration, 0);
+      } catch (error) {
+        setLoading(false);
+        setLoadError(String(error));
+      }
+    }, [localeTag]),
   );
 
   React.useEffect(() => {
-    if (!selectedMonthKey && months[0]?.key) {
+    const hasSelectedMonth =
+      selectedMonthKey && months.some(month => month.key === selectedMonthKey);
+
+    if ((!selectedMonthKey || !hasSelectedMonth) && months[0]?.key) {
       setSelectedMonthKey(months[0].key);
     }
   }, [months, selectedMonthKey]);
@@ -115,9 +178,12 @@ export function useMonthlyReportController({
   }, [copy, preSleepEmotionLabels, report, viewModel, wakeEmotionLabels]);
 
   return {
+    meta,
     months,
     report,
     viewModel,
+    loading,
+    loadError,
     selectedMonthKey,
     setSelectedMonthKey,
     onToggleSaveForLater,

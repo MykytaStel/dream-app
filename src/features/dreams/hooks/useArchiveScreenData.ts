@@ -1,29 +1,122 @@
 import React from 'react';
 import { useFocusEffect } from '@react-navigation/native';
-import { listDreams } from '../repository/dreamsRepository';
+import {
+  getDreamsMeta,
+  listDreams,
+  type DreamsMeta,
+} from '../repository/dreamsRepository';
 import { Dream } from '../model/dream';
 import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 
-export function useArchiveScreenData() {
-  const [dreams, setDreams] = React.useState<Dream[]>(() => listDreams());
+type IdleCallbackHandle = number;
+type IdleSchedulerShape = {
+  requestIdleCallback?: (callback: () => void) => IdleCallbackHandle;
+  cancelIdleCallback?: (handle: IdleCallbackHandle) => void;
+};
 
-  const refreshArchive = React.useCallback(() => {
-    const startedAt = Date.now();
-    const nextDreams = listDreams();
-    React.startTransition(() => {
-      setDreams(nextDreams);
-    });
-    trackLocalSurfaceLoad('archive_refresh', startedAt, nextDreams.length);
+export function useArchiveScreenData() {
+  const hydrationRequestRef = React.useRef(0);
+  const [dreams, setDreams] = React.useState<Dream[]>([]);
+  const [meta, setMeta] = React.useState<DreamsMeta>(() => getDreamsMeta());
+  const [loading, setLoading] = React.useState(meta.totalCount > 0);
+  const [loadError, setLoadError] = React.useState<string | null>(null);
+
+  const hydrateArchiveDreams = React.useCallback((mode: 'initial' | 'silent' = 'silent') => {
+    const requestId = ++hydrationRequestRef.current;
+
+    const runHydration = () => {
+      try {
+        const nextDreams = listDreams();
+
+        React.startTransition(() => {
+          if (hydrationRequestRef.current !== requestId) {
+            return;
+          }
+
+          setDreams(nextDreams);
+          setLoading(false);
+          setLoadError(null);
+        });
+      } catch (error) {
+        if (hydrationRequestRef.current !== requestId) {
+          return;
+        }
+
+        if (mode === 'initial') {
+          setDreams([]);
+        }
+        setLoading(false);
+        setLoadError(String(error));
+      }
+    };
+
+    const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
+    if (typeof scheduler.requestIdleCallback === 'function') {
+      scheduler.requestIdleCallback(runHydration);
+      return;
+    }
+
+    setTimeout(runHydration, 0);
   }, []);
+
+  const refreshArchive = React.useCallback((mode: 'initial' | 'silent' = 'silent') => {
+    const startedAt = Date.now();
+    setLoadError(null);
+
+    try {
+      hydrationRequestRef.current += 1;
+      const nextMeta = getDreamsMeta();
+      setMeta(nextMeta);
+
+      if (mode === 'initial') {
+        setLoading(nextMeta.totalCount > 0);
+      }
+
+      trackLocalSurfaceLoad('archive_refresh', startedAt, nextMeta.totalCount);
+      hydrateArchiveDreams(mode);
+    } catch (error) {
+      setLoading(false);
+      setLoadError(String(error));
+    }
+  }, [hydrateArchiveDreams]);
+
+  React.useEffect(() => {
+    const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
+    let timeoutId: ReturnType<typeof setTimeout> | null = null;
+    let idleHandle: IdleCallbackHandle | null = null;
+
+    if (typeof scheduler.requestIdleCallback === 'function') {
+      idleHandle = scheduler.requestIdleCallback(() => {
+        refreshArchive('initial');
+      });
+    } else {
+      timeoutId = setTimeout(() => {
+        refreshArchive('initial');
+      }, 0);
+    }
+
+    return () => {
+      if (idleHandle !== null && typeof scheduler.cancelIdleCallback === 'function') {
+        scheduler.cancelIdleCallback(idleHandle);
+      }
+
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [refreshArchive]);
 
   useFocusEffect(
     React.useCallback(() => {
-      refreshArchive();
+      refreshArchive('silent');
     }, [refreshArchive]),
   );
 
   return {
     dreams,
+    meta,
+    loading,
+    loadError,
     refreshArchive,
   };
 }

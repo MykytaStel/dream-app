@@ -6,6 +6,7 @@ import { Dream } from '../model/dream';
 import {
   applyArchiveStatusFilter,
   buildArchiveSections,
+  getArchiveRevisitCue,
   buildCalendarCells,
   buildCalendarRows,
   formatArchiveActiveDaysCount,
@@ -23,6 +24,7 @@ import {
 import { getDreamDate } from '../model/dreamAnalytics';
 
 const ARCHIVE_SEARCH_DEBOUNCE_MS = 160;
+const DEFAULT_ARCHIVE_FILTER: ArchiveFilter = 'archived';
 
 type UseArchiveBrowseStateArgs = {
   dreams: Dream[];
@@ -38,7 +40,7 @@ export function useArchiveBrowseState({
   onBrowseMutate,
 }: UseArchiveBrowseStateArgs) {
   const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
-  const [filter, setFilter] = React.useState<ArchiveFilter>('all');
+  const [filter, setFilter] = React.useState<ArchiveFilter>(DEFAULT_ARCHIVE_FILTER);
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
@@ -56,8 +58,8 @@ export function useArchiveBrowseState({
   );
 
   const availableMonthKeys = React.useMemo(
-    () => getAvailableMonthKeys(statusScopedDreams),
-    [statusScopedDreams],
+    () => getAvailableMonthKeys(dreams),
+    [dreams],
   );
 
   React.useEffect(() => {
@@ -98,6 +100,10 @@ export function useArchiveBrowseState({
         ? searchedMonthDreams.filter(dream => toLocalDateKey(getDreamDate(dream)) === selectedDate)
         : searchedMonthDreams,
     [searchedMonthDreams, selectedDate],
+  );
+  const revisitCue = React.useMemo(
+    () => getArchiveRevisitCue(visibleDreams, copy),
+    [visibleDreams, copy],
   );
 
   const sections = React.useMemo(
@@ -141,10 +147,10 @@ export function useArchiveBrowseState({
 
   const archiveFilters = React.useMemo(
     () => [
-      { key: 'all' as const, label: copy.archiveFilterAll },
+      { key: 'archived' as const, label: copy.archiveFilterArchived },
       { key: 'active' as const, label: copy.archiveFilterActive },
       { key: 'starred' as const, label: copy.archiveFilterStarred },
-      { key: 'archived' as const, label: copy.archiveFilterArchived },
+      { key: 'all' as const, label: copy.archiveFilterAll },
     ],
     [copy],
   );
@@ -164,9 +170,8 @@ export function useArchiveBrowseState({
     hasScopedDreams,
     hasVisibleDreams,
   );
-  const hasResettableView =
-    filter !== 'all' || Boolean(searchQuery.trim()) || Boolean(selectedDate);
-  const hasHardReset = filter !== 'all' || Boolean(searchQuery.trim());
+  const hasResettableView = Boolean(searchQuery.trim()) || Boolean(selectedDate);
+  const hasHardReset = Boolean(searchQuery.trim());
   const visibleEntriesLabel = formatArchiveEntryCount(visibleDreams.length, locale);
 
   const selectMonth = React.useCallback(
@@ -201,7 +206,7 @@ export function useArchiveBrowseState({
   );
 
   const resetArchiveView = React.useCallback(() => {
-    setFilter('all');
+    setFilter(DEFAULT_ARCHIVE_FILTER);
     setSearchQuery('');
     setSelectedDate(null);
     onBrowseMutate?.();
@@ -249,6 +254,7 @@ export function useArchiveBrowseState({
     weekdayLabels,
     availableMonthKeys,
     visibleDreams,
+    revisitCue,
     sections,
     calendarRows,
     monthMetaText,

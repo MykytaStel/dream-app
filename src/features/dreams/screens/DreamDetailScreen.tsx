@@ -69,6 +69,7 @@ export default function DreamDetailScreen() {
   const controller = useDreamDetailController({
     dreamId: route.params.dreamId,
     justSaved: Boolean(route.params.justSaved),
+    focusSection: route.params.focusSection,
     copy,
     onAcknowledgeSaved: handleAcknowledgeSaved,
     onDeleteComplete: handleDeleteComplete,
@@ -99,9 +100,8 @@ export default function DreamDetailScreen() {
   if (!controller.dream || !viewModel) {
     return (
       <ScreenContainer scroll>
-        <Card style={styles.heroCard}>
-          <View pointerEvents="none" style={styles.heroGlowLarge} />
-          <View pointerEvents="none" style={styles.heroGlowSmall} />
+        <Card style={styles.detailSheet}>
+          <View style={styles.sheetSection}>
           <Pressable
             style={styles.backButton}
             onPress={() => navigation.goBack()}
@@ -114,6 +114,7 @@ export default function DreamDetailScreen() {
             subtitle={copy.detailMissingDescription}
             large
           />
+          </View>
         </Card>
       </ScreenContainer>
     );
@@ -128,6 +129,7 @@ export default function DreamDetailScreen() {
         copy={copy}
         styles={styles}
         viewModel={viewModel}
+        wakeEmotionLabels={wakeEmotionLabels}
         showSavedHighlight={controller.showSavedHighlight}
         onDismissSavedHighlight={controller.dismissSavedHighlight}
         onBack={() => navigation.goBack()}
@@ -169,6 +171,11 @@ export default function DreamDetailScreen() {
         onGenerateAnalysis={controller.onGenerateAnalysis}
         onClearAnalysis={controller.onClearAnalysis}
         onToggleAudioPlayback={controller.onToggleAudioPlayback}
+        onEditDream={() =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
+            dreamId: dream.id,
+          })
+        }
         onOpenRelatedDream={handleOpenRelatedDream}
         onOpenSettingsForAnalysis={handleOpenSettingsForAnalysis}
       />

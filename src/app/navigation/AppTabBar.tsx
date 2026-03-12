@@ -225,53 +225,55 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
 
   return (
     <>
-      <View style={styles.tabBarShell}>
-        <View pointerEvents="none" style={styles.tabBarGlowLeft} />
-        <View pointerEvents="none" style={styles.tabBarGlowRight} />
-        <View pointerEvents="none" style={styles.tabBarEdgeHighlight} />
-        <View style={styles.tabBarRow}>
-          <View style={styles.tabCluster}>{leftRoutes.map(renderTabButton)}</View>
-          <View style={styles.centerSlot}>
-            <View
-              style={[
-                styles.centerButtonFrame,
-                quickAddActive ? styles.centerButtonFrameActive : null,
-              ]}
-            >
+      <View pointerEvents="box-none" style={styles.tabBarRoot}>
+        <View style={styles.tabBarShell}>
+          <View pointerEvents="none" style={styles.tabBarGlowLeft} />
+          <View pointerEvents="none" style={styles.tabBarGlowRight} />
+          <View pointerEvents="none" style={styles.tabBarEdgeHighlight} />
+          <View style={styles.tabBarRow}>
+            <View style={styles.tabCluster}>{leftRoutes.map(renderTabButton)}</View>
+            <View style={styles.centerSlot}>
               <View
-                pointerEvents="none"
                 style={[
-                  styles.centerButtonAuraOuter,
-                  quickAddActive ? styles.centerButtonAuraOuterActive : null,
-                ]}
-              />
-              <View
-                pointerEvents="none"
-                style={[
-                  styles.centerButtonAuraInner,
-                  quickAddActive ? styles.centerButtonAuraInnerActive : null,
-                ]}
-              />
-              <Pressable
-                accessibilityHint={copy.createSubtitle}
-                accessibilityLabel={copy.createTitle}
-                accessibilityRole="button"
-                onPress={isQuickAddOpen ? closeQuickAdd : openQuickAdd}
-                style={({ pressed }) => [
-                  styles.centerButton,
-                  quickAddActive ? styles.centerButtonActive : null,
-                  pressed ? styles.centerButtonPressed : null,
+                  styles.centerButtonFrame,
+                  quickAddActive ? styles.centerButtonFrameActive : null,
                 ]}
               >
-                <Ionicons
-                  name={isQuickAddOpen ? 'close' : 'add'}
-                  size={26}
-                  color={t.colors.ink}
+                <View
+                  pointerEvents="none"
+                  style={[
+                    styles.centerButtonAuraOuter,
+                    quickAddActive ? styles.centerButtonAuraOuterActive : null,
+                  ]}
                 />
-              </Pressable>
+                <View
+                  pointerEvents="none"
+                  style={[
+                    styles.centerButtonAuraInner,
+                    quickAddActive ? styles.centerButtonAuraInnerActive : null,
+                  ]}
+                />
+                <Pressable
+                  accessibilityHint={copy.createSubtitle}
+                  accessibilityLabel={copy.createTitle}
+                  accessibilityRole="button"
+                  onPress={isQuickAddOpen ? closeQuickAdd : openQuickAdd}
+                  style={({ pressed }) => [
+                    styles.centerButton,
+                    quickAddActive ? styles.centerButtonActive : null,
+                    pressed ? styles.centerButtonPressed : null,
+                  ]}
+                >
+                  <Ionicons
+                    name={isQuickAddOpen ? 'close' : 'add'}
+                    size={26}
+                    color={t.colors.ink}
+                  />
+                </Pressable>
+              </View>
             </View>
+            <View style={styles.tabCluster}>{rightRoutes.map(renderTabButton)}</View>
           </View>
-          <View style={styles.tabCluster}>{rightRoutes.map(renderTabButton)}</View>
         </View>
       </View>
 

@@ -2,6 +2,7 @@ import { kv } from '../src/services/storage/mmkv';
 import {
   getSavedDreamThreads,
   isDreamThreadSaved,
+  reconcileSavedDreamThreads,
   toggleSavedDreamThread,
 } from '../src/features/stats/services/dreamThreadShelfService';
 
@@ -47,5 +48,27 @@ describe('dreamThreadShelfService', () => {
 
     expect(removed).toEqual([]);
     expect(isDreamThreadSaved('HELLO-WORLD', 'theme')).toBe(false);
+  });
+
+  test('reconciles away saved threads that no longer match any dream', () => {
+    toggleSavedDreamThread('bridge', 'theme');
+    toggleSavedDreamThread('mirror', 'symbol');
+
+    const next = reconcileSavedDreamThreads([
+      {
+        id: 'dream-1',
+        createdAt: Date.UTC(2026, 2, 12, 8, 0),
+        sleepDate: '2026-03-12',
+        title: 'Bridge dream',
+        tags: ['bridge'],
+      },
+    ]);
+
+    expect(next).toHaveLength(1);
+    expect(next[0]).toMatchObject({
+      signal: 'bridge',
+      kind: 'theme',
+    });
+    expect(isDreamThreadSaved('mirror', 'symbol')).toBe(false);
   });
 });

@@ -1,8 +1,5 @@
 import { kv } from '../../../services/storage/mmkv';
-import {
-  DREAM_DELETION_TOMBSTONES_STORAGE_KEY,
-  DREAMS_STORAGE_KEY,
-} from '../../../services/storage/keys';
+import { DREAM_DELETION_TOMBSTONES_STORAGE_KEY } from '../../../services/storage/keys';
 
 export type DreamDeletionTombstoneSyncStatus =
   | 'local'
@@ -48,27 +45,6 @@ function persistTombstones(tombstones: DreamDeletionTombstone[]) {
   kv.set(DREAM_DELETION_TOMBSTONES_STORAGE_KEY, raw);
   tombstoneCache = normalized;
   tombstoneCacheRaw = raw;
-}
-
-function removeDreamRecord(dreamId: string) {
-  const dreamsRaw = kv.getString(DREAMS_STORAGE_KEY);
-  if (!dreamsRaw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(dreamsRaw) as Array<Record<string, unknown>>;
-    if (!Array.isArray(parsed)) {
-      return;
-    }
-
-    kv.set(
-      DREAMS_STORAGE_KEY,
-      JSON.stringify(parsed.filter(dream => dream?.id !== dreamId)),
-    );
-  } catch {
-    return;
-  }
 }
 
 export function listDreamDeletionTombstones() {
@@ -136,8 +112,6 @@ export function applyRemoteDreamDeletionTombstone(
   dreamId: string,
   deletedAt: number,
 ) {
-  removeDreamRecord(dreamId);
-
   const all = listDreamDeletionTombstones();
   const idx = all.findIndex(tombstone => tombstone.dreamId === dreamId);
   const nextTombstone = normalizeTombstone({

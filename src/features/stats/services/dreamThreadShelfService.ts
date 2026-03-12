@@ -1,7 +1,11 @@
+import type { Dream } from '../../dreams/model/dream';
 import type { PatternDetailKind } from '../../../app/navigation/routes';
 import { PINNED_DREAM_THREADS_STORAGE_KEY } from '../../../services/storage/keys';
 import { kv } from '../../../services/storage/mmkv';
-import { normalizePatternSignal } from '../model/patternMatches';
+import {
+  getPatternDreamMatches,
+  normalizePatternSignal,
+} from '../model/patternMatches';
 
 export type SavedDreamThreadRecord = {
   signal: string;
@@ -36,7 +40,14 @@ function areSameSavedThread(
   rightSignal: string,
   rightKind: PatternDetailKind,
 ) {
-  return leftKind === rightKind && normalizePatternSignal(leftSignal) === normalizePatternSignal(rightSignal);
+  return (
+    leftKind === rightKind &&
+    normalizePatternSignal(leftSignal) === normalizePatternSignal(rightSignal)
+  );
+}
+
+function buildSavedThreadKey(signal: string, kind: PatternDetailKind) {
+  return `${kind}:${normalizePatternSignal(signal)}`;
 }
 
 export function getSavedDreamThreads() {
@@ -60,6 +71,49 @@ function persistSavedDreamThreads(records: SavedDreamThreadRecord[]) {
   kv.set(PINNED_DREAM_THREADS_STORAGE_KEY, JSON.stringify(records.slice(0, 12)));
 }
 
+export function reconcileSavedDreamThreads(dreams: Dream[]) {
+  const current = getSavedDreamThreads();
+  if (!current.length) {
+    return current;
+  }
+
+  const seenKeys = new Set<string>();
+  const matchesCache = new Map<string, ReturnType<typeof getPatternDreamMatches>>();
+  const next = current.filter(record => {
+    const key = buildSavedThreadKey(record.signal, record.kind);
+
+    if (!normalizePatternSignal(record.signal) || seenKeys.has(key)) {
+      return false;
+    }
+
+    seenKeys.add(key);
+
+    const matches =
+      matchesCache.get(key) ?? getPatternDreamMatches(dreams, record.signal, record.kind);
+    matchesCache.set(key, matches);
+
+    return matches.length > 0;
+  });
+
+  const changed =
+    next.length !== current.length ||
+    next.some((record, index) => {
+      const previous = current[index];
+      return (
+        !previous ||
+        record.signal !== previous.signal ||
+        record.kind !== previous.kind ||
+        record.savedAt !== previous.savedAt
+      );
+    });
+
+  if (changed) {
+    persistSavedDreamThreads(next);
+  }
+
+  return next;
+}
+
 export function toggleSavedDreamThread(signal: string, kind: PatternDetailKind) {
   const trimmedSignal = signal.trim();
   if (!trimmedSignal) {
@@ -67,7 +121,9 @@ export function toggleSavedDreamThread(signal: string, kind: PatternDetailKind) 
   }
 
   const current = getSavedDreamThreads();
-  const existing = current.find(item => areSameSavedThread(item.signal, item.kind, trimmedSignal, kind));
+  const existing = current.find(item =>
+    areSameSavedThread(item.signal, item.kind, trimmedSignal, kind),
+  );
 
   if (existing) {
     const next = current.filter(

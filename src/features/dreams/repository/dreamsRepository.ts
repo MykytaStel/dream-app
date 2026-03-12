@@ -8,6 +8,7 @@ import { Dream, DreamTranscriptSource, DreamTranscriptStatus } from '../model/dr
 import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
 import {
   clearDreamDeletionTombstone,
+  applyRemoteDreamDeletionTombstone,
   saveDreamDeletionTombstone,
 } from './dreamDeletionTombstonesRepository';
 import {
@@ -19,6 +20,7 @@ import {
   sortDreamsStable,
   validateDreamForSave,
 } from '../model/dreamRules';
+import { reconcileSavedDreamThreads } from '../../stats/services/dreamThreadShelfService';
 
 const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 let dreamCache: Dream[] | null = null;
@@ -164,6 +166,7 @@ function persistDreams(dreams: Dream[]) {
   kv.set(DREAMS_STORAGE_KEY, raw);
   persistDreamIndex(normalized);
   persistDreamsMeta(normalized);
+  reconcileSavedDreamThreads(normalized);
   dreamCache = normalized;
   dreamCacheRaw = raw;
 }
@@ -371,6 +374,11 @@ export function getDream(id: string): Dream | undefined {
 export function deleteDream(id: string) {
   saveDreamDeletionTombstone(id);
   persistDreams(listDreams().filter(dream => dream.id !== id));
+}
+
+export function applyRemoteDreamDeletion(id: string, deletedAt: number) {
+  persistDreams(listDreams().filter(dream => dream.id !== id));
+  return applyRemoteDreamDeletionTombstone(id, deletedAt);
 }
 
 export function archiveDream(id: string) {

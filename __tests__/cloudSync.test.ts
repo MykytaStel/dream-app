@@ -5,6 +5,8 @@ import {
   markDreamSynced,
   saveDream,
   getDream,
+  getDreamsMeta,
+  listDreamListItems,
 } from '../src/features/dreams/repository/dreamsRepository';
 import { getDreamDeletionTombstone } from '../src/features/dreams/repository/dreamDeletionTombstonesRepository';
 import {
@@ -411,6 +413,8 @@ describe('cloud sync service', () => {
     expect(result.pulledCount).toBe(1);
     expect(result.conflictsResolvedCount).toBe(0);
     expect(getDream('remote-delete')).toBeUndefined();
+    expect(listDreamListItems().some(item => item.id === 'remote-delete')).toBe(false);
+    expect(getDreamsMeta().totalCount).toBe(0);
     expect(getDreamDeletionTombstone('remote-delete')).toMatchObject({
       dreamId: 'remote-delete',
       syncStatus: 'synced',

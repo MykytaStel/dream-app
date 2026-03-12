@@ -20,6 +20,10 @@ import {
   unstarDream,
   unarchiveDream,
 } from '../src/features/dreams/repository/dreamsRepository';
+import {
+  getSavedDreamThreads,
+  toggleSavedDreamThread,
+} from '../src/features/stats/services/dreamThreadShelfService';
 
 describe('dream repository flows', () => {
   beforeEach(() => {
@@ -104,6 +108,24 @@ describe('dream repository flows', () => {
       dreamId: 'b',
       syncStatus: 'local',
     });
+  });
+
+  test('reconciles saved threads after archive mutations remove the last matching dream', () => {
+    saveDream({
+      id: 'bridge-1',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-04',
+      title: 'Bridge one',
+      text: 'I crossed the bridge again.',
+      tags: ['bridge'],
+    });
+
+    toggleSavedDreamThread('bridge', 'theme');
+    expect(getSavedDreamThreads()).toHaveLength(1);
+
+    deleteDream('bridge-1');
+
+    expect(getSavedDreamThreads()).toEqual([]);
   });
 
   test('supports starring and unstarring dreams', () => {

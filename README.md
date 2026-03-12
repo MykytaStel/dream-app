@@ -23,15 +23,15 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.5.3`
+Current release target: `0.5.4`
 
-This release should make the archive feel more like a connected memory system,
-not just a storage list:
+This release should make saved review paths feel fresher and more dependable,
+not stale after archive changes:
 
-- a dedicated `Dream thread` path from recurring signals into review
-- clearer continuity across `Memory`, `Monthly report`, and archive depth
-- pinned or saved thread state for follow-up review
-- no regression in local capture, sync trust, restore, or dream detail clarity
+- saved threads stay valid after local edits, restore, import, and sync
+- review surfaces keep pointing to threads that still exist
+- backend freshness work stays mostly invisible, but improves confidence
+- no regression in `Memory`, `Monthly report`, sync trust, or archive detail flow
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -56,10 +56,10 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.5.3_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.3_PLAN.md)
+[docs/RELEASE_0.5.4_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.4_PLAN.md)
 for the active release target,
 [docs/ROADMAP_0.5.1_TO_0.6.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.5.1_TO_0.6.0.md)
-for the broader feature/backend/UI/UX range from `0.5.3` to `0.6.0`, and
+for the broader feature/backend/UI/UX range from `0.5.4` to `0.6.0`, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
 

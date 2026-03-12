@@ -16,13 +16,13 @@ import { getCloudSyncEnabled } from '../auth/session';
 import {
   getDream,
   listDreams,
+  applyRemoteDreamDeletion,
   markDreamSynced,
   markDreamSyncError,
   markDreamSyncing,
   upsertDreamFromSyncBundle,
 } from '../../features/dreams/repository/dreamsRepository';
 import {
-  applyRemoteDreamDeletionTombstone,
   getDreamDeletionTombstone,
   listDreamDeletionTombstones,
   markDreamDeletionTombstoneSynced,
@@ -31,6 +31,7 @@ import {
 } from '../../features/dreams/repository/dreamDeletionTombstonesRepository';
 import { CLOUD_SYNC_SNAPSHOT_STORAGE_KEY } from '../storage/keys';
 import { kv } from '../storage/mmkv';
+import { reconcileSavedDreamThreads } from '../../features/stats/services/dreamThreadShelfService';
 
 export type CloudSyncReason = 'manual' | 'launch';
 export type CloudSyncStatus = 'idle' | 'syncing' | 'success' | 'error';
@@ -815,7 +816,7 @@ async function performCloudSync(
         continue;
       }
 
-      applyRemoteDreamDeletionTombstone(
+      applyRemoteDreamDeletion(
         row.dream_id,
         new Date(row.deleted_at).getTime(),
       );
@@ -843,6 +844,8 @@ async function performCloudSync(
       upsertDreamFromSyncBundle(bundle);
       pulledCount += 1;
     }
+
+    reconcileSavedDreamThreads(listDreams());
   } catch (error) {
     lastErrorMessage = normalizeSyncError(error);
 

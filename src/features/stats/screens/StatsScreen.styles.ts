@@ -391,6 +391,9 @@ export function createStatsScreenStyles(theme: Theme) {
     workQueueList: {
       gap: 8,
     },
+    reviewShelfList: {
+      gap: 6,
+    },
     workQueueCard: {
       ...createSoftTile(theme, {
         tone: 'surface',
@@ -408,6 +411,42 @@ export function createStatsScreenStyles(theme: Theme) {
       lineHeight: 20,
       fontWeight: '700',
       flex: 1,
+    },
+    reviewShelfCompactRow: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 10,
+        paddingHorizontal: 12,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+    },
+    reviewShelfCompactCopy: {
+      flex: 1,
+      gap: 2,
+      minWidth: 0,
+    },
+    reviewShelfCompactEyebrow: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 13,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      fontWeight: '700',
+    },
+    reviewShelfCompactTitle: {
+      color: theme.colors.text,
+      fontSize: 14,
+      lineHeight: 18,
+      fontWeight: '700',
+    },
+    reviewShelfCompactMeta: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 16,
     },
     detailsSubsection: {
       gap: 4,

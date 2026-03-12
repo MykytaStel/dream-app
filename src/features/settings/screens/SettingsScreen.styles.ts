@@ -5,25 +5,25 @@ import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 export function createSettingsScreenStyles(theme: Theme) {
   return StyleSheet.create({
     heroHeader: {
-      gap: 12,
-      paddingTop: 4,
+      gap: 8,
+      paddingTop: 0,
     },
     inlineLanguageRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      gap: 10,
+      gap: 12,
       flexWrap: 'wrap',
     },
     inlineLanguageLabel: {
       color: theme.colors.textDim,
-      fontSize: 12,
-      fontWeight: '600',
-      letterSpacing: 0.5,
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.6,
       textTransform: 'uppercase',
     },
     workspaceCard: {
-      gap: 8,
+      gap: 6,
     },
     inlineLanguageControls: {
       flexDirection: 'row',
@@ -33,7 +33,7 @@ export function createSettingsScreenStyles(theme: Theme) {
     inlineLanguageChip: {
       ...createControlPill(theme, {
         tone: 'surface',
-        paddingVertical: 6,
+        paddingVertical: 5,
         paddingHorizontal: 10,
       }),
     },
@@ -75,6 +75,9 @@ export function createSettingsScreenStyles(theme: Theme) {
     buttonStack: {
       gap: 8,
       alignItems: 'stretch',
+    },
+    guidanceStack: {
+      gap: 4,
     },
     settingControlBlock: {
       gap: 6,

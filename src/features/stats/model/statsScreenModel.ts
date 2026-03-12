@@ -2,6 +2,7 @@ import { getStatsCopy } from '../../../constants/copy/stats';
 import { type AppLocale } from '../../../i18n/types';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { Dream } from '../../dreams/model/dream';
+import { getMonthlyReportData } from './monthlyReport';
 import { getPatternDreamMatches } from './patternMatches';
 import {
   countDreamWords,
@@ -36,6 +37,14 @@ export type MemoryWorkQueueItem = {
   actionLabel: string;
   focusSection: DreamDetailFocusSection;
   icon: string;
+};
+
+export type MemorySavedMonthReviewItem = {
+  monthKey: string;
+  title: string;
+  summary: string;
+  meta: string;
+  signals: string[];
 };
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
@@ -511,6 +520,39 @@ export function getMemoryWorkQueue(
   }
 
   return queue;
+}
+
+export function buildSavedMonthlyReviewItems(input: {
+  savedMonthKeys: string[];
+  dreams: Dream[];
+  locale: AppLocale;
+  copy: Pick<StatsCopy, 'monthlyReportNoSignal' | 'monthlyReportWordsLabel'>;
+  wakeEmotionLabels: Record<string, string>;
+}): MemorySavedMonthReviewItem[] {
+  const { savedMonthKeys, dreams, locale, copy, wakeEmotionLabels } = input;
+
+  return savedMonthKeys
+    .map(monthKey => {
+      const report = getMonthlyReportData(dreams, monthKey);
+      if (!report || !report.entryCount) {
+        return null;
+      }
+
+      const signals = [
+        report.topTheme?.label,
+        report.topSymbol?.label,
+        report.topWakeEmotion ? wakeEmotionLabels[report.topWakeEmotion.emotion] : null,
+      ].filter((value): value is string => Boolean(value));
+
+      return {
+        monthKey,
+        title: formatMonthTitle(report.month.year, report.month.month, locale),
+        summary: signals[0] ?? copy.monthlyReportNoSignal,
+        meta: `${formatEntryCountLabel(report.entryCount, locale)} · ${report.totalWords} ${copy.monthlyReportWordsLabel.toLowerCase()}`,
+        signals,
+      };
+    })
+    .filter((item): item is MemorySavedMonthReviewItem => Boolean(item));
 }
 
 function getReflectionSourceLabel(source: DreamReflectionSignal['source'], copy: StatsCopy) {

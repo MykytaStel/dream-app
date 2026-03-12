@@ -57,6 +57,8 @@ export type DreamDetailViewModel = {
   hasTranscriptSurface: boolean;
   transcriptStatus: Dream['transcriptStatus'] | 'idle';
   transcriptSourceLabel: string;
+  transcriptSyncHint: string | null;
+  audioSyncHint: string | null;
   analysisProviderLabel: string;
   analysisStatusLabel: string;
   analysisStateText: string;
@@ -315,6 +317,47 @@ export function formatTranscriptionProgress(
   return `${baseLabel} ${progress.progress}%`;
 }
 
+function getTranscriptSyncHint(dream: Dream, copy: DreamDetailCopy) {
+  if (!dream.transcript?.trim()) {
+    return null;
+  }
+
+  const transcriptTimestamp =
+    dream.transcriptUpdatedAt ?? dream.updatedAt ?? dream.createdAt;
+  const lastSyncedAt = dream.lastSyncedAt ?? 0;
+  const newerThanCloud = transcriptTimestamp > lastSyncedAt;
+
+  if (dream.syncStatus === 'error' && newerThanCloud) {
+    return copy.detailTranscriptSyncError;
+  }
+
+  if (dream.syncStatus === 'syncing' && newerThanCloud) {
+    return copy.detailTranscriptSyncing;
+  }
+
+  if (dream.syncStatus !== 'synced' || newerThanCloud) {
+    return copy.detailTranscriptSyncLocal;
+  }
+
+  return null;
+}
+
+function getAudioSyncHint(dream: Dream, copy: DreamDetailCopy) {
+  if (!dream.audioUri?.trim() || dream.audioRemotePath?.trim()) {
+    return null;
+  }
+
+  if (dream.syncStatus === 'error') {
+    return copy.detailAudioSyncError;
+  }
+
+  if (dream.syncStatus === 'syncing') {
+    return copy.detailAudioSyncing;
+  }
+
+  return copy.detailAudioSyncLocal;
+}
+
 function truncateReflectionSummary(summary: string) {
   const normalized = summary.trim().replace(/\s+/g, ' ');
   if (normalized.length <= 110) {
@@ -545,6 +588,8 @@ export function getDreamDetailViewModel({
     dream.analysis?.provider === 'openai'
       ? copy.detailAnalysisProviderOpenAi
       : copy.detailAnalysisProviderManual;
+  const transcriptSyncHint = getTranscriptSyncHint(dream, copy);
+  const audioSyncHint = getAudioSyncHint(dream, copy);
   const analysisStatusLabel =
     dream.analysis?.status === 'ready'
       ? copy.detailAnalysisStatusReady
@@ -645,6 +690,8 @@ export function getDreamDetailViewModel({
     hasTranscriptSurface,
     transcriptStatus,
     transcriptSourceLabel,
+    transcriptSyncHint,
+    audioSyncHint,
     analysisProviderLabel,
     analysisStatusLabel,
     analysisStateText,

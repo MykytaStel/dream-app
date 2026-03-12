@@ -251,10 +251,17 @@ export default function StatsScreen() {
               activeThreadLabel={activeThreadLabel}
               activeThreadDescription={activeThreadDescription}
               activeThreadMatches={activeThreadMatches}
+              savedThreadItems={controller.savedThreadItems}
               dreamCopy={dreamCopy}
               onOpenThreadDream={dreamId =>
                 navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
                   dreamId,
+                })
+              }
+              onOpenThreadDetail={(signal, kind) =>
+                navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
+                  signal,
+                  kind: kind as PatternDetailKind,
                 })
               }
               onClearThread={() => setActiveThread(null)}

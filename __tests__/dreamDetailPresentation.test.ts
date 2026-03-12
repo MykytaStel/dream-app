@@ -129,4 +129,51 @@ describe('dreamDetailPresentation', () => {
     );
     expect(viewModel.followUpPrompt?.body).toContain(copy.homeSpotlightRevisitTimeMonth);
   });
+
+  test('surfaces a local-only audio sync hint when the voice note has not reached backup yet', () => {
+    const dream: Dream = {
+      id: 'dream-audio-sync',
+      createdAt: Date.UTC(2026, 2, 11, 8, 0),
+      sleepDate: '2026-03-11',
+      audioUri: 'file:///dream.m4a',
+      syncStatus: 'local',
+      tags: [],
+    };
+
+    const viewModel = getDreamDetailViewModel({
+      dream,
+      copy,
+      moodLabels,
+      analysisSettings,
+      relatedDreams: [],
+      isTranscribingAudio: false,
+    });
+
+    expect(viewModel.audioSyncHint).toBe(copy.detailAudioSyncLocal);
+  });
+
+  test('surfaces a transcript sync hint when local transcript edits are newer than cloud', () => {
+    const dream: Dream = {
+      id: 'dream-transcript-sync',
+      createdAt: Date.UTC(2026, 2, 11, 8, 0),
+      sleepDate: '2026-03-11',
+      transcript: 'A cleaned transcript',
+      transcriptSource: 'edited',
+      transcriptUpdatedAt: Date.UTC(2026, 2, 11, 8, 30),
+      syncStatus: 'synced',
+      lastSyncedAt: Date.UTC(2026, 2, 11, 8, 10),
+      tags: [],
+    };
+
+    const viewModel = getDreamDetailViewModel({
+      dream,
+      copy,
+      moodLabels,
+      analysisSettings,
+      relatedDreams: [],
+      isTranscribingAudio: false,
+    });
+
+    expect(viewModel.transcriptSyncHint).toBe(copy.detailTranscriptSyncLocal);
+  });
 });

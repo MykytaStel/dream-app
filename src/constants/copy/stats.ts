@@ -57,6 +57,10 @@ const STATS_COPY_EN = {
   monthlyReportRevisitTitle: 'Worth reopening',
   monthlyReportRevisitDescription:
     'One dream from this month is landing in a return window right now.',
+  monthlyReportOpenThreadAction: 'Open thread',
+  monthlyReportSavedThreadsTitle: 'Saved threads',
+  monthlyReportSavedThreadsDescription:
+    'Threads you pinned earlier that still touch this month.',
   monthlyReportNoSignal: 'Still forming',
   overviewActivityTitle: 'Recent activity',
   overviewActivityDescription: 'How often dreams were saved lately.',
@@ -148,7 +152,13 @@ const STATS_COPY_EN = {
   memoryThreadTitle: 'Current thread',
   memoryThreadDescription:
     'Stay on this screen and scan the dreams connected to the selected recurring signal.',
+  memoryThreadOpenAction: 'Open full thread',
   memoryThreadClearAction: 'Close thread',
+  savedThreadsTitle: 'Saved threads',
+  savedThreadsDescription:
+    'Pinned threads stay here so you can reopen them without hunting through signals again.',
+  threadSaveAction: 'Save thread',
+  threadSavedAction: 'Saved',
   patternsTopLabel: 'Top signal',
   patternsMoreLabel: 'Also showing up',
   recurringWordsDescription: 'Across titles, notes, and transcripts.',
@@ -271,6 +281,15 @@ const STATS_COPY_EN = {
     'This signal keeps coming back through tags or transcript language.',
   patternDetailSymbolDescription:
     'This symbol keeps repeating inside saved transcript language.',
+  threadDetailEyebrow: 'Dream thread',
+  threadDetailCountLabel: 'Matches',
+  threadDetailFirstSeenLabel: 'First seen',
+  threadDetailLatestSeenLabel: 'Latest',
+  threadDetailSourceLabel: 'Strongest source',
+  threadDetailTimelineTitle: 'Timeline',
+  threadDetailEntryFirst: 'First',
+  threadDetailEntryLatest: 'Latest',
+  threadDetailEntryOnly: 'Only match',
   patternDetailSourceTag: 'Tag',
   patternDetailSourceTitle: 'Title',
   patternDetailSourceText: 'Notes',
@@ -357,6 +376,10 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   monthlyReportRevisitTitle: 'Варто відкрити знову',
   monthlyReportRevisitDescription:
     'Один сон з цього місяця саме зараз потрапляє у вікно повернення.',
+  monthlyReportOpenThreadAction: 'Відкрити нитку',
+  monthlyReportSavedThreadsTitle: 'Збережені нитки',
+  monthlyReportSavedThreadsDescription:
+    'Нитки, які ти зберіг раніше і які все ще торкаються цього місяця.',
   monthlyReportNoSignal: 'Ще формується',
   overviewActivityTitle: 'Остання активність',
   overviewActivityDescription: 'Як часто останнім часом зберігалися сни.',
@@ -449,7 +472,13 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   memoryThreadTitle: 'Поточна нитка',
   memoryThreadDescription:
     'Залишайся на цьому екрані й переглядай сни, пов’язані з вибраним повторюваним сигналом.',
+  memoryThreadOpenAction: 'Відкрити всю нитку',
   memoryThreadClearAction: 'Закрити нитку',
+  savedThreadsTitle: 'Збережені нитки',
+  savedThreadsDescription:
+    'Закріплені нитки лишаються тут, щоб їх можна було відкрити знову без пошуку по сигналах.',
+  threadSaveAction: 'Зберегти нитку',
+  threadSavedAction: 'Збережено',
   patternsTopLabel: 'Головний сигнал',
   patternsMoreLabel: 'Ще повторюються',
   recurringWordsDescription: 'У назвах, нотатках і транскриптах.',
@@ -575,6 +604,15 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
     'Цей сигнал повертається через теги або мову транскриптів.',
   patternDetailSymbolDescription:
     'Цей символ повторюється всередині збережених транскриптів.',
+  threadDetailEyebrow: 'Нитка сну',
+  threadDetailCountLabel: 'Збіги',
+  threadDetailFirstSeenLabel: 'Вперше',
+  threadDetailLatestSeenLabel: 'Останній',
+  threadDetailSourceLabel: 'Головне джерело',
+  threadDetailTimelineTitle: 'Послідовність',
+  threadDetailEntryFirst: 'Початок',
+  threadDetailEntryLatest: 'Останній',
+  threadDetailEntryOnly: 'Єдиний збіг',
   patternDetailSourceTag: 'Тег',
   patternDetailSourceTitle: 'Заголовок',
   patternDetailSourceText: 'Нотатки',

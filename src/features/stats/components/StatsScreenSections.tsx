@@ -620,8 +620,10 @@ export function StatsThreadsSections({
   activeThreadLabel,
   activeThreadDescription,
   activeThreadMatches,
+  savedThreadItems,
   dreamCopy,
   onOpenThreadDream,
+  onOpenThreadDetail,
   onClearThread,
 }: {
   copy: StatsCopy;
@@ -646,8 +648,15 @@ export function StatsThreadsSections({
   activeThreadLabel: string | null;
   activeThreadDescription: string | null;
   activeThreadMatches: ReadonlyArray<PatternDreamMatch>;
+  savedThreadItems: ReadonlyArray<{
+    signal: string;
+    kind: string;
+    kindLabel: string;
+    matchesLabel: string;
+  }>;
   dreamCopy: DreamCopy;
   onOpenThreadDream: (dreamId: string) => void;
+  onOpenThreadDetail: (signal: string, kind: string) => void;
   onClearThread: () => void;
 }) {
   const t = useTheme<Theme>();
@@ -656,6 +665,35 @@ export function StatsThreadsSections({
     <>
       <Animated.View layout={statsLayoutTransition}>
         <Card style={styles.sectionCard}>
+          {savedThreadItems.length ? (
+            <View style={styles.savedThreadsBlock}>
+              <SectionHeader
+                title={copy.savedThreadsTitle}
+                subtitle={copy.savedThreadsDescription}
+              />
+              <View style={styles.savedThreadsList}>
+                {savedThreadItems.slice(0, 4).map(item => (
+                  <Pressable
+                    key={`${item.kind}-${item.signal}`}
+                    style={({ pressed }) => [
+                      styles.savedThreadRow,
+                      pressed ? styles.insightCardPressed : null,
+                    ]}
+                    onPress={() => onOpenThreadDetail(item.signal, item.kind)}
+                  >
+                    <View style={styles.savedThreadCopy}>
+                      <Text style={styles.savedThreadTitle}>{item.signal}</Text>
+                      <Text style={styles.savedThreadMeta}>
+                        {`${item.kindLabel} • ${item.matchesLabel}`}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={t.colors.text} />
+                  </Pressable>
+                ))}
+              </View>
+            </View>
+          ) : null}
+
           <SectionHeader title={copy.patternsTitle} subtitle={copy.patternsDescription} />
           <SegmentedControl
             options={patternGroups.map(group => ({
@@ -696,10 +734,12 @@ export function StatsThreadsSections({
         <Animated.View layout={statsLayoutTransition}>
           <Card style={styles.sectionCard}>
             <View style={styles.threadHeaderRow}>
-              <SectionHeader
-                title={copy.memoryThreadTitle}
-                subtitle={copy.memoryThreadDescription}
-              />
+              <View style={styles.threadHeaderCopy}>
+                <SectionHeader
+                  title={copy.memoryThreadTitle}
+                  subtitle={copy.memoryThreadDescription}
+                />
+              </View>
               <Pressable style={styles.toggleButton} onPress={onClearThread}>
                 <Text style={styles.toggleButtonText}>{copy.memoryThreadClearAction}</Text>
               </Pressable>
@@ -730,6 +770,12 @@ export function StatsThreadsSections({
                   </View>
                 </View>
               </View>
+              <Pressable
+                style={styles.threadOpenAction}
+                onPress={() => onOpenThreadDetail(activeThread.signal, activeThread.kind)}
+              >
+                <Text style={styles.threadOpenActionText}>{copy.memoryThreadOpenAction}</Text>
+              </Pressable>
             </View>
 
             {activeThreadMatches.length ? (

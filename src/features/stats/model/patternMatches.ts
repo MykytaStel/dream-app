@@ -54,7 +54,7 @@ function normalizeValue(value: string) {
   return value.trim().toLowerCase();
 }
 
-function normalizeTag(value: string) {
+export function normalizePatternSignal(value: string) {
   return normalizeValue(value).replace(/-/g, ' ');
 }
 
@@ -78,7 +78,7 @@ function tokenizeText(value?: string) {
 }
 
 function hasMatchingTag(dream: Dream, signal: string) {
-  return dream.tags.some(tag => normalizeTag(tag) === signal);
+  return dream.tags.some(tag => normalizePatternSignal(tag) === signal);
 }
 
 function hasMatchingToken(value: string | undefined, signal: string) {
@@ -90,7 +90,7 @@ export function getPatternDreamMatches(
   signalLabel: string,
   kind: PatternMatchKind,
 ): PatternDreamMatch[] {
-  const normalizedSignal = normalizeTag(signalLabel);
+  const normalizedSignal = normalizePatternSignal(signalLabel);
 
   if (!normalizedSignal) {
     return [];

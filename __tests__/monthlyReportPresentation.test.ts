@@ -90,4 +90,48 @@ describe('monthlyReportPresentation', () => {
 
     expect(viewModel.revisitCue).toBeNull();
   });
+
+  test('marks recurring theme and symbol signals as thread entry points', () => {
+    const dreams: Dream[] = [
+      {
+        id: 'theme-dream-1',
+        createdAt: new Date('2026-02-02T08:00:00Z').getTime(),
+        title: 'Bridge one',
+        transcript: 'The mirror kept flashing in the hall',
+        tags: ['bridge'],
+      },
+      {
+        id: 'theme-dream-2',
+        createdAt: new Date('2026-02-12T08:00:00Z').getTime(),
+        title: 'Bridge two',
+        transcript: 'A mirror showed up again near the station',
+        tags: ['bridge'],
+      },
+    ];
+    const report = getMonthlyReportData(dreams, '2026-02');
+
+    expect(report).not.toBeNull();
+    if (!report) {
+      throw new Error('Expected monthly report data');
+    }
+
+    const viewModel = getMonthlyReportViewModel({
+      report,
+      locale: 'en-US',
+      copy,
+      wakeEmotionLabels,
+      preSleepEmotionLabels,
+      isSavedForLater: false,
+    });
+
+    const themeSignal = viewModel.recurringSignals.find(
+      signal => signal.label === copy.monthlyReportThemeLabel,
+    );
+    const symbolSignal = viewModel.recurringSignals.find(
+      signal => signal.label === copy.monthlyReportSymbolLabel,
+    );
+
+    expect(themeSignal?.threadKind).toBe('theme');
+    expect(symbolSignal?.threadKind).toBe('symbol');
+  });
 });

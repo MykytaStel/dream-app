@@ -23,16 +23,15 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.5.1`
+Current release target: `0.5.3`
 
-This release should tighten the first minute after waking so capture quality
-goes up without dragging the app back into settings-heavy or backend-heavy UI:
+This release should make the archive feel more like a connected memory system,
+not just a storage list:
 
-- faster one-hand wake capture
-- stronger draft recovery and continue-where-I-left-off states
-- transcript and refine work pulled closer to capture
-- no regression in backup, sync, export, restore, transcription, or analysis
-- keep cloud as a stable capability, not the center of the product surface
+- a dedicated `Dream thread` path from recurring signals into review
+- clearer continuity across `Memory`, `Monthly report`, and archive depth
+- pinned or saved thread state for follow-up review
+- no regression in local capture, sync trust, restore, or dream detail clarity
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -57,10 +56,10 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.5.1_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.1_PLAN.md)
+[docs/RELEASE_0.5.3_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.3_PLAN.md)
 for the active release target,
 [docs/ROADMAP_0.5.1_TO_0.6.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.5.1_TO_0.6.0.md)
-for the broader feature/backend/UI/UX range from `0.5.1` to `0.6.0`, and
+for the broader feature/backend/UI/UX range from `0.5.3` to `0.6.0`, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
 

@@ -3,7 +3,11 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
-import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  type PatternDetailKind,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import {
   getDreamCopy,
   getDreamPreSleepEmotionLabels,
@@ -99,10 +103,17 @@ export default function MonthlyReportScreen() {
         copy={statsCopy}
         styles={styles}
         viewModel={controller.viewModel}
+        savedThreadItems={controller.savedThreadItems}
         onOpenRevisitDream={dreamId =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
             dreamId,
             focusSection: 'written',
+          })
+        }
+        onOpenSignalThread={(signal, kind: PatternDetailKind) =>
+          navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
+            signal,
+            kind,
           })
         }
       />

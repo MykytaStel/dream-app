@@ -1,4 +1,5 @@
 import type { Dream } from '../../dreams/model/dream';
+import type { PatternDetailKind } from '../../../app/navigation/routes';
 import {
   getDreamResurfacingMatch,
   type DreamResurfacingWindow,
@@ -40,6 +41,14 @@ export type MonthlyReportCopyShape = {
   monthlyReportPreSleepLabel: string;
   monthlyReportRevisitTitle: string;
   monthlyReportRevisitDescription: string;
+  monthlyReportOpenThreadAction: string;
+  monthlyReportSavedThreadsTitle: string;
+  monthlyReportSavedThreadsDescription: string;
+  patternDetailWordLabel: string;
+  patternDetailThemeLabel: string;
+  patternDetailSymbolLabel: string;
+  patternDetailMatchesSingle: string;
+  patternDetailMatchesPlural: string;
   memoryNudgeTimeReasonPrefix: string;
   memoryNudgeTimeReasonSuffix: string;
   memoryNudgeTimeBadge: string;
@@ -55,6 +64,7 @@ export type MonthlyReportSignalView = {
   label: string;
   value: string;
   meta: string;
+  threadKind?: PatternDetailKind;
 };
 
 export type MonthlyReportMetricView = {
@@ -278,6 +288,7 @@ export function getMonthlyReportViewModel(input: {
       meta: report.topTheme
         ? `${report.topTheme.dreamCount} ${copy.entries.toLowerCase()}`
         : copy.monthlyReportCoverEmpty,
+      threadKind: report.topTheme ? 'theme' : undefined,
     },
     {
       label: copy.monthlyReportSymbolLabel,
@@ -285,6 +296,7 @@ export function getMonthlyReportViewModel(input: {
       meta: report.topSymbol
         ? `${report.topSymbol.dreamCount} ${copy.entries.toLowerCase()}`
         : copy.monthlyReportCoverEmpty,
+      threadKind: report.topSymbol ? 'symbol' : undefined,
     },
     {
       label: copy.monthlyReportWakeLabel,

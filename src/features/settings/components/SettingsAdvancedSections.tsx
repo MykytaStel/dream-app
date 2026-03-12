@@ -20,16 +20,15 @@ export function AnalysisSection({
   copy,
   styles,
   analysisSettings,
-  analysisHighlights,
   onSave,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
   analysisSettings: DreamAnalysisSettings;
-  analysisHighlights: SettingsMetaItem[];
   onSave: (next: DreamAnalysisSettings) => void;
 }) {
   const t = useTheme<Theme>();
+  const showNetworkControls = analysisSettings.provider === 'openai';
 
   return (
     <Card style={styles.sectionCard}>
@@ -50,7 +49,6 @@ export function AnalysisSection({
           />
         }
       />
-      <SettingsMetaGrid items={analysisHighlights} />
       <View style={styles.settingControlBlock}>
         <Text style={styles.restoreLabel}>{copy.analysisProviderLabel}</Text>
         <SettingsSegmentedControl
@@ -74,28 +72,37 @@ export function AnalysisSection({
           ]}
         />
       </View>
-      <View style={styles.settingControlBlock}>
-        <Text style={styles.restoreLabel}>{copy.analysisNetworkLabel}</Text>
-        <SettingsSegmentedControl
-          selectedValue={analysisSettings.allowNetwork ? 'allowed' : 'blocked'}
-          onChange={value =>
-            onSave({
-              ...analysisSettings,
-              allowNetwork: value === 'allowed',
-            })
-          }
-          options={[
-            {
-              value: 'blocked',
-              label: copy.analysisNetworkBlocked,
-            },
-            {
-              value: 'allowed',
-              label: copy.analysisNetworkAllowed,
-            },
-          ]}
+      {showNetworkControls ? (
+        <View style={styles.settingControlBlock}>
+          <Text style={styles.restoreLabel}>{copy.analysisNetworkLabel}</Text>
+          <SettingsSegmentedControl
+            selectedValue={analysisSettings.allowNetwork ? 'allowed' : 'blocked'}
+            onChange={value =>
+              onSave({
+                ...analysisSettings,
+                allowNetwork: value === 'allowed',
+              })
+            }
+            options={[
+              {
+                value: 'blocked',
+                label: copy.analysisNetworkBlocked,
+              },
+              {
+                value: 'allowed',
+                label: copy.analysisNetworkAllowed,
+              },
+            ]}
+          />
+        </View>
+      ) : (
+        <SettingsActionRow
+          title={copy.analysisNetworkLabel}
+          meta={copy.analysisLocalNetworkHint}
+          value={copy.analysisNetworkBlocked}
+          variant="inline"
         />
-      </View>
+      )}
     </Card>
   );
 }
@@ -131,20 +138,24 @@ export function TranscriptionSection({
       <View style={styles.buttonStack}>
         <Button
           title={downloadLabel}
-          variant="primary"
+          variant={installed ? 'ghost' : 'primary'}
           size="sm"
           style={styles.buttonStackButton}
           onPress={onDownload}
           disabled={isDownloading || installed}
         />
-        <Button
-          title={isDeleting ? copy.transcriptionDeleteButtonBusy : copy.transcriptionDeleteButton}
-          variant="ghost"
-          size="sm"
-          style={styles.buttonStackButton}
-          onPress={onDelete}
-          disabled={isDeleting || !installed}
-        />
+        {installed ? (
+          <Button
+            title={isDeleting ? copy.transcriptionDeleteButtonBusy : copy.transcriptionDeleteButton}
+            variant="ghost"
+            size="sm"
+            style={styles.buttonStackButton}
+            onPress={onDelete}
+            disabled={isDeleting}
+          />
+        ) : (
+          <Text style={styles.privacyFootnote}>{copy.transcriptionMissingHint}</Text>
+        )}
       </View>
     </Card>
   );
@@ -172,7 +183,14 @@ export function ExportSection({
   return (
     <Card style={styles.sectionCard}>
       <SettingsSectionHeader title={copy.exportTitle} description={copy.exportDescription} />
-      <SettingsMetaGrid items={highlights} />
+      {highlights.map(item => (
+        <SettingsActionRow
+          key={item.label}
+          title={item.label}
+          meta={item.value}
+          variant="inline"
+        />
+      ))}
       {lastExportPath ? (
         <View style={styles.exportPathBlock}>
           <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
@@ -197,7 +215,10 @@ export function ExportSection({
           disabled={isExportingJson || isExportingPdf}
         />
       </View>
-      <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
+      <View style={styles.guidanceStack}>
+        <Text style={styles.privacyFootnote}>{copy.exportJsonGuidance}</Text>
+        <Text style={styles.privacyFootnote}>{copy.exportPdfGuidance}</Text>
+      </View>
     </Card>
   );
 }
@@ -247,6 +268,24 @@ export function RestoreSection({
   isLoadingImportPreview: boolean;
   onRestoreImport: () => void;
 }) {
+  const hasLocalBackups = localExportFiles.length > 0;
+  const restoreReady = Boolean(
+    selectedImportPath && selectedImportPreview && !isLoadingImportPreview && !isRestoringImport,
+  );
+  const restoreButtonTitle = isRestoringImport
+    ? copy.restoreRestoreButtonBusy
+    : !hasLocalBackups
+      ? copy.restoreNoBackupAction
+      : !selectedImportPath
+        ? copy.restoreSelectBackupAction
+        : isLoadingImportPreview
+          ? copy.restoreLoadingAction
+          : importMode === 'merge'
+            ? copy.restoreMergeButton
+            : copy.restoreRestoreButton;
+  const restoreGuidance =
+    importMode === 'merge' ? copy.restoreMergeGuidance : copy.restoreReplaceWarning;
+
   return (
     <Card style={styles.sectionCard}>
       <SettingsSectionHeader
@@ -332,21 +371,14 @@ export function RestoreSection({
 
       <View style={styles.buttonStack}>
         <Button
-          title={
-            isRestoringImport
-              ? copy.restoreRestoreButtonBusy
-              : importMode === 'merge'
-                ? copy.restoreMergeButton
-                : copy.restoreRestoreButton
-          }
-          variant={importMode === 'merge' ? 'ghost' : 'primary'}
+          title={restoreButtonTitle}
+          variant={restoreReady ? (importMode === 'merge' ? 'primary' : 'danger') : 'ghost'}
           size="sm"
           style={styles.buttonStackButton}
           onPress={onRestoreImport}
-          disabled={
-            !selectedImportPath || isLoadingImportPreview || isRestoringImport || !selectedImportPreview
-          }
+          disabled={!restoreReady}
         />
+        <Text style={styles.privacyFootnote}>{restoreGuidance}</Text>
       </View>
     </Card>
   );
@@ -357,6 +389,7 @@ export function DevSection({
   styles,
   seedDreamCount,
   isUpdatingSeedDreams,
+  onPreviewWakeFlow,
   onSeed250,
   onSeed1000,
   onPreviewMonthlyReport,
@@ -366,6 +399,7 @@ export function DevSection({
   styles: SettingsStyles;
   seedDreamCount: number;
   isUpdatingSeedDreams: boolean;
+  onPreviewWakeFlow: () => void;
   onSeed250: () => void;
   onSeed1000: () => void;
   onPreviewMonthlyReport: () => void;
@@ -374,16 +408,25 @@ export function DevSection({
   return (
     <Card style={styles.sectionCard}>
       <SettingsSectionHeader
-        title={copy.scaleTestTitle}
-        description={copy.scaleTestDescription}
+        title={copy.developerToolsTitle}
+        description={copy.developerToolsDescription}
       />
-      <SettingsMetaGrid
-        items={[
-          {
-            label: copy.scaleTestSeededLabel,
-            value: String(seedDreamCount),
-          },
-        ]}
+      <SettingsActionRow
+        title={copy.reminderPreviewWakeAction}
+        meta={copy.reminderPreviewWakeMeta}
+        variant="inline"
+        onPress={onPreviewWakeFlow}
+      />
+      <SettingsActionRow
+        title={copy.devPreviewMonthlyReport}
+        variant="inline"
+        onPress={onPreviewMonthlyReport}
+      />
+      <Text style={styles.restoreLabel}>{copy.scaleTestTitle}</Text>
+      <SettingsActionRow
+        title={copy.scaleTestSeededLabel}
+        value={String(seedDreamCount)}
+        variant="inline"
       />
       <View style={styles.buttonRow}>
         <Button
@@ -404,13 +447,6 @@ export function DevSection({
         />
       </View>
       <View style={styles.buttonStack}>
-        <Button
-          title={copy.devPreviewMonthlyReport}
-          variant="ghost"
-          size="sm"
-          style={styles.buttonStackButton}
-          onPress={onPreviewMonthlyReport}
-        />
         <Button
           title={copy.scaleTestClear}
           variant="ghost"

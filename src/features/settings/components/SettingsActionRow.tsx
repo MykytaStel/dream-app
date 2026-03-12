@@ -11,6 +11,7 @@ type SettingsActionRowProps = {
   meta?: string;
   value?: string;
   disabled?: boolean;
+  variant?: 'tile' | 'inline';
   onPress?: () => void;
   trailing?: React.ReactNode;
 };
@@ -20,6 +21,7 @@ export function SettingsActionRow({
   meta,
   value,
   disabled = false,
+  variant = 'tile',
   onPress,
   trailing,
 }: SettingsActionRowProps) {
@@ -31,7 +33,11 @@ export function SettingsActionRow({
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
         {meta ? (
-          <Text style={styles.meta} numberOfLines={1} ellipsizeMode="middle">
+          <Text
+            style={styles.meta}
+            numberOfLines={variant === 'tile' ? 1 : 2}
+            ellipsizeMode={variant === 'tile' ? 'middle' : 'tail'}
+          >
             {meta}
           </Text>
         ) : null}
@@ -41,13 +47,14 @@ export function SettingsActionRow({
   );
 
   if (!onPress) {
-    return <View style={styles.row}>{content}</View>;
+    return <View style={[styles.row, variant === 'inline' ? styles.rowInline : null]}>{content}</View>;
   }
 
   return (
     <Pressable
       style={({ pressed }) => [
         styles.row,
+        variant === 'inline' ? styles.rowInline : null,
         pressed && !disabled ? styles.rowPressed : null,
         disabled ? styles.rowDisabled : null,
       ]}
@@ -75,6 +82,13 @@ function createStyles(theme: Theme) {
     },
     rowPressed: {
       opacity: 0.88,
+    },
+    rowInline: {
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      paddingVertical: 2,
+      paddingHorizontal: 0,
+      borderRadius: 0,
     },
     rowDisabled: {
       opacity: 0.7,

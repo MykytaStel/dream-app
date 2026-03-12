@@ -9,7 +9,6 @@ import { Theme } from '../../../theme/theme';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import {
-  openBackupScreen,
   openMonthlyReport,
   openWakeEntry,
 } from '../../../app/navigation/navigationRef';
@@ -27,7 +26,6 @@ import {
   SettingsHeroSection,
 } from '../components/SettingsTopSections';
 import { SettingsActionRow } from '../components/SettingsActionRow';
-import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import { SettingsSectionHeader } from '../components/SettingsSectionHeader';
 import { SettingsSegmentedControl } from '../components/SettingsSegmentedControl';
 
@@ -55,21 +53,33 @@ export default function SettingsScreen() {
     ],
     [copy.sectionBackup, copy.sectionGeneral, copy.sectionTools],
   );
-  const workspaceHint = React.useMemo(() => {
-    switch (selectedWorkspace) {
-      case 'backup':
-        return copy.sectionBackupHint;
-      case 'tools':
-        return copy.sectionToolsHint;
-      case 'general':
-      default:
-        return copy.sectionGeneralHint;
+  const backupStatusValue = React.useMemo(
+    () =>
+      controller.cloudSummaryHighlights[0]?.value ?? copy.cloudSessionSignedOut,
+    [controller.cloudSummaryHighlights, copy.cloudSessionSignedOut],
+  );
+  const backupAccountValue = React.useMemo(
+    () =>
+      controller.cloudSummaryHighlights.find(
+        item => item.label === copy.cloudAccountLabel,
+      )?.value ?? copy.cloudAccountDisconnected,
+    [
+      controller.cloudSummaryHighlights,
+      copy.cloudAccountDisconnected,
+      copy.cloudAccountLabel,
+    ],
+  );
+  const backupTeaserMeta = React.useMemo(() => {
+    if (controller.cloudSession.status !== 'signed-in') {
+      return backupAccountValue;
     }
+
+    return `${backupAccountValue} • ${copy.cloudLastSyncLabel} ${controller.cloudSyncMetaTitle}`;
   }, [
-    copy.sectionBackupHint,
-    copy.sectionGeneralHint,
-    copy.sectionToolsHint,
-    selectedWorkspace,
+    backupAccountValue,
+    controller.cloudSession.status,
+    controller.cloudSyncMetaTitle,
+    copy.cloudLastSyncLabel,
   ]);
 
   return (
@@ -83,10 +93,7 @@ export default function SettingsScreen() {
       />
 
       <Card style={styles.workspaceCard}>
-        <SettingsSectionHeader
-          title={copy.sectionTitle}
-          description={workspaceHint}
-        />
+        <SettingsSectionHeader title={copy.sectionTitle} />
         <SettingsSegmentedControl
           selectedValue={selectedWorkspace}
           onChange={setSelectedWorkspace}
@@ -113,27 +120,19 @@ export default function SettingsScreen() {
             }
             onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
             onNativeTimePickerChange={controller.onNativeTimePickerChange}
-            onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
           />
 
           <Card style={styles.sectionCard}>
             <SettingsSectionHeader
-              title={copy.cloudTitle}
+              title={copy.backupScreenTitle}
               description={copy.cloudDescription}
-            />
-            <SettingsMetaGrid
-              items={controller.cloudSummaryHighlights}
-              dense
             />
             <SettingsActionRow
               title={controller.cloudManageActionTitle}
-              meta={controller.cloudManageActionMeta}
-              value={controller.cloudSyncMetaTitle}
-              onPress={() => openBackupScreen()}
+              meta={backupTeaserMeta}
+              value={backupStatusValue}
+              onPress={() => setSelectedWorkspace('backup')}
             />
-            <Text style={styles.privacyFootnote}>
-              {controller.cloudSyncMetaDescription}
-            </Text>
           </Card>
 
           <PrivacySection
@@ -195,7 +194,6 @@ export default function SettingsScreen() {
             copy={copy}
             styles={styles}
             analysisSettings={controller.analysisSettings}
-            analysisHighlights={controller.analysisHighlights}
             onSave={controller.saveNextAnalysisSettings}
           />
 
@@ -221,6 +219,7 @@ export default function SettingsScreen() {
               styles={styles}
               seedDreamCount={controller.seedDreamCount}
               isUpdatingSeedDreams={controller.isUpdatingSeedDreams}
+              onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
               onSeed250={() =>
                 controller.onSeedDreams(250).catch(() => undefined)
               }

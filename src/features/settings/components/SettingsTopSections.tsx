@@ -36,7 +36,7 @@ export function SettingsHeroSection({
 }) {
   return (
     <View style={styles.heroHeader}>
-      <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
+      <SectionHeader title={copy.title} subtitle={copy.subtitle} />
       <View style={styles.inlineLanguageRow}>
         <Text style={styles.inlineLanguageLabel}>{copy.languageTitle}</Text>
         <View style={styles.inlineLanguageControls}>
@@ -88,7 +88,6 @@ export function ReminderSection({
   onToggleReminder,
   onOpenReminderTimePicker,
   onNativeTimePickerChange,
-  onPreviewWakeFlow,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
@@ -102,7 +101,6 @@ export function ReminderSection({
   onToggleReminder: () => void;
   onOpenReminderTimePicker: () => void;
   onNativeTimePickerChange: (event: any, date?: Date) => void;
-  onPreviewWakeFlow: () => void;
 }) {
   const t = useTheme<Theme>();
 
@@ -155,12 +153,6 @@ export function ReminderSection({
           ) : null}
         </>
       ) : null}
-
-      <SettingsActionRow
-        title={copy.reminderPreviewWakeAction}
-        meta={copy.reminderPreviewWakeMeta}
-        onPress={onPreviewWakeFlow}
-      />
     </Card>
   );
 }
@@ -180,7 +172,13 @@ export function PrivacySection({
         title={copy.privacyTitle}
         description={copy.privacyDescription}
       />
-      <SettingsMetaGrid items={privacyHighlights} dense />
+      {privacyHighlights.map(item => (
+        <SettingsActionRow
+          key={item.label}
+          title={item.label}
+          meta={item.value}
+        />
+      ))}
       <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
     </Card>
   );

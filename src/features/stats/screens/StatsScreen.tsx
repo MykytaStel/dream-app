@@ -230,10 +230,23 @@ export default function StatsScreen() {
               coverageItems={controller.coverageItems}
               attentionItems={controller.attentionItems}
               workQueueItems={controller.workQueueItems}
+              savedMonthItems={controller.savedMonthItems}
+              savedThreadItems={controller.savedOverviewThreadItems}
               onOpenWorkQueueItem={(dreamId, focusSection) =>
                 navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
                   dreamId,
                   focusSection,
+                })
+              }
+              onOpenSavedMonth={monthKey =>
+                navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport, {
+                  yearMonth: monthKey,
+                })
+              }
+              onOpenSavedThread={(signal, kind) =>
+                navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
+                  signal,
+                  kind: kind as PatternDetailKind,
                 })
               }
             />

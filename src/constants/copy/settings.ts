@@ -10,7 +10,7 @@ const SETTINGS_COPY_EN = {
   sectionTools: 'Tools',
   sectionGeneralHint: 'Language, reminder, and privacy basics.',
   sectionBackupHint:
-    'Export snapshots and review restore before changing local data.',
+    'Sync, export, and restore.',
   sectionToolsHint: 'Analysis, transcription, and developer tools.',
   toggleShow: 'Show',
   toggleHide: 'Hide',
@@ -65,7 +65,7 @@ const SETTINGS_COPY_EN = {
     'If you delete the app, local entries, downloaded transcription model, and drafts may be removed with it until export or sync exists.',
   cloudTitle: 'Cloud backup',
   cloudDescription:
-    'Keep the same dream archive available across devices while offline capture stays primary.',
+    'Keep one archive available across devices.',
   cloudConfigLabel: 'Runtime config',
   cloudConfigReady: 'Ready',
   cloudConfigMissing: 'Missing',
@@ -126,10 +126,10 @@ const SETTINGS_COPY_EN = {
     'Link this backup to your email next so another device can open the same archive.',
   backupScreenTitle: 'Backup & sync',
   backupScreenSubtitle:
-    'Keep one dream archive across devices while capture stays local first.',
+    'Sync, export, and restore one archive.',
   backupTimelineTitle: 'Sync activity',
   backupTimelineDescription:
-    'Read the last successful sync, latest local backup snapshot, and how fresh this device is before you restore or recover anything.',
+    'See the last sync, latest snapshot, and this device state.',
   backupTimelineSyncTitle: 'Last successful sync',
   backupTimelineSnapshotTitle: 'Latest backup snapshot',
   backupTimelineDeviceTitle: 'This device',
@@ -146,7 +146,7 @@ const SETTINGS_COPY_EN = {
   backupTimelineDeviceNoLocalChanges: 'No local changes yet',
   backupContentTrustTitle: 'What may still be local',
   backupContentTrustDescription:
-    'Voice notes and saved transcripts can lag behind across devices. Check these two rows before assuming another device already has the same content.',
+    'Check what may still be local on this device.',
   backupContentTrustAudioTitle: 'Voice notes',
   backupContentTrustAudioMeta: '{total} saved • {synced} already in cloud',
   backupContentTrustAudioEmpty: 'No voice notes yet',
@@ -231,7 +231,7 @@ const SETTINGS_COPY_EN = {
     'Your dreams stay local first. Cloud backup only adds sync and restore across devices when you choose to connect it.',
   exportTitle: 'Local export',
   exportDescription:
-    'Create a restore-safe JSON backup or a readable PDF snapshot of the archive.',
+    'Create a JSON backup or a readable PDF snapshot.',
   exportIncludesLabel: 'Includes',
   exportIncludesValue:
     'Dreams, draft, locale, reminders, transcripts, and analysis metadata',
@@ -244,6 +244,8 @@ const SETTINGS_COPY_EN = {
   exportButtonBusy: 'Exporting...',
   exportPdfButton: 'Export PDF',
   exportPdfButtonBusy: 'Rendering PDF...',
+  exportJsonGuidance: 'Use JSON if you may restore this archive later.',
+  exportPdfGuidance: 'Use PDF only for reading or sharing.',
   exportSuccessTitle: 'Export created',
   exportSuccessDescription: 'A local JSON snapshot was written to:',
   exportPdfSuccessTitle: 'PDF created',
@@ -252,7 +254,7 @@ const SETTINGS_COPY_EN = {
   exportPdfErrorTitle: 'PDF export failed',
   restoreTitle: 'Local restore',
   restoreDescription:
-    'Pick a saved backup, review what it would change, then restore only when it reads clearly.',
+    'Choose a backup, review it, then restore.',
   restoreAvailableLabel: 'Available backups',
   restoreLoading: 'Loading backups...',
   restoreEmptyTitle: 'No local backups yet',
@@ -267,6 +269,12 @@ const SETTINGS_COPY_EN = {
     'Replace local dreams, draft, locale, reminders, and analysis settings.',
   restoreModeMergeHint:
     'Add backup dreams, keep current settings, and import the backup draft only if the local draft is empty.',
+  restoreNoBackupAction: 'Create JSON backup first',
+  restoreSelectBackupAction: 'Choose a backup first',
+  restoreLoadingAction: 'Preparing backup preview...',
+  restoreReplaceWarning: 'Replace overwrites the local archive on this device.',
+  restoreMergeGuidance:
+    'Merge keeps current settings and adds dreams from the backup.',
   restoreFileLabel: 'File',
   restoreVersionLabel: 'Backup',
   restoreLocaleLabel: 'Locale',
@@ -304,7 +312,7 @@ const SETTINGS_COPY_EN = {
   restoreErrorTitle: 'Restore failed',
   transcriptionTitle: 'Offline transcription',
   transcriptionDescription:
-    'Voice notes can be transcribed on device after one model download.',
+    'Transcribe voice notes on device after one model download.',
   transcriptionStatusLabel: 'Model',
   transcriptionStatusInstalled: 'Downloaded',
   transcriptionStatusMissing: 'Not downloaded yet',
@@ -318,13 +326,17 @@ const SETTINGS_COPY_EN = {
   transcriptionDownloadErrorTitle: 'Could not download model',
   transcriptionDeleteButton: 'Delete local model',
   transcriptionDeleteButtonBusy: 'Deleting model...',
+  transcriptionMissingHint: 'Download the model once to enable offline transcription.',
   transcriptionDeleteSuccessTitle: 'Model removed',
   transcriptionDeleteSuccessDescription:
     'The offline transcription model was removed from local storage.',
   transcriptionDeleteErrorTitle: 'Could not remove model',
   scaleTestTitle: 'Scale test',
   scaleTestDescription:
-    'Generate sample dreams so you can stress-test Home, Archive, and Memory.',
+    'Generate sample dreams for stress testing.',
+  developerToolsTitle: 'Developer tools',
+  developerToolsDescription:
+    'Debug-only tools for previews, seed data, and stress testing.',
   scaleTestSeededLabel: 'Sample dreams',
   scaleTestAdd250: 'Add 250',
   scaleTestAdd1000: 'Add 1000',
@@ -339,7 +351,7 @@ const SETTINGS_COPY_EN = {
   scaleTestErrorTitle: 'Could not prepare sample dreams',
   analysisTitle: 'Dream analysis',
   analysisDescription:
-    'Generate a local reflection from saved text, transcript, tags, and sleep context. Network analysis stays optional and planned.',
+    'Generate a local reflection from saved dream data.',
   analysisEnabledLabel: 'Analysis layer',
   analysisEnabled: 'Enabled',
   analysisDisabled: 'Disabled',
@@ -349,6 +361,7 @@ const SETTINGS_COPY_EN = {
   analysisNetworkLabel: 'Network',
   analysisNetworkAllowed: 'Allowed',
   analysisNetworkBlocked: 'Blocked',
+  analysisLocalNetworkHint: 'Local analysis does not need network access.',
   analysisEnableButton: 'Enable analysis layer',
   analysisDisableButton: 'Disable analysis layer',
   analysisUseManualButton: 'Use local analysis',
@@ -374,7 +387,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   sectionTools: 'Інструменти',
   sectionGeneralHint: 'Мова, нагадування і базова приватність.',
   sectionBackupHint:
-    'Експорт копій і перегляд відновлення перед зміною локальних даних.',
+    'Синк, експорт і відновлення.',
   sectionToolsHint: 'Аналіз, транскрипція й дев-інструменти.',
   toggleShow: 'Показати',
   toggleHide: 'Сховати',
@@ -430,7 +443,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Якщо видалити застосунок, локальні записи, завантажена модель транскрипції і чернетки можуть зникнути, доки не зʼявиться експорт або синхронізація.',
   cloudTitle: 'Хмарний backup',
   cloudDescription:
-    'Тримай один і той самий архів снів на кількох пристроях, але офлайн-запис лишається основним сценарієм.',
+    'Тримай один архів доступним на кількох пристроях.',
   cloudConfigLabel: 'Runtime-конфіг',
   cloudConfigReady: 'Готово',
   cloudConfigMissing: 'Відсутній',
@@ -492,10 +505,10 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Тепер привʼяжи цей backup до пошти, щоб інший пристрій міг відкрити той самий архів.',
   backupScreenTitle: 'Backup і sync',
   backupScreenSubtitle:
-    'Тримай один архів снів на кількох пристроях, але запис лишається локальним у першу чергу.',
+    'Синк, експорт і відновлення одного архіву.',
   backupTimelineTitle: 'Активність синку',
   backupTimelineDescription:
-    'Подивись на останній успішний синк, найсвіжіший локальний backup snapshot і стан цього пристрою перед restore або recovery діями.',
+    'Подивись на останній синк, snapshot і стан цього пристрою.',
   backupTimelineSyncTitle: 'Останній успішний синк',
   backupTimelineSnapshotTitle: 'Останній backup snapshot',
   backupTimelineDeviceTitle: 'Цей пристрій',
@@ -512,7 +525,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupTimelineDeviceNoLocalChanges: 'Локальних змін ще немає',
   backupContentTrustTitle: 'Що ще може бути лише локально',
   backupContentTrustDescription:
-    'Голосові нотатки й збережені транскрипти можуть з’явитися на іншому пристрої не одразу. Перевір ці два рядки, перш ніж вважати, що інший пристрій уже має той самий вміст.',
+    'Перевір, що ще може лишатися тільки на цьому пристрої.',
   backupContentTrustAudioTitle: 'Голосові нотатки',
   backupContentTrustAudioMeta: '{total} збережено • {synced} уже в хмарі',
   backupContentTrustAudioEmpty: 'Ще немає голосових нотаток',
@@ -597,7 +610,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Твої сни лишаються локальними в першу чергу. Хмарний backup лише додає sync і restore між пристроями, коли ти сам цього хочеш.',
   exportTitle: 'Локальний експорт',
   exportDescription:
-    'Створи JSON для відновлення або читабельний PDF-знімок архіву.',
+    'Створи JSON backup або читабельний PDF snapshot.',
   exportIncludesLabel: 'Що входить',
   exportIncludesValue:
     'Сни, чернетка, мова, нагадування, транскрипти й метадані аналізу',
@@ -610,6 +623,8 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   exportButtonBusy: 'Експорт...',
   exportPdfButton: 'Експортувати PDF',
   exportPdfButtonBusy: 'Створення PDF...',
+  exportJsonGuidance: 'Використай JSON, якщо потім може знадобитися відновлення.',
+  exportPdfGuidance: 'PDF потрібен лише для читання або поширення.',
   exportSuccessTitle: 'Експорт створено',
   exportSuccessDescription: 'Локальний JSON-файл записано в:',
   exportPdfSuccessTitle: 'PDF створено',
@@ -618,7 +633,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   exportPdfErrorTitle: 'Помилка PDF-експорту',
   restoreTitle: 'Локальне відновлення',
   restoreDescription:
-    'Обери збережену копію, подивись що саме вона змінить, і відновлюй лише тоді, коли це читається однозначно.',
+    'Обери backup, переглянь його і віднови.',
   restoreAvailableLabel: 'Доступні копії',
   restoreLoading: 'Завантаження копій...',
   restoreEmptyTitle: 'Локальних копій ще немає',
@@ -633,6 +648,12 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Замінити локальні сни, чернетку, мову, нагадування й налаштування аналізу.',
   restoreModeMergeHint:
     'Додати сни з копії, лишити поточні налаштування і взяти чернетку з копії лише якщо локальна порожня.',
+  restoreNoBackupAction: 'Спершу створи JSON backup',
+  restoreSelectBackupAction: 'Спершу обери backup',
+  restoreLoadingAction: 'Готуємо preview backup...',
+  restoreReplaceWarning: 'Replace перезапише локальний архів на цьому пристрої.',
+  restoreMergeGuidance:
+    'Merge лишає поточні налаштування й додає сни з backup.',
   restoreFileLabel: 'Файл',
   restoreVersionLabel: 'Копія',
   restoreLocaleLabel: 'Мова',
@@ -670,7 +691,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   restoreErrorTitle: 'Помилка відновлення',
   transcriptionTitle: 'Офлайн-транскрипція',
   transcriptionDescription:
-    'Голосові нотатки можна транскрибувати на пристрої після одного завантаження моделі.',
+    'Транскрибуй голосові нотатки локально після одного завантаження моделі.',
   transcriptionStatusLabel: 'Модель',
   transcriptionStatusInstalled: 'Завантажена',
   transcriptionStatusMissing: 'Ще не завантажена',
@@ -684,13 +705,17 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   transcriptionDownloadErrorTitle: 'Не вдалося завантажити модель',
   transcriptionDeleteButton: 'Видалити локальну модель',
   transcriptionDeleteButtonBusy: 'Видалення моделі...',
+  transcriptionMissingHint: 'Завантаж модель один раз, щоб увімкнути офлайн-транскрипцію.',
   transcriptionDeleteSuccessTitle: 'Модель видалено',
   transcriptionDeleteSuccessDescription:
     'Офлайн-модель транскрипції видалено з локального сховища.',
   transcriptionDeleteErrorTitle: 'Не вдалося видалити модель',
   scaleTestTitle: 'Перевірка масштабу',
   scaleTestDescription:
-    "Згенеруй тестові сни, щоб прогнати головний екран, Архів і Пам'ять на великому обсязі.",
+    'Згенеруй тестові сни для stress test.',
+  developerToolsTitle: 'Developer tools',
+  developerToolsDescription:
+    'Інструменти лише для debug: preview, seed data і stress test.',
   scaleTestSeededLabel: 'Тестових снів',
   scaleTestAdd250: 'Додати 250',
   scaleTestAdd1000: 'Додати 1000',
@@ -705,7 +730,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   scaleTestErrorTitle: 'Не вдалося підготувати тестові сни',
   analysisTitle: 'Аналіз сну',
   analysisDescription:
-    'Генеруй локальну рефлексію зі збереженого тексту, транскрипту, тегів і контексту перед сном. Мережевий аналіз лишається опційним і запланованим.',
+    'Генеруй локальну рефлексію зі збережених даних сну.',
   analysisEnabledLabel: 'Шар аналізу',
   analysisEnabled: 'Увімкнений',
   analysisDisabled: 'Вимкнений',
@@ -715,6 +740,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   analysisNetworkLabel: 'Мережа',
   analysisNetworkAllowed: 'Дозволена',
   analysisNetworkBlocked: 'Заблокована',
+  analysisLocalNetworkHint: 'Локальний аналіз не потребує доступу до мережі.',
   analysisEnableButton: 'Увімкнути шар аналізу',
   analysisDisableButton: 'Вимкнути шар аналізу',
   analysisUseManualButton: 'Увімкнути локальний аналіз',

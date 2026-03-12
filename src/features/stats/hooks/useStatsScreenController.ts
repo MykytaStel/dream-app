@@ -30,6 +30,7 @@ import {
 import { buildSavedDreamThreadShelfItems } from '../model/dreamThread';
 import { getMonthlyReportData, getMonthlyReportMonths } from '../model/monthlyReport';
 import {
+  buildSavedMonthlyReviewItems,
   buildRecentActivityBars,
   createReflectionPatternItems,
   createWordPatternItems,
@@ -52,6 +53,7 @@ import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
 import { type DreamFingerprintFacet } from '../components/DreamFingerprintCard';
 import { type PatternGroupCardItem } from '../components/PatternGroupCard';
 import { type MemoryMode } from '../components/StatsScreenSections';
+import { getSavedMonthlyReportMonths } from '../services/monthlyReportShelfService';
 import { getSavedDreamThreads } from '../services/dreamThreadShelfService';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
@@ -89,6 +91,7 @@ export function useStatsScreenController({
   const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
   const [analysisSettings, setAnalysisSettings] = React.useState(() => getDreamAnalysisSettings());
   const [savedThreadRecords, setSavedThreadRecords] = React.useState(() => getSavedDreamThreads());
+  const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
   const [loading, setLoading] = React.useState(meta.totalCount > 0);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedRange, setSelectedRange] = React.useState<InsightRange>('all');
@@ -109,6 +112,7 @@ export function useStatsScreenController({
         setMeta(nextMeta);
         setAnalysisSettings(getDreamAnalysisSettings());
         setSavedThreadRecords(getSavedDreamThreads());
+        setSavedMonths(getSavedMonthlyReportMonths());
 
         if (mode === 'initial') {
           setLoading(nextMeta.totalCount > 0);
@@ -535,6 +539,19 @@ export function useStatsScreenController({
         : getMemoryWorkQueue(scopedDreams, copy, analysisSettings),
     [analysisSettings, copy, isOverviewMode, scopedDreams],
   );
+  const savedMonthItems = React.useMemo(
+    () =>
+      !isOverviewMode
+        ? []
+        : buildSavedMonthlyReviewItems({
+            savedMonthKeys: savedMonths.map(item => item.monthKey),
+            dreams,
+            locale,
+            copy,
+            wakeEmotionLabels,
+          }),
+    [copy, dreams, isOverviewMode, locale, savedMonths, wakeEmotionLabels],
+  );
   const patternGroups = React.useMemo<
     Array<{
       key: PatternGroupKey;
@@ -629,6 +646,17 @@ export function useStatsScreenController({
         : [],
     [copy, isThreadsMode, savedThreadRecords, scopedDreams],
   );
+  const savedOverviewThreadItems = React.useMemo(
+    () =>
+      !isOverviewMode
+        ? []
+        : buildSavedDreamThreadShelfItems({
+            records: savedThreadRecords,
+            dreams,
+            statsCopy: copy,
+          }),
+    [copy, dreams, isOverviewMode, savedThreadRecords],
+  );
 
   return {
     loading,
@@ -667,7 +695,9 @@ export function useStatsScreenController({
     coverageItems,
     attentionItems,
     workQueueItems,
+    savedMonthItems,
     savedThreadItems,
+    savedOverviewThreadItems,
     weeklyGoalTarget,
     weeklyGoalComplete,
     achievements,

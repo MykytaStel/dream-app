@@ -343,7 +343,11 @@ export function StatsOverviewSections({
   coverageItems,
   attentionItems,
   workQueueItems,
+  savedMonthItems,
+  savedThreadItems,
   onOpenWorkQueueItem,
+  onOpenSavedMonth,
+  onOpenSavedThread,
 }: {
   copy: StatsCopy;
   styles: StatsStyles;
@@ -371,9 +375,26 @@ export function StatsOverviewSections({
     focusSection: DreamDetailFocusSection;
     icon: string;
   }>;
+  savedMonthItems: ReadonlyArray<{
+    monthKey: string;
+    title: string;
+    summary: string;
+    meta: string;
+    signals: string[];
+  }>;
+  savedThreadItems: ReadonlyArray<{
+    signal: string;
+    kind: string;
+    kindLabel: string;
+    matchesLabel: string;
+  }>;
   onOpenWorkQueueItem: (dreamId: string, focusSection: DreamDetailFocusSection) => void;
+  onOpenSavedMonth: (monthKey: string) => void;
+  onOpenSavedThread: (signal: string, kind: string) => void;
 }) {
   const t = useTheme<Theme>();
+  const hasReviewShelf =
+    workQueueItems.length > 0 || savedMonthItems.length > 0 || savedThreadItems.length > 0;
 
   return (
     <>
@@ -392,14 +413,14 @@ export function StatsOverviewSections({
 
       <Animated.View layout={statsLayoutTransition}>
         <Card style={styles.sectionCard}>
-          {workQueueItems.length ? (
+          {hasReviewShelf ? (
             <View style={styles.detailsSubsection}>
               <SectionHeader
-                title={copy.workQueueTitle}
-                subtitle={copy.workQueueDescription}
+                title={copy.reviewShelfTitle}
+                subtitle={copy.reviewShelfDescription}
               />
-              <View style={styles.workQueueList}>
-                {workQueueItems.map(item => (
+              <View style={styles.reviewShelfList}>
+                {workQueueItems.slice(0, 1).map(item => (
                   <Pressable
                     key={`${item.focusSection}:${item.dreamId}`}
                     onPress={() => onOpenWorkQueueItem(item.dreamId, item.focusSection)}
@@ -408,6 +429,7 @@ export function StatsOverviewSections({
                       pressed ? styles.insightCardPressed : null,
                     ]}
                   >
+                    <Text style={styles.reportEntryEyebrow}>{copy.reviewShelfContinueEyebrow}</Text>
                     <View style={styles.memoryNudgeHeader}>
                       <Text style={styles.workQueueDreamTitle} numberOfLines={1}>
                         {item.dreamTitle}
@@ -422,6 +444,50 @@ export function StatsOverviewSections({
                       <Text style={styles.memoryNudgeActionText}>{item.actionLabel}</Text>
                       <Ionicons name="arrow-forward-outline" size={14} color={t.colors.accent} />
                     </View>
+                  </Pressable>
+                ))}
+
+                {savedMonthItems.slice(0, 2).map(item => (
+                  <Pressable
+                    key={item.monthKey}
+                    onPress={() => onOpenSavedMonth(item.monthKey)}
+                    style={({ pressed }) => [
+                      styles.reviewShelfCompactRow,
+                      pressed ? styles.insightCardPressed : null,
+                    ]}
+                  >
+                    <View style={styles.reviewShelfCompactCopy}>
+                      <Text style={styles.reviewShelfCompactEyebrow}>
+                        {copy.reviewShelfSavedMonthEyebrow}
+                      </Text>
+                      <Text style={styles.reviewShelfCompactTitle}>{item.title}</Text>
+                      <Text style={styles.reviewShelfCompactMeta}>
+                        {`${item.summary} • ${item.meta}`}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={t.colors.textDim} />
+                  </Pressable>
+                ))}
+
+                {savedThreadItems.slice(0, 2).map(item => (
+                  <Pressable
+                    key={`${item.kind}-${item.signal}`}
+                    onPress={() => onOpenSavedThread(item.signal, item.kind)}
+                    style={({ pressed }) => [
+                      styles.reviewShelfCompactRow,
+                      pressed ? styles.insightCardPressed : null,
+                    ]}
+                  >
+                    <View style={styles.reviewShelfCompactCopy}>
+                      <Text style={styles.reviewShelfCompactEyebrow}>
+                        {copy.reviewShelfSavedThreadEyebrow}
+                      </Text>
+                      <Text style={styles.reviewShelfCompactTitle}>{item.signal}</Text>
+                      <Text style={styles.reviewShelfCompactMeta}>
+                        {`${item.kindLabel} • ${item.matchesLabel}`}
+                      </Text>
+                    </View>
+                    <Ionicons name="chevron-forward" size={16} color={t.colors.textDim} />
                   </Pressable>
                 ))}
               </View>

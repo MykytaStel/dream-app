@@ -42,7 +42,6 @@ export default function BackupScreen() {
       <SectionHeader
         title={copy.backupScreenTitle}
         subtitle={copy.backupScreenSubtitle}
-        large
       />
       <CloudSection
         copy={copy}

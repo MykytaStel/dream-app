@@ -592,23 +592,33 @@ export function createStatsScreenStyles(theme: Theme) {
     patternGroupList: {
       gap: 12,
     },
-    patternSelectionSummary: {
-      gap: 3,
-      paddingTop: 2,
+    savedThreadsBlock: {
+      gap: 8,
     },
-    patternSelectionLabel: {
+    savedThreadsHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 10,
+    },
+    savedThreadsLabel: {
       color: theme.colors.text,
-      fontSize: 16,
-      lineHeight: 21,
+      fontSize: 15,
+      lineHeight: 20,
       fontWeight: '700',
     },
-    patternSelectionDescription: {
-      color: theme.colors.textDim,
-      fontSize: 12,
-      lineHeight: 17,
+    savedThreadsCountChip: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 4,
+        paddingHorizontal: 8,
+      }),
     },
-    savedThreadsBlock: {
-      gap: 10,
+    savedThreadsCountText: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 14,
+      fontWeight: '700',
     },
     savedThreadsList: {
       gap: 8,
@@ -655,21 +665,21 @@ export function createStatsScreenStyles(theme: Theme) {
       ...createSoftTile(theme, {
         tone: 'alt',
         radius: 16,
-        paddingVertical: 12,
-        paddingHorizontal: 12,
+        paddingVertical: 10,
+        paddingHorizontal: 11,
       }),
-      gap: 10,
+      gap: 8,
       borderColor: theme.colors.border,
     },
     threadLeadHeader: {
-      gap: 10,
+      gap: 8,
     },
     threadOpenAction: {
       alignSelf: 'flex-start',
       ...createControlPill(theme, {
         tone: 'surface',
-        paddingHorizontal: 10,
-        paddingVertical: 7,
+        paddingHorizontal: 9,
+        paddingVertical: 6,
       }),
     },
     threadOpenActionText: {
@@ -682,8 +692,8 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     threadLeadLabel: {
       color: theme.colors.text,
-      fontSize: 20,
-      lineHeight: 25,
+      fontSize: 18,
+      lineHeight: 23,
       fontWeight: '700',
       textTransform: 'capitalize',
     },

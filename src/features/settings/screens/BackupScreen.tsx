@@ -12,10 +12,10 @@ import { getSettingsCopy } from '../../../constants/copy/settings';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { SettingsActionRow } from '../components/SettingsActionRow';
+import { CloudSection } from '../components/SettingsCloudSection';
 import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import { useCloudBackupController } from '../hooks/useCloudBackupController';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
-import { CloudSection } from '../components/SettingsTopSections';
 
 export default function BackupScreen() {
   const theme = useTheme<Theme>();

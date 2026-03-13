@@ -8,6 +8,7 @@ import WakeEntryScreen from '../../features/dreams/screens/WakeEntryScreen';
 import MonthlyReportScreen from '../../features/stats/screens/MonthlyReportScreen';
 import PatternDetailScreen from '../../features/stats/screens/PatternDetailScreen';
 import ProgressScreen from '../../features/stats/screens/ProgressScreen';
+import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
 import {
   consumePendingWakeOpenFromReminder,
@@ -123,6 +124,10 @@ export default function RootNavigator() {
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.MonthlyReport}
           component={MonthlyReportScreen}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.ReviewWorkspace}
+          component={ReviewWorkspaceScreen}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.PatternDetail}

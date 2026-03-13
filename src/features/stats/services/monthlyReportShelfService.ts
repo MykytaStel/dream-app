@@ -1,5 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY } from '../../../services/storage/keys';
+import type { Dream } from '../../dreams/model/dream';
 
 type MonthlyReportShelfRecord = {
   monthKey: string;
@@ -41,6 +42,48 @@ export function getSavedMonthlyReportMonths() {
 
 function persistSavedMonthlyReportMonths(records: MonthlyReportShelfRecord[]) {
   kv.set(MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY, JSON.stringify(records.slice(0, 12)));
+}
+
+function toLocalDateKey(epoch: number) {
+  const date = new Date(epoch);
+  const offset = date.getTimezoneOffset() * 60_000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 10);
+}
+
+function getDreamMonthKey(dream: Pick<Dream, 'createdAt' | 'sleepDate'>) {
+  const dateKey = dream.sleepDate || toLocalDateKey(dream.createdAt);
+  return dateKey.slice(0, 7);
+}
+
+export function reconcileSavedMonthlyReportMonths(dreams: Dream[]) {
+  const current = getSavedMonthlyReportMonths();
+  if (!current.length) {
+    return current;
+  }
+
+  const monthKeys = new Set(dreams.map(getDreamMonthKey));
+  const seenKeys = new Set<string>();
+  const next = current.filter(record => {
+    if (!record.monthKey.trim() || seenKeys.has(record.monthKey)) {
+      return false;
+    }
+
+    seenKeys.add(record.monthKey);
+    return monthKeys.has(record.monthKey);
+  });
+
+  const changed =
+    next.length !== current.length ||
+    next.some((record, index) => {
+      const previous = current[index];
+      return !previous || record.monthKey !== previous.monthKey || record.savedAt !== previous.savedAt;
+    });
+
+  if (changed) {
+    persistSavedMonthlyReportMonths(next);
+  }
+
+  return next;
 }
 
 export function toggleSavedMonthlyReportMonth(monthKey: string) {

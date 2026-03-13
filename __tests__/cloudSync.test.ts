@@ -8,6 +8,10 @@ import {
   getDreamsMeta,
   listDreamListItems,
 } from '../src/features/dreams/repository/dreamsRepository';
+import {
+  getSavedMonthlyReportMonths,
+  toggleSavedMonthlyReportMonth,
+} from '../src/features/stats/services/monthlyReportShelfService';
 import { getDreamDeletionTombstone } from '../src/features/dreams/repository/dreamDeletionTombstonesRepository';
 import {
   getCloudSyncSnapshot,
@@ -404,6 +408,7 @@ describe('cloud sync service', () => {
       text: 'Locally stale copy',
       tags: [],
     });
+    toggleSavedMonthlyReportMonth('2026-03');
     markDreamSynced('remote-delete', {
       syncedAt: 1772787000000,
     });
@@ -415,6 +420,7 @@ describe('cloud sync service', () => {
     expect(getDream('remote-delete')).toBeUndefined();
     expect(listDreamListItems().some(item => item.id === 'remote-delete')).toBe(false);
     expect(getDreamsMeta().totalCount).toBe(0);
+    expect(getSavedMonthlyReportMonths()).toEqual([]);
     expect(getDreamDeletionTombstone('remote-delete')).toMatchObject({
       dreamId: 'remote-delete',
       syncStatus: 'synced',

@@ -16,8 +16,8 @@ export type PatternGroupCardItem = {
 };
 
 type PatternGroupCardProps = {
-  title: string;
-  description: string;
+  title?: string;
+  description?: string;
   items: PatternGroupCardItem[];
   emptyLabel: string;
   leadLabel: string;

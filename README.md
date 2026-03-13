@@ -23,15 +23,17 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.5.5`
+Current release target: `0.5.6`
 
-This release should start turning saved review paths into one calmer return
-surface instead of scattered utilities:
+This release should turn the calmer review shelf into the first real `Review
+workspace` without overbuilding `0.6.0`:
 
-- `Memory` should expose one clearer shelf for what to reopen next
-- saved months, saved threads, and local follow-ups should stop feeling separate
-- review depth should improve without introducing a heavy new workspace yet
-- no regression in thread freshness, sync trust, or archive detail flow
+- `Memory` should expose one clearer route into saved review work
+- saved months, saved threads, and local follow-ups should reopen from one
+  product area
+- backend work should stay in support of review freshness after sync, restore,
+  and import
+- no regression in wake capture, sync trust, or dream detail flow
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -56,10 +58,10 @@ for the shipped import-and-shell-polish target,
 for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
-[docs/RELEASE_0.5.5_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.5_PLAN.md)
+[docs/RELEASE_0.5.6_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.6_PLAN.md)
 for the active release target,
 [docs/ROADMAP_0.5.1_TO_0.6.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.5.1_TO_0.6.0.md)
-for the broader feature/backend/UI/UX range from `0.5.5` to `0.6.0`, and
+for the broader feature/backend/UI/UX range from `0.5.6` to `0.6.0`, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
 

@@ -17,6 +17,7 @@ import { type SettingsMetaItem } from '../components/SettingsMetaGrid';
 import { CURRENT_STORAGE_SCHEMA_VERSION } from '../../../services/storage/keys';
 import { DREAM_EXPORT_VERSION } from '../services/dataExportService';
 import { type CloudSyncSnapshot } from '../../../services/cloud/sync';
+import { type SavedReviewStateSnapshot } from '../../stats/services/reviewStateStorageService';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 
@@ -28,7 +29,7 @@ export type BackupTimelineItem = {
 };
 
 export type BackupContentTrustItem = {
-  key: 'audio' | 'transcript';
+  key: 'audio' | 'transcript' | 'review';
   title: string;
   meta: string;
   value: string;
@@ -228,6 +229,7 @@ export function buildBackupTimelineItems(input: {
   session: CloudSession;
   latestBackupFile: LocalDreamExportFile | null;
   latestBackupPreview: DreamImportPreview | null;
+  reviewState: SavedReviewStateSnapshot;
 }): BackupTimelineItem[] {
   const {
     copy,
@@ -237,11 +239,13 @@ export function buildBackupTimelineItems(input: {
     session,
     latestBackupFile,
     latestBackupPreview,
+    reviewState,
   } = input;
   const syncedDreamCount = dreams.filter(dream => dream.syncStatus === 'synced').length;
   const pendingDreamCount = dreams.filter(
     dream => (dream.syncStatus ?? 'local') === 'local' || dream.syncStatus === 'syncing',
   ).length;
+  const pendingReviewStateCount = reviewState.syncStatus !== 'synced' ? 1 : 0;
   const errorDreamCount = dreams.filter(dream => dream.syncStatus === 'error').length;
   const freshestDreamTimestamp = dreams.reduce(
     (latest, dream) => Math.max(latest, getDreamFreshnessTimestamp(dream)),
@@ -289,6 +293,8 @@ export function buildBackupTimelineItems(input: {
         pendingDreamCount === 1
           ? copy.backupTimelineDeviceAheadSingle
           : copy.backupTimelineDeviceAheadPlural.replace('{count}', String(pendingDreamCount));
+    } else if (pendingReviewStateCount > 0) {
+      deviceValue = copy.backupTimelineDeviceReviewAhead;
     } else if (typeof snapshot.lastSuccessAt === 'number') {
       deviceValue = copy.backupTimelineDeviceCaughtUp;
     } else {
@@ -303,9 +309,13 @@ export function buildBackupTimelineItems(input: {
   const deviceMetaParts = [
     `${copy.cloudPendingLabel} ${pendingDreamCount}`,
     `${copy.cloudSyncedLabel} ${syncedDreamCount}`,
+    `${copy.backupTimelineReviewSetsLabel} ${reviewState.savedMonths.length + reviewState.savedThreads.length}`,
   ];
   if (errorDreamCount) {
     deviceMetaParts.push(`${copy.cloudErrorsLabel} ${errorDreamCount}`);
+  }
+  if (pendingReviewStateCount) {
+    deviceMetaParts.push(copy.backupTimelineReviewSetsPending);
   }
   deviceMetaParts.push(
     `${copy.backupTimelineDeviceFreshnessLabel} ${freshnessAnchor}`,
@@ -337,8 +347,9 @@ export function buildBackupContentTrustItems(input: {
   copy: SettingsCopy;
   dreams: Dream[];
   session: CloudSession;
+  reviewState: SavedReviewStateSnapshot;
 }): BackupContentTrustItem[] {
-  const { copy, dreams, session } = input;
+  const { copy, dreams, session, reviewState } = input;
   const signedIn = session.status === 'signed-in';
   const audioDreams = dreams.filter(dream => Boolean(dream.audioUri?.trim()));
   const uploadedAudioCount = audioDreams.filter(dream =>
@@ -400,7 +411,26 @@ export function buildBackupContentTrustItems(input: {
       ? copy.backupContentTrustTranscriptEmptyMeta
       : fillTemplate(copy.backupContentTrustTranscriptMeta, {
           total: transcriptDreams.length,
-          edited: editedTranscriptCount,
+        edited: editedTranscriptCount,
+      });
+
+  const totalReviewSetCount =
+    reviewState.savedMonths.length + reviewState.savedThreads.length;
+  const reviewValue =
+    totalReviewSetCount === 0
+      ? copy.backupContentTrustReviewEmpty
+      : !signedIn
+      ? copy.backupContentTrustLocalOnly
+      : reviewState.syncStatus === 'synced'
+      ? copy.backupContentTrustReviewCaughtUp
+      : copy.backupContentTrustReviewStillLocal;
+  const reviewMeta =
+    totalReviewSetCount === 0
+      ? copy.backupContentTrustReviewEmptyMeta
+      : fillTemplate(copy.backupContentTrustReviewMeta, {
+          total: totalReviewSetCount,
+          months: reviewState.savedMonths.length,
+          threads: reviewState.savedThreads.length,
         });
 
   return [
@@ -416,6 +446,12 @@ export function buildBackupContentTrustItems(input: {
       meta: transcriptMeta,
       value: transcriptValue,
     },
+    {
+      key: 'review',
+      title: copy.backupContentTrustReviewTitle,
+      meta: reviewMeta,
+      value: reviewValue,
+    },
   ];
 }
 
@@ -427,25 +463,9 @@ export function buildPrivacyHighlights(copy: SettingsCopy): SettingsMetaItem[] {
       icon: 'phone-portrait-outline',
     },
     {
-      label: copy.privacySyncLabel,
-      value: copy.privacySyncValue,
-      icon: 'cloud-offline-outline',
-    },
-    {
-      label: copy.privacyAccountLabel,
-      value: copy.privacyAccountValue,
-      icon: 'person-outline',
-    },
-    {
       label: copy.privacyReminderLabel,
       value: copy.privacyReminderValue,
       icon: 'notifications-outline',
-    },
-    {
-      label: copy.privacyTranscriptionLabel,
-      value: copy.privacyTranscriptionValue,
-      icon: 'mic-outline',
-      wide: true,
     },
   ];
 }
@@ -537,41 +557,29 @@ export function buildCloudHighlights(
   ];
 }
 
-export function buildCloudSummaryHighlights(
+export function getCloudSummaryState(
   copy: SettingsCopy,
   session: CloudSession,
   syncEnabled: boolean,
-): SettingsMetaItem[] {
-  return [
-    {
-      label: copy.cloudSessionLabel,
-      value:
-        session.status === 'signed-in'
-          ? copy.cloudSessionSignedIn
-          : copy.cloudSessionSignedOut,
-      icon: 'cloud-outline',
-    },
-    {
-      label: copy.cloudAccountLabel,
-      value:
-        session.status === 'signed-in'
-          ? session.isAnonymous
-            ? copy.cloudAccountAnonymous
-            : session.email || session.userId
-          : copy.cloudAccountDisconnected,
-      icon: 'person-circle-outline',
-      wide: true,
-    },
-    ...(session.status === 'signed-in'
-      ? [
-          {
-            label: copy.cloudSyncToggleLabel,
-            value: syncEnabled ? copy.cloudSyncEnabled : copy.cloudSyncDisabled,
-            icon: 'sync-outline',
-          } satisfies SettingsMetaItem,
-        ]
-      : []),
-  ];
+) {
+  return {
+    statusValue:
+      session.status === 'signed-in'
+        ? copy.cloudSessionSignedIn
+        : copy.cloudSessionSignedOut,
+    accountValue:
+      session.status === 'signed-in'
+        ? session.isAnonymous
+          ? copy.cloudAccountAnonymous
+          : session.email || session.userId
+        : copy.cloudAccountDisconnected,
+    syncValue:
+      session.status === 'signed-in'
+        ? syncEnabled
+          ? copy.cloudSyncEnabled
+          : copy.cloudSyncDisabled
+        : null,
+  };
 }
 
 export function buildAnalysisHighlights(

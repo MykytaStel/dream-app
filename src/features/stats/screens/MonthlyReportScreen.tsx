@@ -44,9 +44,15 @@ export default function MonthlyReportScreen() {
     preSleepEmotionLabels,
   });
 
-  if (controller.loading && controller.meta.totalCount > 0) {
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: statsCopy.monthlyReportTitle,
+    });
+  }, [navigation, statsCopy.monthlyReportTitle]);
+
+  if (controller.loading) {
     return (
-      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
         <ScreenStateCard
           variant="loading"
           title={statsCopy.monthlyReportLoadingTitle}
@@ -58,7 +64,7 @@ export default function MonthlyReportScreen() {
 
   if (controller.loadError) {
     return (
-      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
         <ScreenStateCard
           variant="error"
           title={dreamCopy.timelineErrorTitle}
@@ -70,7 +76,7 @@ export default function MonthlyReportScreen() {
 
   if (!controller.months.length || !controller.report || !controller.viewModel) {
     return (
-      <ScreenContainer scroll={false} style={styles.emptyContainer}>
+      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
         <ScreenStateCard
           variant="empty"
           title={statsCopy.monthlyReportEmptyTitle}
@@ -81,7 +87,7 @@ export default function MonthlyReportScreen() {
   }
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll withTopInset={false}>
       <MonthlyReportHero
         copy={statsCopy}
         styles={styles}
@@ -91,7 +97,6 @@ export default function MonthlyReportScreen() {
         wakeEmotionLabels={wakeEmotionLabels}
         preSleepEmotionLabels={preSleepEmotionLabels}
         report={controller.report}
-        onBack={() => navigation.goBack()}
         onSelectMonth={controller.setSelectedMonthKey}
         onToggleSaveForLater={controller.onToggleSaveForLater}
         onShareReport={() => {

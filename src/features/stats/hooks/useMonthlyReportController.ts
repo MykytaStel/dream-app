@@ -55,7 +55,7 @@ export function useMonthlyReportController({
   const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
   const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
   const [savedThreadRecords, setSavedThreadRecords] = React.useState(() => getSavedDreamThreads());
-  const [loading, setLoading] = React.useState(meta.totalCount > 0);
+  const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
   const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | undefined>(
@@ -76,7 +76,7 @@ export function useMonthlyReportController({
         setMonths(nextMonths);
         setSavedMonths(getSavedMonthlyReportMonths());
         setSavedThreadRecords(getSavedDreamThreads());
-        setLoading(nextMeta.totalCount > 0);
+        setLoading(true);
         trackLocalSurfaceLoad('monthly_report_refresh', startedAt, nextMeta.totalCount);
 
         const runHydration = () => {

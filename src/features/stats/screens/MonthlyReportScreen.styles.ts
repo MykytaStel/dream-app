@@ -61,25 +61,18 @@ export function createMonthlyReportScreenStyles(theme: Theme) {
       bottom: 16,
       backgroundColor: theme.colors.auroraMid,
     },
-    backButton: {
-      alignSelf: 'flex-start',
-      ...createControlPill(theme, {
-        tone: 'surface',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-      }),
-    },
-    backLabel: {
-      color: theme.colors.textDim,
-      fontSize: 12,
-      fontWeight: '700',
-    },
     eyebrow: {
       color: theme.colors.accent,
       fontSize: 11,
       fontWeight: '700',
       letterSpacing: 0.7,
       textTransform: 'uppercase',
+    },
+    heroSubtitle: {
+      color: theme.colors.textDim,
+      fontSize: 15,
+      lineHeight: 22,
+      paddingRight: 72,
     },
     heroMonthTitle: {
       fontFamily: fontFamilies.display,

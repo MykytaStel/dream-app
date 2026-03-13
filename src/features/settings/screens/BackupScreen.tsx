@@ -14,20 +14,25 @@ import { Theme } from '../../../theme/theme';
 import { SettingsActionRow } from '../components/SettingsActionRow';
 import { CloudSection } from '../components/SettingsCloudSection';
 import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
-import { useCloudBackupController } from '../hooks/useCloudBackupController';
+import {
+  ExportSection,
+  RestoreSection,
+} from '../components/SettingsAdvancedSections';
+import { useBackupScreenController } from '../hooks/useBackupScreenController';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 
 export default function BackupScreen() {
   const theme = useTheme<Theme>();
-  const { locale } = useI18n();
+  const { locale, setLocale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
   const navigation =
     useNavigation<
       NativeStackNavigationProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.Backup>
     >();
-  const controller = useCloudBackupController({
+  const controller = useBackupScreenController({
     locale,
+    setLocale,
     copy,
   });
 
@@ -38,11 +43,8 @@ export default function BackupScreen() {
   }, [copy.backupScreenTitle, navigation]);
 
   return (
-    <ScreenContainer scroll>
-      <SectionHeader
-        title={copy.backupScreenTitle}
-        subtitle={copy.backupScreenSubtitle}
-      />
+    <ScreenContainer scroll withTopInset={false}>
+      <Text style={styles.restoreHint}>{copy.backupScreenSubtitle}</Text>
       <CloudSection
         copy={copy}
         styles={styles}
@@ -130,6 +132,11 @@ export default function BackupScreen() {
               {controller.latestLocalBackupPreviewError}
             </Text>
           </View>
+        ) : controller.isLoadingLatestLocalBackupPreview ? (
+          <View style={styles.restoreEmptyBlock}>
+            <Text style={styles.restoreEmptyTitle}>{copy.restoreLoading}</Text>
+            <Text style={styles.restoreHint}>{copy.restoreLoadingAction}</Text>
+          </View>
         ) : (
           <View style={styles.restoreEmptyBlock}>
             <Text style={styles.restoreEmptyTitle}>{copy.backupTimelineSnapshotMissing}</Text>
@@ -151,6 +158,45 @@ export default function BackupScreen() {
           />
         ))}
       </Card>
+      <ExportSection
+        copy={copy}
+        styles={styles}
+        highlights={controller.exportHighlights}
+        isExportingJson={controller.isExportingJson}
+        isExportingPdf={controller.isExportingPdf}
+        lastExportPath={controller.lastExportPath}
+        onExportJson={() =>
+          controller.onExportData().catch(() => undefined)
+        }
+        onExportPdf={() =>
+          controller.onExportPdfData().catch(() => undefined)
+        }
+      />
+      <RestoreSection
+        copy={copy}
+        styles={styles}
+        importMode={controller.importMode}
+        onChangeMode={controller.setImportMode}
+        localExportFiles={controller.localExportFiles}
+        isLoadingLocalExports={controller.isLoadingLocalExports}
+        selectedImportPath={controller.selectedImportPath}
+        onSelectImportFile={controller.onSelectImportFile}
+        formatBackupListTitle={controller.formatBackupListTitle}
+        formatBackupListMeta={controller.formatBackupListMeta}
+        importPreviewError={controller.importPreviewError}
+        selectedImportPreview={controller.selectedImportPreview}
+        showRestorePreview={controller.showRestorePreview}
+        onToggleRestorePreview={() =>
+          controller.setShowRestorePreview(current => !current)
+        }
+        restorePreviewMeta={controller.restorePreviewMeta}
+        restorePreviewItems={controller.restorePreviewItems}
+        lastRestorePreview={controller.lastRestorePreview}
+        restoreSuccessItems={controller.restoreSuccessItems}
+        isRestoringImport={controller.isRestoringImport}
+        isLoadingImportPreview={controller.isLoadingImportPreview}
+        onRestoreImport={controller.onRestoreImport}
+      />
     </ScreenContainer>
   );
 }

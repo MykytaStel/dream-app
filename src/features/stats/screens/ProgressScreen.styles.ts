@@ -11,18 +11,10 @@ export function createProgressScreenStyles(theme: Theme) {
     heroHeader: {
       gap: 8,
     },
-    backButton: {
-      alignSelf: 'flex-start',
-      ...createControlPill(theme, {
-        tone: 'surface',
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-      }),
-    },
-    backLabel: {
+    heroSubtitle: {
       color: theme.colors.textDim,
-      fontSize: 12,
-      fontWeight: '700',
+      fontSize: 15,
+      lineHeight: 22,
     },
     summaryRow: {
       flexDirection: 'row',

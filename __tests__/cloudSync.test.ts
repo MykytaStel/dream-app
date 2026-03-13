@@ -114,6 +114,17 @@ function createMockSupabaseClient(options?: {
   const tombstonesSelect = jest.fn(() => ({
     eq: tombstonesSelectEq,
   }));
+  const reviewSavedStateUpsert = jest.fn(async () => ({ error: null }));
+  const reviewSavedStateMaybeSingle = jest.fn(async () => ({
+    data: null,
+    error: null,
+  }));
+  const reviewSavedStateSelectEq = jest.fn(() => ({
+    maybeSingle: reviewSavedStateMaybeSingle,
+  }));
+  const reviewSavedStateSelect = jest.fn(() => ({
+    eq: reviewSavedStateSelectEq,
+  }));
   const upload = jest.fn(async () => ({ error: options?.uploadError ?? null }));
 
   const client = {
@@ -156,6 +167,11 @@ function createMockSupabaseClient(options?: {
             select: tombstonesSelect,
             upsert: tombstonesUpsert,
           };
+        case 'review_saved_state_snapshots':
+          return {
+            select: reviewSavedStateSelect,
+            upsert: reviewSavedStateUpsert,
+          };
         default:
           throw new Error(`Unexpected table: ${table}`);
       }
@@ -172,6 +188,7 @@ function createMockSupabaseClient(options?: {
     dreamEntriesUpsert,
     tagsInsert,
     tombstonesUpsert,
+    reviewSavedStateUpsert,
     upload,
   };
 }
@@ -310,6 +327,40 @@ describe('cloud sync service', () => {
       tags: ['ocean'],
       syncStatus: 'synced',
     });
+  });
+
+  test('uploads pending saved review state snapshots', async () => {
+    const { client, reviewSavedStateUpsert } = createMockSupabaseClient();
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-1',
+      isAnonymous: true,
+    });
+
+    saveDream({
+      id: 'review-sync',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      text: 'Bridge dream',
+      tags: ['bridge'],
+    });
+    toggleSavedMonthlyReportMonth('2026-03');
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result.status).toBe('success');
+    expect(reviewSavedStateUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-1',
+        saved_months: [{ monthKey: '2026-03', savedAt: expect.any(Number) }],
+        saved_threads: [],
+      }),
+      expect.objectContaining({
+        onConflict: 'user_id',
+      }),
+    );
   });
 
   test('records partial sync failures without throwing away local changes', async () => {

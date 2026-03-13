@@ -14,8 +14,9 @@ import {
   DreamReminderSettings,
   getDreamReminderSettings,
 } from '../../reminders/services/dreamReminderService';
+import { getDerivedReviewStateSnapshot } from '../../stats/services/reviewShelfStateService';
 
-export const DREAM_EXPORT_VERSION = 5;
+export const DREAM_EXPORT_VERSION = 6;
 const DREAM_EXPORT_DIRECTORY = 'exports';
 const PDF_OUTPUT_DIRECTORY = 'Documents';
 const PDF_TEXT_LIMIT = 1800;
@@ -77,6 +78,18 @@ export type DreamExportV1 = {
   draft: DreamDraft | null;
   reminderSettings: DreamReminderSettings;
   analysisSettings: DreamAnalysisSettings;
+  reviewState: {
+    updatedAt: number;
+    savedMonths: Array<{
+      monthKey: string;
+      savedAt: number;
+    }>;
+    savedThreads: Array<{
+      signal: string;
+      kind: 'word' | 'theme' | 'symbol';
+      savedAt: number;
+    }>;
+  };
 };
 
 function getDreamPdfCopy(locale: AppLocale): DreamPdfCopy {
@@ -557,12 +570,18 @@ function buildDreamArchivePdfHtml(payload: DreamExportV1) {
 }
 
 function buildCurrentDreamExportSnapshot() {
+  const reviewState = getDerivedReviewStateSnapshot();
   return buildDreamExportSnapshot({
     locale: getStoredLocale(),
     dreams: listDreams(),
     draft: getDreamDraft(),
     reminderSettings: getDreamReminderSettings(),
     analysisSettings: getDreamAnalysisSettings(),
+    reviewState: {
+      updatedAt: reviewState.updatedAt,
+      savedMonths: reviewState.savedMonths,
+      savedThreads: reviewState.savedThreads,
+    },
   });
 }
 
@@ -585,6 +604,7 @@ export function buildDreamExportSnapshot(input: {
   draft: DreamDraft | null;
   reminderSettings: DreamReminderSettings;
   analysisSettings: DreamAnalysisSettings;
+  reviewState: DreamExportV1['reviewState'];
   storageSchemaVersion?: number;
 }): DreamExportV1 {
   const backupDreams = input.dreams.map(stripTransientDreamFields);
@@ -611,6 +631,7 @@ export function buildDreamExportSnapshot(input: {
     draft: input.draft,
     reminderSettings: input.reminderSettings,
     analysisSettings: input.analysisSettings,
+    reviewState: input.reviewState,
   };
 }
 

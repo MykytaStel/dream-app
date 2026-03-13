@@ -36,8 +36,8 @@ export function StatsOverviewSections({
   coverageItems,
   attentionItems,
   workQueueItems,
-  savedMonthItems,
-  savedThreadItems,
+  importantDreamItems,
+  savedSetItems,
   onOpenReviewWorkspace,
 }: {
   copy: StatsCopy;
@@ -66,41 +66,40 @@ export function StatsOverviewSections({
     focusSection: DreamDetailFocusSection;
     icon: string;
   }>;
-  savedMonthItems: ReadonlyArray<{
-    monthKey: string;
+  importantDreamItems: ReadonlyArray<{
+    dreamId: string;
     title: string;
-    summary: string;
     meta: string;
-    signals: string[];
   }>;
-  savedThreadItems: ReadonlyArray<{
-    signal: string;
-    kind: string;
-    kindLabel: string;
-    matchesLabel: string;
+  savedSetItems: ReadonlyArray<{
+    key: string;
+    kind: 'month' | 'thread';
+    title: string;
+    meta: string;
+    eyebrow: string;
   }>;
   onOpenReviewWorkspace: () => void;
 }) {
   const t = useTheme<Theme>();
   const hasReviewShelf =
-    workQueueItems.length > 0 || savedMonthItems.length > 0 || savedThreadItems.length > 0;
+    workQueueItems.length > 0 || importantDreamItems.length > 0 || savedSetItems.length > 0;
   const reviewWorkspacePreview = workQueueItems[0]
     ? {
         eyebrow: copy.reviewShelfContinueEyebrow,
         title: workQueueItems[0].dreamTitle,
         meta: workQueueItems[0].reason,
       }
-    : savedMonthItems[0]
+    : importantDreamItems[0]
       ? {
-          eyebrow: copy.reviewShelfSavedMonthEyebrow,
-          title: savedMonthItems[0].title,
-          meta: `${savedMonthItems[0].summary} • ${savedMonthItems[0].meta}`,
+          eyebrow: copy.reviewShelfImportantDreamEyebrow,
+          title: importantDreamItems[0].title,
+          meta: importantDreamItems[0].meta,
         }
-      : savedThreadItems[0]
+      : savedSetItems[0]
         ? {
-            eyebrow: copy.reviewShelfSavedThreadEyebrow,
-            title: savedThreadItems[0].signal,
-            meta: `${savedThreadItems[0].kindLabel} • ${savedThreadItems[0].matchesLabel}`,
+            eyebrow: savedSetItems[0].eyebrow,
+            title: savedSetItems[0].title,
+            meta: savedSetItems[0].meta,
           }
         : null;
 

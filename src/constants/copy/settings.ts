@@ -4,44 +4,30 @@ const SETTINGS_COPY_EN = {
   title: 'Settings',
   subtitle:
     'Local-first controls for reminders, privacy, backups, and analysis.',
-  sectionTitle: 'Workspace',
-  sectionGeneral: 'General',
-  sectionBackup: 'Backup',
-  sectionTools: 'Tools',
-  sectionGeneralHint: 'Language, reminder, and privacy basics.',
-  sectionBackupHint:
-    'Sync, export, and restore.',
-  sectionToolsHint: 'Analysis, transcription, and developer tools.',
   toggleShow: 'Show',
   toggleHide: 'Hide',
-  versionTitle: 'Current release',
   footerBuildLabel: 'Kaleidoskop',
   footerStorageMetaPrefix: 'Schema',
   footerExportMetaPrefix: 'Export',
   reminderTitle: 'Dream reminder',
   reminderDescription:
     'One daily nudge after waking so you capture dreams faster.',
-  reminderStatusLabel: 'Status',
   reminderPermissionLabel: 'Notifications',
-  reminderEnabled: 'Enabled',
-  reminderDisabled: 'Disabled',
-  reminderPermissionAllowed: 'Allowed',
   reminderPermissionBlocked: 'Blocked',
-  reminderEnableButton: 'Enable reminder',
-  reminderDisableButton: 'Disable reminder',
   reminderTimeLabel: 'Reminder time',
   reminderTimeHint: 'Tap to change.',
   reminderPreviewWakeAction: 'Preview wake flow',
   reminderPreviewWakeMeta:
     'Open the reminder entry screen without waiting for the next notification.',
   devPreviewMonthlyReport: 'Preview monthly report',
+  devPreviewBackupOnboarding: 'Preview backup onboarding',
+  devPreviewBackupOnboardingMeta:
+    'Open the one-time modal preview and reset its seen state.',
   actionCancel: 'Cancel',
   reminderPermissionDeniedTitle: 'Notifications disabled',
   reminderPermissionDeniedDescription:
     'Allow notifications in system settings to enable dream reminders.',
   reminderSaveErrorTitle: 'Reminder error',
-  reminderStateHint:
-    'Time is saved locally. If system notifications are blocked, the reminder stays off until permission is restored.',
   reminderNotificationTitle: 'Record your dream',
   reminderNotificationBody: 'Capture it while details are still fresh.',
   languageTitle: 'Language',
@@ -53,14 +39,8 @@ const SETTINGS_COPY_EN = {
     'Dream data stays on your device by default. Cloud stays optional and does not block first capture.',
   privacyStorageLabel: 'Dream data',
   privacyStorageValue: 'On this device',
-  privacySyncLabel: 'Cloud sync',
-  privacySyncValue: 'Optional after cloud connect',
-  privacyAccountLabel: 'Account',
-  privacyAccountValue: 'Optional Supabase session',
   privacyReminderLabel: 'Reminders',
   privacyReminderValue: 'Local notifications only',
-  privacyTranscriptionLabel: 'Audio transcription',
-  privacyTranscriptionValue: 'On-device after model download',
   privacyFootnote:
     'If you delete the app, local entries, downloaded transcription model, and drafts may be removed with it until export or sync exists.',
   cloudTitle: 'Cloud backup',
@@ -116,14 +96,44 @@ const SETTINGS_COPY_EN = {
   cloudResetSuccessTitle: 'Check your inbox',
   cloudResetSuccessDescription:
     'Open the reset link from that email, then come back and sign in with the new password.',
-  cloudManageAction: 'Open backup and sync',
-  cloudManageMeta: 'Connect devices, sign in, recover password, and run sync.',
-  cloudManageActionDisconnected: 'Turn on backup',
-  cloudManageMetaDisconnected:
-    'Start backup on this device or open an existing archive from another one.',
-  cloudManageActionAnonymous: 'Save backup account',
-  cloudManageMetaAnonymous:
-    'Link this backup to your email next so another device can open the same archive.',
+  backupCueOpenAction: 'Open backup',
+  backupCueConnectTitle: 'Back up this archive',
+  backupCueConnectDescription:
+    'Keep this archive available on another device before more local-only changes pile up.',
+  backupCueSyncOffTitle: 'Backup is connected, but sync is off',
+  backupCueSyncOffDescription:
+    'Turn sync back on before switching devices so newer local changes do not stay behind.',
+  backupCueReviewPendingTitle: 'Saved review sets are newer on this device',
+  backupCueReviewPendingDescription:
+    'Saved months and threads changed locally. Open backup and run sync before switching devices.',
+  backupOnboardingEyebrow: 'Archive started',
+  backupOnboardingTitle: 'You already have dreams worth keeping',
+  backupOnboardingDescription:
+    'After a few entries, backup starts paying off. Save this archive before it becomes device-bound.',
+  backupOnboardingDreamsLabel: 'Saved dreams',
+  backupOnboardingThresholdLabel: 'Prompt threshold',
+  backupOnboardingValueTitle: 'Why now',
+  backupOnboardingValueDescription:
+    'Backup keeps this archive restorable and makes saved review sets useful across devices once they start to accumulate.',
+  backupOnboardingPrimaryAction: 'Open backup',
+  backupOnboardingLaterAction: 'Later',
+  backupOnboardingPreviewTitle: 'Backup onboarding preview',
+  backupOnboardingPreviewDescription:
+    'Debug the one-time backup prompt without waiting for a fresh account.',
+  backupOnboardingPreviewSeenTitle: 'Seen state',
+  backupOnboardingPreviewSeenValue: 'Seen',
+  backupOnboardingPreviewUnseenValue: 'Unseen',
+  backupOnboardingPreviewEligibilityTitle: 'Production gate',
+  backupOnboardingPreviewEligibilityReady: 'Would open on Home now.',
+  backupOnboardingPreviewEligibilityWaiting:
+    'Needs 3 saved dreams and an unseen state.',
+  backupOnboardingPreviewEligibilityReadyValue: 'Ready',
+  backupOnboardingPreviewEligibilityWaitingValue: 'Waiting',
+  backupOnboardingPreviewOpenAction: 'Open modal preview',
+  backupOnboardingPreviewResetAction: 'Reset seen state',
+  backupOnboardingPreviewMarkSeenAction: 'Mark as seen',
+  backupOnboardingPreviewFootnote:
+    'In production this modal opens once after the archive reaches 3 saved dreams.',
   backupScreenTitle: 'Backup & sync',
   backupScreenSubtitle:
     'Sync, export, and restore one archive.',
@@ -141,9 +151,12 @@ const SETTINGS_COPY_EN = {
   backupTimelineDeviceNeedsAttention: 'Needs attention',
   backupTimelineDeviceAheadSingle: '1 change ahead',
   backupTimelineDeviceAheadPlural: '{count} changes ahead',
+  backupTimelineDeviceReviewAhead: 'Review sets ahead',
   backupTimelineDeviceCaughtUp: 'Caught up',
   backupTimelineDeviceWaitingFirstSync: 'Waiting for first sync',
   backupTimelineDeviceNoLocalChanges: 'No local changes yet',
+  backupTimelineReviewSetsLabel: 'Review sets',
+  backupTimelineReviewSetsPending: 'Review sets waiting for sync',
   backupContentTrustTitle: 'What may still be local',
   backupContentTrustDescription:
     'Check what may still be local on this device.',
@@ -163,6 +176,13 @@ const SETTINGS_COPY_EN = {
   backupContentTrustTranscriptCaughtUp: 'Caught up',
   backupContentTrustTranscriptStillLocalSingle: '1 newer locally',
   backupContentTrustTranscriptStillLocalPlural: '{count} newer locally',
+  backupContentTrustReviewTitle: 'Saved review sets',
+  backupContentTrustReviewMeta: '{total} saved • {months} months • {threads} threads',
+  backupContentTrustReviewEmpty: 'No saved sets yet',
+  backupContentTrustReviewEmptyMeta:
+    'Saved months and threads will appear here once you start curating review work.',
+  backupContentTrustReviewCaughtUp: 'Caught up',
+  backupContentTrustReviewStillLocal: 'Newer locally',
   backupContentTrustLocalOnly: 'Local only',
   cloudExistingBackupTitle: 'Open existing backup',
   cloudSaveBackupTitle: 'Save this backup',
@@ -236,7 +256,7 @@ const SETTINGS_COPY_EN = {
   exportIncludesValue:
     'Dreams, draft, locale, reminders, transcripts, and analysis metadata',
   exportFormatLabel: 'Format',
-  exportFormatValue: 'JSON v5 + PDF snapshot',
+  exportFormatValue: 'JSON v6 + PDF snapshot',
   exportLatestPathLabel: 'Latest file',
   exportFootnote:
     'JSON works as a restore backup. PDF is a readable archive snapshot and does not replace restore.',
@@ -352,9 +372,6 @@ const SETTINGS_COPY_EN = {
   analysisTitle: 'Dream analysis',
   analysisDescription:
     'Generate a local reflection from saved dream data.',
-  analysisEnabledLabel: 'Analysis layer',
-  analysisEnabled: 'Enabled',
-  analysisDisabled: 'Disabled',
   analysisProviderLabel: 'Provider',
   analysisProviderManual: 'Local manual',
   analysisProviderOpenAi: 'OpenAI (planned)',
@@ -362,18 +379,6 @@ const SETTINGS_COPY_EN = {
   analysisNetworkAllowed: 'Allowed',
   analysisNetworkBlocked: 'Blocked',
   analysisLocalNetworkHint: 'Local analysis does not need network access.',
-  analysisEnableButton: 'Enable analysis layer',
-  analysisDisableButton: 'Disable analysis layer',
-  analysisUseManualButton: 'Use local analysis',
-  analysisUseOpenAiButton: 'Keep OpenAI visible',
-  analysisNetworkAllowButton: 'Allow network analysis later',
-  analysisNetworkBlockButton: 'Keep network blocked',
-  architectureTitle: 'Foundation status',
-  architectureDescription:
-    'Local-first data, feature-based structure, extracted styles, offline transcription, and an AI-ready analysis boundary.',
-  plannedTitle: 'Planned controls',
-  plannedDescription:
-    'Notifications, privacy, export, AI preferences, and Health integrations should live here.',
 };
 
 const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
@@ -381,64 +386,43 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   title: 'Налаштування',
   subtitle:
     'Локальні керування нагадуваннями, приватністю, копіями й аналізом.',
-  sectionTitle: 'Режим',
-  sectionGeneral: 'Основне',
-  sectionBackup: 'Копії',
-  sectionTools: 'Інструменти',
-  sectionGeneralHint: 'Мова, нагадування і базова приватність.',
-  sectionBackupHint:
-    'Синк, експорт і відновлення.',
-  sectionToolsHint: 'Аналіз, транскрипція й дев-інструменти.',
   toggleShow: 'Показати',
   toggleHide: 'Сховати',
-  versionTitle: 'Поточний реліз',
   footerBuildLabel: 'Kaleidoskop',
   footerStorageMetaPrefix: 'Схема',
   footerExportMetaPrefix: 'Експорт',
   reminderTitle: 'Нагадування про сон',
   reminderDescription:
     'Одне щоденне нагадування після пробудження, щоб швидше фіксувати сни.',
-  reminderStatusLabel: 'Статус',
   reminderPermissionLabel: 'Сповіщення',
-  reminderEnabled: 'Увімкнено',
-  reminderDisabled: 'Вимкнено',
-  reminderPermissionAllowed: 'Дозволені',
   reminderPermissionBlocked: 'Заблоковані',
-  reminderEnableButton: 'Увімкнути нагадування',
-  reminderDisableButton: 'Вимкнути нагадування',
   reminderTimeLabel: 'Час нагадування',
   reminderTimeHint: 'Натисни, щоб змінити.',
   reminderPreviewWakeAction: 'Переглянути ранковий режим',
   reminderPreviewWakeMeta:
     'Відкрий екран після нагадування без очікування наступного сповіщення.',
   devPreviewMonthlyReport: 'Переглянути місячний звіт',
+  devPreviewBackupOnboarding: 'Переглянути backup onboarding',
+  devPreviewBackupOnboardingMeta:
+    'Відкрий preview одноразового modal і скинь його seen state.',
   actionCancel: 'Скасувати',
   reminderPermissionDeniedTitle: 'Сповіщення вимкнені',
   reminderPermissionDeniedDescription:
     'Дозволь сповіщення в системних налаштуваннях, щоб увімкнути нагадування.',
   reminderSaveErrorTitle: 'Помилка нагадування',
-  reminderStateHint:
-    'Час зберігається локально. Якщо системні сповіщення заблоковані, нагадування лишається вимкненим, доки дозвіл не повернеться.',
   reminderNotificationTitle: 'Запиши свій сон',
   reminderNotificationBody: 'Зафіксуй його, поки деталі ще свіжі.',
   languageTitle: 'Мова',
   languageDescription: 'Обери мову застосунку.',
   languageEnglish: 'EN',
   languageUkrainian: 'UA',
-  architectureTitle: 'Стан фундаменту',
   privacyTitle: 'Приватність і зберігання',
   privacyDescription:
     'Дані про сни лишаються на пристрої за замовчуванням. Хмара лишається опційною і не блокує перший запис.',
   privacyStorageLabel: 'Дані про сни',
   privacyStorageValue: 'Лише на цьому пристрої',
-  privacySyncLabel: 'Хмарна синхронізація',
-  privacySyncValue: 'Опційно після підключення хмари',
-  privacyAccountLabel: 'Акаунт',
-  privacyAccountValue: 'Опційна Supabase-сесія',
   privacyReminderLabel: 'Нагадування',
   privacyReminderValue: 'Локальні сповіщення',
-  privacyTranscriptionLabel: 'Транскрипція аудіо',
-  privacyTranscriptionValue: 'Локально після завантаження моделі',
   privacyFootnote:
     'Якщо видалити застосунок, локальні записи, завантажена модель транскрипції і чернетки можуть зникнути, доки не зʼявиться експорт або синхронізація.',
   cloudTitle: 'Хмарний backup',
@@ -494,15 +478,44 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudResetSuccessTitle: 'Перевір пошту',
   cloudResetSuccessDescription:
     'Відкрий посилання зі листа для скидання пароля, а потім повернись сюди й увійди з новим паролем.',
-  cloudManageAction: 'Відкрити backup і sync',
-  cloudManageMeta:
-    'Підключай пристрої, входь в акаунт, відновлюй пароль і запускай sync.',
-  cloudManageActionDisconnected: 'Увімкнути backup',
-  cloudManageMetaDisconnected:
-    'Почни backup на цьому пристрої або відкрий існуючий архів з іншого.',
-  cloudManageActionAnonymous: 'Зберегти backup-акаунт',
-  cloudManageMetaAnonymous:
-    'Тепер привʼяжи цей backup до пошти, щоб інший пристрій міг відкрити той самий архів.',
+  backupCueOpenAction: 'Відкрити backup',
+  backupCueConnectTitle: 'Збережи цей архів у backup',
+  backupCueConnectDescription:
+    'Зроби архів доступним на іншому пристрої, поки локальних змін не стало більше.',
+  backupCueSyncOffTitle: 'Backup підключено, але sync вимкнений',
+  backupCueSyncOffDescription:
+    'Увімкни sync знову перед переходом на інший пристрій, щоб нові локальні зміни не лишилися тут.',
+  backupCueReviewPendingTitle: 'Збережені набори ревʼю новіші на цьому пристрої',
+  backupCueReviewPendingDescription:
+    'Збережені місяці й нитки змінилися локально. Відкрий backup і запусти sync перед переходом на інший пристрій.',
+  backupOnboardingEyebrow: 'Архів уже почався',
+  backupOnboardingTitle: 'У тебе вже є сни, які варто зберегти',
+  backupOnboardingDescription:
+    'Після кількох записів backup уже має сенс. Збережи цей архів, поки він не лишився прив’язаним до одного пристрою.',
+  backupOnboardingDreamsLabel: 'Збережених снів',
+  backupOnboardingThresholdLabel: 'Поріг показу',
+  backupOnboardingValueTitle: 'Чому саме зараз',
+  backupOnboardingValueDescription:
+    'Backup тримає архів придатним до відновлення і робить saved review sets корисними між пристроями, коли вони починають накопичуватись.',
+  backupOnboardingPrimaryAction: 'Відкрити backup',
+  backupOnboardingLaterAction: 'Пізніше',
+  backupOnboardingPreviewTitle: 'Preview backup onboarding',
+  backupOnboardingPreviewDescription:
+    'Перевір одноразовий backup prompt без очікування нового акаунта.',
+  backupOnboardingPreviewSeenTitle: 'Стан показу',
+  backupOnboardingPreviewSeenValue: 'Вже показано',
+  backupOnboardingPreviewUnseenValue: 'Ще не показано',
+  backupOnboardingPreviewEligibilityTitle: 'Production gate',
+  backupOnboardingPreviewEligibilityReady: 'На Home уже відкрився б.',
+  backupOnboardingPreviewEligibilityWaiting:
+    'Потрібно 3 збережені сни і unseen state.',
+  backupOnboardingPreviewEligibilityReadyValue: 'Готово',
+  backupOnboardingPreviewEligibilityWaitingValue: 'Очікує',
+  backupOnboardingPreviewOpenAction: 'Відкрити modal preview',
+  backupOnboardingPreviewResetAction: 'Скинути seen state',
+  backupOnboardingPreviewMarkSeenAction: 'Позначити як показаний',
+  backupOnboardingPreviewFootnote:
+    'У production цей modal відкривається один раз після 3 збережених снів.',
   backupScreenTitle: 'Backup і sync',
   backupScreenSubtitle:
     'Синк, експорт і відновлення одного архіву.',
@@ -520,9 +533,12 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupTimelineDeviceNeedsAttention: 'Потрібна увага',
   backupTimelineDeviceAheadSingle: 'На 1 зміну попереду',
   backupTimelineDeviceAheadPlural: 'На {count} змін попереду',
+  backupTimelineDeviceReviewAhead: 'Набори ревʼю попереду',
   backupTimelineDeviceCaughtUp: 'Актуально',
   backupTimelineDeviceWaitingFirstSync: 'Чекає на перший синк',
   backupTimelineDeviceNoLocalChanges: 'Локальних змін ще немає',
+  backupTimelineReviewSetsLabel: 'Набори ревʼю',
+  backupTimelineReviewSetsPending: 'Набори ревʼю чекають на синк',
   backupContentTrustTitle: 'Що ще може бути лише локально',
   backupContentTrustDescription:
     'Перевір, що ще може лишатися тільки на цьому пристрої.',
@@ -542,6 +558,13 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupContentTrustTranscriptCaughtUp: 'Актуально',
   backupContentTrustTranscriptStillLocalSingle: '1 новіший локально',
   backupContentTrustTranscriptStillLocalPlural: '{count} новіші локально',
+  backupContentTrustReviewTitle: 'Збережені набори ревʼю',
+  backupContentTrustReviewMeta: '{total} збережено • {months} місяців • {threads} ниток',
+  backupContentTrustReviewEmpty: 'Ще немає збережених наборів',
+  backupContentTrustReviewEmptyMeta:
+    'Збережені місяці й нитки зʼявляться тут, щойно ти почнеш збирати ревʼю-набори.',
+  backupContentTrustReviewCaughtUp: 'Актуально',
+  backupContentTrustReviewStillLocal: 'Новіше локально',
   backupContentTrustLocalOnly: 'Лише локально',
   cloudExistingBackupTitle: 'Відкрити існуючий backup',
   cloudSaveBackupTitle: 'Зберегти цей backup',
@@ -615,7 +638,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   exportIncludesValue:
     'Сни, чернетка, мова, нагадування, транскрипти й метадані аналізу',
   exportFormatLabel: 'Формат',
-  exportFormatValue: 'JSON v5 + PDF-знімок',
+  exportFormatValue: 'JSON v6 + PDF-знімок',
   exportLatestPathLabel: 'Останній файл',
   exportFootnote:
     'JSON підходить для відновлення. PDF є читабельним знімком архіву і не замінює відновлення.',
@@ -731,9 +754,6 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   analysisTitle: 'Аналіз сну',
   analysisDescription:
     'Генеруй локальну рефлексію зі збережених даних сну.',
-  analysisEnabledLabel: 'Шар аналізу',
-  analysisEnabled: 'Увімкнений',
-  analysisDisabled: 'Вимкнений',
   analysisProviderLabel: 'Провайдер',
   analysisProviderManual: 'Локальний',
   analysisProviderOpenAi: 'OpenAI (заплановано)',
@@ -741,17 +761,6 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   analysisNetworkAllowed: 'Дозволена',
   analysisNetworkBlocked: 'Заблокована',
   analysisLocalNetworkHint: 'Локальний аналіз не потребує доступу до мережі.',
-  analysisEnableButton: 'Увімкнути шар аналізу',
-  analysisDisableButton: 'Вимкнути шар аналізу',
-  analysisUseManualButton: 'Увімкнути локальний аналіз',
-  analysisUseOpenAiButton: 'Лишити OpenAI видимим',
-  analysisNetworkAllowButton: 'Дозволити мережевий аналіз пізніше',
-  analysisNetworkBlockButton: 'Тримати мережу заблокованою',
-  architectureDescription:
-    'Локальні дані, структура за фічами, винесені стилі, офлайн-транскрипція і готова межа для AI-аналізу.',
-  plannedTitle: 'Заплановані розділи',
-  plannedDescription:
-    'Сповіщення, приватність, експорт, AI-параметри та інтеграції зі Здоров’ям.',
 };
 
 export type SettingsCopy = typeof SETTINGS_COPY_EN;

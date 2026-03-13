@@ -1,6 +1,11 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import { View } from 'react-native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
@@ -15,7 +20,6 @@ import { getStatsCopy } from '../../../constants/copy/stats';
 import { Theme } from '../../../theme/theme';
 import { ScreenStateCard } from '../../dreams/components/ScreenStateCard';
 import {
-  getDreamsMeta,
   listDreamListItems,
   type DreamListItem,
 } from '../../dreams/repository/dreamsRepository';
@@ -67,13 +71,14 @@ export default function ProgressScreen() {
   useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.Progress>>();
   const styles = createProgressScreenStyles(t);
   const [dreams, setDreams] = React.useState<DreamListItem[]>(() => listDreamListItems());
-  const [loading, setLoading] = React.useState(() => getDreamsMeta().totalCount > 0);
+  const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
   useFocusEffect(
     React.useCallback(() => {
       const startedAt = Date.now();
       setLoadError(null);
+      setLoading(true);
 
       try {
         const nextDreams = listDreamListItems();
@@ -89,9 +94,15 @@ export default function ProgressScreen() {
     }, []),
   );
 
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: copy.progressScreenTitle,
+    });
+  }, [copy.progressScreenTitle, navigation]);
+
   if (loading && !dreams.length) {
     return (
-      <ScreenContainer scroll={false}>
+      <ScreenContainer scroll={false} withTopInset={false}>
         <ScreenStateCard
           variant="loading"
           title={copy.progressLoadingTitle}
@@ -103,7 +114,7 @@ export default function ProgressScreen() {
 
   if (loadError) {
     return (
-      <ScreenContainer scroll={false}>
+      <ScreenContainer scroll={false} withTopInset={false}>
         <ScreenStateCard
           variant="error"
           title={dreamCopy.timelineErrorTitle}
@@ -141,19 +152,11 @@ export default function ProgressScreen() {
     : null;
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll withTopInset={false}>
       <Animated.View layout={progressLayoutTransition}>
         <Card style={styles.heroCard}>
-          <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-            <Text style={styles.backLabel}>{copy.progressBackButton}</Text>
-          </Pressable>
-
           <View style={styles.heroHeader}>
-            <SectionHeader
-              title={copy.progressScreenTitle}
-              subtitle={copy.progressScreenSubtitle}
-              large
-            />
+            <Text style={styles.heroSubtitle}>{copy.progressScreenSubtitle}</Text>
           </View>
 
           <View style={styles.summaryRow}>

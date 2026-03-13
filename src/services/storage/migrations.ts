@@ -12,6 +12,9 @@ import {
   CURRENT_STORAGE_SCHEMA_VERSION,
   DREAM_ANALYSIS_SETTINGS_KEY,
   DREAMS_STORAGE_KEY,
+  MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY,
+  PINNED_DREAM_THREADS_STORAGE_KEY,
+  REVIEW_SAVED_STATE_STORAGE_KEY,
   REMINDER_SETTINGS_KEY,
   STORAGE_SCHEMA_VERSION_KEY,
 } from './keys';
@@ -23,6 +26,17 @@ type ReminderSettingsRecord = {
   enabled: boolean;
   hour: number;
   minute: number;
+};
+
+type LegacySavedMonthRecord = {
+  monthKey: string;
+  savedAt: number;
+};
+
+type LegacySavedThreadRecord = {
+  signal: string;
+  kind: 'word' | 'theme' | 'symbol';
+  savedAt: number;
 };
 
 const DEFAULT_REMINDER_SETTINGS: ReminderSettingsRecord = {
@@ -269,7 +283,7 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
   };
 }
 
-function migrateDreamsToV2() {
+function migrateDreamsFromLegacyShape() {
   const raw = kv.getString(DREAMS_STORAGE_KEY);
   if (!raw) {
     return;
@@ -291,6 +305,10 @@ function migrateDreamsToV2() {
   } catch {
     kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
   }
+}
+
+function migrateDreamsToV2() {
+  migrateDreamsFromLegacyShape();
 }
 
 function migrateReminderSettingsToV2() {
@@ -331,147 +349,27 @@ function migrateToV2() {
 }
 
 function migrateDreamsToV3() {
-  const raw = kv.getString(DREAMS_STORAGE_KEY);
-  if (!raw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-      return;
-    }
-
-    const migrated = parsed
-      .map(coerceLegacyDream)
-      .filter((dream): dream is Dream => Boolean(dream))
-      .map(sanitizeDream);
-
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
-  } catch {
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-  }
+  migrateDreamsFromLegacyShape();
 }
 
 function migrateDreamsToV4() {
-  const raw = kv.getString(DREAMS_STORAGE_KEY);
-  if (!raw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-      return;
-    }
-
-    const migrated = parsed
-      .map(coerceLegacyDream)
-      .filter((dream): dream is Dream => Boolean(dream))
-      .map(sanitizeDream);
-
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
-  } catch {
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-  }
+  migrateDreamsFromLegacyShape();
 }
 
 function migrateDreamsToV5() {
-  const raw = kv.getString(DREAMS_STORAGE_KEY);
-  if (!raw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-      return;
-    }
-
-    const migrated = parsed
-      .map(coerceLegacyDream)
-      .filter((dream): dream is Dream => Boolean(dream))
-      .map(sanitizeDream);
-
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
-  } catch {
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-  }
+  migrateDreamsFromLegacyShape();
 }
 
 function migrateDreamsToV6() {
-  const raw = kv.getString(DREAMS_STORAGE_KEY);
-  if (!raw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-      return;
-    }
-
-    const migrated = parsed
-      .map(coerceLegacyDream)
-      .filter((dream): dream is Dream => Boolean(dream))
-      .map(sanitizeDream);
-
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
-  } catch {
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-  }
+  migrateDreamsFromLegacyShape();
 }
 
 function migrateDreamsToV7() {
-  const raw = kv.getString(DREAMS_STORAGE_KEY);
-  if (!raw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-      return;
-    }
-
-    const migrated = parsed
-      .map(coerceLegacyDream)
-      .filter((dream): dream is Dream => Boolean(dream))
-      .map(sanitizeDream);
-
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
-  } catch {
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-  }
+  migrateDreamsFromLegacyShape();
 }
 
 function migrateDreamsToV8() {
-  const raw = kv.getString(DREAMS_STORAGE_KEY);
-  if (!raw) {
-    return;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-      return;
-    }
-
-    const migrated = parsed
-      .map(coerceLegacyDream)
-      .filter((dream): dream is Dream => Boolean(dream))
-      .map(sanitizeDream);
-
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
-  } catch {
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-  }
+  migrateDreamsFromLegacyShape();
 }
 
 function migrateAnalysisSettingsToV5() {
@@ -493,6 +391,105 @@ function migrateAnalysisSettingsToV5() {
   } catch {
     kv.remove(DREAM_ANALYSIS_SETTINGS_KEY);
   }
+}
+
+function normalizeLegacySavedMonthRecord(
+  value: unknown,
+): LegacySavedMonthRecord | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  if (typeof record.monthKey !== 'string' || !record.monthKey.trim()) {
+    return null;
+  }
+
+  return {
+    monthKey: record.monthKey,
+    savedAt:
+      typeof record.savedAt === 'number' && Number.isFinite(record.savedAt)
+        ? record.savedAt
+        : Date.now(),
+  };
+}
+
+function normalizeLegacySavedThreadRecord(
+  value: unknown,
+): LegacySavedThreadRecord | null {
+  if (!value || typeof value !== 'object') {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  if (typeof record.signal !== 'string' || !record.signal.trim()) {
+    return null;
+  }
+
+  if (record.kind !== 'word' && record.kind !== 'theme' && record.kind !== 'symbol') {
+    return null;
+  }
+
+  return {
+    signal: record.signal.trim(),
+    kind: record.kind,
+    savedAt:
+      typeof record.savedAt === 'number' && Number.isFinite(record.savedAt)
+        ? record.savedAt
+        : Date.now(),
+  };
+}
+
+function migrateReviewSavedStateToV9() {
+  const existingRaw = kv.getString(REVIEW_SAVED_STATE_STORAGE_KEY);
+  if (existingRaw) {
+    return;
+  }
+
+  let savedMonths: LegacySavedMonthRecord[] = [];
+  let savedThreads: LegacySavedThreadRecord[] = [];
+
+  const rawMonths = kv.getString(MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY);
+  if (rawMonths) {
+    try {
+      const parsed = JSON.parse(rawMonths) as unknown[];
+      savedMonths = Array.isArray(parsed)
+        ? parsed
+            .map(normalizeLegacySavedMonthRecord)
+            .filter((item): item is LegacySavedMonthRecord => Boolean(item))
+        : [];
+    } catch {
+      savedMonths = [];
+    }
+  }
+
+  const rawThreads = kv.getString(PINNED_DREAM_THREADS_STORAGE_KEY);
+  if (rawThreads) {
+    try {
+      const parsed = JSON.parse(rawThreads) as unknown[];
+      savedThreads = Array.isArray(parsed)
+        ? parsed
+            .map(normalizeLegacySavedThreadRecord)
+            .filter((item): item is LegacySavedThreadRecord => Boolean(item))
+        : [];
+    } catch {
+      savedThreads = [];
+    }
+  }
+
+  if (!savedMonths.length && !savedThreads.length) {
+    return;
+  }
+
+  kv.set(
+    REVIEW_SAVED_STATE_STORAGE_KEY,
+    JSON.stringify({
+      updatedAt: Date.now(),
+      savedMonths,
+      savedThreads,
+      syncStatus: 'local',
+    }),
+  );
 }
 
 export function runStorageMigrations() {
@@ -537,6 +534,11 @@ export function runStorageMigrations() {
   if (nextVersion < 8) {
     migrateDreamsToV8();
     nextVersion = 8;
+  }
+
+  if (nextVersion < 9) {
+    migrateReviewSavedStateToV9();
+    nextVersion = 9;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

@@ -3,6 +3,7 @@ import {
   buildBackupContentTrustItems,
   buildBackupTimelineItems,
   buildRestorePreviewItems,
+  getCloudSummaryState,
 } from '../src/features/settings/model/settingsPresentation';
 
 describe('backup timeline presentation', () => {
@@ -75,6 +76,13 @@ describe('backup timeline presentation', () => {
           resultingDreamCount: 12,
         },
       },
+      reviewState: {
+        updatedAt: Date.UTC(2026, 2, 12, 8, 20),
+        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 8, 0) }],
+        savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: Date.UTC(2026, 2, 12, 8, 5) }],
+        syncStatus: 'synced',
+        lastSyncedAt: Date.UTC(2026, 2, 12, 8, 30),
+      },
     });
 
     expect(items).toHaveLength(3);
@@ -126,6 +134,12 @@ describe('backup timeline presentation', () => {
       },
       latestBackupFile: null,
       latestBackupPreview: null,
+      reviewState: {
+        updatedAt: Date.UTC(2026, 2, 12, 9, 20),
+        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 9, 10) }],
+        savedThreads: [],
+        syncStatus: 'local',
+      },
     });
 
     expect(items[1]).toMatchObject({
@@ -167,6 +181,13 @@ describe('backup content trust presentation', () => {
           tags: [],
         },
       ],
+      reviewState: {
+        updatedAt: Date.UTC(2026, 2, 12, 7, 10),
+        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 7, 5) }],
+        savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: Date.UTC(2026, 2, 12, 7, 6) }],
+        syncStatus: 'synced',
+        lastSyncedAt: Date.UTC(2026, 2, 12, 7, 11),
+      },
     });
 
     expect(items).toEqual([
@@ -177,6 +198,10 @@ describe('backup content trust presentation', () => {
       expect.objectContaining({
         key: 'transcript',
         value: copy.backupContentTrustTranscriptCaughtUp,
+      }),
+      expect.objectContaining({
+        key: 'review',
+        value: copy.backupContentTrustReviewCaughtUp,
       }),
     ]);
   });
@@ -198,6 +223,12 @@ describe('backup content trust presentation', () => {
           tags: [],
         },
       ],
+      reviewState: {
+        updatedAt: Date.UTC(2026, 2, 12, 7, 10),
+        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 7, 5) }],
+        savedThreads: [],
+        syncStatus: 'local',
+      },
     });
 
     expect(items[0]).toMatchObject({
@@ -207,6 +238,50 @@ describe('backup content trust presentation', () => {
     expect(items[1]).toMatchObject({
       key: 'transcript',
       value: copy.backupContentTrustLocalOnly,
+    });
+    expect(items[2]).toMatchObject({
+      key: 'review',
+      value: copy.backupContentTrustLocalOnly,
+    });
+  });
+});
+
+describe('cloud summary presentation', () => {
+  const copy = getSettingsCopy('en');
+
+  test('builds stable summary values without depending on rendered rows', () => {
+    expect(
+      getCloudSummaryState(
+        copy,
+        {
+          status: 'signed-in',
+          provider: 'supabase',
+          userId: 'user-1',
+          email: 'hello@example.com',
+          isAnonymous: false,
+        },
+        false,
+      ),
+    ).toEqual({
+      statusValue: copy.cloudSessionSignedIn,
+      accountValue: 'hello@example.com',
+      syncValue: copy.cloudSyncDisabled,
+    });
+  });
+
+  test('returns disconnected values when backup is off', () => {
+    expect(
+      getCloudSummaryState(
+        copy,
+        {
+          status: 'signed-out',
+        },
+        false,
+      ),
+    ).toEqual({
+      statusValue: copy.cloudSessionSignedOut,
+      accountValue: copy.cloudAccountDisconnected,
+      syncValue: null,
     });
   });
 });

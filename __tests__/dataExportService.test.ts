@@ -77,6 +77,11 @@ describe('data export service', () => {
         provider: 'manual',
         allowNetwork: false,
       },
+      reviewState: {
+        updatedAt: 10,
+        savedMonths: [{ monthKey: '2026-03', savedAt: 9 }],
+        savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: 8 }],
+      },
     });
 
     expect(payload).toEqual({
@@ -138,6 +143,11 @@ describe('data export service', () => {
         enabled: true,
         provider: 'manual',
         allowNetwork: false,
+      },
+      reviewState: {
+        updatedAt: 10,
+        savedMonths: [{ monthKey: '2026-03', savedAt: 9 }],
+        savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: 8 }],
       },
     });
   });
@@ -265,6 +275,11 @@ describe('data export service', () => {
       enabled: true,
       provider: 'openai',
       allowNetwork: false,
+    });
+    expect(result.payload.reviewState).toEqual({
+      updatedAt: 0,
+      savedMonths: [],
+      savedThreads: [],
     });
   });
 });

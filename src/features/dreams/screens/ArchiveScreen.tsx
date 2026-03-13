@@ -159,7 +159,7 @@ export default function ArchiveScreen() {
     [browse, copy, navigation, styles],
   );
 
-  if (data.loading && data.meta.totalCount > 0) {
+  if (data.loading) {
     return (
       <ScreenContainer scroll={false}>
         <Card style={styles.toolbarCard}>

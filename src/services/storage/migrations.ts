@@ -492,8 +492,25 @@ function migrateReviewSavedStateToV9() {
   );
 }
 
+function readStorageSchemaVersion() {
+  const numericValue = kv.getNumber(STORAGE_SCHEMA_VERSION_KEY);
+  if (typeof numericValue === 'number' && Number.isFinite(numericValue)) {
+    return Math.max(1, Math.floor(numericValue));
+  }
+
+  const rawStringValue = kv.getString(STORAGE_SCHEMA_VERSION_KEY);
+  if (typeof rawStringValue === 'string' && rawStringValue.trim()) {
+    const parsed = Number(rawStringValue.trim());
+    if (Number.isFinite(parsed)) {
+      return Math.max(1, Math.floor(parsed));
+    }
+  }
+
+  return 1;
+}
+
 export function runStorageMigrations() {
-  const currentVersion = kv.getNumber(STORAGE_SCHEMA_VERSION_KEY) ?? 1;
+  const currentVersion = readStorageSchemaVersion();
   if (currentVersion >= CURRENT_STORAGE_SCHEMA_VERSION) {
     return currentVersion;
   }

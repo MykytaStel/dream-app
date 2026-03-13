@@ -1,6 +1,7 @@
 import { getSettingsCopy } from '../src/constants/copy/settings';
 import {
   buildBackupContentTrustItems,
+  buildCloudSyncEventItems,
   buildBackupTimelineItems,
   buildRestorePreviewItems,
   getCloudSummaryState,
@@ -283,6 +284,44 @@ describe('cloud summary presentation', () => {
       accountValue: copy.cloudAccountDisconnected,
       syncValue: null,
     });
+  });
+});
+
+describe('cloud sync event presentation', () => {
+  const copy = getSettingsCopy('en');
+
+  test('builds readable dev sync history rows', () => {
+    const items = buildCloudSyncEventItems(
+      copy,
+      [
+        {
+          id: 'sync-1',
+          status: 'error',
+          reason: 'manual',
+          at: Date.UTC(2026, 2, 12, 8, 30),
+          uploadedCount: 1,
+          pulledCount: 0,
+          skippedCount: 2,
+          conflictsResolvedCount: 1,
+          localWinsCount: 1,
+          remoteWinsCount: 0,
+          failedCount: 1,
+          pendingCount: 3,
+          errorMessage: 'cloud-session-required',
+        },
+      ],
+      'en',
+    );
+
+    expect(items).toEqual([
+      expect.objectContaining({
+        key: 'sync-1',
+        value: copy.cloudSyncStateError,
+      }),
+    ]);
+    expect(items[0].meta).toContain(copy.devSyncReasonManual);
+    expect(items[0].meta).toContain(`${copy.cloudPendingLabel} 3`);
+    expect(items[0].meta).toContain('cloud-session-required');
   });
 });
 

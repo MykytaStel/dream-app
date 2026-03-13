@@ -23,7 +23,8 @@ import {
   getCloudSyncEnabled,
   setCloudSyncEnabled,
 } from '../../../services/auth/session';
-import { getCloudSyncSnapshot, runCloudSync } from '../../../services/cloud/sync';
+import { runCloudSync } from '../../../services/cloud/sync';
+import { getCloudSyncSnapshot } from '../../../services/cloud/syncState';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
 import { getDerivedReviewStateSnapshot } from '../../stats/services/reviewShelfStateService';
 import {

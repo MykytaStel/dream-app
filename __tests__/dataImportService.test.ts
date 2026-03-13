@@ -26,6 +26,7 @@ import { toggleSavedDreamThread } from '../src/features/stats/services/dreamThre
 import { saveSavedReviewStateSnapshot } from '../src/features/stats/services/reviewStateStorageService';
 import { restoreDreamImportFromFile } from '../src/features/settings/services/dataImportService';
 import { DREAM_EXPORT_VERSION } from '../src/features/settings/services/dataExportService';
+import { getDream } from '../src/features/dreams/repository/dreamsRepository';
 import {
   CURRENT_STORAGE_SCHEMA_VERSION,
   STORAGE_SCHEMA_VERSION_KEY,
@@ -174,5 +175,70 @@ describe('data import service', () => {
       syncStatus: 'local',
     });
     expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+  });
+
+  test('keeps a newer local dream when merge restore includes an older copy with the same id', async () => {
+    saveDream({
+      id: 'shared-dream',
+      createdAt: new Date('2026-03-04T08:00:00Z').getTime(),
+      updatedAt: new Date('2026-03-07T08:00:00Z').getTime(),
+      sleepDate: '2026-03-04',
+      text: 'Newer local text',
+      tags: [],
+    });
+
+    (RNFS.readFile as jest.Mock).mockResolvedValue(
+      JSON.stringify({
+        version: DREAM_EXPORT_VERSION,
+        exportedAt: '2026-04-10T08:00:00.000Z',
+        appVersion: '0.6.1',
+        platform: 'ios',
+        locale: 'en',
+        storageSchemaVersion: 9,
+        summary: {
+          dreamCount: 1,
+          archivedDreamCount: 0,
+          audioDreamCount: 0,
+          transcribedDreamCount: 0,
+          editedTranscriptCount: 0,
+          analyzedDreamCount: 0,
+          starredDreamCount: 0,
+          draftIncluded: false,
+        },
+        dreams: [
+          {
+            id: 'shared-dream',
+            createdAt: new Date('2026-03-04T08:00:00Z').getTime(),
+            updatedAt: new Date('2026-03-05T08:00:00Z').getTime(),
+            sleepDate: '2026-03-04',
+            text: 'Older imported text',
+            tags: [],
+          },
+        ],
+        draft: null,
+        reminderSettings: {
+          enabled: false,
+          hour: 7,
+          minute: 30,
+        },
+        analysisSettings: {
+          enabled: true,
+          provider: 'manual',
+          allowNetwork: false,
+        },
+        reviewState: {
+          updatedAt: 0,
+          savedMonths: [],
+          savedThreads: [],
+        },
+      }),
+    );
+
+    await restoreDreamImportFromFile('/documents/exports/import.json', 'merge');
+
+    expect(getDream('shared-dream')).toMatchObject({
+      text: 'Newer local text',
+      updatedAt: new Date('2026-03-07T08:00:00Z').getTime(),
+    });
   });
 });

@@ -38,6 +38,7 @@ describe('data export service', () => {
         {
           id: 'dream-1',
           createdAt: 1,
+          updatedAt: 3,
           starredAt: 2,
           sleepDate: '2026-03-06',
           tags: [],
@@ -105,6 +106,7 @@ describe('data export service', () => {
         {
           id: 'dream-1',
           createdAt: 1,
+          updatedAt: 3,
           starredAt: 2,
           sleepDate: '2026-03-06',
           tags: [],
@@ -166,6 +168,7 @@ describe('data export service', () => {
         {
           id: 'dream-2',
           createdAt: 2,
+          updatedAt: 5,
           starredAt: 4,
           sleepDate: '2026-03-05',
           tags: ['ocean'],
@@ -234,6 +237,7 @@ describe('data export service', () => {
       {
         id: 'dream-2',
         createdAt: 2,
+        updatedAt: 5,
         starredAt: 4,
         sleepDate: '2026-03-05',
         title: undefined,

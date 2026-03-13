@@ -55,6 +55,15 @@ export function openBackupOnboardingPreview() {
   return true;
 }
 
+export function openSyncDiagnosticsPreview() {
+  if (!navigationRef.isReady()) {
+    return false;
+  }
+
+  navigationRef.navigate(ROOT_ROUTE_NAMES.SyncDiagnosticsPreview);
+  return true;
+}
+
 export function openMonthlyReport(
   params?: RootStackParamList[typeof ROOT_ROUTE_NAMES.MonthlyReport],
 ) {

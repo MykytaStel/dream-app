@@ -18,6 +18,7 @@ export const DREAM_ANALYSIS_SETTINGS_KEY = 'dream-analysis-settings';
 export const CLOUD_SESSION_STORAGE_KEY = 'cloud-session';
 export const CLOUD_SYNC_ENABLED_KEY = 'cloud-sync-enabled';
 export const CLOUD_SYNC_SNAPSHOT_STORAGE_KEY = 'cloud-sync-snapshot';
+export const CLOUD_SYNC_EVENTS_STORAGE_KEY = 'cloud-sync-events';
 export const CLOUD_SUPABASE_URL_STORAGE_KEY = 'cloud-supabase-url';
 export const CLOUD_SUPABASE_ANON_KEY_STORAGE_KEY = 'cloud-supabase-anon-key';
 

@@ -1,5 +1,5 @@
 export const STORAGE_SCHEMA_VERSION_KEY = 'storage-schema-version';
-export const CURRENT_STORAGE_SCHEMA_VERSION = 8;
+export const CURRENT_STORAGE_SCHEMA_VERSION = 9;
 
 export const DREAMS_STORAGE_KEY = 'dreams';
 export const DREAMS_INDEX_STORAGE_KEY = 'dreams-index';
@@ -11,6 +11,8 @@ export const HOME_SEARCH_PRESETS_STORAGE_KEY = 'home-search-presets';
 export const MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY =
   'monthly-report-saved-months';
 export const PINNED_DREAM_THREADS_STORAGE_KEY = 'pinned-dream-threads';
+export const REVIEW_SAVED_STATE_STORAGE_KEY = 'review-saved-state';
+export const BACKUP_ONBOARDING_SEEN_KEY = 'backup-onboarding-seen';
 export const APP_LOCALE_KEY = 'app-locale';
 export const DREAM_ANALYSIS_SETTINGS_KEY = 'dream-analysis-settings';
 export const CLOUD_SESSION_STORAGE_KEY = 'cloud-session';

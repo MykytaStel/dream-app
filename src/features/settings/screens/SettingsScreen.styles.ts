@@ -22,9 +22,6 @@ export function createSettingsScreenStyles(theme: Theme) {
       letterSpacing: 0.6,
       textTransform: 'uppercase',
     },
-    workspaceCard: {
-      gap: 6,
-    },
     inlineLanguageControls: {
       flexDirection: 'row',
       gap: 7,
@@ -84,11 +81,6 @@ export function createSettingsScreenStyles(theme: Theme) {
     },
     backupModeBlock: {
       gap: 8,
-    },
-    backupModeHint: {
-      color: theme.colors.textDim,
-      fontSize: 12,
-      lineHeight: 18,
     },
     backupGuideBlock: {
       ...createSoftTile(theme, {

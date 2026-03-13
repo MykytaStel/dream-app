@@ -1,6 +1,11 @@
 import React from 'react';
 import { FlatList, Pressable, View } from 'react-native';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,7 +25,6 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { Dream } from '../../dreams/model/dream';
 import {
-  getDreamsMeta,
   listDreams,
 } from '../../dreams/repository/dreamsRepository';
 import { getPatternDreamMatches } from '../model/patternMatches';
@@ -99,7 +103,7 @@ export default function PatternDetailScreen() {
     useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.PatternDetail>>();
   const { signal, kind } = route.params;
   const [dreams, setDreams] = React.useState<Dream[]>([]);
-  const [loading, setLoading] = React.useState(() => getDreamsMeta().totalCount > 0);
+  const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [isSavedThread, setIsSavedThread] = React.useState(() =>
     isDreamThreadSaved(signal, kind),
@@ -109,7 +113,7 @@ export default function PatternDetailScreen() {
     React.useCallback(() => {
       let cancelled = false;
       setLoadError(null);
-      setLoading(getDreamsMeta().totalCount > 0);
+      setLoading(true);
       setIsSavedThread(isDreamThreadSaved(signal, kind));
 
       const runHydration = () => {
@@ -152,6 +156,12 @@ export default function PatternDetailScreen() {
     }, [kind, signal]),
   );
 
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      title: `${signal}`,
+    });
+  }, [navigation, signal]);
+
   const matches = React.useMemo(
     () => getPatternDreamMatches(dreams, signal, kind),
     [dreams, kind, signal],
@@ -171,10 +181,6 @@ export default function PatternDetailScreen() {
 
   const listHeader = (
     <View style={styles.listHeader}>
-      <Pressable style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backLabel}>{dreamCopy.detailBack}</Text>
-      </Pressable>
-
       <Card style={styles.heroCard}>
         <View pointerEvents="none" style={styles.heroGlow} />
         <Text style={styles.heroEyebrow}>{thread.eyebrow}</Text>
@@ -248,7 +254,7 @@ export default function PatternDetailScreen() {
   );
 
   return (
-    <ScreenContainer scroll={false} padded={false}>
+    <ScreenContainer scroll={false} padded={false} withTopInset={false}>
       <FlatList
         data={thread.entries}
         keyExtractor={item => item.dreamId}
@@ -264,7 +270,7 @@ export default function PatternDetailScreen() {
         contentContainerStyle={[
           styles.listContent,
           {
-            paddingTop: insets.top + t.spacing.xs,
+            paddingTop: t.spacing.xs,
             paddingBottom: getTabBarReservedSpace(insets.bottom) + t.spacing.xs,
           },
         ]}

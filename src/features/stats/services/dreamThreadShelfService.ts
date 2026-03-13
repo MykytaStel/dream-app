@@ -1,38 +1,16 @@
 import type { Dream } from '../../dreams/model/dream';
 import type { PatternDetailKind } from '../../../app/navigation/routes';
-import { PINNED_DREAM_THREADS_STORAGE_KEY } from '../../../services/storage/keys';
-import { kv } from '../../../services/storage/mmkv';
 import {
   getPatternDreamMatches,
   normalizePatternSignal,
 } from '../model/patternMatches';
+import {
+  getStoredReviewStateSnapshot,
+  updateSavedReviewState,
+  type SavedDreamThreadRecord,
+} from './reviewStateStorageService';
 
-export type SavedDreamThreadRecord = {
-  signal: string;
-  kind: PatternDetailKind;
-  savedAt: number;
-};
-
-function normalizeRecord(
-  value: Partial<SavedDreamThreadRecord> | null | undefined,
-): SavedDreamThreadRecord | null {
-  if (!value?.signal || typeof value.signal !== 'string') {
-    return null;
-  }
-
-  if (value.kind !== 'word' && value.kind !== 'theme' && value.kind !== 'symbol') {
-    return null;
-  }
-
-  return {
-    signal: value.signal.trim(),
-    kind: value.kind,
-    savedAt:
-      typeof value.savedAt === 'number' && Number.isFinite(value.savedAt)
-        ? value.savedAt
-        : Date.now(),
-  };
-}
+export type { SavedDreamThreadRecord } from './reviewStateStorageService';
 
 function areSameSavedThread(
   leftSignal: string,
@@ -51,24 +29,7 @@ function buildSavedThreadKey(signal: string, kind: PatternDetailKind) {
 }
 
 export function getSavedDreamThreads() {
-  const raw = kv.getString(PINNED_DREAM_THREADS_STORAGE_KEY);
-  if (!raw) {
-    return [] as SavedDreamThreadRecord[];
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as Array<Partial<SavedDreamThreadRecord>>;
-    return parsed
-      .map(normalizeRecord)
-      .filter((item): item is SavedDreamThreadRecord => Boolean(item))
-      .sort((a, b) => b.savedAt - a.savedAt);
-  } catch {
-    return [] as SavedDreamThreadRecord[];
-  }
-}
-
-function persistSavedDreamThreads(records: SavedDreamThreadRecord[]) {
-  kv.set(PINNED_DREAM_THREADS_STORAGE_KEY, JSON.stringify(records.slice(0, 12)));
+  return getStoredReviewStateSnapshot().savedThreads;
 }
 
 export function reconcileSavedDreamThreads(dreams: Dream[]) {
@@ -108,7 +69,13 @@ export function reconcileSavedDreamThreads(dreams: Dream[]) {
     });
 
   if (changed) {
-    persistSavedDreamThreads(next);
+    updateSavedReviewState(currentState => ({
+      ...currentState,
+      updatedAt: Date.now(),
+      savedThreads: next.slice(0, 12),
+      syncStatus: 'local',
+      syncError: undefined,
+    }));
   }
 
   return next;
@@ -129,7 +96,13 @@ export function toggleSavedDreamThread(signal: string, kind: PatternDetailKind) 
     const next = current.filter(
       item => !areSameSavedThread(item.signal, item.kind, trimmedSignal, kind),
     );
-    persistSavedDreamThreads(next);
+    updateSavedReviewState(currentState => ({
+      ...currentState,
+      updatedAt: Date.now(),
+      savedThreads: next,
+      syncStatus: 'local',
+      syncError: undefined,
+    }));
     return next;
   }
 
@@ -142,7 +115,13 @@ export function toggleSavedDreamThread(signal: string, kind: PatternDetailKind) 
     nextRecord,
     ...current.filter(item => !areSameSavedThread(item.signal, item.kind, trimmedSignal, kind)),
   ];
-  persistSavedDreamThreads(next);
+  updateSavedReviewState(currentState => ({
+    ...currentState,
+    updatedAt: Date.now(),
+    savedThreads: next.slice(0, 12),
+    syncStatus: 'local',
+    syncError: undefined,
+  }));
   return next;
 }
 

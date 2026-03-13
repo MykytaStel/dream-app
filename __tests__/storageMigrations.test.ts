@@ -4,6 +4,9 @@ import {
   CURRENT_STORAGE_SCHEMA_VERSION,
   DREAM_ANALYSIS_SETTINGS_KEY,
   DREAMS_STORAGE_KEY,
+  MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY,
+  PINNED_DREAM_THREADS_STORAGE_KEY,
+  REVIEW_SAVED_STATE_STORAGE_KEY,
   REMINDER_SETTINGS_KEY,
   STORAGE_SCHEMA_VERSION_KEY,
 } from '../src/services/storage/keys';
@@ -268,6 +271,36 @@ describe('storage migrations', () => {
         preSleepEmotions: ['restless', 'hopeful'],
       },
     });
+  });
+
+  test('migrates legacy review shelf keys into unified review state in schema v9', () => {
+    kv.set(
+      MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY,
+      JSON.stringify([{ monthKey: '2026-03', savedAt: 10 }]),
+    );
+    kv.set(
+      PINNED_DREAM_THREADS_STORAGE_KEY,
+      JSON.stringify([{ signal: 'bridge', kind: 'theme', savedAt: 11 }]),
+    );
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 8);
+
+    runStorageMigrations();
+
+    expect(JSON.parse(kv.getString(REVIEW_SAVED_STATE_STORAGE_KEY) ?? '{}')).toMatchObject({
+      savedMonths: [{ monthKey: '2026-03', savedAt: 10 }],
+      savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: 11 }],
+      syncStatus: 'local',
+    });
+    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+  });
+
+  test('does not create an empty unified review snapshot when legacy shelves are empty', () => {
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 8);
+
+    runStorageMigrations();
+
+    expect(kv.getString(REVIEW_SAVED_STATE_STORAGE_KEY)).toBeUndefined();
+    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
   });
 
   test('migrates sync metadata into schema v8 defaults', () => {

@@ -28,6 +28,9 @@ import {
   type DreamBackup,
   type DreamExportV1,
 } from './dataExportService';
+import { getDerivedReviewStateSnapshot } from '../../stats/services/reviewShelfStateService';
+import { saveSavedReviewStateSnapshot } from '../../stats/services/reviewStateStorageService';
+import { normalizePatternSignal } from '../../stats/model/patternMatches';
 
 type RecordShape = Record<string, unknown>;
 
@@ -104,7 +107,7 @@ function parseDreamExport(value: unknown): DreamExportV1 {
     throw new Error('Backup file is not a valid JSON object.');
   }
 
-  if (value.version !== DREAM_EXPORT_VERSION) {
+  if (value.version !== DREAM_EXPORT_VERSION && value.version !== DREAM_EXPORT_VERSION - 1) {
     throw new Error(`Unsupported backup version: ${String(value.version)}.`);
   }
 
@@ -153,6 +156,41 @@ function parseDreamExport(value: unknown): DreamExportV1 {
           draft: (draft as DreamDraft | null | undefined) ?? null,
         });
 
+  const reviewState: DreamExportV1['reviewState'] =
+    isRecordShape(value.reviewState) &&
+    Array.isArray(value.reviewState.savedMonths) &&
+    Array.isArray(value.reviewState.savedThreads)
+      ? {
+          updatedAt:
+            typeof value.reviewState.updatedAt === 'number' &&
+            Number.isFinite(value.reviewState.updatedAt)
+              ? value.reviewState.updatedAt
+              : Date.now(),
+          savedMonths: value.reviewState.savedMonths.filter(isRecordShape).map(item => ({
+            monthKey: typeof item.monthKey === 'string' ? item.monthKey : '',
+            savedAt:
+              typeof item.savedAt === 'number' && Number.isFinite(item.savedAt)
+                ? item.savedAt
+                : Date.now(),
+          })),
+          savedThreads: value.reviewState.savedThreads.filter(isRecordShape).map(item => ({
+            signal: typeof item.signal === 'string' ? item.signal : '',
+            kind:
+              item.kind === 'word' || item.kind === 'theme' || item.kind === 'symbol'
+                ? item.kind
+                : 'theme',
+            savedAt:
+              typeof item.savedAt === 'number' && Number.isFinite(item.savedAt)
+                ? item.savedAt
+                : Date.now(),
+          })),
+        }
+      : {
+          updatedAt: 0,
+          savedMonths: [],
+          savedThreads: [],
+        };
+
   return {
     version: DREAM_EXPORT_VERSION,
     exportedAt:
@@ -180,6 +218,7 @@ function parseDreamExport(value: unknown): DreamExportV1 {
       value.reminderSettings as DreamExportV1['reminderSettings'],
     analysisSettings:
       value.analysisSettings as DreamExportV1['analysisSettings'],
+    reviewState,
   };
 }
 
@@ -196,6 +235,41 @@ function mergeDreamCollections(
   }
 
   return Array.from(merged.values());
+}
+
+function mergeSavedReviewState(
+  current: DreamExportV1['reviewState'],
+  imported: DreamExportV1['reviewState'],
+): DreamExportV1['reviewState'] {
+  const savedMonths = new Map(
+    current.savedMonths.map(item => [item.monthKey, item] as const),
+  );
+  for (const item of imported.savedMonths) {
+    const existing = savedMonths.get(item.monthKey);
+    if (!existing || item.savedAt > existing.savedAt) {
+      savedMonths.set(item.monthKey, item);
+    }
+  }
+
+  const savedThreads = new Map(
+    current.savedThreads.map(
+      item =>
+        [`${item.kind}:${normalizePatternSignal(item.signal)}`, item] as const,
+    ),
+  );
+  for (const item of imported.savedThreads) {
+    const key = `${item.kind}:${normalizePatternSignal(item.signal)}` as const;
+    const existing = savedThreads.get(key);
+    if (!existing || item.savedAt > existing.savedAt) {
+      savedThreads.set(key, item);
+    }
+  }
+
+  return {
+    updatedAt: Math.max(current.updatedAt, imported.updatedAt),
+    savedMonths: Array.from(savedMonths.values()).sort((a, b) => b.savedAt - a.savedAt),
+    savedThreads: Array.from(savedThreads.values()).sort((a, b) => b.savedAt - a.savedAt),
+  };
 }
 
 function buildImportDiff(
@@ -311,6 +385,13 @@ export async function restoreDreamImportFromFile(
     mode === 'replace'
       ? payload.dreams
       : mergeDreamCollections(currentDreams, payload.dreams);
+  const nextReviewState =
+    mode === 'replace'
+      ? payload.reviewState
+      : mergeSavedReviewState(
+          getDerivedReviewStateSnapshot(),
+          payload.reviewState,
+        );
 
   replaceAllDreams(nextDreams);
   if (mode === 'replace') {
@@ -335,7 +416,8 @@ export async function restoreDreamImportFromFile(
     saveDreamDraft(payload.draft);
   }
 
-  kv.set(STORAGE_SCHEMA_VERSION_KEY, String(CURRENT_STORAGE_SCHEMA_VERSION));
+  kv.set(STORAGE_SCHEMA_VERSION_KEY, CURRENT_STORAGE_SCHEMA_VERSION);
+  saveSavedReviewStateSnapshot(nextReviewState);
 
   return createPreviewFromPayload(payload, {
     fileName: filePath.split('/').filter(Boolean).pop() ?? filePath,

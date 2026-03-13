@@ -11,7 +11,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
-import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import type { MonthlyReportData, MonthlyReportMonth } from '../model/monthlyReport';
 import {
@@ -34,7 +33,6 @@ type MonthlyReportHeroProps = {
   wakeEmotionLabels: Record<string, string>;
   preSleepEmotionLabels: Record<string, string>;
   report: MonthlyReportData;
-  onBack: () => void;
   onSelectMonth: (monthKey: string) => void;
   onToggleSaveForLater: () => void;
   onShareReport: () => void;
@@ -49,7 +47,6 @@ export function MonthlyReportHero({
   wakeEmotionLabels,
   preSleepEmotionLabels,
   report,
-  onBack,
   onSelectMonth,
   onToggleSaveForLater,
   onShareReport,
@@ -98,17 +95,8 @@ export function MonthlyReportHero({
           <View style={[styles.heroFacet, styles.heroFacetAccent]} />
           <View style={[styles.heroFacet, styles.heroFacetAlt]} />
         </Animated.View>
-
-        <Pressable style={styles.backButton} onPress={onBack}>
-          <Text style={styles.backLabel}>{copy.monthlyReportBackButton}</Text>
-        </Pressable>
-
         <Text style={styles.eyebrow}>{copy.monthlyReportEyebrow}</Text>
-        <SectionHeader
-          title={copy.monthlyReportTitle}
-          subtitle={copy.monthlyReportSubtitle}
-          large
-        />
+        <Text style={styles.heroSubtitle}>{copy.monthlyReportSubtitle}</Text>
         <Text style={styles.heroMonthTitle}>{viewModel.monthTitle}</Text>
         <View style={styles.heroMetaRow}>
           {viewModel.heroMetaChips.map(chip => (

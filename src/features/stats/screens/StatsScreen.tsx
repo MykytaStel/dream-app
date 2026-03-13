@@ -135,7 +135,7 @@ export default function StatsScreen() {
   const shouldShowScopedEmptyState =
     selectedMemoryMode !== 'monthly' && !controller.scopedDreams.length;
 
-  if (controller.loading && controller.meta.totalCount > 0) {
+  if (controller.loading) {
     return (
       <ScreenContainer scroll={false} style={styles.emptyContainer}>
         <Card style={styles.heroCard}>
@@ -229,8 +229,8 @@ export default function StatsScreen() {
               coverageItems={controller.coverageItems}
               attentionItems={controller.attentionItems}
               workQueueItems={controller.workQueueItems}
-              savedMonthItems={controller.savedMonthItems}
-              savedThreadItems={controller.savedOverviewThreadItems}
+              importantDreamItems={controller.importantDreamItems}
+              savedSetItems={controller.savedSetItems}
               onOpenReviewWorkspace={() =>
                 navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
               }

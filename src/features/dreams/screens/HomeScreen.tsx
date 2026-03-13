@@ -5,7 +5,7 @@ import {
   RefreshControl,
   View,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,7 +15,7 @@ import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { Text } from '../../../components/ui/Text';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { type RootStackParamList } from '../../../app/navigation/routes';
-import { openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
+import { openBackupScreen, openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { ScreenStateCard } from '../components/ScreenStateCard';
@@ -34,6 +34,12 @@ import { useHomeSwipeActions } from '../hooks/useHomeSwipeActions';
 import { useHomeTimelineState } from '../hooks/useHomeTimelineState';
 import { type Dream } from '../model/dream';
 import { type DreamListItem } from '../repository/dreamsRepository';
+import { BackupOnboardingModal } from '../../settings/components/BackupOnboardingModal';
+import { shouldShowBackupOnboarding } from '../../settings/model/backupOnboarding';
+import {
+  hasSeenBackupOnboarding,
+  markBackupOnboardingSeen,
+} from '../../settings/services/backupOnboardingService';
 
 function formatPreview(dream: DreamListItem, copy: ReturnType<typeof getDreamCopy>) {
   const text = dream.textPreview?.trim();
@@ -77,6 +83,10 @@ export default function HomeScreen() {
   } = useHomeScreenData();
   const dreamIds = React.useMemo(() => dreams.map(dream => dream.id), [dreams]);
   const showWakeCapturePrompt = isWakeCaptureWindow();
+  const [hasSeenBackupOnboardingState, setHasSeenBackupOnboardingState] =
+    React.useState(() => hasSeenBackupOnboarding());
+  const [isBackupOnboardingVisible, setIsBackupOnboardingVisible] =
+    React.useState(false);
   const fullLastViewedDream = React.useMemo(
     () =>
       lastViewedDream && 'tags' in lastViewedDream
@@ -152,6 +162,26 @@ export default function HomeScreen() {
 
     openDefaultCapture();
   }, [draft, openDefaultCapture, openDraftCapture, openWakeCapture, showWakeCapturePrompt]);
+  const refreshOnboardingState = React.useCallback(() => {
+    setHasSeenBackupOnboardingState(hasSeenBackupOnboarding());
+  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      refreshOnboardingState();
+    }, [refreshOnboardingState]),
+  );
+  React.useEffect(() => {
+    if (loading) {
+      return;
+    }
+
+    setIsBackupOnboardingVisible(
+      shouldShowBackupOnboarding({
+        dreamCount: dreams.length,
+        hasSeen: hasSeenBackupOnboardingState,
+      }),
+    );
+  }, [dreams.length, hasSeenBackupOnboardingState, loading]);
   const heroPrompt = React.useMemo(
     () =>
       draft
@@ -178,6 +208,15 @@ export default function HomeScreen() {
       showWakeCapturePrompt,
     ],
   );
+  const closeBackupOnboarding = React.useCallback(() => {
+    markBackupOnboardingSeen();
+    setHasSeenBackupOnboardingState(true);
+    setIsBackupOnboardingVisible(false);
+  }, []);
+  const openBackupFromOnboarding = React.useCallback(() => {
+    closeBackupOnboarding();
+    openBackupScreen();
+  }, [closeBackupOnboarding]);
   const listHeader = React.useMemo(
     () => (
       <>
@@ -249,11 +288,22 @@ export default function HomeScreen() {
           onClose={() => timeline.setIsFilterSheetOpen(false)}
           updateTimelineFilters={timeline.updateTimelineFilters}
         />
+
+        <BackupOnboardingModal
+          visible={isBackupOnboardingVisible}
+          dreamCount={dreams.length}
+          onClose={closeBackupOnboarding}
+          onOpenBackup={openBackupFromOnboarding}
+        />
       </>
     ),
     [
+      closeBackupOnboarding,
       copy,
+      dreams.length,
+      isBackupOnboardingVisible,
       openDreamDetail,
+      openBackupFromOnboarding,
       openPatternDetail,
       heroPrompt,
       insets.top,

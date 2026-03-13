@@ -4,32 +4,32 @@ describe('getReviewWorkspaceViewModel', () => {
   it('marks workspace as non-empty when any review source exists', () => {
     const viewModel = getReviewWorkspaceViewModel({
       workQueueCount: 1,
-      savedMonthCount: 0,
-      savedThreadCount: 2,
+      importantDreamCount: 2,
+      savedSetCount: 3,
       copy: {
         reviewWorkspaceSummaryContinueLabel: 'Local follow-ups',
-        reviewWorkspaceSummaryMonthsLabel: 'Saved months',
-        reviewWorkspaceSummaryThreadsLabel: 'Saved threads',
+        reviewWorkspaceSummaryImportantLabel: 'Important dreams',
+        reviewWorkspaceSummarySavedSetsLabel: 'Saved sets',
       },
     });
 
     expect(viewModel.hasItems).toBe(true);
     expect(viewModel.summaryTiles).toEqual([
       { label: 'Local follow-ups', value: 1 },
-      { label: 'Saved months', value: 0 },
-      { label: 'Saved threads', value: 2 },
+      { label: 'Important dreams', value: 2 },
+      { label: 'Saved sets', value: 3 },
     ]);
   });
 
   it('marks workspace as empty when every review source is empty', () => {
     const viewModel = getReviewWorkspaceViewModel({
       workQueueCount: 0,
-      savedMonthCount: 0,
-      savedThreadCount: 0,
+      importantDreamCount: 0,
+      savedSetCount: 0,
       copy: {
         reviewWorkspaceSummaryContinueLabel: 'Local follow-ups',
-        reviewWorkspaceSummaryMonthsLabel: 'Saved months',
-        reviewWorkspaceSummaryThreadsLabel: 'Saved threads',
+        reviewWorkspaceSummaryImportantLabel: 'Important dreams',
+        reviewWorkspaceSummarySavedSetsLabel: 'Saved sets',
       },
     });
 

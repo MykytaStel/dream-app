@@ -55,6 +55,10 @@ import { type PatternGroupCardItem } from '../components/PatternGroupCard';
 import { type MemoryMode } from '../components/StatsScreenSections';
 import { getSavedMonthlyReportMonths } from '../services/monthlyReportShelfService';
 import { getSavedDreamThreads } from '../services/dreamThreadShelfService';
+import {
+  buildReviewWorkspaceImportantDreamItems,
+  buildReviewWorkspaceSavedSetItems,
+} from '../model/reviewWorkspace';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
 export type InsightMode = 'snapshot' | 'compare';
@@ -92,7 +96,7 @@ export function useStatsScreenController({
   const [analysisSettings, setAnalysisSettings] = React.useState(() => getDreamAnalysisSettings());
   const [savedThreadRecords, setSavedThreadRecords] = React.useState(() => getSavedDreamThreads());
   const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
-  const [loading, setLoading] = React.useState(meta.totalCount > 0);
+  const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
   const [selectedRange, setSelectedRange] = React.useState<InsightRange>('all');
   const [selectedMode, setSelectedMode] = React.useState<InsightMode>('snapshot');
@@ -115,7 +119,7 @@ export function useStatsScreenController({
         setSavedMonths(getSavedMonthlyReportMonths());
 
         if (mode === 'initial') {
-          setLoading(nextMeta.totalCount > 0);
+          setLoading(true);
         }
 
         trackLocalSurfaceLoad('memory_refresh', startedAt, nextMeta.totalCount);
@@ -657,6 +661,31 @@ export function useStatsScreenController({
           }),
     [copy, dreams, isOverviewMode, savedThreadRecords],
   );
+  const importantDreamItems = React.useMemo(
+    () =>
+      !isOverviewMode
+        ? []
+        : buildReviewWorkspaceImportantDreamItems({
+            dreams,
+            locale,
+            copy,
+          }),
+    [copy, dreams, isOverviewMode, locale],
+  );
+  const savedSetItems = React.useMemo(
+    () =>
+      !isOverviewMode
+        ? []
+        : buildReviewWorkspaceSavedSetItems({
+            savedMonths,
+            savedThreads: savedThreadRecords,
+            dreams,
+            locale,
+            copy,
+            wakeEmotionLabels,
+          }),
+    [copy, dreams, isOverviewMode, locale, savedMonths, savedThreadRecords, wakeEmotionLabels],
+  );
 
   return {
     loading,
@@ -695,6 +724,8 @@ export function useStatsScreenController({
     coverageItems,
     attentionItems,
     workQueueItems,
+    importantDreamItems,
+    savedSetItems,
     savedMonthItems,
     savedThreadItems,
     savedOverviewThreadItems,

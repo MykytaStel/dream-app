@@ -46,6 +46,15 @@ export function openBackupScreen() {
   return true;
 }
 
+export function openBackupOnboardingPreview() {
+  if (!navigationRef.isReady()) {
+    return false;
+  }
+
+  navigationRef.navigate(ROOT_ROUTE_NAMES.BackupOnboardingPreview);
+  return true;
+}
+
 export function openMonthlyReport(
   params?: RootStackParamList[typeof ROOT_ROUTE_NAMES.MonthlyReport],
 ) {

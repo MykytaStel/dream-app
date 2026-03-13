@@ -23,17 +23,15 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.5.6`
+Current release target: `0.6.0`
 
-This release should turn the calmer review shelf into the first real `Review
-workspace` without overbuilding `0.6.0`:
+This release should turn the first review workspace into a more complete
+connected reflection product:
 
-- `Memory` should expose one clearer route into saved review work
-- saved months, saved threads, and local follow-ups should reopen from one
-  product area
-- backend work should stay in support of review freshness after sync, restore,
-  and import
-- no regression in wake capture, sync trust, or dream detail flow
+- `Review workspace` should surface important dreams and merged saved sets more clearly
+- saved review state should persist through sync, backup, import, and restore
+- backend sync should stay trustworthy while reducing avoidable review-state drift
+- the cloud path should stay local-first and not regress wake capture or dream detail flow
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -59,9 +57,11 @@ for the latest performance-and-polish target,
 [docs/RELEASE_0.1.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.1.0_PLAN.md)
 for the completed beta-release target,
 [docs/RELEASE_0.5.6_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.6_PLAN.md)
+for the completed review-workspace foundation,
+[docs/RELEASE_0.6.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.6.0_PLAN.md)
 for the active release target,
 [docs/ROADMAP_0.5.1_TO_0.6.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.5.1_TO_0.6.0.md)
-for the broader feature/backend/UI/UX range from `0.5.6` to `0.6.0`, and
+for the broader feature/backend/UI/UX range from `0.5.1` to `0.6.0`, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
 

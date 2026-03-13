@@ -20,7 +20,7 @@ import {
   sortDreamsStable,
   validateDreamForSave,
 } from '../model/dreamRules';
-import { reconcileSavedReviewState } from '../../stats/services/reviewShelfStateService';
+import { reconcileDerivedReviewState } from '../../stats/services/reviewShelfStateService';
 
 const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 let dreamCache: Dream[] | null = null;
@@ -166,7 +166,7 @@ function persistDreams(dreams: Dream[]) {
   kv.set(DREAMS_STORAGE_KEY, raw);
   persistDreamIndex(normalized);
   persistDreamsMeta(normalized);
-  reconcileSavedReviewState(normalized);
+  reconcileDerivedReviewState(normalized);
   dreamCache = normalized;
   dreamCacheRaw = raw;
 }

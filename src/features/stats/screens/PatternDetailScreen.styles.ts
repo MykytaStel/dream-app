@@ -10,20 +10,6 @@ export function createPatternDetailScreenStyles(theme: Theme) {
     listHeader: {
       gap: theme.spacing.md,
     },
-    backButton: {
-      alignSelf: 'flex-start',
-      borderRadius: theme.borderRadii.pill,
-      paddingVertical: 6,
-      paddingHorizontal: 10,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-    },
-    backLabel: {
-      color: theme.colors.text,
-      fontSize: 12,
-      fontWeight: '700',
-    },
     heroCard: {
       gap: 14,
       overflow: 'hidden',

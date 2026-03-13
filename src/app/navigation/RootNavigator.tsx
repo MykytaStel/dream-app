@@ -9,6 +9,7 @@ import MonthlyReportScreen from '../../features/stats/screens/MonthlyReportScree
 import PatternDetailScreen from '../../features/stats/screens/PatternDetailScreen';
 import ProgressScreen from '../../features/stats/screens/ProgressScreen';
 import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
+import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
 import {
   consumePendingWakeOpenFromReminder,
@@ -90,6 +91,7 @@ export default function RootNavigator() {
       <Stack.Navigator
         screenOptions={{
           headerShown: false,
+          headerBackButtonDisplayMode: 'minimal',
         }}
       >
         <Stack.Screen name={ROOT_ROUTE_NAMES.Tabs} component={Tabs} />
@@ -98,7 +100,15 @@ export default function RootNavigator() {
           component={BackupScreen}
           options={{
             headerShown: true,
-            title: 'Backup',
+            title: 'Backup & sync',
+          }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.BackupOnboardingPreview}
+          component={BackupOnboardingPreviewScreen}
+          options={{
+            headerShown: true,
+            title: 'Backup onboarding',
           }}
         />
         <Stack.Screen
@@ -120,18 +130,34 @@ export default function RootNavigator() {
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.Progress}
           component={ProgressScreen}
+          options={{
+            headerShown: true,
+            title: 'Progress',
+          }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.MonthlyReport}
           component={MonthlyReportScreen}
+          options={{
+            headerShown: true,
+            title: 'Monthly report',
+          }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.ReviewWorkspace}
           component={ReviewWorkspaceScreen}
+          options={{
+            headerShown: true,
+            title: 'Review workspace',
+          }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.PatternDetail}
           component={PatternDetailScreen}
+          options={{
+            headerShown: true,
+            title: 'Pattern detail',
+          }}
         />
       </Stack.Navigator>
     </NavigationContainer>

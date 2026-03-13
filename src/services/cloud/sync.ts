@@ -31,7 +31,15 @@ import {
 } from '../../features/dreams/repository/dreamDeletionTombstonesRepository';
 import { CLOUD_SYNC_SNAPSHOT_STORAGE_KEY } from '../storage/keys';
 import { kv } from '../storage/mmkv';
-import { reconcileSavedReviewState } from '../../features/stats/services/reviewShelfStateService';
+import { reconcileDerivedReviewState } from '../../features/stats/services/reviewShelfStateService';
+import {
+  applyRemoteSavedReviewStateSnapshot,
+  getStoredReviewStateSnapshot,
+  markSavedReviewStateSyncError,
+  markSavedReviewStateSynced,
+  markSavedReviewStateSyncing,
+  type SavedReviewStateSnapshot,
+} from '../../features/stats/services/reviewStateStorageService';
 
 export type CloudSyncReason = 'manual' | 'launch';
 export type CloudSyncStatus = 'idle' | 'syncing' | 'success' | 'error';
@@ -61,6 +69,13 @@ type RemoteDreamDeletionTombstoneRow = {
   deleted_at: string;
 };
 
+type RemoteSavedReviewStateRow = {
+  user_id: string;
+  updated_at: string;
+  saved_months: SavedReviewStateSnapshot['savedMonths'] | null;
+  saved_threads: SavedReviewStateSnapshot['savedThreads'] | null;
+};
+
 type CloudSyncConflictContext = {
   pendingDreamIds: Set<string>;
   pendingTombstoneIds: Set<string>;
@@ -79,6 +94,11 @@ const DEFAULT_CLOUD_SYNC_SNAPSHOT: CloudSyncSnapshot = {
 };
 
 let activeCloudSyncPromise: Promise<CloudSyncResult> | null = null;
+
+function getPendingReviewStateCount(snapshot = getStoredReviewStateSnapshot()) {
+  const hasItems = snapshot.savedMonths.length > 0 || snapshot.savedThreads.length > 0;
+  return snapshot.syncStatus !== 'synced' && (hasItems || snapshot.updatedAt > 0) ? 1 : 0;
+}
 
 function normalizeLocalAudioPath(value: string) {
   return value.startsWith('file://') ? value.slice('file://'.length) : value;
@@ -409,6 +429,32 @@ async function uploadDreamDeletionTombstone(
   }
 }
 
+async function uploadSavedReviewStateSnapshot(
+  userId: string,
+  snapshot: SavedReviewStateSnapshot,
+) {
+  const client = getSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase runtime config is missing.');
+  }
+
+  const { error } = await client.from('review_saved_state_snapshots').upsert(
+    {
+      user_id: userId,
+      updated_at: new Date(snapshot.updatedAt || Date.now()).toISOString(),
+      saved_months: snapshot.savedMonths,
+      saved_threads: snapshot.savedThreads,
+    },
+    {
+      onConflict: 'user_id',
+    },
+  );
+
+  if (error) {
+    throw error;
+  }
+}
+
 function getDreamUpdatedAt(value: { createdAt: number; updatedAt?: number }) {
   return value.updatedAt ?? value.createdAt;
 }
@@ -582,6 +628,112 @@ function decideRemoteTombstoneResolution(
   };
 }
 
+type ReviewStateConflictDecision =
+  | {
+      action: 'skip';
+      conflict: boolean;
+      winner?: 'local' | 'remote';
+    }
+  | {
+      action: 'upload-local';
+      conflict: boolean;
+      winner?: 'local' | 'remote';
+    }
+  | {
+      action: 'apply-remote';
+      conflict: boolean;
+      winner?: 'local' | 'remote';
+      remoteSnapshot: {
+        updatedAt: number;
+        savedMonths: SavedReviewStateSnapshot['savedMonths'];
+        savedThreads: SavedReviewStateSnapshot['savedThreads'];
+      };
+    };
+
+function decideSavedReviewStateResolution(
+  remoteRow: RemoteSavedReviewStateRow | null,
+  localSnapshot: SavedReviewStateSnapshot,
+): ReviewStateConflictDecision {
+  const localHasItems =
+    localSnapshot.savedMonths.length > 0 || localSnapshot.savedThreads.length > 0;
+  const localPending = localSnapshot.syncStatus !== 'synced';
+
+  if (!remoteRow) {
+    if (!localHasItems) {
+      return {
+        action: 'skip',
+        conflict: false,
+      };
+    }
+
+    return {
+      action: 'upload-local',
+      conflict: false,
+    };
+  }
+
+  const remoteSnapshot = {
+    updatedAt: new Date(remoteRow.updated_at).getTime(),
+    savedMonths: remoteRow.saved_months ?? [],
+    savedThreads: remoteRow.saved_threads ?? [],
+  };
+  const remoteHasItems =
+    remoteSnapshot.savedMonths.length > 0 || remoteSnapshot.savedThreads.length > 0;
+
+  if (!localHasItems && !localPending) {
+    if (!remoteHasItems) {
+      return {
+        action: 'skip',
+        conflict: false,
+      };
+    }
+
+    return {
+      action: 'apply-remote',
+      conflict: false,
+      remoteSnapshot,
+    };
+  }
+
+  if (remoteSnapshot.updatedAt > localSnapshot.updatedAt) {
+    return {
+      action: 'apply-remote',
+      conflict: localPending,
+      winner: localPending ? 'remote' : undefined,
+      remoteSnapshot,
+    };
+  }
+
+  if (remoteSnapshot.updatedAt < localSnapshot.updatedAt) {
+    return {
+      action: localHasItems ? 'upload-local' : 'skip',
+      conflict: localPending,
+      winner: localPending ? 'local' : undefined,
+    };
+  }
+
+  if (localPending) {
+    return {
+      action: 'upload-local',
+      conflict: true,
+      winner: 'local',
+    };
+  }
+
+  if (!remoteHasItems && !localHasItems) {
+    return {
+      action: 'skip',
+      conflict: false,
+    };
+  }
+
+  return {
+    action: 'apply-remote',
+    conflict: false,
+    remoteSnapshot,
+  };
+}
+
 function accumulateConflictDecision(
   decision: RemoteConflictDecision,
   counts: {
@@ -664,15 +816,50 @@ async function fetchRemoteDreamBundles(userId: string) {
       ),
     ]);
 
+  const tagsByDreamId = new Map<string, DreamTagRow[]>();
+  tags.forEach(item => {
+    const current = tagsByDreamId.get(item.dream_id);
+    if (current) {
+      current.push(item);
+      return;
+    }
+
+    tagsByDreamId.set(item.dream_id, [item]);
+  });
+
+  const wakeEmotionsByDreamId = new Map<string, DreamWakeEmotionRow[]>();
+  wakeEmotions.forEach(item => {
+    const current = wakeEmotionsByDreamId.get(item.dream_id);
+    if (current) {
+      current.push(item);
+      return;
+    }
+
+    wakeEmotionsByDreamId.set(item.dream_id, [item]);
+  });
+
+  const preSleepEmotionsByDreamId = new Map<string, DreamPreSleepEmotionRow[]>();
+  preSleepEmotions.forEach(item => {
+    const current = preSleepEmotionsByDreamId.get(item.dream_id);
+    if (current) {
+      current.push(item);
+      return;
+    }
+
+    preSleepEmotionsByDreamId.set(item.dream_id, [item]);
+  });
+
+  const sleepContextByDreamId = new Map<string, DreamSleepContextRow>();
+  sleepContexts.forEach(item => {
+    sleepContextByDreamId.set(item.dream_id, item);
+  });
+
   return normalizedDreamRows.map(dream => ({
     dream,
-    tags: tags.filter(item => item.dream_id === dream.id),
-    wakeEmotions: wakeEmotions.filter(item => item.dream_id === dream.id),
-    preSleepEmotions: preSleepEmotions.filter(
-      item => item.dream_id === dream.id,
-    ),
-    sleepContext:
-      sleepContexts.find(item => item.dream_id === dream.id) ?? null,
+    tags: tagsByDreamId.get(dream.id) ?? [],
+    wakeEmotions: wakeEmotionsByDreamId.get(dream.id) ?? [],
+    preSleepEmotions: preSleepEmotionsByDreamId.get(dream.id) ?? [],
+    sleepContext: sleepContextByDreamId.get(dream.id) ?? null,
   }));
 }
 
@@ -695,6 +882,25 @@ async function fetchRemoteDreamDeletionTombstones(userId: string) {
   return (data ?? []) as RemoteDreamDeletionTombstoneRow[];
 }
 
+async function fetchRemoteSavedReviewState(userId: string) {
+  const client = getSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase runtime config is missing.');
+  }
+
+  const { data, error } = await client
+    .from('review_saved_state_snapshots')
+    .select('*')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? null) as RemoteSavedReviewStateRow | null;
+}
+
 async function performCloudSync(
   reason: CloudSyncReason,
   requireSyncEnabled: boolean,
@@ -715,7 +921,8 @@ async function performCloudSync(
         listDreams().filter(dream => dream.syncStatus !== 'synced').length +
         listDreamDeletionTombstones().filter(
           tombstone => tombstone.syncStatus !== 'synced',
-        ).length,
+        ).length +
+        getPendingReviewStateCount(),
     });
   }
 
@@ -730,6 +937,7 @@ async function performCloudSync(
   const pendingTombstones = listDreamDeletionTombstones().filter(
     tombstone => tombstone.syncStatus !== 'synced',
   );
+  const pendingReviewState = getStoredReviewStateSnapshot();
   const conflictContext: CloudSyncConflictContext = {
     pendingDreamIds: new Set(pendingDreams.map(dream => dream.id)),
     pendingTombstoneIds: new Set(
@@ -749,7 +957,10 @@ async function performCloudSync(
     localWinsCount: 0,
     remoteWinsCount: 0,
     failedCount: 0,
-    pendingCount: pendingDreams.length + pendingTombstones.length,
+    pendingCount:
+      pendingDreams.length +
+      pendingTombstones.length +
+      getPendingReviewStateCount(pendingReviewState),
   });
 
   let uploadedCount = 0;
@@ -845,7 +1056,45 @@ async function performCloudSync(
       pulledCount += 1;
     }
 
-    reconcileSavedReviewState(listDreams());
+    const reconciledReviewState = reconcileDerivedReviewState(listDreams());
+    const remoteSavedReviewState = await fetchRemoteSavedReviewState(session.userId);
+    const savedReviewStateDecision = decideSavedReviewStateResolution(
+      remoteSavedReviewState,
+      reconciledReviewState,
+    );
+    if (savedReviewStateDecision.conflict && savedReviewStateDecision.winner) {
+      conflictsResolvedCount += 1;
+      if (savedReviewStateDecision.winner === 'local') {
+        localWinsCount += 1;
+      } else {
+        remoteWinsCount += 1;
+      }
+    }
+
+    if (savedReviewStateDecision.action === 'apply-remote') {
+      applyRemoteSavedReviewStateSnapshot({
+        ...savedReviewStateDecision.remoteSnapshot,
+        syncedAt: Date.now(),
+      });
+      pulledCount += 1;
+    } else if (savedReviewStateDecision.action === 'upload-local') {
+      markSavedReviewStateSyncing();
+
+      try {
+        await uploadSavedReviewStateSnapshot(
+          session.userId,
+          getStoredReviewStateSnapshot(),
+        );
+        markSavedReviewStateSynced(Date.now());
+        uploadedCount += 1;
+      } catch (error) {
+        lastErrorMessage = normalizeSyncError(error);
+        markSavedReviewStateSyncError(lastErrorMessage);
+        failedCount += 1;
+      }
+    } else if (remoteSavedReviewState || reconciledReviewState.savedMonths.length || reconciledReviewState.savedThreads.length) {
+      skippedCount += 1;
+    }
   } catch (error) {
     lastErrorMessage = normalizeSyncError(error);
 
@@ -866,7 +1115,8 @@ async function performCloudSync(
         listDreams().filter(dream => dream.syncStatus !== 'synced').length +
         listDreamDeletionTombstones().filter(
           tombstone => tombstone.syncStatus !== 'synced',
-        ).length,
+        ).length +
+        getPendingReviewStateCount(),
       errorMessage: lastErrorMessage,
     });
   }
@@ -889,7 +1139,8 @@ async function performCloudSync(
       listDreams().filter(dream => dream.syncStatus !== 'synced').length +
       listDreamDeletionTombstones().filter(
         tombstone => tombstone.syncStatus !== 'synced',
-      ).length,
+      ).length +
+      getPendingReviewStateCount(),
     errorMessage: lastErrorMessage,
   });
 }

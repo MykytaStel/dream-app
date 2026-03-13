@@ -1,5 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
@@ -9,15 +11,18 @@ import { Theme } from '../../../theme/theme';
 import { createSettingsScreenStyles } from './SettingsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import {
+  openBackupOnboardingPreview,
   openMonthlyReport,
   openWakeEntry,
 } from '../../../app/navigation/navigationRef';
+import {
+  ROOT_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { useSettingsScreenController } from '../hooks/useSettingsScreenController';
 import {
   AnalysisSection,
   DevSection,
-  ExportSection,
-  RestoreSection,
   TranscriptionSection,
 } from '../components/SettingsAdvancedSections';
 import {
@@ -26,18 +31,14 @@ import {
   SettingsHeroSection,
 } from '../components/SettingsTopSections';
 import { SettingsActionRow } from '../components/SettingsActionRow';
-import { SettingsSectionHeader } from '../components/SettingsSectionHeader';
-import { SettingsSegmentedControl } from '../components/SettingsSegmentedControl';
-
-type SettingsWorkspace = 'general' | 'backup' | 'tools';
 
 export default function SettingsScreen() {
   const theme = useTheme<Theme>();
   const { locale, setLocale } = useI18n();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const styles = createSettingsScreenStyles(theme);
-  const [selectedWorkspace, setSelectedWorkspace] =
-    React.useState<SettingsWorkspace>('general');
 
   const controller = useSettingsScreenController({
     locale,
@@ -45,38 +46,14 @@ export default function SettingsScreen() {
     copy,
   });
 
-  const workspaceOptions = React.useMemo(
-    () => [
-      { value: 'general' as const, label: copy.sectionGeneral },
-      { value: 'backup' as const, label: copy.sectionBackup },
-      { value: 'tools' as const, label: copy.sectionTools },
-    ],
-    [copy.sectionBackup, copy.sectionGeneral, copy.sectionTools],
-  );
-  const backupStatusValue = React.useMemo(
-    () =>
-      controller.cloudSummaryHighlights[0]?.value ?? copy.cloudSessionSignedOut,
-    [controller.cloudSummaryHighlights, copy.cloudSessionSignedOut],
-  );
-  const backupAccountValue = React.useMemo(
-    () =>
-      controller.cloudSummaryHighlights.find(
-        item => item.label === copy.cloudAccountLabel,
-      )?.value ?? copy.cloudAccountDisconnected,
-    [
-      controller.cloudSummaryHighlights,
-      copy.cloudAccountDisconnected,
-      copy.cloudAccountLabel,
-    ],
-  );
   const backupTeaserMeta = React.useMemo(() => {
     if (controller.cloudSession.status !== 'signed-in') {
-      return backupAccountValue;
+      return controller.cloudSummaryAccountValue;
     }
 
-    return `${backupAccountValue} • ${copy.cloudLastSyncLabel} ${controller.cloudSyncMetaTitle}`;
+    return `${controller.cloudSummaryAccountValue} • ${copy.cloudLastSyncLabel} ${controller.cloudSyncMetaTitle}`;
   }, [
-    backupAccountValue,
+    controller.cloudSummaryAccountValue,
     controller.cloudSession.status,
     controller.cloudSyncMetaTitle,
     copy.cloudLastSyncLabel,
@@ -92,145 +69,79 @@ export default function SettingsScreen() {
         styles={styles}
       />
 
-      <Card style={styles.workspaceCard}>
-        <SettingsSectionHeader title={copy.sectionTitle} />
-        <SettingsSegmentedControl
-          selectedValue={selectedWorkspace}
-          onChange={setSelectedWorkspace}
-          options={workspaceOptions}
-          columns={3}
-          minWidth={96}
+      <ReminderSection
+        copy={copy}
+        styles={styles}
+        reminderSettings={controller.reminderSettings}
+        permissionGranted={controller.permissionGranted}
+        isApplyingReminder={controller.isApplyingReminder}
+        reminderTime={controller.reminderTime}
+        showIosTimePicker={controller.showIosTimePicker}
+        pickerLocale={controller.pickerLocale}
+        getReminderDate={controller.getReminderDate}
+        onToggleReminder={() =>
+          controller.onToggleReminder().catch(() => undefined)
+        }
+        onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
+        onNativeTimePickerChange={controller.onNativeTimePickerChange}
+      />
+
+      <Card style={styles.sectionCard}>
+        <SettingsActionRow
+          title={copy.backupScreenTitle}
+          meta={backupTeaserMeta}
+          value={controller.cloudSummaryStatusValue}
+          variant="inline"
+          onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.Backup)}
         />
       </Card>
 
-      {selectedWorkspace === 'general' ? (
-        <>
-          <ReminderSection
-            copy={copy}
-            styles={styles}
-            reminderSettings={controller.reminderSettings}
-            permissionGranted={controller.permissionGranted}
-            isApplyingReminder={controller.isApplyingReminder}
-            reminderTime={controller.reminderTime}
-            showIosTimePicker={controller.showIosTimePicker}
-            pickerLocale={controller.pickerLocale}
-            getReminderDate={controller.getReminderDate}
-            onToggleReminder={() =>
-              controller.onToggleReminder().catch(() => undefined)
-            }
-            onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
-            onNativeTimePickerChange={controller.onNativeTimePickerChange}
-          />
+      <PrivacySection
+        copy={copy}
+        styles={styles}
+        privacyHighlights={controller.privacyHighlights}
+      />
 
-          <Card style={styles.sectionCard}>
-            <SettingsSectionHeader
-              title={copy.backupScreenTitle}
-              description={copy.cloudDescription}
-            />
-            <SettingsActionRow
-              title={controller.cloudManageActionTitle}
-              meta={backupTeaserMeta}
-              value={backupStatusValue}
-              onPress={() => setSelectedWorkspace('backup')}
-            />
-          </Card>
+      <AnalysisSection
+        copy={copy}
+        styles={styles}
+        analysisSettings={controller.analysisSettings}
+        onSave={controller.saveNextAnalysisSettings}
+      />
 
-          <PrivacySection
-            copy={copy}
-            styles={styles}
-            privacyHighlights={controller.privacyHighlights}
-          />
-        </>
-      ) : null}
+      <TranscriptionSection
+        copy={copy}
+        styles={styles}
+        highlights={controller.transcriptionHighlights}
+        isDownloading={controller.isDownloadingTranscriptionModel}
+        isDeleting={controller.isDeletingTranscriptionModel}
+        downloadLabel={controller.transcriptionDownloadLabel}
+        installed={controller.transcriptionModelInstalled}
+        onDownload={() =>
+          controller.onDownloadTranscriptionModel().catch(() => undefined)
+        }
+        onDelete={() =>
+          controller.onDeleteTranscriptionModel().catch(() => undefined)
+        }
+      />
 
-      {selectedWorkspace === 'backup' ? (
-        <>
-          <ExportSection
-            copy={copy}
-            styles={styles}
-            highlights={controller.exportHighlights}
-            isExportingJson={controller.isExportingJson}
-            isExportingPdf={controller.isExportingPdf}
-            lastExportPath={controller.lastExportPath}
-            onExportJson={() =>
-              controller.onExportData().catch(() => undefined)
-            }
-            onExportPdf={() =>
-              controller.onExportPdfData().catch(() => undefined)
-            }
-          />
-
-          <RestoreSection
-            copy={copy}
-            styles={styles}
-            importMode={controller.importMode}
-            onChangeMode={controller.setImportMode}
-            localExportFiles={controller.localExportFiles}
-            isLoadingLocalExports={controller.isLoadingLocalExports}
-            selectedImportPath={controller.selectedImportPath}
-            onSelectImportFile={controller.onSelectImportFile}
-            formatBackupListTitle={controller.formatBackupListTitle}
-            formatBackupListMeta={controller.formatBackupListMeta}
-            importPreviewError={controller.importPreviewError}
-            selectedImportPreview={controller.selectedImportPreview}
-            showRestorePreview={controller.showRestorePreview}
-            onToggleRestorePreview={() =>
-              controller.setShowRestorePreview(current => !current)
-            }
-            restorePreviewMeta={controller.restorePreviewMeta}
-            restorePreviewItems={controller.restorePreviewItems}
-            lastRestorePreview={controller.lastRestorePreview}
-            restoreSuccessItems={controller.restoreSuccessItems}
-            isRestoringImport={controller.isRestoringImport}
-            isLoadingImportPreview={controller.isLoadingImportPreview}
-            onRestoreImport={controller.onRestoreImport}
-          />
-        </>
-      ) : null}
-
-      {selectedWorkspace === 'tools' ? (
-        <>
-          <AnalysisSection
-            copy={copy}
-            styles={styles}
-            analysisSettings={controller.analysisSettings}
-            onSave={controller.saveNextAnalysisSettings}
-          />
-
-          <TranscriptionSection
-            copy={copy}
-            styles={styles}
-            highlights={controller.transcriptionHighlights}
-            isDownloading={controller.isDownloadingTranscriptionModel}
-            isDeleting={controller.isDeletingTranscriptionModel}
-            downloadLabel={controller.transcriptionDownloadLabel}
-            installed={controller.transcriptionModelInstalled}
-            onDownload={() =>
-              controller.onDownloadTranscriptionModel().catch(() => undefined)
-            }
-            onDelete={() =>
-              controller.onDeleteTranscriptionModel().catch(() => undefined)
-            }
-          />
-
-          {controller.__DEV__ ? (
-            <DevSection
-              copy={copy}
-              styles={styles}
-              seedDreamCount={controller.seedDreamCount}
-              isUpdatingSeedDreams={controller.isUpdatingSeedDreams}
-              onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
-              onSeed250={() =>
-                controller.onSeedDreams(250).catch(() => undefined)
-              }
-              onSeed1000={() =>
-                controller.onSeedDreams(1000).catch(() => undefined)
-              }
-              onPreviewMonthlyReport={() => openMonthlyReport()}
-              onClearSeedDreams={controller.onClearSeedDreams}
-            />
-          ) : null}
-        </>
+      {controller.__DEV__ ? (
+        <DevSection
+          copy={copy}
+          styles={styles}
+          seedDreamCount={controller.seedDreamCount}
+          isUpdatingSeedDreams={controller.isUpdatingSeedDreams}
+          onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
+          onSeed250={() =>
+            controller.onSeedDreams(250).catch(() => undefined)
+          }
+          onSeed1000={() =>
+            controller.onSeedDreams(1000).catch(() => undefined)
+          }
+          onPreviewMonthlyReport={() => openMonthlyReport()}
+          onPreviewBackupOnboarding={() => openBackupOnboardingPreview()}
+          onClearSeedDreams={controller.onClearSeedDreams}
+        />
       ) : null}
 
       <View style={styles.footerBlock}>

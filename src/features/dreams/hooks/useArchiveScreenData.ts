@@ -18,7 +18,7 @@ export function useArchiveScreenData() {
   const hydrationRequestRef = React.useRef(0);
   const [dreams, setDreams] = React.useState<Dream[]>([]);
   const [meta, setMeta] = React.useState<DreamsMeta>(() => getDreamsMeta());
-  const [loading, setLoading] = React.useState(meta.totalCount > 0);
+  const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
   const hydrateArchiveDreams = React.useCallback((mode: 'initial' | 'silent' = 'silent') => {
@@ -64,12 +64,11 @@ export function useArchiveScreenData() {
     setLoadError(null);
 
     try {
-      hydrationRequestRef.current += 1;
       const nextMeta = getDreamsMeta();
       setMeta(nextMeta);
 
       if (mode === 'initial') {
-        setLoading(nextMeta.totalCount > 0);
+        setLoading(true);
       }
 
       trackLocalSurfaceLoad('archive_refresh', startedAt, nextMeta.totalCount);

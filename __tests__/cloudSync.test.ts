@@ -7,6 +7,7 @@ import {
   getDream,
   getDreamsMeta,
   listDreamListItems,
+  replaceAllDreams,
 } from '../src/features/dreams/repository/dreamsRepository';
 import {
   getSavedMonthlyReportMonths,
@@ -16,7 +17,10 @@ import {
   getStoredReviewStateSnapshot,
   saveSavedReviewStateSnapshot,
 } from '../src/features/stats/services/reviewStateStorageService';
-import { getDreamDeletionTombstone } from '../src/features/dreams/repository/dreamDeletionTombstonesRepository';
+import {
+  getDreamDeletionTombstone,
+  saveDreamDeletionTombstone,
+} from '../src/features/dreams/repository/dreamDeletionTombstonesRepository';
 import {
   getCloudSyncEvents,
   getCloudSyncSnapshot,
@@ -184,6 +188,137 @@ describe('cloud sync service', () => {
     });
   });
 
+  test('does not upload an older restored local dream over a newer remote revision', async () => {
+    const remoteBundle: DreamSyncBundle = {
+      dream: {
+        id: 'restore-sync-conflict',
+        user_id: 'user-restore',
+        created_at: '2026-03-06T08:00:00.000Z',
+        updated_at: '2026-03-06T10:30:00.000Z',
+        sleep_date: '2026-03-06',
+        title: 'Remote newest title',
+        raw_text: 'Remote newest copy',
+        audio_storage_path: null,
+        transcript: null,
+        transcript_status: null,
+        transcript_source: null,
+        transcript_updated_at: null,
+        mood: 'positive',
+        lucidity: 2,
+        archived_at: null,
+        starred_at: null,
+        analysis_provider: null,
+        analysis_status: null,
+        analysis_summary: null,
+        analysis_themes: [],
+        analysis_generated_at: null,
+        analysis_error_message: null,
+      },
+      tags: [{ dream_id: 'restore-sync-conflict', tag: 'remote', position: 0 }],
+      wakeEmotions: [],
+      preSleepEmotions: [],
+      sleepContext: null,
+    };
+    const { client, dreamEntriesUpsert } = createMockSupabaseClient({
+      remoteBundles: [remoteBundle],
+    });
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-restore',
+      isAnonymous: true,
+    });
+
+    replaceAllDreams([
+      {
+        id: 'restore-sync-conflict',
+        createdAt: new Date('2026-03-06T08:00:00.000Z').getTime(),
+        updatedAt: new Date('2026-03-06T09:00:00.000Z').getTime(),
+        sleepDate: '2026-03-06',
+        text: 'Older restored local copy',
+        tags: ['local'],
+      },
+    ]);
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result.status).toBe('success');
+    expect(result.uploadedCount).toBe(0);
+    expect(result.pulledCount).toBe(1);
+    expect(result.remoteWinsCount).toBe(1);
+    expect(dreamEntriesUpsert).not.toHaveBeenCalled();
+    expect(getDream('restore-sync-conflict')).toMatchObject({
+      text: 'Remote newest copy',
+      title: 'Remote newest title',
+      tags: ['remote'],
+      syncStatus: 'synced',
+    });
+  });
+
+  test('retries upload when remote revision matches a local pending dream', async () => {
+    const { client, dreamEntriesUpsert } = createMockSupabaseClient({
+      remoteBundles: [
+        {
+          dream: {
+            id: 'equal-pending-retry',
+            user_id: 'user-1',
+            created_at: '2026-03-06T08:00:00.000Z',
+            updated_at: '2026-03-06T10:30:00.000Z',
+            sleep_date: '2026-03-06',
+            title: null,
+            raw_text: 'Keep this dream synced',
+            audio_storage_path: null,
+            transcript: null,
+            transcript_status: null,
+            transcript_source: null,
+            transcript_updated_at: null,
+            mood: null,
+            lucidity: null,
+            archived_at: null,
+            starred_at: null,
+            analysis_provider: null,
+            analysis_status: null,
+            analysis_summary: null,
+            analysis_themes: [],
+            analysis_generated_at: null,
+            analysis_error_message: null,
+          },
+          tags: [],
+          wakeEmotions: [],
+          preSleepEmotions: [],
+          sleepContext: null,
+        },
+      ],
+    });
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-1',
+      isAnonymous: true,
+    });
+
+    saveDream({
+      id: 'equal-pending-retry',
+      createdAt: new Date('2026-03-06T08:00:00.000Z').getTime(),
+      updatedAt: new Date('2026-03-06T10:30:00.000Z').getTime(),
+      sleepDate: '2026-03-06',
+      text: 'Keep this dream synced',
+      tags: [],
+    });
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result.status).toBe('success');
+    expect(result.uploadedCount).toBe(1);
+    expect(dreamEntriesUpsert).toHaveBeenCalledTimes(1);
+    expect(getDream('equal-pending-retry')).toMatchObject({
+      syncStatus: 'synced',
+      text: 'Keep this dream synced',
+    });
+  });
+
   test('uploads pending saved review state snapshots', async () => {
     const { client, reviewSavedStateUpsert } = createMockSupabaseClient();
     mockedGetSupabaseClient.mockReturnValue(client as never);
@@ -216,6 +351,41 @@ describe('cloud sync service', () => {
         onConflict: 'user_id',
       }),
     );
+  });
+
+  test('marks review state synced without re-upload when remote revision already matches local content', async () => {
+    const { client, reviewSavedStateUpsert } = createMockSupabaseClient({
+      remoteSavedReviewState: {
+        user_id: 'user-1',
+        updated_at: '2026-03-06T10:00:00.000Z',
+        saved_months: [],
+        saved_threads: [],
+      },
+    });
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-1',
+      isAnonymous: true,
+    });
+
+    saveSavedReviewStateSnapshot({
+      updatedAt: new Date('2026-03-06T10:00:00.000Z').getTime(),
+      savedMonths: [],
+      savedThreads: [],
+    });
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result.status).toBe('success');
+    expect(result.uploadedCount).toBe(0);
+    expect(result.skippedCount).toBe(1);
+    expect(reviewSavedStateUpsert).not.toHaveBeenCalled();
+    expect(getStoredReviewStateSnapshot()).toMatchObject({
+      syncStatus: 'synced',
+      lastSyncedAt: new Date('2026-03-06T10:00:00.000Z').getTime(),
+    });
   });
 
   test('uploads an empty newer local review snapshot to clear older remote saved state', async () => {
@@ -340,6 +510,54 @@ describe('cloud sync service', () => {
     });
   });
 
+  test('keeps pending review-state diagnostics when review snapshot upload fails', async () => {
+    const { client } = createMockSupabaseClient({
+      reviewSavedStateUpsertError: new Error('review-state-sync-failed'),
+    });
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-review',
+      isAnonymous: true,
+    });
+
+    saveSavedReviewStateSnapshot({
+      updatedAt: new Date('2026-03-06T10:00:00.000Z').getTime(),
+      savedMonths: [],
+      savedThreads: [],
+    });
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result).toMatchObject({
+      status: 'error',
+      failedCount: 1,
+      pendingCount: 1,
+      pendingDreamCount: 0,
+      pendingTombstoneCount: 0,
+      pendingReviewStateCount: 1,
+      errorMessage: 'review-state-sync-failed',
+    });
+    expect(getStoredReviewStateSnapshot()).toMatchObject({
+      syncStatus: 'error',
+      syncError: 'review-state-sync-failed',
+    });
+    expect(getCloudSyncSnapshot()).toMatchObject({
+      status: 'error',
+      failedCount: 1,
+      pendingCount: 1,
+      pendingReviewStateCount: 1,
+      errorMessage: 'review-state-sync-failed',
+    });
+    expect(getCloudSyncEvents()[0]).toMatchObject({
+      status: 'error',
+      pendingCount: 1,
+      pendingReviewStateCount: 1,
+      errorMessage: 'review-state-sync-failed',
+    });
+  });
+
   test('uploads local deletion tombstones and keeps them synced', async () => {
     const { client, tombstonesUpsert } = createMockSupabaseClient();
     mockedGetSupabaseClient.mockReturnValue(client as never);
@@ -371,6 +589,68 @@ describe('cloud sync service', () => {
     );
     expect(getDreamDeletionTombstone('delete-me')).toMatchObject({
       dreamId: 'delete-me',
+      syncStatus: 'synced',
+    });
+  });
+
+  test('does not upload a stale local tombstone over a newer remote dream revision', async () => {
+    const remoteBundle: DreamSyncBundle = {
+      dream: {
+        id: 'remote-survives',
+        user_id: 'user-tombstone',
+        created_at: '2026-03-06T08:00:00.000Z',
+        updated_at: '2026-03-06T10:30:00.000Z',
+        sleep_date: '2026-03-06',
+        title: 'Remote survives',
+        raw_text: 'Remote dream stays',
+        audio_storage_path: null,
+        transcript: null,
+        transcript_status: null,
+        transcript_source: null,
+        transcript_updated_at: null,
+        mood: 'neutral',
+        lucidity: 1,
+        archived_at: null,
+        starred_at: null,
+        analysis_provider: null,
+        analysis_status: null,
+        analysis_summary: null,
+        analysis_themes: [],
+        analysis_generated_at: null,
+        analysis_error_message: null,
+      },
+      tags: [{ dream_id: 'remote-survives', tag: 'survive', position: 0 }],
+      wakeEmotions: [],
+      preSleepEmotions: [],
+      sleepContext: null,
+    };
+    const { client, tombstonesUpsert } = createMockSupabaseClient({
+      remoteBundles: [remoteBundle],
+    });
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-tombstone',
+      isAnonymous: true,
+    });
+
+    saveDreamDeletionTombstone(
+      'remote-survives',
+      new Date('2026-03-06T09:00:00.000Z').getTime(),
+    );
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result.status).toBe('success');
+    expect(result.uploadedCount).toBe(0);
+    expect(result.pulledCount).toBe(1);
+    expect(result.remoteWinsCount).toBe(1);
+    expect(tombstonesUpsert).not.toHaveBeenCalled();
+    expect(getDreamDeletionTombstone('remote-survives')).toBeUndefined();
+    expect(getDream('remote-survives')).toMatchObject({
+      text: 'Remote dream stays',
+      tags: ['survive'],
       syncStatus: 'synced',
     });
   });

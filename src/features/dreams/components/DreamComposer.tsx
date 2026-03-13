@@ -7,6 +7,7 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { ScreenStateCard } from './ScreenStateCard';
+import { logActionError } from '../../../app/errorReporting';
 import {
   getDreamCopy,
   getDreamMoods,
@@ -186,7 +187,9 @@ export function DreamComposer({
           audioUri={form.audioUri}
           audioFileLabel={audioFileLabel}
           onToggleRecord={() => {
-            form.onToggleRecord().catch(() => undefined);
+            form.onToggleRecord().catch(e =>
+              logActionError('DreamComposer.onToggleRecord', e),
+            );
           }}
           onRemoveAudio={() => form.setAudioUri(undefined)}
           text={form.text}
@@ -205,7 +208,9 @@ export function DreamComposer({
             audioUri={form.audioUri}
             audioFileLabel={audioFileLabel}
             onToggleRecord={() => {
-              form.onToggleRecord().catch(() => undefined);
+              form.onToggleRecord().catch(e =>
+                logActionError('DreamComposer.onToggleRecord', e),
+              );
             }}
             onRemoveAudio={() => form.setAudioUri(undefined)}
           />

@@ -73,9 +73,6 @@ export function createSettingsScreenStyles(theme: Theme) {
       gap: 8,
       alignItems: 'stretch',
     },
-    guidanceStack: {
-      gap: 4,
-    },
     settingControlBlock: {
       gap: 6,
     },
@@ -138,21 +135,15 @@ export function createSettingsScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 18,
     },
+    exportSummaryMeta: {
+      gap: 4,
+    },
     buttonRowButton: {
       flex: 1,
       minWidth: 150,
     },
     buttonStackButton: {
       width: '100%',
-    },
-    exportPathBlock: {
-      ...createSoftTile(theme, {
-        tone: 'surface',
-        radius: 14,
-        paddingVertical: 10,
-        paddingHorizontal: 11,
-      }),
-      gap: 5,
     },
     exportPathLabel: {
       color: theme.colors.textDim,

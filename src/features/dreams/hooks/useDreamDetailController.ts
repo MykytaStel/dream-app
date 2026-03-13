@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
 import { generateDreamAnalysis } from '../../analysis/services/dreamAnalysisService';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
+import { logActionError } from '../../../app/errorReporting';
 import {
   clearLastViewedDream,
   saveLastViewedDream,
@@ -119,7 +120,7 @@ export function useDreamDetailController({
       }
 
       return () => {
-        stop().catch(() => undefined);
+        stop().catch(e => logActionError('useDreamDetailController.stop', e));
       };
     }, [justSaved, onAcknowledgeSaved, refreshDream]),
   );

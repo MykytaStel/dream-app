@@ -22,6 +22,9 @@ export type CloudSyncSnapshot = {
   remoteWinsCount: number;
   failedCount: number;
   pendingCount: number;
+  pendingDreamCount: number;
+  pendingTombstoneCount: number;
+  pendingReviewStateCount: number;
   errorMessage?: string;
 };
 
@@ -40,6 +43,9 @@ export type CloudSyncEvent = {
   remoteWinsCount: number;
   failedCount: number;
   pendingCount: number;
+  pendingDreamCount: number;
+  pendingTombstoneCount: number;
+  pendingReviewStateCount: number;
   errorMessage?: string;
 };
 
@@ -53,6 +59,9 @@ export const DEFAULT_CLOUD_SYNC_SNAPSHOT: CloudSyncSnapshot = {
   remoteWinsCount: 0,
   failedCount: 0,
   pendingCount: 0,
+  pendingDreamCount: 0,
+  pendingTombstoneCount: 0,
+  pendingReviewStateCount: 0,
 };
 
 const MAX_CLOUD_SYNC_EVENTS = 12;
@@ -64,16 +73,31 @@ export function getPendingReviewStateCount(
   return snapshot.syncStatus !== 'synced' && (hasItems || snapshot.updatedAt > 0) ? 1 : 0;
 }
 
+export function getLocalCloudSyncPendingCounts(args?: {
+  pendingDreamCount?: number;
+  pendingTombstoneCount?: number;
+  pendingReviewStateCount?: number;
+}) {
+  const pendingDreamCount = args?.pendingDreamCount ?? 0;
+  const pendingTombstoneCount = args?.pendingTombstoneCount ?? 0;
+  const pendingReviewStateCount =
+    args?.pendingReviewStateCount ?? getPendingReviewStateCount();
+
+  return {
+    pendingCount:
+      pendingDreamCount + pendingTombstoneCount + pendingReviewStateCount,
+    pendingDreamCount,
+    pendingTombstoneCount,
+    pendingReviewStateCount,
+  };
+}
+
 export function getLocalCloudSyncPendingCount(args?: {
   pendingDreamCount?: number;
   pendingTombstoneCount?: number;
   pendingReviewStateCount?: number;
 }) {
-  return (
-    (args?.pendingDreamCount ?? 0) +
-    (args?.pendingTombstoneCount ?? 0) +
-    (args?.pendingReviewStateCount ?? getPendingReviewStateCount())
-  );
+  return getLocalCloudSyncPendingCounts(args).pendingCount;
 }
 
 export function persistCloudSyncSnapshot(snapshot: CloudSyncSnapshot) {
@@ -126,6 +150,16 @@ function normalizeCloudSyncEvent(
       typeof value.failedCount === 'number' ? value.failedCount : 0,
     pendingCount:
       typeof value.pendingCount === 'number' ? value.pendingCount : 0,
+    pendingDreamCount:
+      typeof value.pendingDreamCount === 'number' ? value.pendingDreamCount : 0,
+    pendingTombstoneCount:
+      typeof value.pendingTombstoneCount === 'number'
+        ? value.pendingTombstoneCount
+        : 0,
+    pendingReviewStateCount:
+      typeof value.pendingReviewStateCount === 'number'
+        ? value.pendingReviewStateCount
+        : 0,
     errorMessage:
       typeof value.errorMessage === 'string' ? value.errorMessage : undefined,
   };
@@ -177,6 +211,9 @@ export function appendCloudSyncEvent(snapshot: CloudSyncSnapshot) {
     remoteWinsCount: snapshot.remoteWinsCount,
     failedCount: snapshot.failedCount,
     pendingCount: snapshot.pendingCount,
+    pendingDreamCount: snapshot.pendingDreamCount,
+    pendingTombstoneCount: snapshot.pendingTombstoneCount,
+    pendingReviewStateCount: snapshot.pendingReviewStateCount,
     errorMessage: snapshot.errorMessage,
   };
 
@@ -237,6 +274,18 @@ export function getCloudSyncSnapshot(): CloudSyncSnapshot {
         typeof parsed.failedCount === 'number' ? parsed.failedCount : 0,
       pendingCount:
         typeof parsed.pendingCount === 'number' ? parsed.pendingCount : 0,
+      pendingDreamCount:
+        typeof parsed.pendingDreamCount === 'number'
+          ? parsed.pendingDreamCount
+          : 0,
+      pendingTombstoneCount:
+        typeof parsed.pendingTombstoneCount === 'number'
+          ? parsed.pendingTombstoneCount
+          : 0,
+      pendingReviewStateCount:
+        typeof parsed.pendingReviewStateCount === 'number'
+          ? parsed.pendingReviewStateCount
+          : 0,
       errorMessage:
         typeof parsed.errorMessage === 'string'
           ? parsed.errorMessage

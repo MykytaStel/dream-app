@@ -135,6 +135,14 @@ export function formatBackupListMeta(fileName: string) {
   return fileName.replace(/\.json$/i, '');
 }
 
+export function formatBackupFileName(filePath?: string | null) {
+  if (!filePath?.trim()) {
+    return null;
+  }
+
+  return filePath.split('/').filter(Boolean).pop() ?? filePath;
+}
+
 export function buildPrivacyHighlights(copy: SettingsCopy): SettingsMetaItem[] {
   return [
     {
@@ -307,20 +315,6 @@ export function buildTranscriptionHighlights(
           } satisfies SettingsMetaItem,
         ]
       : []),
-  ];
-}
-
-export function buildExportHighlights(copy: SettingsCopy): SettingsMetaItem[] {
-  return [
-    {
-      label: copy.exportIncludesLabel,
-      value: copy.exportIncludesValue,
-      wide: true,
-    },
-    {
-      label: copy.exportFormatLabel,
-      value: copy.exportFormatValue,
-    },
   ];
 }
 

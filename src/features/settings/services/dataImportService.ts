@@ -40,6 +40,10 @@ export type LocalDreamExportFile = {
   modifiedAt: number;
 };
 
+export type LocalDreamExportArtifact = LocalDreamExportFile & {
+  format: 'json' | 'pdf';
+};
+
 export type DreamImportMode = 'replace' | 'merge';
 
 export type DreamImportDiff = {
@@ -339,24 +343,38 @@ function createPreviewFromPayload(
   };
 }
 
-export async function listLocalDreamExportFiles() {
+export async function listLocalDreamExportFiles(): Promise<LocalDreamExportFile[]> {
+  return (await listLocalDreamExportArtifacts()).filter(
+    artifact => artifact.format === 'json',
+  );
+}
+
+export async function listLocalDreamExportArtifacts(): Promise<LocalDreamExportArtifact[]> {
   const directoryPath = getExportDirectoryPath();
   const exists = await RNFS.exists(directoryPath);
 
   if (!exists) {
-    return [] as LocalDreamExportFile[];
+    return [] as LocalDreamExportArtifact[];
   }
 
   const entries = await RNFS.readDir(directoryPath);
 
   return entries
-    .filter(
-      entry => entry.isFile() && entry.name.toLowerCase().endsWith('.json'),
-    )
+    .filter(entry => {
+      if (!entry.isFile()) {
+        return false;
+      }
+
+      const normalizedName = entry.name.toLowerCase();
+      return normalizedName.endsWith('.json') || normalizedName.endsWith('.pdf');
+    })
     .map(entry => ({
       fileName: entry.name,
       filePath: entry.path,
       modifiedAt: entry.mtime instanceof Date ? entry.mtime.getTime() : 0,
+      format: entry.name.toLowerCase().endsWith('.pdf')
+        ? ('pdf' as const)
+        : ('json' as const),
     }))
     .sort((left, right) => right.modifiedAt - left.modifiedAt);
 }

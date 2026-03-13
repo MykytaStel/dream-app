@@ -57,34 +57,39 @@ function getRestoreActionState({
 export function ExportSection({
   copy,
   styles,
-  highlights,
   isExportingJson,
   isExportingPdf,
-  lastExportPath,
+  lastExportName,
+  lastExportSummaryTitle,
+  lastExportSummaryDescription,
+  canOpenLastPdf,
+  canShareLastExport,
+  openLastPdfTitle,
+  shareLastExportTitle,
   onExportJson,
   onExportPdf,
+  onOpenLastPdf,
+  onShareLastExport,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
-  highlights: SettingsMetaItem[];
   isExportingJson: boolean;
   isExportingPdf: boolean;
-  lastExportPath: string | null;
+  lastExportName: string | null;
+  lastExportSummaryTitle: string | null;
+  lastExportSummaryDescription: string | null;
+  canOpenLastPdf: boolean;
+  canShareLastExport: boolean;
+  openLastPdfTitle: string;
+  shareLastExportTitle: string;
   onExportJson: () => void;
   onExportPdf: () => void;
+  onOpenLastPdf: () => void;
+  onShareLastExport: () => void;
 }) {
   return (
     <Card style={styles.sectionCard}>
       <SettingsSectionHeader title={copy.exportTitle} description={copy.exportDescription} />
-      {highlights.map(item => (
-        <SettingsActionRow key={item.label} title={item.label} meta={item.value} variant="inline" />
-      ))}
-      {lastExportPath ? (
-        <View style={styles.exportPathBlock}>
-          <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
-          <Text style={styles.exportPathValue}>{lastExportPath}</Text>
-        </View>
-      ) : null}
       <View style={styles.buttonRow}>
         <Button
           title={isExportingJson ? copy.exportButtonBusy : copy.exportButton}
@@ -103,10 +108,39 @@ export function ExportSection({
           disabled={isExportingJson || isExportingPdf}
         />
       </View>
-      <View style={styles.guidanceStack}>
-        <Text style={styles.privacyFootnote}>{copy.exportJsonGuidance}</Text>
-        <Text style={styles.privacyFootnote}>{copy.exportPdfGuidance}</Text>
-      </View>
+      {lastExportName && lastExportSummaryTitle && lastExportSummaryDescription ? (
+        <View style={styles.backupSuccessBlock}>
+          <Text style={styles.backupSuccessTitle}>{lastExportSummaryTitle}</Text>
+          <Text style={styles.backupSuccessText}>{lastExportSummaryDescription}</Text>
+          <View style={styles.exportSummaryMeta}>
+            <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
+            <Text style={styles.exportPathValue}>{lastExportName}</Text>
+          </View>
+          {canOpenLastPdf || canShareLastExport ? (
+            <View style={styles.buttonRow}>
+              {canOpenLastPdf ? (
+                <Button
+                  title={openLastPdfTitle}
+                  variant="ghost"
+                  size="sm"
+                  style={styles.buttonRowButton}
+                  onPress={onOpenLastPdf}
+                  disabled={isExportingJson || isExportingPdf}
+                />
+              ) : null}
+              <Button
+                title={shareLastExportTitle}
+                variant="ghost"
+                size="sm"
+                style={styles.buttonRowButton}
+                onPress={onShareLastExport}
+                disabled={isExportingJson || isExportingPdf}
+              />
+            </View>
+          ) : null}
+        </View>
+      ) : null}
+      <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
     </Card>
   );
 }

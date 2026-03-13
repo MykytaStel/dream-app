@@ -16,7 +16,12 @@ import {
   validateDreamForSave,
 } from '../model/dreamRules';
 import { saveDream } from '../repository/dreamsRepository';
-import { startRecording, stopRecording } from '../services/audioService';
+import { logActionError } from '../../../app/errorReporting';
+import {
+  cleanupOrphanedAudioFiles,
+  startRecording,
+  stopRecording,
+} from '../services/audioService';
 import {
   clearDreamDraft,
   getDreamDraft,
@@ -238,15 +243,35 @@ export function useDreamComposerForm({
       setRecording(false);
     } catch (error) {
       setRecording(false);
-      const rawMessage = error instanceof Error ? error.message : String(error);
-      const message =
-        Platform.OS === 'ios' ? `${rawMessage}\n\n${copy.audioSimulatorHint}` : rawMessage;
+      const code = (error as { code?: string })?.code;
+      let message: string;
+      if (code === 'android-audio-permission-denied') {
+        message = copy.audioPermissionDenied;
+      } else if (code === 'android-audio-permission-unavailable') {
+        message = copy.audioPermissionUnavailable;
+      } else {
+        const rawMessage = error instanceof Error ? error.message : String(error);
+        message =
+          Platform.OS === 'ios' ? `${rawMessage}\n\n${copy.audioSimulatorHint}` : rawMessage;
+      }
       setLastActionError(message);
       Alert.alert(copy.audioErrorTitle, message);
     } finally {
       setIsBusy(false);
     }
-  }, [copy.audioErrorTitle, copy.audioSimulatorHint, recording]);
+  }, [
+    copy.audioErrorTitle,
+    copy.audioPermissionDenied,
+    copy.audioPermissionUnavailable,
+    copy.audioSimulatorHint,
+    recording,
+  ]);
+
+  React.useEffect(() => {
+    cleanupOrphanedAudioFiles(7).catch(e =>
+      logActionError('useDreamComposerForm.cleanupOrphanedAudioFiles', e),
+    );
+  }, []);
 
   React.useEffect(() => {
     if (mode !== 'create' || !autoStartRecordingKey) {
@@ -267,7 +292,9 @@ export function useDreamComposerForm({
     }
 
     lastAutoStartKey.current = autoStartRecordingKey;
-    onToggleRecord().catch(() => undefined);
+    onToggleRecord().catch(e =>
+      logActionError('useDreamComposerForm.autoStartRecording', e),
+    );
   }, [audioUri, autoStartRecordingKey, isBusy, mode, onToggleRecord, recording]);
 
   React.useEffect(() => {

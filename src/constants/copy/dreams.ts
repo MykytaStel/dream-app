@@ -549,6 +549,10 @@ const DREAM_COPY_EN = {
   audioErrorTitle: 'Audio error',
   audioSimulatorHint:
     'Voice capture may be unavailable on the iOS Simulator. Use text here or test recording on a real device.',
+  audioPermissionDenied:
+    'Microphone access was denied. Turn on microphone permission in system settings to record voice notes.',
+  audioPermissionUnavailable:
+    'Microphone permission could not be requested. Check system settings.',
 };
 
 const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
@@ -1090,6 +1094,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   audioErrorTitle: 'Помилка аудіо',
   audioSimulatorHint:
     'Голосовий запис може не працювати в iOS Simulator. Тут краще тестувати текст, а запис перевіряти на реальному пристрої.',
+  audioPermissionDenied:
+    'Доступ до мікрофона заборонено. Увімкни дозвіл у системних налаштуваннях, щоб записувати голосові нотатки.',
+  audioPermissionUnavailable:
+    'Не вдалося запитати дозвіл мікрофона. Перевір налаштування системи.',
 };
 
 const DREAM_MOODS_EN: Array<{ label: string; value: Mood }> = [

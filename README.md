@@ -23,16 +23,14 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.6.1`
+Current release target: `0.6.2`
 
-This release should stabilize the new review and backup foundation from
-`0.6.0` before the next backend and product pushes:
+This release should harden sync and restore behavior from `0.6.0` and `0.6.1`
+before the next broader product push:
 
-- navigation and spacing should feel calmer across stack screens
-- backup should stay in its own operational flow instead of leaking into every
-  primary surface
-- review-state metadata should stay safe across sync, restore, and migrations
-- loading and backup states should avoid misleading flashes and repeated content
+- sync should stay idempotent and easier to reason about on repeated runs
+- snapshot and conflict metadata should stay explicit across sync, restore, and migrations
+- development diagnostics should expose pending state and failures more clearly
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -62,7 +60,9 @@ for the completed review-workspace foundation,
 [docs/RELEASE_0.6.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.6.0_PLAN.md)
 for the completed connected-reflection scope,
 [docs/RELEASE_0.6.1_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.6.1_PLAN.md)
-for the active stabilization target,
+for the completed stabilization target,
+[docs/RELEASE_0.6.2_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.6.2_PLAN.md)
+for the active backend-hardening target,
 [docs/ROADMAP_0.5.1_TO_0.6.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.5.1_TO_0.6.0.md)
 for the completed feature/backend/UI/UX range from `0.5.1` to `0.6.0`,
 [docs/ROADMAP_0.6.1_TO_1.0.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.6.1_TO_1.0.0.md)

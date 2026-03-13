@@ -3,6 +3,7 @@ import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
+import { logActionError } from '../../../app/errorReporting';
 import {
   ROOT_ROUTE_NAMES,
   type PatternDetailKind,
@@ -100,7 +101,9 @@ export default function MonthlyReportScreen() {
         onSelectMonth={controller.setSelectedMonthKey}
         onToggleSaveForLater={controller.onToggleSaveForLater}
         onShareReport={() => {
-          controller.onShareReport().catch(() => undefined);
+          controller.onShareReport().catch(e =>
+            logActionError('MonthlyReportScreen.onShareReport', e),
+          );
         }}
       />
 

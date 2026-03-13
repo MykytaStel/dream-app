@@ -16,6 +16,7 @@ import {
   openSyncDiagnosticsPreview,
   openWakeEntry,
 } from '../../../app/navigation/navigationRef';
+import { logActionError } from '../../../app/errorReporting';
 import {
   ROOT_ROUTE_NAMES,
   type RootStackParamList,
@@ -81,7 +82,9 @@ export default function SettingsScreen() {
         pickerLocale={controller.pickerLocale}
         getReminderDate={controller.getReminderDate}
         onToggleReminder={() =>
-          controller.onToggleReminder().catch(() => undefined)
+          controller.onToggleReminder().catch(e =>
+            logActionError('SettingsScreen.onToggleReminder', e),
+          )
         }
         onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
         onNativeTimePickerChange={controller.onNativeTimePickerChange}
@@ -119,10 +122,14 @@ export default function SettingsScreen() {
         downloadLabel={controller.transcriptionDownloadLabel}
         installed={controller.transcriptionModelInstalled}
         onDownload={() =>
-          controller.onDownloadTranscriptionModel().catch(() => undefined)
+          controller.onDownloadTranscriptionModel().catch(e =>
+            logActionError('SettingsScreen.onDownloadTranscriptionModel', e),
+          )
         }
         onDelete={() =>
-          controller.onDeleteTranscriptionModel().catch(() => undefined)
+          controller.onDeleteTranscriptionModel().catch(e =>
+            logActionError('SettingsScreen.onDeleteTranscriptionModel', e),
+          )
         }
       />
 
@@ -134,10 +141,14 @@ export default function SettingsScreen() {
           isUpdatingSeedDreams={controller.isUpdatingSeedDreams}
           onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
           onSeed250={() =>
-            controller.onSeedDreams(250).catch(() => undefined)
+            controller.onSeedDreams(250).catch(e =>
+              logActionError('SettingsScreen.onSeedDreams', e),
+            )
           }
           onSeed1000={() =>
-            controller.onSeedDreams(1000).catch(() => undefined)
+            controller.onSeedDreams(1000).catch(e =>
+              logActionError('SettingsScreen.onSeedDreams', e),
+            )
           }
           onPreviewMonthlyReport={() => openMonthlyReport()}
           onPreviewBackupOnboarding={() => openBackupOnboardingPreview()}

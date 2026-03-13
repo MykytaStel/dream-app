@@ -5,6 +5,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
+import { logActionError } from '../../../app/errorReporting';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
@@ -79,22 +80,34 @@ export default function BackupScreen() {
         onSaveCloudConfig={controller.onSaveCloudConfig}
         onClearCloudConfig={controller.onClearCloudConfig}
         onConnectCloud={() =>
-          controller.onConnectCloud().catch(() => undefined)
+          controller.onConnectCloud().catch(e =>
+            logActionError('BackupScreen.onConnectCloud', e),
+          )
         }
         onSignInCloudAccount={() =>
-          controller.onSignInCloudAccount().catch(() => undefined)
+          controller.onSignInCloudAccount().catch(e =>
+            logActionError('BackupScreen.onSignInCloudAccount', e),
+          )
         }
         onRequestCloudPasswordReset={() =>
-          controller.onRequestCloudPasswordReset().catch(() => undefined)
+          controller.onRequestCloudPasswordReset().catch(e =>
+            logActionError('BackupScreen.onRequestCloudPasswordReset', e),
+          )
         }
         onUpgradeCloudAccount={() =>
-          controller.onUpgradeCloudAccount().catch(() => undefined)
+          controller.onUpgradeCloudAccount().catch(e =>
+            logActionError('BackupScreen.onUpgradeCloudAccount', e),
+          )
         }
         onDisconnectCloud={() =>
-          controller.onDisconnectCloud().catch(() => undefined)
+          controller.onDisconnectCloud().catch(e =>
+            logActionError('BackupScreen.onDisconnectCloud', e),
+          )
         }
         onRunCloudSync={() =>
-          controller.onRunCloudSync().catch(() => undefined)
+          controller.onRunCloudSync().catch(e =>
+            logActionError('BackupScreen.onRunCloudSync', e),
+          )
         }
         onToggleCloudSync={controller.onToggleCloudSync}
         onDismissCloudActionFeedback={controller.clearCloudActionFeedback}
@@ -161,15 +174,34 @@ export default function BackupScreen() {
       <ExportSection
         copy={copy}
         styles={styles}
-        highlights={controller.exportHighlights}
         isExportingJson={controller.isExportingJson}
         isExportingPdf={controller.isExportingPdf}
-        lastExportPath={controller.lastExportPath}
+        lastExportName={controller.lastExportName}
+        lastExportSummaryTitle={controller.lastExportSummaryTitle}
+        lastExportSummaryDescription={controller.lastExportSummaryDescription}
+        canOpenLastPdf={controller.canOpenLastPdf}
+        canShareLastExport={controller.canShareLastExport}
+        openLastPdfTitle={controller.openLastPdfTitle}
+        shareLastExportTitle={controller.shareLastExportTitle}
         onExportJson={() =>
-          controller.onExportData().catch(() => undefined)
+          controller.onExportData().catch(e =>
+            logActionError('BackupScreen.onExportData', e),
+          )
         }
         onExportPdf={() =>
-          controller.onExportPdfData().catch(() => undefined)
+          controller.onExportPdfData().catch(e =>
+            logActionError('BackupScreen.onExportPdfData', e),
+          )
+        }
+        onOpenLastPdf={() =>
+          controller.onOpenLastPdf().catch(e =>
+            logActionError('BackupScreen.onOpenLastPdf', e),
+          )
+        }
+        onShareLastExport={() =>
+          controller.onShareLastExport().catch(e =>
+            logActionError('BackupScreen.onShareLastExport', e),
+          )
         }
       />
       <RestoreSection

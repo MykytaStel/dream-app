@@ -12,8 +12,13 @@ import {
   getSavedMonthlyReportMonths,
   toggleSavedMonthlyReportMonth,
 } from '../src/features/stats/services/monthlyReportShelfService';
+import {
+  getStoredReviewStateSnapshot,
+  saveSavedReviewStateSnapshot,
+} from '../src/features/stats/services/reviewStateStorageService';
 import { getDreamDeletionTombstone } from '../src/features/dreams/repository/dreamDeletionTombstonesRepository';
 import {
+  getCloudSyncEvents,
   getCloudSyncSnapshot,
   maybeRunCloudSyncOnLaunch,
   runCloudSync,
@@ -25,6 +30,9 @@ import {
   setCloudSyncEnabled,
 } from '../src/services/auth/session';
 import type { DreamSyncBundle } from '../src/services/api/contracts/dreamSync';
+import {
+  createMockSupabaseClient,
+} from './helpers/cloudSyncTestUtils';
 
 jest.mock('../src/services/api/supabase/client', () => ({
   getSupabaseClient: jest.fn(),
@@ -33,165 +41,6 @@ jest.mock('../src/services/api/supabase/client', () => ({
 jest.mock('../src/services/auth/cloudAuth', () => ({
   syncCloudSessionFromAuth: jest.fn(),
 }));
-
-function createMockSupabaseClient(options?: {
-  dreamEntryError?: Error | null;
-  tagInsertError?: Error | null;
-  uploadError?: Error | null;
-  remoteBundles?: DreamSyncBundle[];
-  tombstoneUpsertError?: Error | null;
-  remoteDeletionTombstones?: Array<{
-    dream_id: string;
-    user_id: string;
-    deleted_at: string;
-  }>;
-}) {
-  const remoteBundles = options?.remoteBundles ?? [];
-  const remoteDeletionTombstones = options?.remoteDeletionTombstones ?? [];
-  const remoteDreamRows = remoteBundles.map(bundle => bundle.dream);
-  const remoteTags = remoteBundles.flatMap(bundle => bundle.tags);
-  const remoteWakeEmotions = remoteBundles.flatMap(
-    bundle => bundle.wakeEmotions,
-  );
-  const remotePreSleepEmotions = remoteBundles.flatMap(
-    bundle => bundle.preSleepEmotions,
-  );
-  const remoteSleepContexts = remoteBundles.flatMap(bundle =>
-    bundle.sleepContext ? [bundle.sleepContext] : [],
-  );
-  const dreamEntriesUpsert = jest.fn(async () => ({
-    error: options?.dreamEntryError ?? null,
-  }));
-  const dreamEntriesDeleteEqUser = jest.fn(async () => ({ error: null }));
-  const dreamEntriesDeleteEqId = jest.fn(() => ({
-    eq: dreamEntriesDeleteEqUser,
-  }));
-  const dreamEntriesSelectOrder = jest.fn(async () => ({
-    data: remoteDreamRows,
-    error: null,
-  }));
-  const dreamEntriesSelectEq = jest.fn(() => ({
-    order: dreamEntriesSelectOrder,
-  }));
-  const dreamEntriesSelect = jest.fn(() => ({
-    eq: dreamEntriesSelectEq,
-  }));
-  const makeDeleteChain = (error: Error | null = null) => ({
-    eq: jest.fn(async () => ({ error })),
-  });
-  const makeSelectInChain = (rows: unknown[]) => ({
-    in: jest.fn(async () => ({
-      data: rows,
-      error: null,
-    })),
-  });
-  const tagsDelete = jest.fn(() => makeDeleteChain());
-  const tagsInsert = jest.fn(async () => ({
-    error: options?.tagInsertError ?? null,
-  }));
-  const tagsSelect = jest.fn(() => makeSelectInChain(remoteTags));
-  const wakeDelete = jest.fn(() => makeDeleteChain());
-  const wakeInsert = jest.fn(async () => ({ error: null }));
-  const wakeSelect = jest.fn(() => makeSelectInChain(remoteWakeEmotions));
-  const preSleepDelete = jest.fn(() => makeDeleteChain());
-  const preSleepInsert = jest.fn(async () => ({ error: null }));
-  const preSleepSelect = jest.fn(() =>
-    makeSelectInChain(remotePreSleepEmotions),
-  );
-  const sleepDelete = jest.fn(() => makeDeleteChain());
-  const sleepUpsert = jest.fn(async () => ({ error: null }));
-  const sleepSelect = jest.fn(() => makeSelectInChain(remoteSleepContexts));
-  const tombstonesUpsert = jest.fn(async () => ({
-    error: options?.tombstoneUpsertError ?? null,
-  }));
-  const tombstonesSelectOrder = jest.fn(async () => ({
-    data: remoteDeletionTombstones,
-    error: null,
-  }));
-  const tombstonesSelectEq = jest.fn(() => ({
-    order: tombstonesSelectOrder,
-  }));
-  const tombstonesSelect = jest.fn(() => ({
-    eq: tombstonesSelectEq,
-  }));
-  const reviewSavedStateUpsert = jest.fn(async () => ({ error: null }));
-  const reviewSavedStateMaybeSingle = jest.fn(async () => ({
-    data: null,
-    error: null,
-  }));
-  const reviewSavedStateSelectEq = jest.fn(() => ({
-    maybeSingle: reviewSavedStateMaybeSingle,
-  }));
-  const reviewSavedStateSelect = jest.fn(() => ({
-    eq: reviewSavedStateSelectEq,
-  }));
-  const upload = jest.fn(async () => ({ error: options?.uploadError ?? null }));
-
-  const client = {
-    from: jest.fn((table: string) => {
-      switch (table) {
-        case 'dream_entries':
-          return {
-            delete: jest.fn(() => ({
-              eq: dreamEntriesDeleteEqId,
-            })),
-            select: dreamEntriesSelect,
-            upsert: dreamEntriesUpsert,
-          };
-        case 'dream_tags':
-          return {
-            delete: tagsDelete,
-            insert: tagsInsert,
-            select: tagsSelect,
-          };
-        case 'dream_wake_emotions':
-          return {
-            delete: wakeDelete,
-            insert: wakeInsert,
-            select: wakeSelect,
-          };
-        case 'dream_pre_sleep_emotions':
-          return {
-            delete: preSleepDelete,
-            insert: preSleepInsert,
-            select: preSleepSelect,
-          };
-        case 'dream_sleep_contexts':
-          return {
-            delete: sleepDelete,
-            upsert: sleepUpsert,
-            select: sleepSelect,
-          };
-        case 'dream_entry_tombstones':
-          return {
-            select: tombstonesSelect,
-            upsert: tombstonesUpsert,
-          };
-        case 'review_saved_state_snapshots':
-          return {
-            select: reviewSavedStateSelect,
-            upsert: reviewSavedStateUpsert,
-          };
-        default:
-          throw new Error(`Unexpected table: ${table}`);
-      }
-    }),
-    storage: {
-      from: jest.fn(() => ({
-        upload,
-      })),
-    },
-  };
-
-  return {
-    client,
-    dreamEntriesUpsert,
-    tagsInsert,
-    tombstonesUpsert,
-    reviewSavedStateUpsert,
-    upload,
-  };
-}
 
 describe('cloud sync service', () => {
   const mockedGetSupabaseClient = getSupabaseClient as jest.MockedFunction<
@@ -260,6 +109,12 @@ describe('cloud sync service', () => {
       },
     ]);
     expect(getCloudSyncSnapshot().status).toBe('success');
+    expect(getCloudSyncEvents()[0]).toMatchObject({
+      status: 'success',
+      reason: 'manual',
+      uploadedCount: 1,
+      failedCount: 0,
+    });
   });
 
   test('hydrates newer remote dreams into local storage after upload phase', async () => {
@@ -363,6 +218,87 @@ describe('cloud sync service', () => {
     );
   });
 
+  test('uploads an empty newer local review snapshot to clear older remote saved state', async () => {
+    const { client, reviewSavedStateUpsert } = createMockSupabaseClient({
+      remoteSavedReviewState: {
+        user_id: 'user-1',
+        updated_at: '2026-03-06T08:00:00.000Z',
+        saved_months: [{ monthKey: '2026-03', savedAt: 10 }],
+        saved_threads: null,
+      },
+    });
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-1',
+      isAnonymous: true,
+    });
+
+    saveSavedReviewStateSnapshot({
+      updatedAt: new Date('2026-03-06T10:00:00.000Z').getTime(),
+      savedMonths: [],
+      savedThreads: [],
+    });
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result.status).toBe('success');
+    expect(result.uploadedCount).toBe(1);
+    expect(reviewSavedStateUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-1',
+        saved_months: [],
+        saved_threads: [],
+      }),
+      expect.objectContaining({
+        onConflict: 'user_id',
+      }),
+    );
+    expect(getStoredReviewStateSnapshot()).toMatchObject({
+      savedMonths: [],
+      savedThreads: [],
+      syncStatus: 'synced',
+    });
+  });
+
+  test('uploads an empty pending local review snapshot even when no remote snapshot exists', async () => {
+    const { client, reviewSavedStateUpsert } = createMockSupabaseClient();
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-1',
+      isAnonymous: true,
+    });
+
+    saveSavedReviewStateSnapshot({
+      updatedAt: new Date('2026-03-06T10:00:00.000Z').getTime(),
+      savedMonths: [],
+      savedThreads: [],
+    });
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result.status).toBe('success');
+    expect(result.uploadedCount).toBe(1);
+    expect(reviewSavedStateUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-1',
+        saved_months: [],
+        saved_threads: [],
+      }),
+      expect.objectContaining({
+        onConflict: 'user_id',
+      }),
+    );
+    expect(getStoredReviewStateSnapshot()).toMatchObject({
+      syncStatus: 'synced',
+      savedMonths: [],
+      savedThreads: [],
+    });
+  });
+
   test('records partial sync failures without throwing away local changes', async () => {
     const { client } = createMockSupabaseClient({
       dreamEntryError: new Error('dream-upsert-failed'),
@@ -393,6 +329,12 @@ describe('cloud sync service', () => {
     });
     expect(getCloudSyncSnapshot()).toMatchObject({
       status: 'error',
+      failedCount: 1,
+      errorMessage: 'dream-upsert-failed',
+    });
+    expect(getCloudSyncEvents()[0]).toMatchObject({
+      status: 'error',
+      reason: 'manual',
       failedCount: 1,
       errorMessage: 'dream-upsert-failed',
     });
@@ -641,5 +583,100 @@ describe('cloud sync service', () => {
 
     await expect(maybeRunCloudSyncOnLaunch()).resolves.toBeNull();
     expect(getCloudSyncSnapshot().status).toBe('idle');
+  });
+
+  test('records an error snapshot and event when cloud session is unavailable before sync starts', async () => {
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-out',
+    });
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result).toMatchObject({
+      status: 'error',
+      reason: 'manual',
+      errorMessage: 'cloud-session-required',
+    });
+    expect(getCloudSyncSnapshot()).toMatchObject({
+      status: 'error',
+      reason: 'manual',
+      errorMessage: 'cloud-session-required',
+    });
+    expect(getCloudSyncEvents()[0]).toMatchObject({
+      status: 'error',
+      reason: 'manual',
+      errorMessage: 'cloud-session-required',
+    });
+  });
+
+  test('records an error snapshot and event when auth refresh throws before sync starts', async () => {
+    mockedSyncCloudSessionFromAuth.mockRejectedValue(
+      new Error('auth-refresh-failed'),
+    );
+
+    const result = await runCloudSync({ reason: 'manual' });
+
+    expect(result).toMatchObject({
+      status: 'error',
+      reason: 'manual',
+      errorMessage: 'auth-refresh-failed',
+    });
+    expect(getCloudSyncSnapshot()).toMatchObject({
+      status: 'error',
+      reason: 'manual',
+      errorMessage: 'auth-refresh-failed',
+    });
+    expect(getCloudSyncEvents()[0]).toMatchObject({
+      status: 'error',
+      reason: 'manual',
+      errorMessage: 'auth-refresh-failed',
+    });
+  });
+
+  test('preserves last successful sync timestamp after a later failed sync attempt', async () => {
+    const { client } = createMockSupabaseClient();
+    mockedGetSupabaseClient.mockReturnValue(client as never);
+    mockedSyncCloudSessionFromAuth.mockResolvedValue({
+      status: 'signed-in',
+      provider: 'supabase',
+      userId: 'user-1',
+      isAnonymous: true,
+    });
+
+    saveDream({
+      id: 'first-success',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-06',
+      text: 'Sync me once',
+      tags: [],
+    });
+
+    const first = await runCloudSync({ reason: 'manual' });
+    expect(first.status).toBe('success');
+    const previousLastSuccessAt = getCloudSyncSnapshot().lastSuccessAt;
+    expect(typeof previousLastSuccessAt).toBe('number');
+
+    mockedGetSupabaseClient.mockReturnValue(
+      createMockSupabaseClient({
+        dreamEntryError: new Error('dream-upsert-failed'),
+      }).client as never,
+    );
+
+    saveDream({
+      id: 'second-failure',
+      createdAt: 1710000100000,
+      sleepDate: '2026-03-06',
+      text: 'Fails later',
+      tags: [],
+    });
+
+    const second = await runCloudSync({ reason: 'manual' });
+
+    expect(second.status).toBe('error');
+    expect(getCloudSyncSnapshot()).toMatchObject({
+      status: 'error',
+      errorMessage: 'dream-upsert-failed',
+      lastSuccessAt: previousLastSuccessAt,
+    });
   });
 });

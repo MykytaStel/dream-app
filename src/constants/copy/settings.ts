@@ -23,6 +23,9 @@ const SETTINGS_COPY_EN = {
   devPreviewBackupOnboarding: 'Preview backup onboarding',
   devPreviewBackupOnboardingMeta:
     'Open the one-time modal preview and reset its seen state.',
+  devPreviewSyncDiagnostics: 'Preview sync diagnostics',
+  devPreviewSyncDiagnosticsMeta:
+    'Open the debug-only screen with the latest sync snapshot and recent sync attempts.',
   actionCancel: 'Cancel',
   reminderPermissionDeniedTitle: 'Notifications disabled',
   reminderPermissionDeniedDescription:
@@ -256,7 +259,7 @@ const SETTINGS_COPY_EN = {
   exportIncludesValue:
     'Dreams, draft, locale, reminders, transcripts, and analysis metadata',
   exportFormatLabel: 'Format',
-  exportFormatValue: 'JSON v6 + PDF snapshot',
+  exportFormatValue: 'JSON v7 + PDF snapshot',
   exportLatestPathLabel: 'Latest file',
   exportFootnote:
     'JSON works as a restore backup. PDF is a readable archive snapshot and does not replace restore.',
@@ -357,6 +360,24 @@ const SETTINGS_COPY_EN = {
   developerToolsTitle: 'Developer tools',
   developerToolsDescription:
     'Debug-only tools for previews, seed data, and stress testing.',
+  devSyncHistoryTitle: 'Recent sync attempts',
+  devSyncHistoryDescription:
+    'Debug-only history of the latest cloud sync outcomes on this device.',
+  devSyncReasonManual: 'Manual',
+  devSyncReasonLaunch: 'Launch',
+  devSyncSnapshotTitle: 'Latest sync snapshot',
+  devSyncSnapshotDescription:
+    'Debug-only view of the latest stored sync result on this device.',
+  devSyncSnapshotStatusTitle: 'Status',
+  devSyncSnapshotReasonTitle: 'Reason',
+  devSyncSnapshotPendingTitle: 'Pending changes',
+  devSyncSnapshotUploadsTitle: 'Uploaded',
+  devSyncSnapshotPullsTitle: 'Pulled',
+  devSyncSnapshotConflictsTitle: 'Conflicts',
+  devSyncSnapshotErrorsTitle: 'Last error',
+  devSyncHistoryEmptyTitle: 'No sync attempts yet',
+  devSyncHistoryEmptyDescription:
+    'Run backup sync once and the latest debug history will appear here.',
   scaleTestSeededLabel: 'Sample dreams',
   scaleTestAdd250: 'Add 250',
   scaleTestAdd1000: 'Add 1000',
@@ -405,6 +426,9 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   devPreviewBackupOnboarding: 'Переглянути backup onboarding',
   devPreviewBackupOnboardingMeta:
     'Відкрий preview одноразового modal і скинь його seen state.',
+  devPreviewSyncDiagnostics: 'Переглянути sync diagnostics',
+  devPreviewSyncDiagnosticsMeta:
+    'Відкрий debug-only екран з останнім sync snapshot і недавніми sync спробами.',
   actionCancel: 'Скасувати',
   reminderPermissionDeniedTitle: 'Сповіщення вимкнені',
   reminderPermissionDeniedDescription:
@@ -638,7 +662,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   exportIncludesValue:
     'Сни, чернетка, мова, нагадування, транскрипти й метадані аналізу',
   exportFormatLabel: 'Формат',
-  exportFormatValue: 'JSON v6 + PDF-знімок',
+  exportFormatValue: 'JSON v7 + PDF-знімок',
   exportLatestPathLabel: 'Останній файл',
   exportFootnote:
     'JSON підходить для відновлення. PDF є читабельним знімком архіву і не замінює відновлення.',
@@ -739,6 +763,24 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   developerToolsTitle: 'Developer tools',
   developerToolsDescription:
     'Інструменти лише для debug: preview, seed data і stress test.',
+  devSyncHistoryTitle: 'Останні sync спроби',
+  devSyncHistoryDescription:
+    'Історія лише для debug з останніми результатами cloud sync на цьому пристрої.',
+  devSyncReasonManual: 'Вручну',
+  devSyncReasonLaunch: 'При запуску',
+  devSyncSnapshotTitle: 'Останній sync snapshot',
+  devSyncSnapshotDescription:
+    'Debug-only перегляд останнього збереженого результату sync на цьому пристрої.',
+  devSyncSnapshotStatusTitle: 'Статус',
+  devSyncSnapshotReasonTitle: 'Причина',
+  devSyncSnapshotPendingTitle: 'Pending changes',
+  devSyncSnapshotUploadsTitle: 'Uploaded',
+  devSyncSnapshotPullsTitle: 'Pulled',
+  devSyncSnapshotConflictsTitle: 'Conflicts',
+  devSyncSnapshotErrorsTitle: 'Остання помилка',
+  devSyncHistoryEmptyTitle: 'Ще не було sync спроб',
+  devSyncHistoryEmptyDescription:
+    'Запусти backup sync один раз, і тут зʼявиться debug history.',
   scaleTestSeededLabel: 'Тестових снів',
   scaleTestAdd250: 'Додати 250',
   scaleTestAdd1000: 'Додати 1000',

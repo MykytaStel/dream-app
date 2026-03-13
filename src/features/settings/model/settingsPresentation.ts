@@ -1,7 +1,6 @@
 import { type AppLocale } from '../../../i18n/types';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { type DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
-import { type CloudSession } from '../../../services/auth/session';
 import { type Dream } from '../../dreams/model/dream';
 import {
   type DreamTranscriptionModelStatus,
@@ -11,39 +10,22 @@ import { type DreamReminderSettings } from '../../reminders/services/dreamRemind
 import {
   type DreamImportMode,
   type DreamImportPreview,
-  type LocalDreamExportFile,
 } from '../services/dataImportService';
 import { type SettingsMetaItem } from '../components/SettingsMetaGrid';
 import { CURRENT_STORAGE_SCHEMA_VERSION } from '../../../services/storage/keys';
 import { DREAM_EXPORT_VERSION } from '../services/dataExportService';
-import { type CloudSyncSnapshot } from '../../../services/cloud/sync';
-import { type SavedReviewStateSnapshot } from '../../stats/services/reviewStateStorageService';
+import { type CloudSession } from '../../../services/auth/session';
+export {
+  buildBackupContentTrustItems,
+  buildBackupTimelineItems,
+  buildCloudSyncEventItems,
+  formatCloudSyncMeta,
+  type BackupContentTrustItem,
+  type BackupTimelineItem,
+  type CloudSyncEventItem,
+} from './backupPresentation';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
-
-export type BackupTimelineItem = {
-  key: 'sync' | 'snapshot' | 'device';
-  title: string;
-  meta: string;
-  value: string;
-};
-
-export type BackupContentTrustItem = {
-  key: 'audio' | 'transcript' | 'review';
-  title: string;
-  meta: string;
-  value: string;
-};
-
-function fillTemplate(
-  template: string,
-  replacements: Record<string, string | number>,
-) {
-  return Object.entries(replacements).reduce(
-    (result, [key, value]) => result.replace(`{${key}}`, String(value)),
-    template,
-  );
-}
 
 export function getSettingsFooterMeta(copy: SettingsCopy) {
   return `${copy.footerStorageMetaPrefix} ${CURRENT_STORAGE_SCHEMA_VERSION} • ${copy.footerExportMetaPrefix} v${DREAM_EXPORT_VERSION}`;
@@ -151,308 +133,6 @@ export function formatBackupListTitle(
 
 export function formatBackupListMeta(fileName: string) {
   return fileName.replace(/\.json$/i, '');
-}
-
-export function formatCloudSyncMeta(
-  copy: SettingsCopy,
-  snapshot: CloudSyncSnapshot,
-  locale: AppLocale,
-  showDiagnostics = false,
-) {
-  const stateLabel =
-    snapshot.status === 'syncing'
-      ? copy.cloudSyncStateSyncing
-      : snapshot.status === 'success'
-      ? copy.cloudSyncStateSuccess
-      : snapshot.status === 'error'
-      ? copy.cloudSyncStateError
-      : copy.cloudSyncStateIdle;
-
-  const parts = [
-    stateLabel,
-    `${copy.cloudPendingLabel} ${snapshot.pendingCount}`,
-    `${copy.cloudSyncedLabel} ${snapshot.uploadedCount}`,
-    `${copy.cloudPulledLabel} ${snapshot.pulledCount}`,
-  ];
-
-  if (showDiagnostics && snapshot.skippedCount) {
-    parts.push(`${copy.cloudSkippedLabel} ${snapshot.skippedCount}`);
-  }
-
-  if (showDiagnostics && snapshot.conflictsResolvedCount) {
-    parts.push(
-      `${copy.cloudConflictsLabel} ${snapshot.conflictsResolvedCount}`,
-    );
-  }
-
-  if (showDiagnostics && snapshot.localWinsCount) {
-    parts.push(`${copy.cloudLocalWinsLabel} ${snapshot.localWinsCount}`);
-  }
-
-  if (showDiagnostics && snapshot.remoteWinsCount) {
-    parts.push(`${copy.cloudRemoteWinsLabel} ${snapshot.remoteWinsCount}`);
-  }
-
-  if (snapshot.failedCount) {
-    parts.push(`${copy.cloudErrorsLabel} ${snapshot.failedCount}`);
-  }
-
-  const timestamp =
-    typeof snapshot.lastFinishedAt === 'number'
-      ? formatBackupTimestamp(
-          new Date(snapshot.lastFinishedAt).toISOString(),
-          locale,
-        )
-      : copy.cloudLastSyncNever;
-
-  return {
-    title: timestamp,
-    meta: parts.join(' • '),
-  };
-}
-
-function getDreamFreshnessTimestamp(dream: Dream) {
-  return Math.max(
-    dream.updatedAt ?? 0,
-    dream.createdAt ?? 0,
-    dream.transcriptUpdatedAt ?? 0,
-    dream.lastSyncedAt ?? 0,
-    dream.analysis?.generatedAt ?? 0,
-  );
-}
-
-export function buildBackupTimelineItems(input: {
-  copy: SettingsCopy;
-  locale: AppLocale;
-  snapshot: CloudSyncSnapshot;
-  dreams: Dream[];
-  session: CloudSession;
-  latestBackupFile: LocalDreamExportFile | null;
-  latestBackupPreview: DreamImportPreview | null;
-  reviewState: SavedReviewStateSnapshot;
-}): BackupTimelineItem[] {
-  const {
-    copy,
-    locale,
-    snapshot,
-    dreams,
-    session,
-    latestBackupFile,
-    latestBackupPreview,
-    reviewState,
-  } = input;
-  const syncedDreamCount = dreams.filter(dream => dream.syncStatus === 'synced').length;
-  const pendingDreamCount = dreams.filter(
-    dream => (dream.syncStatus ?? 'local') === 'local' || dream.syncStatus === 'syncing',
-  ).length;
-  const pendingReviewStateCount = reviewState.syncStatus !== 'synced' ? 1 : 0;
-  const errorDreamCount = dreams.filter(dream => dream.syncStatus === 'error').length;
-  const freshestDreamTimestamp = dreams.reduce(
-    (latest, dream) => Math.max(latest, getDreamFreshnessTimestamp(dream)),
-    0,
-  );
-
-  const syncValue =
-    typeof snapshot.lastSuccessAt === 'number'
-      ? formatBackupTimestamp(new Date(snapshot.lastSuccessAt).toISOString(), locale)
-      : copy.cloudLastSyncNever;
-  const syncMetaParts = [
-    snapshot.status === 'syncing'
-      ? copy.cloudSyncStateSyncing
-      : snapshot.status === 'error'
-        ? copy.cloudSyncStateError
-        : snapshot.status === 'success'
-          ? copy.cloudSyncStateSuccess
-          : copy.cloudSyncStateIdle,
-    `${copy.cloudPendingLabel} ${snapshot.pendingCount}`,
-    `${copy.cloudSyncedLabel} ${snapshot.uploadedCount}`,
-    `${copy.cloudPulledLabel} ${snapshot.pulledCount}`,
-  ];
-
-  if (snapshot.failedCount) {
-    syncMetaParts.push(`${copy.cloudErrorsLabel} ${snapshot.failedCount}`);
-  }
-
-  const snapshotValue = latestBackupPreview
-    ? formatBackupTimestamp(latestBackupPreview.exportedAt, locale)
-    : latestBackupFile
-      ? formatBackupTimestamp(new Date(latestBackupFile.modifiedAt).toISOString(), locale)
-      : copy.backupTimelineSnapshotMissing;
-  const snapshotMeta = latestBackupPreview
-    ? `${copy.restoreDreamCountLabel} ${latestBackupPreview.summary.dreamCount} • ${copy.restoreAppVersionLabel} ${latestBackupPreview.appVersion}`
-    : latestBackupFile
-      ? latestBackupFile.fileName
-      : copy.backupTimelineSnapshotMissingMeta;
-
-  let deviceValue = copy.backupTimelineDeviceLocalOnly;
-  if (session.status === 'signed-in') {
-    if (errorDreamCount > 0 || snapshot.status === 'error') {
-      deviceValue = copy.backupTimelineDeviceNeedsAttention;
-    } else if (pendingDreamCount > 0) {
-      deviceValue =
-        pendingDreamCount === 1
-          ? copy.backupTimelineDeviceAheadSingle
-          : copy.backupTimelineDeviceAheadPlural.replace('{count}', String(pendingDreamCount));
-    } else if (pendingReviewStateCount > 0) {
-      deviceValue = copy.backupTimelineDeviceReviewAhead;
-    } else if (typeof snapshot.lastSuccessAt === 'number') {
-      deviceValue = copy.backupTimelineDeviceCaughtUp;
-    } else {
-      deviceValue = copy.backupTimelineDeviceWaitingFirstSync;
-    }
-  }
-
-  const freshnessAnchor =
-    freshestDreamTimestamp > 0
-      ? formatBackupTimestamp(new Date(freshestDreamTimestamp).toISOString(), locale)
-      : copy.backupTimelineDeviceNoLocalChanges;
-  const deviceMetaParts = [
-    `${copy.cloudPendingLabel} ${pendingDreamCount}`,
-    `${copy.cloudSyncedLabel} ${syncedDreamCount}`,
-    `${copy.backupTimelineReviewSetsLabel} ${reviewState.savedMonths.length + reviewState.savedThreads.length}`,
-  ];
-  if (errorDreamCount) {
-    deviceMetaParts.push(`${copy.cloudErrorsLabel} ${errorDreamCount}`);
-  }
-  if (pendingReviewStateCount) {
-    deviceMetaParts.push(copy.backupTimelineReviewSetsPending);
-  }
-  deviceMetaParts.push(
-    `${copy.backupTimelineDeviceFreshnessLabel} ${freshnessAnchor}`,
-  );
-
-  return [
-    {
-      key: 'sync',
-      title: copy.backupTimelineSyncTitle,
-      meta: syncMetaParts.join(' • '),
-      value: syncValue,
-    },
-    {
-      key: 'snapshot',
-      title: copy.backupTimelineSnapshotTitle,
-      meta: snapshotMeta,
-      value: snapshotValue,
-    },
-    {
-      key: 'device',
-      title: copy.backupTimelineDeviceTitle,
-      meta: deviceMetaParts.join(' • '),
-      value: deviceValue,
-    },
-  ];
-}
-
-export function buildBackupContentTrustItems(input: {
-  copy: SettingsCopy;
-  dreams: Dream[];
-  session: CloudSession;
-  reviewState: SavedReviewStateSnapshot;
-}): BackupContentTrustItem[] {
-  const { copy, dreams, session, reviewState } = input;
-  const signedIn = session.status === 'signed-in';
-  const audioDreams = dreams.filter(dream => Boolean(dream.audioUri?.trim()));
-  const uploadedAudioCount = audioDreams.filter(dream =>
-    Boolean(dream.audioRemotePath?.trim()),
-  ).length;
-  const audioStillLocalCount = signedIn
-    ? audioDreams.filter(dream => !dream.audioRemotePath?.trim()).length
-    : audioDreams.length;
-
-  const transcriptDreams = dreams.filter(dream => Boolean(dream.transcript?.trim()));
-  const editedTranscriptCount = transcriptDreams.filter(
-    dream => dream.transcriptSource === 'edited',
-  ).length;
-  const transcriptStillLocalCount = signedIn
-    ? transcriptDreams.filter(dream => {
-        const transcriptTimestamp =
-          dream.transcriptUpdatedAt ?? dream.updatedAt ?? dream.createdAt;
-        return (
-          dream.syncStatus !== 'synced' ||
-          transcriptTimestamp > (dream.lastSyncedAt ?? 0)
-        );
-      }).length
-    : transcriptDreams.length;
-
-  const audioValue =
-    audioDreams.length === 0
-      ? copy.backupContentTrustAudioEmpty
-      : !signedIn
-      ? copy.backupContentTrustLocalOnly
-      : audioStillLocalCount === 0
-      ? copy.backupContentTrustAudioAllBackedUp
-      : audioStillLocalCount === 1
-      ? copy.backupContentTrustAudioStillLocalSingle
-      : fillTemplate(copy.backupContentTrustAudioStillLocalPlural, {
-          count: audioStillLocalCount,
-        });
-  const audioMeta =
-    audioDreams.length === 0
-      ? copy.backupContentTrustAudioEmptyMeta
-      : fillTemplate(copy.backupContentTrustAudioMeta, {
-          total: audioDreams.length,
-          synced: uploadedAudioCount,
-        });
-
-  const transcriptValue =
-    transcriptDreams.length === 0
-      ? copy.backupContentTrustTranscriptEmpty
-      : !signedIn
-      ? copy.backupContentTrustLocalOnly
-      : transcriptStillLocalCount === 0
-      ? copy.backupContentTrustTranscriptCaughtUp
-      : transcriptStillLocalCount === 1
-      ? copy.backupContentTrustTranscriptStillLocalSingle
-      : fillTemplate(copy.backupContentTrustTranscriptStillLocalPlural, {
-          count: transcriptStillLocalCount,
-        });
-  const transcriptMeta =
-    transcriptDreams.length === 0
-      ? copy.backupContentTrustTranscriptEmptyMeta
-      : fillTemplate(copy.backupContentTrustTranscriptMeta, {
-          total: transcriptDreams.length,
-        edited: editedTranscriptCount,
-      });
-
-  const totalReviewSetCount =
-    reviewState.savedMonths.length + reviewState.savedThreads.length;
-  const reviewValue =
-    totalReviewSetCount === 0
-      ? copy.backupContentTrustReviewEmpty
-      : !signedIn
-      ? copy.backupContentTrustLocalOnly
-      : reviewState.syncStatus === 'synced'
-      ? copy.backupContentTrustReviewCaughtUp
-      : copy.backupContentTrustReviewStillLocal;
-  const reviewMeta =
-    totalReviewSetCount === 0
-      ? copy.backupContentTrustReviewEmptyMeta
-      : fillTemplate(copy.backupContentTrustReviewMeta, {
-          total: totalReviewSetCount,
-          months: reviewState.savedMonths.length,
-          threads: reviewState.savedThreads.length,
-        });
-
-  return [
-    {
-      key: 'audio',
-      title: copy.backupContentTrustAudioTitle,
-      meta: audioMeta,
-      value: audioValue,
-    },
-    {
-      key: 'transcript',
-      title: copy.backupContentTrustTranscriptTitle,
-      meta: transcriptMeta,
-      value: transcriptValue,
-    },
-    {
-      key: 'review',
-      title: copy.backupContentTrustReviewTitle,
-      meta: reviewMeta,
-      value: reviewValue,
-    },
-  ];
 }
 
 export function buildPrivacyHighlights(copy: SettingsCopy): SettingsMetaItem[] {

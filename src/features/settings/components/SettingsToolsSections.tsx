@@ -159,6 +159,7 @@ export function DevSection({
   onSeed1000,
   onPreviewMonthlyReport,
   onPreviewBackupOnboarding,
+  onPreviewSyncDiagnostics,
   onClearSeedDreams,
 }: {
   copy: SettingsCopy;
@@ -170,6 +171,7 @@ export function DevSection({
   onSeed1000: () => void;
   onPreviewMonthlyReport: () => void;
   onPreviewBackupOnboarding: () => void;
+  onPreviewSyncDiagnostics: () => void;
   onClearSeedDreams: () => void;
 }) {
   return (
@@ -194,6 +196,12 @@ export function DevSection({
         meta={copy.devPreviewBackupOnboardingMeta}
         variant="inline"
         onPress={onPreviewBackupOnboarding}
+      />
+      <SettingsActionRow
+        title={copy.devPreviewSyncDiagnostics}
+        meta={copy.devPreviewSyncDiagnosticsMeta}
+        variant="inline"
+        onPress={onPreviewSyncDiagnostics}
       />
       <Text style={styles.restoreLabel}>{copy.scaleTestTitle}</Text>
       <SettingsActionRow

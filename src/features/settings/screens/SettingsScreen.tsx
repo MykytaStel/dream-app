@@ -13,6 +13,7 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import {
   openBackupOnboardingPreview,
   openMonthlyReport,
+  openSyncDiagnosticsPreview,
   openWakeEntry,
 } from '../../../app/navigation/navigationRef';
 import {
@@ -140,6 +141,7 @@ export default function SettingsScreen() {
           }
           onPreviewMonthlyReport={() => openMonthlyReport()}
           onPreviewBackupOnboarding={() => openBackupOnboardingPreview()}
+          onPreviewSyncDiagnostics={() => openSyncDiagnosticsPreview()}
           onClearSeedDreams={controller.onClearSeedDreams}
         />
       ) : null}

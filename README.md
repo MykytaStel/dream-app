@@ -23,15 +23,16 @@ This project is being developed by Mykyta Stelmashenko.
 ## Status
 
 Latest shipped version: `0.1.0`
-Current release target: `0.6.0`
+Current release target: `0.6.1`
 
-This release should turn the first review workspace into a more complete
-connected reflection product:
+This release should stabilize the new review and backup foundation from
+`0.6.0` before the next backend and product pushes:
 
-- `Review workspace` should surface important dreams and merged saved sets more clearly
-- saved review state should persist through sync, backup, import, and restore
-- backend sync should stay trustworthy while reducing avoidable review-state drift
-- the cloud path should stay local-first and not regress wake capture or dream detail flow
+- navigation and spacing should feel calmer across stack screens
+- backup should stay in its own operational flow instead of leaking into every
+  primary surface
+- review-state metadata should stay safe across sync, restore, and migrations
+- loading and backup states should avoid misleading flashes and repeated content
 
 See
 [docs/RELEASE_0.0.16_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.0.16_PLAN.md)
@@ -59,9 +60,13 @@ for the completed beta-release target,
 [docs/RELEASE_0.5.6_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.5.6_PLAN.md)
 for the completed review-workspace foundation,
 [docs/RELEASE_0.6.0_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.6.0_PLAN.md)
-for the active release target,
+for the completed connected-reflection scope,
+[docs/RELEASE_0.6.1_PLAN.md](/Users/mykyta/Documents/projects/dream-app/docs/RELEASE_0.6.1_PLAN.md)
+for the active stabilization target,
 [docs/ROADMAP_0.5.1_TO_0.6.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.5.1_TO_0.6.0.md)
-for the broader feature/backend/UI/UX range from `0.5.1` to `0.6.0`, and
+for the completed feature/backend/UI/UX range from `0.5.1` to `0.6.0`,
+[docs/ROADMAP_0.6.1_TO_1.0.0.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.6.1_TO_1.0.0.md)
+for the next path from `0.6.1` to `1.0.0`, and
 [docs/ROADMAP_0.0.17_TO_0.0.25.md](/Users/mykyta/Documents/projects/dream-app/docs/ROADMAP_0.0.17_TO_0.0.25.md)
 for the completed path that led into `0.1.0`.
 

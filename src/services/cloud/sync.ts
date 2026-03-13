@@ -6,7 +6,6 @@ import {
   type DreamEntryRow,
   type DreamPreSleepEmotionRow,
   type DreamSleepContextRow,
-  type DreamSyncBundle,
   type DreamTagRow,
   type DreamWakeEmotionRow,
 } from '../api/contracts/dreamSync';
@@ -14,7 +13,6 @@ import { getSupabaseClient } from '../api/supabase/client';
 import { syncCloudSessionFromAuth } from '../auth/cloudAuth';
 import { getCloudSyncEnabled } from '../auth/session';
 import {
-  getDream,
   listDreams,
   applyRemoteDreamDeletion,
   markDreamSynced,
@@ -23,14 +21,11 @@ import {
   upsertDreamFromSyncBundle,
 } from '../../features/dreams/repository/dreamsRepository';
 import {
-  getDreamDeletionTombstone,
   listDreamDeletionTombstones,
   markDreamDeletionTombstoneSynced,
   markDreamDeletionTombstoneSyncError,
   markDreamDeletionTombstoneSyncing,
 } from '../../features/dreams/repository/dreamDeletionTombstonesRepository';
-import { CLOUD_SYNC_SNAPSHOT_STORAGE_KEY } from '../storage/keys';
-import { kv } from '../storage/mmkv';
 import { reconcileDerivedReviewState } from '../../features/stats/services/reviewShelfStateService';
 import {
   applyRemoteSavedReviewStateSnapshot,
@@ -40,65 +35,36 @@ import {
   markSavedReviewStateSyncing,
   type SavedReviewStateSnapshot,
 } from '../../features/stats/services/reviewStateStorageService';
+import {
+  appendCloudSyncEvent,
+  getCloudSyncSnapshot,
+  getLocalCloudSyncPendingCount,
+  getPendingReviewStateCount,
+  persistCloudSyncSnapshot,
+  type CloudSyncReason,
+  type CloudSyncResult,
+} from './syncState';
+import {
+  accumulateConflictDecision,
+  decideRemoteBundleResolution,
+  decideRemoteTombstoneResolution,
+  decideSavedReviewStateResolution,
+  type CloudSyncConflictContext,
+  type RemoteDreamDeletionTombstoneRow,
+  type RemoteSavedReviewStateRow,
+} from './syncResolution';
 
-export type CloudSyncReason = 'manual' | 'launch';
-export type CloudSyncStatus = 'idle' | 'syncing' | 'success' | 'error';
-
-export type CloudSyncSnapshot = {
-  status: CloudSyncStatus;
-  reason?: CloudSyncReason;
-  lastAttemptAt?: number;
-  lastFinishedAt?: number;
-  lastSuccessAt?: number;
-  uploadedCount: number;
-  pulledCount: number;
-  skippedCount: number;
-  conflictsResolvedCount: number;
-  localWinsCount: number;
-  remoteWinsCount: number;
-  failedCount: number;
-  pendingCount: number;
-  errorMessage?: string;
-};
-
-export type CloudSyncResult = CloudSyncSnapshot;
-
-type RemoteDreamDeletionTombstoneRow = {
-  dream_id: string;
-  user_id: string;
-  deleted_at: string;
-};
-
-type RemoteSavedReviewStateRow = {
-  user_id: string;
-  updated_at: string;
-  saved_months: SavedReviewStateSnapshot['savedMonths'] | null;
-  saved_threads: SavedReviewStateSnapshot['savedThreads'] | null;
-};
-
-type CloudSyncConflictContext = {
-  pendingDreamIds: Set<string>;
-  pendingTombstoneIds: Set<string>;
-};
-
-const DEFAULT_CLOUD_SYNC_SNAPSHOT: CloudSyncSnapshot = {
-  status: 'idle',
-  uploadedCount: 0,
-  pulledCount: 0,
-  skippedCount: 0,
-  conflictsResolvedCount: 0,
-  localWinsCount: 0,
-  remoteWinsCount: 0,
-  failedCount: 0,
-  pendingCount: 0,
-};
+export {
+  getCloudSyncEvents,
+  getCloudSyncSnapshot,
+  type CloudSyncEvent,
+  type CloudSyncReason,
+  type CloudSyncResult,
+  type CloudSyncSnapshot,
+  type CloudSyncStatus,
+} from './syncState';
 
 let activeCloudSyncPromise: Promise<CloudSyncResult> | null = null;
-
-function getPendingReviewStateCount(snapshot = getStoredReviewStateSnapshot()) {
-  const hasItems = snapshot.savedMonths.length > 0 || snapshot.savedThreads.length > 0;
-  return snapshot.syncStatus !== 'synced' && (hasItems || snapshot.updatedAt > 0) ? 1 : 0;
-}
 
 function normalizeLocalAudioPath(value: string) {
   return value.startsWith('file://') ? value.slice('file://'.length) : value;
@@ -175,73 +141,6 @@ function normalizeSyncError(error: unknown) {
   }
 
   return String(error);
-}
-
-function persistCloudSyncSnapshot(snapshot: CloudSyncSnapshot) {
-  kv.set(CLOUD_SYNC_SNAPSHOT_STORAGE_KEY, JSON.stringify(snapshot));
-  return snapshot;
-}
-
-export function getCloudSyncSnapshot(): CloudSyncSnapshot {
-  const raw = kv.getString(CLOUD_SYNC_SNAPSHOT_STORAGE_KEY);
-  if (!raw) {
-    return DEFAULT_CLOUD_SYNC_SNAPSHOT;
-  }
-
-  try {
-    const parsed = JSON.parse(raw) as Partial<CloudSyncSnapshot>;
-
-    return {
-      status:
-        parsed.status === 'syncing' ||
-        parsed.status === 'success' ||
-        parsed.status === 'error'
-          ? parsed.status
-          : 'idle',
-      reason:
-        parsed.reason === 'manual' || parsed.reason === 'launch'
-          ? parsed.reason
-          : undefined,
-      lastAttemptAt:
-        typeof parsed.lastAttemptAt === 'number'
-          ? parsed.lastAttemptAt
-          : undefined,
-      lastFinishedAt:
-        typeof parsed.lastFinishedAt === 'number'
-          ? parsed.lastFinishedAt
-          : undefined,
-      lastSuccessAt:
-        typeof parsed.lastSuccessAt === 'number'
-          ? parsed.lastSuccessAt
-          : undefined,
-      uploadedCount:
-        typeof parsed.uploadedCount === 'number' ? parsed.uploadedCount : 0,
-      pulledCount:
-        typeof parsed.pulledCount === 'number' ? parsed.pulledCount : 0,
-      skippedCount:
-        typeof parsed.skippedCount === 'number' ? parsed.skippedCount : 0,
-      conflictsResolvedCount:
-        typeof parsed.conflictsResolvedCount === 'number'
-          ? parsed.conflictsResolvedCount
-          : 0,
-      localWinsCount:
-        typeof parsed.localWinsCount === 'number' ? parsed.localWinsCount : 0,
-      remoteWinsCount:
-        typeof parsed.remoteWinsCount === 'number'
-          ? parsed.remoteWinsCount
-          : 0,
-      failedCount:
-        typeof parsed.failedCount === 'number' ? parsed.failedCount : 0,
-      pendingCount:
-        typeof parsed.pendingCount === 'number' ? parsed.pendingCount : 0,
-      errorMessage:
-        typeof parsed.errorMessage === 'string'
-          ? parsed.errorMessage
-          : undefined,
-    };
-  } catch {
-    return DEFAULT_CLOUD_SYNC_SNAPSHOT;
-  }
 }
 
 async function ensureDreamAudioUploaded(
@@ -455,307 +354,6 @@ async function uploadSavedReviewStateSnapshot(
   }
 }
 
-function getDreamUpdatedAt(value: { createdAt: number; updatedAt?: number }) {
-  return value.updatedAt ?? value.createdAt;
-}
-
-function hasPendingLocalDreamState(
-  dreamId: string,
-  dream: ReturnType<typeof getDream>,
-  context: CloudSyncConflictContext,
-) {
-  return Boolean(
-    context.pendingDreamIds.has(dreamId) ||
-      (dream && dream.syncStatus !== 'synced'),
-  );
-}
-
-function hasPendingLocalTombstoneState(
-  dreamId: string,
-  tombstone: ReturnType<typeof getDreamDeletionTombstone>,
-  context: CloudSyncConflictContext,
-) {
-  return Boolean(
-    context.pendingTombstoneIds.has(dreamId) ||
-      (tombstone && tombstone.syncStatus !== 'synced'),
-  );
-}
-
-type RemoteConflictDecision =
-  | {
-      action: 'apply';
-      conflict: boolean;
-      winner?: 'local' | 'remote';
-      reason:
-        | 'apply-remote-newer'
-        | 'apply-remote-to-empty-local'
-        | 'apply-equal-synced'
-        | 'apply-remote-delete'
-        | 'apply-remote-delete-to-empty-local';
-    }
-  | {
-      action: 'skip';
-      conflict: boolean;
-      winner?: 'local' | 'remote';
-      reason:
-        | 'skip-local-tombstone'
-        | 'skip-local-newer'
-        | 'skip-equal-local-pending'
-        | 'skip-stale-remote-update'
-        | 'skip-local-tombstone-newer'
-        | 'skip-local-newer-than-delete';
-    };
-
-function decideRemoteBundleResolution(
-  bundle: DreamSyncBundle,
-  context: CloudSyncConflictContext,
-): RemoteConflictDecision {
-  const localTombstone = getDreamDeletionTombstone(bundle.dream.id);
-  const remoteUpdatedAt = new Date(bundle.dream.updated_at).getTime();
-  if (localTombstone && localTombstone.deletedAt >= remoteUpdatedAt) {
-    const hasPendingLocalTombstone = hasPendingLocalTombstoneState(
-      bundle.dream.id,
-      localTombstone,
-      context,
-    );
-    return {
-      action: 'skip',
-      conflict: hasPendingLocalTombstone,
-      winner: hasPendingLocalTombstone ? 'local' : undefined,
-      reason: 'skip-local-tombstone',
-    };
-  }
-
-  const localDream = getDream(bundle.dream.id);
-  if (!localDream) {
-    return {
-      action: 'apply',
-      conflict: false,
-      reason: 'apply-remote-to-empty-local',
-    };
-  }
-
-  const localUpdatedAt = getDreamUpdatedAt(localDream);
-  const hasPendingLocalState = hasPendingLocalDreamState(
-    bundle.dream.id,
-    localDream,
-    context,
-  );
-  if (remoteUpdatedAt > localUpdatedAt) {
-    return {
-      action: 'apply',
-      conflict: hasPendingLocalState,
-      winner: hasPendingLocalState ? 'remote' : undefined,
-      reason: 'apply-remote-newer',
-    };
-  }
-
-  if (remoteUpdatedAt < localUpdatedAt) {
-    return {
-      action: 'skip',
-      conflict: hasPendingLocalState,
-      winner: hasPendingLocalState ? 'local' : undefined,
-      reason: hasPendingLocalState
-        ? 'skip-local-newer'
-        : 'skip-stale-remote-update',
-    };
-  }
-
-  if (localDream.syncStatus === 'synced') {
-    return {
-      action: 'apply',
-      conflict: false,
-      reason: 'apply-equal-synced',
-    };
-  }
-
-  return {
-    action: 'skip',
-    conflict: true,
-    winner: 'local',
-    reason: 'skip-equal-local-pending',
-  };
-}
-
-function decideRemoteTombstoneResolution(
-  row: RemoteDreamDeletionTombstoneRow,
-  context: CloudSyncConflictContext,
-): RemoteConflictDecision {
-  const remoteDeletedAt = new Date(row.deleted_at).getTime();
-  const localTombstone = getDreamDeletionTombstone(row.dream_id);
-  if (localTombstone && localTombstone.deletedAt >= remoteDeletedAt) {
-    const hasPendingLocalTombstone = hasPendingLocalTombstoneState(
-      row.dream_id,
-      localTombstone,
-      context,
-    );
-    return {
-      action: 'skip',
-      conflict: hasPendingLocalTombstone,
-      winner: hasPendingLocalTombstone ? 'local' : undefined,
-      reason: 'skip-local-tombstone-newer',
-    };
-  }
-
-  const localDream = getDream(row.dream_id);
-  if (!localDream) {
-    return {
-      action: 'apply',
-      conflict: false,
-      reason: 'apply-remote-delete-to-empty-local',
-    };
-  }
-
-  const hasPendingLocalState = hasPendingLocalDreamState(
-    row.dream_id,
-    localDream,
-    context,
-  );
-  if (getDreamUpdatedAt(localDream) < remoteDeletedAt) {
-    return {
-      action: 'apply',
-      conflict: hasPendingLocalState,
-      winner: hasPendingLocalState ? 'remote' : undefined,
-      reason: 'apply-remote-delete',
-    };
-  }
-
-  return {
-    action: 'skip',
-    conflict: hasPendingLocalState,
-    winner: hasPendingLocalState ? 'local' : undefined,
-    reason: 'skip-local-newer-than-delete',
-  };
-}
-
-type ReviewStateConflictDecision =
-  | {
-      action: 'skip';
-      conflict: boolean;
-      winner?: 'local' | 'remote';
-    }
-  | {
-      action: 'upload-local';
-      conflict: boolean;
-      winner?: 'local' | 'remote';
-    }
-  | {
-      action: 'apply-remote';
-      conflict: boolean;
-      winner?: 'local' | 'remote';
-      remoteSnapshot: {
-        updatedAt: number;
-        savedMonths: SavedReviewStateSnapshot['savedMonths'];
-        savedThreads: SavedReviewStateSnapshot['savedThreads'];
-      };
-    };
-
-function decideSavedReviewStateResolution(
-  remoteRow: RemoteSavedReviewStateRow | null,
-  localSnapshot: SavedReviewStateSnapshot,
-): ReviewStateConflictDecision {
-  const localHasItems =
-    localSnapshot.savedMonths.length > 0 || localSnapshot.savedThreads.length > 0;
-  const localPending = localSnapshot.syncStatus !== 'synced';
-
-  if (!remoteRow) {
-    if (!localHasItems) {
-      return {
-        action: 'skip',
-        conflict: false,
-      };
-    }
-
-    return {
-      action: 'upload-local',
-      conflict: false,
-    };
-  }
-
-  const remoteSnapshot = {
-    updatedAt: new Date(remoteRow.updated_at).getTime(),
-    savedMonths: remoteRow.saved_months ?? [],
-    savedThreads: remoteRow.saved_threads ?? [],
-  };
-  const remoteHasItems =
-    remoteSnapshot.savedMonths.length > 0 || remoteSnapshot.savedThreads.length > 0;
-
-  if (!localHasItems && !localPending) {
-    if (!remoteHasItems) {
-      return {
-        action: 'skip',
-        conflict: false,
-      };
-    }
-
-    return {
-      action: 'apply-remote',
-      conflict: false,
-      remoteSnapshot,
-    };
-  }
-
-  if (remoteSnapshot.updatedAt > localSnapshot.updatedAt) {
-    return {
-      action: 'apply-remote',
-      conflict: localPending,
-      winner: localPending ? 'remote' : undefined,
-      remoteSnapshot,
-    };
-  }
-
-  if (remoteSnapshot.updatedAt < localSnapshot.updatedAt) {
-    return {
-      action: localHasItems ? 'upload-local' : 'skip',
-      conflict: localPending,
-      winner: localPending ? 'local' : undefined,
-    };
-  }
-
-  if (localPending) {
-    return {
-      action: 'upload-local',
-      conflict: true,
-      winner: 'local',
-    };
-  }
-
-  if (!remoteHasItems && !localHasItems) {
-    return {
-      action: 'skip',
-      conflict: false,
-    };
-  }
-
-  return {
-    action: 'apply-remote',
-    conflict: false,
-    remoteSnapshot,
-  };
-}
-
-function accumulateConflictDecision(
-  decision: RemoteConflictDecision,
-  counts: {
-    conflictsResolvedCount: number;
-    localWinsCount: number;
-    remoteWinsCount: number;
-  },
-) {
-  if (!decision.conflict || !decision.winner) {
-    return counts;
-  }
-
-  counts.conflictsResolvedCount += 1;
-  if (decision.winner === 'local') {
-    counts.localWinsCount += 1;
-  } else {
-    counts.remoteWinsCount += 1;
-  }
-
-  return counts;
-}
-
 async function fetchRowsByDreamIds<T extends { dream_id: string }>(
   tableName: string,
   dreamIds: string[],
@@ -905,9 +503,10 @@ async function performCloudSync(
   reason: CloudSyncReason,
   requireSyncEnabled: boolean,
 ) {
+  const previousSnapshot = getCloudSyncSnapshot();
   if (requireSyncEnabled && !getCloudSyncEnabled()) {
     return persistCloudSyncSnapshot({
-      ...getCloudSyncSnapshot(),
+      ...previousSnapshot,
       status: 'idle',
       reason,
       uploadedCount: 0,
@@ -917,18 +516,13 @@ async function performCloudSync(
       localWinsCount: 0,
       remoteWinsCount: 0,
       failedCount: 0,
-      pendingCount:
-        listDreams().filter(dream => dream.syncStatus !== 'synced').length +
-        listDreamDeletionTombstones().filter(
+      pendingCount: getLocalCloudSyncPendingCount({
+        pendingDreamCount: listDreams().filter(dream => dream.syncStatus !== 'synced').length,
+        pendingTombstoneCount: listDreamDeletionTombstones().filter(
           tombstone => tombstone.syncStatus !== 'synced',
-        ).length +
-        getPendingReviewStateCount(),
+        ).length,
+      }),
     });
-  }
-
-  const session = await syncCloudSessionFromAuth();
-  if (session.status !== 'signed-in') {
-    throw new Error('cloud-session-required');
   }
 
   const pendingDreams = listDreams().filter(
@@ -946,23 +540,6 @@ async function performCloudSync(
   };
   const syncStartedAt = Date.now();
 
-  persistCloudSyncSnapshot({
-    status: 'syncing',
-    reason,
-    lastAttemptAt: syncStartedAt,
-    uploadedCount: 0,
-    pulledCount: 0,
-    skippedCount: 0,
-    conflictsResolvedCount: 0,
-    localWinsCount: 0,
-    remoteWinsCount: 0,
-    failedCount: 0,
-    pendingCount:
-      pendingDreams.length +
-      pendingTombstones.length +
-      getPendingReviewStateCount(pendingReviewState),
-  });
-
   let uploadedCount = 0;
   let pulledCount = 0;
   let skippedCount = 0;
@@ -973,6 +550,29 @@ async function performCloudSync(
   let lastErrorMessage: string | undefined;
 
   try {
+    const session = await syncCloudSessionFromAuth();
+    if (session.status !== 'signed-in') {
+      throw new Error('cloud-session-required');
+    }
+
+    persistCloudSyncSnapshot({
+      status: 'syncing',
+      reason,
+      lastAttemptAt: syncStartedAt,
+      uploadedCount: 0,
+      pulledCount: 0,
+      skippedCount: 0,
+      conflictsResolvedCount: 0,
+      localWinsCount: 0,
+      remoteWinsCount: 0,
+      failedCount: 0,
+      pendingCount: getLocalCloudSyncPendingCount({
+        pendingDreamCount: pendingDreams.length,
+        pendingTombstoneCount: pendingTombstones.length,
+        pendingReviewStateCount: getPendingReviewStateCount(pendingReviewState),
+      }),
+    });
+
     for (const dream of pendingDreams) {
       markDreamSyncing(dream.id);
 
@@ -1099,11 +699,12 @@ async function performCloudSync(
     lastErrorMessage = normalizeSyncError(error);
 
     const finishedAt = Date.now();
-    return persistCloudSyncSnapshot({
+    const errorSnapshot = persistCloudSyncSnapshot({
       status: 'error',
       reason,
       lastAttemptAt: syncStartedAt,
       lastFinishedAt: finishedAt,
+      lastSuccessAt: previousSnapshot.lastSuccessAt,
       uploadedCount,
       pulledCount,
       skippedCount,
@@ -1111,23 +712,25 @@ async function performCloudSync(
       localWinsCount,
       remoteWinsCount,
       failedCount,
-      pendingCount:
-        listDreams().filter(dream => dream.syncStatus !== 'synced').length +
-        listDreamDeletionTombstones().filter(
+      pendingCount: getLocalCloudSyncPendingCount({
+        pendingDreamCount: listDreams().filter(dream => dream.syncStatus !== 'synced').length,
+        pendingTombstoneCount: listDreamDeletionTombstones().filter(
           tombstone => tombstone.syncStatus !== 'synced',
-        ).length +
-        getPendingReviewStateCount(),
+        ).length,
+      }),
       errorMessage: lastErrorMessage,
     });
+    appendCloudSyncEvent(errorSnapshot);
+    return errorSnapshot;
   }
 
   const finishedAt = Date.now();
-  return persistCloudSyncSnapshot({
+  const finishedSnapshot = persistCloudSyncSnapshot({
     status: failedCount ? 'error' : 'success',
     reason,
     lastAttemptAt: syncStartedAt,
     lastFinishedAt: finishedAt,
-    lastSuccessAt: failedCount ? undefined : finishedAt,
+    lastSuccessAt: failedCount ? previousSnapshot.lastSuccessAt : finishedAt,
     uploadedCount,
     pulledCount,
     skippedCount,
@@ -1135,14 +738,16 @@ async function performCloudSync(
     localWinsCount,
     remoteWinsCount,
     failedCount,
-    pendingCount:
-      listDreams().filter(dream => dream.syncStatus !== 'synced').length +
-      listDreamDeletionTombstones().filter(
+    pendingCount: getLocalCloudSyncPendingCount({
+      pendingDreamCount: listDreams().filter(dream => dream.syncStatus !== 'synced').length,
+      pendingTombstoneCount: listDreamDeletionTombstones().filter(
         tombstone => tombstone.syncStatus !== 'synced',
-      ).length +
-      getPendingReviewStateCount(),
+      ).length,
+    }),
     errorMessage: lastErrorMessage,
   });
+  appendCloudSyncEvent(finishedSnapshot);
+  return finishedSnapshot;
 }
 
 export function runCloudSync(options?: {

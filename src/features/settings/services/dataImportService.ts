@@ -107,7 +107,10 @@ function parseDreamExport(value: unknown): DreamExportV1 {
     throw new Error('Backup file is not a valid JSON object.');
   }
 
-  if (value.version !== DREAM_EXPORT_VERSION && value.version !== DREAM_EXPORT_VERSION - 1) {
+  if (
+    value.version !== DREAM_EXPORT_VERSION &&
+    value.version !== DREAM_EXPORT_VERSION - 1
+  ) {
     throw new Error(`Unsupported backup version: ${String(value.version)}.`);
   }
 
@@ -231,7 +234,17 @@ function mergeDreamCollections(
   );
 
   for (const dream of importedDreams) {
-    merged.set(dream.id, dream);
+    const existing = merged.get(dream.id);
+    if (!existing) {
+      merged.set(dream.id, dream);
+      continue;
+    }
+
+    const existingFreshness = existing.updatedAt ?? existing.createdAt;
+    const importedFreshness = dream.updatedAt ?? dream.createdAt;
+    if (importedFreshness >= existingFreshness) {
+      merged.set(dream.id, dream);
+    }
   }
 
   return Array.from(merged.values());

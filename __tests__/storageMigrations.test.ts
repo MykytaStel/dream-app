@@ -337,4 +337,30 @@ describe('storage migrations', () => {
     expect(result).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
     expect(kv.getString(APP_LOCALE_KEY)).toBe('en');
   });
+
+  test('accepts a latest schema version stored as a string', () => {
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, String(CURRENT_STORAGE_SCHEMA_VERSION));
+    kv.set(APP_LOCALE_KEY, 'en');
+
+    const result = runStorageMigrations();
+
+    expect(result).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+    expect(kv.getString(APP_LOCALE_KEY)).toBe('en');
+    expect(kv.getString(STORAGE_SCHEMA_VERSION_KEY)).toBe(
+      String(CURRENT_STORAGE_SCHEMA_VERSION),
+    );
+  });
+
+  test('falls back safely when schema version is invalid text', () => {
+    kv.set(STORAGE_SCHEMA_VERSION_KEY, 'not-a-number');
+    kv.set(APP_LOCALE_KEY, 'uk-UA');
+
+    const result = runStorageMigrations();
+
+    expect(result).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+    expect(kv.getString(APP_LOCALE_KEY)).toBe('uk');
+    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(
+      CURRENT_STORAGE_SCHEMA_VERSION,
+    );
+  });
 });

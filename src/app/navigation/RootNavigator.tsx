@@ -11,6 +11,7 @@ import ProgressScreen from '../../features/stats/screens/ProgressScreen';
 import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
+import SyncDiagnosticsPreviewScreen from '../../features/settings/screens/SyncDiagnosticsPreviewScreen';
 import {
   consumePendingWakeOpenFromReminder,
   isReminderInitialNotificationTarget,
@@ -109,6 +110,14 @@ export default function RootNavigator() {
           options={{
             headerShown: true,
             title: 'Backup onboarding',
+          }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SyncDiagnosticsPreview}
+          component={SyncDiagnosticsPreviewScreen}
+          options={{
+            headerShown: true,
+            title: 'Sync diagnostics',
           }}
         />
         <Stack.Screen

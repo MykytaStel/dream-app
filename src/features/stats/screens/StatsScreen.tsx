@@ -190,7 +190,6 @@ export default function StatsScreen() {
         selectedRange={controller.selectedRange}
         onSelectRange={controller.setSelectedRange}
         rangeOptions={controller.rangeOptions}
-        selectedRangeLabel={controller.selectedRangeLabel}
         topSignal={controller.topSignal}
         memoryNudge={controller.memoryNudge}
         onOpenMemoryNudge={(dreamId, focusSection) =>
@@ -232,22 +231,8 @@ export default function StatsScreen() {
               workQueueItems={controller.workQueueItems}
               savedMonthItems={controller.savedMonthItems}
               savedThreadItems={controller.savedOverviewThreadItems}
-              onOpenWorkQueueItem={(dreamId, focusSection) =>
-                navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
-                  dreamId,
-                  focusSection,
-                })
-              }
-              onOpenSavedMonth={monthKey =>
-                navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport, {
-                  yearMonth: monthKey,
-                })
-              }
-              onOpenSavedThread={(signal, kind) =>
-                navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
-                  signal,
-                  kind: kind as PatternDetailKind,
-                })
+              onOpenReviewWorkspace={() =>
+                navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
               }
             />
           ) : null}

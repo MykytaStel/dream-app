@@ -24,6 +24,10 @@ import {
   getSavedDreamThreads,
   toggleSavedDreamThread,
 } from '../src/features/stats/services/dreamThreadShelfService';
+import {
+  getSavedMonthlyReportMonths,
+  toggleSavedMonthlyReportMonth,
+} from '../src/features/stats/services/monthlyReportShelfService';
 
 describe('dream repository flows', () => {
   beforeEach(() => {
@@ -126,6 +130,23 @@ describe('dream repository flows', () => {
     deleteDream('bridge-1');
 
     expect(getSavedDreamThreads()).toEqual([]);
+  });
+
+  test('reconciles saved months after archive mutations remove the last dream from that month', () => {
+    saveDream({
+      id: 'march-only',
+      createdAt: 1710000000000,
+      sleepDate: '2026-03-04',
+      text: 'March dream',
+      tags: [],
+    });
+
+    toggleSavedMonthlyReportMonth('2026-03');
+    expect(getSavedMonthlyReportMonths()).toHaveLength(1);
+
+    deleteDream('march-only');
+
+    expect(getSavedMonthlyReportMonths()).toEqual([]);
   });
 
   test('supports starring and unstarring dreams', () => {

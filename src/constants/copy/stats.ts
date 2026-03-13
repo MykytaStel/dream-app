@@ -133,6 +133,19 @@ const STATS_COPY_EN = {
   reviewShelfTitle: 'Review shelf',
   reviewShelfDescription:
     'One place to reopen saved months, saved threads, and the next local follow-ups.',
+  reviewWorkspaceTitle: 'Review workspace',
+  reviewWorkspaceSubtitle:
+    'Return to the next local follow-up, saved month, or saved thread from one calmer place.',
+  reviewWorkspaceOpenAction: 'Open review',
+  reviewWorkspaceContinueTitle: 'Continue locally',
+  reviewWorkspaceSavedMonthsTitle: 'Saved months',
+  reviewWorkspaceSavedThreadsTitle: 'Saved threads',
+  reviewWorkspaceSummaryContinueLabel: 'Local follow-ups',
+  reviewWorkspaceSummaryMonthsLabel: 'Saved months',
+  reviewWorkspaceSummaryThreadsLabel: 'Saved threads',
+  reviewWorkspaceEmptyTitle: 'Nothing saved for review yet',
+  reviewWorkspaceEmptyDescription:
+    'Saved months, saved threads, and local follow-ups will appear here as the archive grows.',
   reviewShelfContinueEyebrow: 'Continue locally',
   reviewShelfSavedMonthEyebrow: 'Saved month',
   reviewShelfSavedThreadEyebrow: 'Saved thread',
@@ -458,6 +471,19 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   reviewShelfTitle: 'Полиця для ревʼю',
   reviewShelfDescription:
     'Одне місце, щоб повертатися до збережених місяців, ниток і наступних локальних кроків.',
+  reviewWorkspaceTitle: 'Простір ревʼю',
+  reviewWorkspaceSubtitle:
+    'Повернення до наступного локального кроку, збереженого місяця чи нитки в одному спокійнішому місці.',
+  reviewWorkspaceOpenAction: 'Відкрити ревʼю',
+  reviewWorkspaceContinueTitle: 'Продовжити локально',
+  reviewWorkspaceSavedMonthsTitle: 'Збережені місяці',
+  reviewWorkspaceSavedThreadsTitle: 'Збережені нитки',
+  reviewWorkspaceSummaryContinueLabel: 'Локальні кроки',
+  reviewWorkspaceSummaryMonthsLabel: 'Збережені місяці',
+  reviewWorkspaceSummaryThreadsLabel: 'Збережені нитки',
+  reviewWorkspaceEmptyTitle: 'Для ревʼю ще нічого не збережено',
+  reviewWorkspaceEmptyDescription:
+    'Збережені місяці, нитки й локальні наступні кроки зʼявляться тут, коли архів трохи виросте.',
   reviewShelfContinueEyebrow: 'Продовжити локально',
   reviewShelfSavedMonthEyebrow: 'Збережений місяць',
   reviewShelfSavedThreadEyebrow: 'Збережена нитка',

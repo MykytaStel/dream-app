@@ -31,7 +31,7 @@ import {
 } from '../../features/dreams/repository/dreamDeletionTombstonesRepository';
 import { CLOUD_SYNC_SNAPSHOT_STORAGE_KEY } from '../storage/keys';
 import { kv } from '../storage/mmkv';
-import { reconcileSavedDreamThreads } from '../../features/stats/services/dreamThreadShelfService';
+import { reconcileSavedReviewState } from '../../features/stats/services/reviewShelfStateService';
 
 export type CloudSyncReason = 'manual' | 'launch';
 export type CloudSyncStatus = 'idle' | 'syncing' | 'success' | 'error';
@@ -845,7 +845,7 @@ async function performCloudSync(
       pulledCount += 1;
     }
 
-    reconcileSavedDreamThreads(listDreams());
+    reconcileSavedReviewState(listDreams());
   } catch (error) {
     lastErrorMessage = normalizeSyncError(error);
 

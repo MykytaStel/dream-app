@@ -18,6 +18,7 @@ export const ROOT_ROUTE_NAMES = {
   Progress: 'Progress',
   MonthlyReport: 'MonthlyReport',
   PatternDetail: 'PatternDetail',
+  ReviewWorkspace: 'ReviewWorkspace',
 } as const;
 
 type TabRouteLabelMap = Record<(typeof TAB_ROUTE_NAMES)[keyof typeof TAB_ROUTE_NAMES], string>;
@@ -83,6 +84,7 @@ export type RootStackParamList = {
         yearMonth?: string;
       }
     | undefined;
+  [ROOT_ROUTE_NAMES.ReviewWorkspace]: undefined;
   [ROOT_ROUTE_NAMES.PatternDetail]: {
     signal: string;
     kind: PatternDetailKind;

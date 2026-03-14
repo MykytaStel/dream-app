@@ -393,6 +393,10 @@ const DREAM_COPY_EN = {
   detailAudioPlaybackHint: 'Listen back to verify the original capture is still usable.',
   detailAudioPlaybackErrorTitle: 'Playback error',
   detailAudioAttachedMeta: 'Attached',
+  detailAudioCloudOnlyHint: 'This voice note is stored in the cloud. Download it to play it back on this device.',
+  detailAudioDownload: 'Download voice note',
+  detailAudioDownloading: 'Downloading…',
+  detailAudioDownloadErrorTitle: 'Download failed',
   createTitle: 'Capture a dream',
   createSubtitle:
     'Capture the shape now. Sort the details later.',
@@ -942,6 +946,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailAudioPlaybackHint: 'Прослухай запис, щоб перевірити, що початкове захоплення збереглося.',
   detailAudioPlaybackErrorTitle: 'Помилка відтворення',
   detailAudioAttachedMeta: 'Є запис',
+  detailAudioCloudOnlyHint: 'Ця голосова нотатка зберігається в хмарі. Завантаж її, щоб прослухати на цьому пристрої.',
+  detailAudioDownload: 'Завантажити голосову нотатку',
+  detailAudioDownloading: 'Завантаження…',
+  detailAudioDownloadErrorTitle: 'Помилка завантаження',
   createTitle: 'Запис сну',
   createSubtitle:
     'Злови форму сну зараз. Деталі відсортуєш пізніше.',

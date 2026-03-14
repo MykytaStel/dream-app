@@ -97,7 +97,7 @@ export default function PatternDetailScreen() {
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const styles = createPatternDetailScreenStyles(t);
+  const styles = React.useMemo(() => createPatternDetailScreenStyles(t), [t]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route =
     useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.PatternDetail>>();

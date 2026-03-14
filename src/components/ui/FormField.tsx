@@ -23,7 +23,7 @@ export function FormField({
   invalid?: boolean;
 }) {
   const t = useTheme<Theme>();
-  const styles = createFormFieldStyles(t);
+  const styles = React.useMemo(() => createFormFieldStyles(t), [t]);
 
   return (
     <View style={[styles.container, containerStyle]}>

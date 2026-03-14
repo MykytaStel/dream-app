@@ -76,7 +76,6 @@ export function useMonthlyReportController({
         setMonths(nextMonths);
         setSavedMonths(getSavedMonthlyReportMonths());
         setSavedThreadRecords(getSavedDreamThreads());
-        setLoading(true);
         trackLocalSurfaceLoad('monthly_report_refresh', startedAt, nextMeta.totalCount);
 
         const runHydration = () => {

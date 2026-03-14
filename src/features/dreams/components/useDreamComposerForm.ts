@@ -109,6 +109,8 @@ export function useDreamComposerForm({
     initialDream?.sleepDate ?? initialDraft?.sleepDate ?? getTodayDate(),
   );
   const [recording, setRecording] = React.useState(false);
+  const [recordingDuration, setRecordingDuration] = React.useState(0);
+  const recordingIntervalRef = React.useRef<ReturnType<typeof setInterval> | null>(null);
   const [audioUri, setAudioUri] = React.useState<string | undefined>(
     initialDream?.audioUri ?? initialDraft?.audioUri,
   );
@@ -175,7 +177,8 @@ export function useDreamComposerForm({
   });
   const hasMoodSelections = Boolean(mood) || wakeEmotions.length > 0;
   const hasTagSelections = tags.length > 0;
-  const hasEditedMeta = Boolean(title.trim()) || sleepDate !== getTodayDate();
+  const todayDate = React.useMemo(() => getTodayDate(), []);
+  const hasEditedMeta = Boolean(title.trim()) || sleepDate !== todayDate;
   const showMoodCard = isWakeMode || showMoodSection;
   const isEntryEmpty =
     !title.trim() &&
@@ -191,23 +194,27 @@ export function useDreamComposerForm({
       return;
     }
 
-    saveDreamDraft({
-      title,
-      text,
-      sleepDate,
-      audioUri,
-      entryMode,
-      mood,
-      wakeEmotions,
-      stressLevel,
-      preSleepEmotions,
-      alcoholTaken,
-      caffeineLate,
-      medications,
-      importantEvents,
-      healthNotes,
-      tags,
-    });
+    const timeoutId = setTimeout(() => {
+      saveDreamDraft({
+        title,
+        text,
+        sleepDate,
+        audioUri,
+        entryMode,
+        mood,
+        wakeEmotions,
+        stressLevel,
+        preSleepEmotions,
+        alcoholTaken,
+        caffeineLate,
+        medications,
+        importantEvents,
+        healthNotes,
+        tags,
+      });
+    }, 400);
+
+    return () => clearTimeout(timeoutId);
   }, [
     alcoholTaken,
     audioUri,
@@ -235,13 +242,27 @@ export function useDreamComposerForm({
       if (!recording) {
         await startRecording();
         setRecording(true);
+        setRecordingDuration(0);
+        recordingIntervalRef.current = setInterval(() => {
+          setRecordingDuration(d => d + 1);
+        }, 1000);
         return;
       }
 
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
       const uri = await stopRecording();
       setAudioUri(uri || undefined);
       setRecording(false);
+      setRecordingDuration(0);
     } catch (error) {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+      setRecordingDuration(0);
       setRecording(false);
       const code = (error as { code?: string })?.code;
       let message: string;
@@ -266,6 +287,15 @@ export function useDreamComposerForm({
     copy.audioSimulatorHint,
     recording,
   ]);
+
+  React.useEffect(() => {
+    return () => {
+      if (recordingIntervalRef.current) {
+        clearInterval(recordingIntervalRef.current);
+        recordingIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   React.useEffect(() => {
     cleanupOrphanedAudioFiles(7).catch(e =>
@@ -341,6 +371,11 @@ export function useDreamComposerForm({
     setTags([]);
     setTagInput('');
     setRecording(false);
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+      recordingIntervalRef.current = null;
+    }
+    setRecordingDuration(0);
     setHasTriedSave(false);
     setLastActionError(null);
     clearDreamDraft();
@@ -443,6 +478,7 @@ export function useDreamComposerForm({
     sleepDate,
     setSleepDate,
     recording,
+    recordingDuration,
     audioUri,
     setAudioUri,
     mood,

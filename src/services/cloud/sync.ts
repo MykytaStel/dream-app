@@ -12,6 +12,7 @@ import {
 import { getSupabaseClient } from '../api/supabase/client';
 import { syncCloudSessionFromAuth } from '../auth/cloudAuth';
 import { getCloudSyncEnabled } from '../auth/session';
+import { uploadDreamAudio } from './audioUpload';
 import {
   listDreams,
   applyRemoteDreamDeletion,
@@ -96,46 +97,13 @@ function getAudioMimeType(filename: string) {
   return 'audio/mp4';
 }
 
-function decodeBase64ToUint8Array(input: string) {
-  const clean = input.replace(/[^A-Za-z0-9+/=]/g, '');
-  const output: number[] = [];
-  let buffer = 0;
-  let bits = 0;
-
-  for (const char of clean) {
-    if (char === '=') {
-      break;
-    }
-
-    const value =
-      char >= 'A' && char <= 'Z'
-        ? char.charCodeAt(0) - 65
-        : char >= 'a' && char <= 'z'
-        ? char.charCodeAt(0) - 71
-        : char >= '0' && char <= '9'
-        ? char.charCodeAt(0) + 4
-        : char === '+'
-        ? 62
-        : char === '/'
-        ? 63
-        : -1;
-
-    if (value < 0) {
-      continue;
-    }
-
-    buffer = buffer * 64 + value;
-    bits += 6;
-
-    if (bits >= 8) {
-      bits -= 8;
-      const divisor = 2 ** bits;
-      output.push(Math.floor(buffer / divisor) % 256);
-      buffer %= divisor;
-    }
+function decodeBase64ToUint8Array(input: string): Uint8Array {
+  const binary = atob(input);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
   }
-
-  return new Uint8Array(output);
+  return bytes;
 }
 
 function normalizeSyncError(error: unknown) {
@@ -208,17 +176,29 @@ async function ensureDreamAudioUploaded(
       filename,
     });
 
-  const base64 = await RNFS.readFile(audioFilePath, 'base64');
-  const bytes = decodeBase64ToUint8Array(base64);
-  const { error } = await client.storage
-    .from(DREAM_AUDIO_BUCKET)
-    .upload(remotePath, bytes, {
-      contentType: getAudioMimeType(filename),
-      upsert: true,
-    });
+  const mimeType = getAudioMimeType(filename);
+  try {
+    await uploadDreamAudio(remotePath, audioFilePath, mimeType);
+  } catch (error) {
+    // If native upload is unavailable for some reason, fall back to JS upload.
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes('supabase-rest-config-missing') && !message.includes('Supabase runtime config is missing.')) {
+      // Native path tried and failed with a specific error; rethrow.
+      throw error;
+    }
 
-  if (error) {
-    throw error;
+    const base64 = await RNFS.readFile(audioFilePath, 'base64');
+    const bytes = decodeBase64ToUint8Array(base64);
+    const { error: uploadError } = await client.storage
+      .from(DREAM_AUDIO_BUCKET)
+      .upload(remotePath, bytes, {
+        contentType: mimeType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
   }
 
   return remotePath;

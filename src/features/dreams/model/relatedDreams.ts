@@ -106,7 +106,7 @@ function addWeightedSignals(
   });
 }
 
-function getDreamSignalWeights(dream: Dream) {
+export function getDreamSignalWeights(dream: Dream) {
   const signalWeights = new Map<string, number>();
 
   addWeightedSignals(signalWeights, dream.tags, SIGNAL_WEIGHT.tag);
@@ -131,13 +131,20 @@ function getDreamSignalWeights(dream: Dream) {
   return signalWeights;
 }
 
-export function getRelatedDreams(targetDream: Dream, dreams: Dream[], limit = 3): RelatedDream[] {
-  const targetSignals = getDreamSignalWeights(targetDream);
+export function getRelatedDreams(
+  targetDream: Dream,
+  dreams: Dream[],
+  limit = 3,
+  precomputedWeights?: Map<string, Map<string, number>>,
+): RelatedDream[] {
+  const targetSignals =
+    precomputedWeights?.get(targetDream.id) ?? getDreamSignalWeights(targetDream);
 
   return dreams
     .filter(candidate => candidate.id !== targetDream.id)
     .map(candidate => {
-      const candidateSignals = getDreamSignalWeights(candidate);
+      const candidateSignals =
+        precomputedWeights?.get(candidate.id) ?? getDreamSignalWeights(candidate);
       const sharedSignalEntries = Array.from(targetSignals.entries())
         .filter(([signal]) => candidateSignals.has(signal))
         .map(([signal, targetWeight]) => {

@@ -72,7 +72,11 @@ export async function startRecording(): Promise<string> {
     return normalizeUriForStorage(path);
   }
 
-  const path = 'sdcard/dream.mp4';
+  const audioDir = `${RNFS.DocumentDirectoryPath}/audio`;
+  await RNFS.mkdir(audioDir).catch(() => undefined);
+  const timestamp = Date.now();
+  const suffix = Math.random().toString(36).slice(2, 9);
+  const path = `${audioDir}/dream_audio_${timestamp}_${suffix}.mp4`;
   await arp.startRecorder(path, {
     AudioSourceAndroid: AudioSourceAndroidType.VOICE_RECOGNITION,
     OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
@@ -95,23 +99,39 @@ export async function stopRecording(): Promise<string> {
   return normalizeUriForStorage(uri ?? '');
 }
 
-export async function play(uri: string) {
+type PlayCallbacks = {
+  onFinished?: () => void;
+  onProgress?: (positionMs: number, durationMs: number) => void;
+};
+
+export async function play(uri: string, callbacks?: PlayCallbacks) {
   const normalized = normalizeUriForPlayback(uri);
 
-  if (Platform.OS === 'android' && NativeAudioRecorder) {
-    await NativeAudioRecorder.play(normalized);
-    return;
+  if (callbacks?.onProgress) {
+    arp.addPlayBackListener(e => {
+      callbacks.onProgress!(e.currentPosition, e.duration);
+    });
   }
 
-  await arp.startPlayer(normalized);
+  if (callbacks?.onFinished) {
+    arp.addPlaybackEndListener(() => {
+      arp.removePlaybackEndListener();
+      callbacks.onFinished!();
+    });
+  }
+
+  try {
+    await arp.startPlayer(normalized);
+  } catch (e) {
+    arp.removePlayBackListener();
+    arp.removePlaybackEndListener();
+    throw e;
+  }
 }
 
 export async function stop() {
-  if (Platform.OS === 'android' && NativeAudioRecorder) {
-    await NativeAudioRecorder.stop();
-    return;
-  }
-
+  arp.removePlayBackListener();
+  arp.removePlaybackEndListener();
   await arp.stopPlayer();
 }
 

@@ -7,7 +7,7 @@ import { createInfoRowStyles } from './InfoRow.styles';
 
 export function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   const t = useTheme<Theme>();
-  const styles = createInfoRowStyles(t);
+  const styles = React.useMemo(() => createInfoRowStyles(t), [t]);
 
   return (
     <View style={styles.row}>

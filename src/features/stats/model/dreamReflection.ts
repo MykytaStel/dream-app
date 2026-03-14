@@ -230,15 +230,20 @@ export function getRecurringWordSignals(dreams: Dream[], limit = 6) {
 
   dreams.forEach(dream => {
     const tokens = tokenizeNarrativeParts(dream);
-    const uniqueTokens = new Set(tokens);
 
-    uniqueTokens.forEach(token => {
+    // Single O(m) pass to build frequency map — avoids O(m²) .filter() scan per token
+    const tokenFreq = new Map<string, number>();
+    for (const token of tokens) {
+      tokenFreq.set(token, (tokenFreq.get(token) ?? 0) + 1);
+    }
+
+    tokenFreq.forEach((count, token) => {
       const current = signalMap.get(token) ?? {
         dreamIds: new Set<string>(),
         hitCount: 0,
       };
       current.dreamIds.add(dream.id);
-      current.hitCount += tokens.filter(value => value === token).length;
+      current.hitCount += count;
       signalMap.set(token, current);
     });
   });

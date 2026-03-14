@@ -190,28 +190,34 @@ export function useHomeTimelineState({
     [shouldLimitHomeFeed, visibleDreams],
   );
 
+  // Deferred: expensive O(n×m) analytics don't block the list render
+  const deferredActiveDreams = React.useDeferredValue(activeDreams);
+
   const streak = React.useMemo(() => getCurrentStreak(activeDreams), [activeDreams]);
   const averageWords = React.useMemo(() => getAverageWords(activeDreams), [activeDreams]);
   const weeklyEntries = React.useMemo(() => getEntriesLastSevenDays(activeDreams), [activeDreams]);
-  const spotlightWord = React.useMemo(() => getRecurringWordSignals(activeDreams, 1)[0], [activeDreams]);
+  const spotlightWord = React.useMemo(
+    () => getRecurringWordSignals(deferredActiveDreams, 1)[0],
+    [deferredActiveDreams],
+  );
   const spotlightTheme = React.useMemo(
-    () => getRecurringReflectionSignals(activeDreams, { limit: 1 })[0],
-    [activeDreams],
+    () => getRecurringReflectionSignals(deferredActiveDreams, { limit: 1 })[0],
+    [deferredActiveDreams],
   );
   const transcriptArchiveStats = React.useMemo(
-    () => getTranscriptArchiveStats(activeDreams),
-    [activeDreams],
+    () => getTranscriptArchiveStats(deferredActiveDreams),
+    [deferredActiveDreams],
   );
   const moodBacklogCount = React.useMemo(
-    () => activeDreams.filter(dream => !dream.mood).length,
-    [activeDreams],
+    () => deferredActiveDreams.filter(dream => !dream.mood).length,
+    [deferredActiveDreams],
   );
 
   const heroGreeting = React.useMemo(() => getContextGreeting(copy), [copy]);
   const heroDateLabel = React.useMemo(() => formatHeroDateLabel(locale), [locale]);
   const revisitCue = React.useMemo(
-    () => getHomeRevisitCue(activeDreams, copy),
-    [activeDreams, copy],
+    () => getHomeRevisitCue(deferredActiveDreams, copy),
+    [deferredActiveDreams, copy],
   );
   const lastViewedDreamMeta = React.useMemo(
     () => formatLastViewedDreamMeta(lastViewedDream, copy, locale),

@@ -150,7 +150,6 @@ export default function DreamDetailScreen() {
         viewModel={viewModel}
         relatedDreams={controller.relatedDreams}
         sections={controller.sections}
-        isPlayingAudio={controller.isPlayingAudio}
         isTranscribingAudio={controller.isTranscribingAudio}
         isEditingTranscript={controller.isEditingTranscript}
         transcriptDraft={controller.transcriptDraft}
@@ -170,7 +169,8 @@ export default function DreamDetailScreen() {
         onTranscribeAudio={controller.onTranscribeAudio}
         onGenerateAnalysis={controller.onGenerateAnalysis}
         onClearAnalysis={controller.onClearAnalysis}
-        onToggleAudioPlayback={controller.onToggleAudioPlayback}
+        isDownloadingAudio={controller.isDownloadingAudio}
+        onDownloadAudio={controller.onDownloadAudio}
         onEditDream={() =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
             dreamId: dream.id,

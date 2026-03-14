@@ -11,17 +11,22 @@ const I18nContext = React.createContext<I18nContextValue | null>(null);
 
 export const I18nProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
   const [locale, setLocaleState] = React.useState<AppLocale>(() => getStoredLocale());
+  const [, startTransition] = React.useTransition();
+  const localeRef = React.useRef(locale);
 
-  const setLocale = React.useCallback((nextLocale: AppLocale) => {
-    setLocaleState(current => {
-      if (current === nextLocale) {
-        return current;
+  const setLocale = React.useCallback(
+    (nextLocale: AppLocale) => {
+      if (localeRef.current === nextLocale) {
+        return;
       }
-
+      localeRef.current = nextLocale;
       saveLocale(nextLocale);
-      return nextLocale;
-    });
-  }, []);
+      startTransition(() => {
+        setLocaleState(nextLocale);
+      });
+    },
+    [startTransition],
+  );
 
   const value = React.useMemo<I18nContextValue>(
     () => ({

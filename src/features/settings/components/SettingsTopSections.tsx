@@ -30,19 +30,28 @@ export function SettingsHeroSection({
   onSelectLocale: (locale: AppLocale) => void;
   styles: SettingsStyles;
 }) {
+  const [optimisticLocale, setOptimisticLocale] = React.useState<AppLocale | null>(null);
+
+  React.useEffect(() => {
+    setOptimisticLocale(null);
+  }, [locale]);
+
+  const displayLocale = optimisticLocale ?? locale;
+  const isPending = optimisticLocale !== null;
+
   return (
     <View style={styles.heroHeader}>
       <SectionHeader title={copy.title} subtitle={copy.subtitle} />
       <View style={styles.inlineLanguageRow}>
         <Text style={styles.inlineLanguageLabel}>{copy.languageTitle}</Text>
-        <View style={styles.inlineLanguageControls}>
+        <View style={[styles.inlineLanguageControls, isPending ? { opacity: 0.72 } : null]}>
           {(
             [
               { value: 'en', label: copy.languageEnglish },
               { value: 'uk', label: copy.languageUkrainian },
             ] as Array<{ value: AppLocale; label: string }>
           ).map(option => {
-            const selected = locale === option.value;
+            const selected = displayLocale === option.value;
 
             return (
               <Pressable
@@ -51,8 +60,11 @@ export function SettingsHeroSection({
                   styles.inlineLanguageChip,
                   selected ? styles.inlineLanguageChipActive : null,
                 ]}
-                disabled={isApplyingReminder}
-                onPress={() => onSelectLocale(option.value)}
+                disabled={isApplyingReminder || isPending}
+                onPress={() => {
+                  setOptimisticLocale(option.value);
+                  onSelectLocale(option.value);
+                }}
               >
                 <Text
                   style={[

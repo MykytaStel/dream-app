@@ -69,7 +69,7 @@ export default function ProgressScreen() {
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.Progress>>();
-  const styles = createProgressScreenStyles(t);
+  const styles = React.useMemo(() => createProgressScreenStyles(t), [t]);
   const [dreams, setDreams] = React.useState<DreamListItem[]>(() => listDreamListItems());
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);

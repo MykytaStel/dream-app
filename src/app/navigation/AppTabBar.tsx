@@ -90,7 +90,7 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
   const t = useTheme<Theme>();
   const { locale } = useI18n();
   const insets = useSafeAreaInsets();
-  const styles = createTabsStyles(t, insets.bottom);
+  const styles = React.useMemo(() => createTabsStyles(t, insets.bottom), [t, insets.bottom]);
   const labels = React.useMemo(() => getTabRouteLabels(locale), [locale]);
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const [isQuickAddOpen, setIsQuickAddOpen] = React.useState(false);

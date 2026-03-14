@@ -15,7 +15,7 @@ export function SectionHeader({
   large?: boolean;
 }) {
   const t = useTheme<Theme>();
-  const styles = createSectionHeaderStyles(t, large);
+  const styles = React.useMemo(() => createSectionHeaderStyles(t, large), [t, large]);
 
   return (
     <View style={styles.container}>

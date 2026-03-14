@@ -2,7 +2,7 @@ import { StyleSheet } from 'react-native';
 import { Theme } from '../../../theme/theme';
 import { getDreamLayout } from '../constants/layout';
 
-export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
+export function createNewDreamScreenStyles(theme: Theme) {
   const layout = getDreamLayout(theme);
 
   return StyleSheet.create({
@@ -181,13 +181,20 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       paddingHorizontal: 10,
       borderRadius: 14,
       borderWidth: 1,
-      borderColor: selected ? theme.colors.primary : theme.colors.border,
-      backgroundColor: selected ? theme.colors.primary : theme.colors.surfaceAlt,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    moodOptionSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
     },
     moodLabel: {
       textAlign: 'center',
       fontWeight: '700',
-      color: selected ? theme.colors.background : theme.colors.text,
+      color: theme.colors.text,
+    },
+    moodLabelSelected: {
+      color: theme.colors.background,
     },
     contextBlock: {
       gap: 8,
@@ -215,15 +222,22 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
       paddingHorizontal: 8,
       borderRadius: 12,
       borderWidth: 1,
-      borderColor: selected ? theme.colors.primary : theme.colors.border,
-      backgroundColor: selected ? theme.colors.primary : theme.colors.surfaceAlt,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    contextOptionSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
     },
     contextOptionLabel: {
       textAlign: 'center',
       fontWeight: '700',
       fontSize: 11,
       lineHeight: 14,
-      color: selected ? theme.colors.background : theme.colors.text,
+      color: theme.colors.text,
+    },
+    contextOptionLabelSelected: {
+      color: theme.colors.background,
     },
     contextTextInput: {
       minHeight: 96,
@@ -280,6 +294,17 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     recordingHint: {
       color: theme.colors.accent,
     },
+    voiceRecordingTimer: {
+      color: theme.colors.accent,
+      fontSize: 22,
+      fontWeight: '600',
+      textAlign: 'center',
+      letterSpacing: 1,
+      marginTop: 4,
+    },
+    composerAudioPlayback: {
+      alignSelf: 'flex-start',
+    },
     attachedAudioCard: {
       gap: layout.rowGap + 2,
       borderRadius: 14,
@@ -293,6 +318,11 @@ export function createNewDreamScreenStyles(theme: Theme, selected: boolean) {
     },
     attachedAudioUri: {
       color: theme.colors.textDim,
+    },
+    attachedAudioActions: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 4,
     },
     captureAlternateBlock: {
       gap: layout.rowGap + 2,

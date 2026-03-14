@@ -16,7 +16,7 @@ export function createHomeScreenStyles(theme: Theme) {
       gap: theme.spacing.sm,
     },
     listHeaderContent: {
-      gap: theme.spacing.xs + 2,
+      gap: theme.spacing.xs,
     },
     emptyCard: {
       gap: 10,
@@ -111,7 +111,7 @@ export function createHomeScreenStyles(theme: Theme) {
       color: theme.colors.background,
     },
     heroCard: {
-      gap: 10,
+      gap: 8,
       overflow: 'hidden',
       padding: 14,
       position: 'relative',
@@ -119,7 +119,7 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     heroFrame: {
       justifyContent: 'flex-start',
-      gap: 12,
+      gap: 10,
       position: 'relative',
       zIndex: 1,
       paddingBottom: 2,
@@ -195,9 +195,9 @@ export function createHomeScreenStyles(theme: Theme) {
       borderRadius: 10,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'rgba(124, 200, 255, 0.14)',
+      backgroundColor: `${theme.colors.primary}24`,
       borderWidth: 1,
-      borderColor: 'rgba(124, 200, 255, 0.18)',
+      borderColor: `${theme.colors.primary}2E`,
     },
     heroPromptCopy: {
       flex: 1,
@@ -250,9 +250,9 @@ export function createHomeScreenStyles(theme: Theme) {
       borderRadius: 10,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'rgba(124, 200, 255, 0.14)',
+      backgroundColor: `${theme.colors.primary}24`,
       borderWidth: 1,
-      borderColor: 'rgba(124, 200, 255, 0.18)',
+      borderColor: `${theme.colors.primary}2E`,
     },
     heroShortcutCopy: {
       flex: 1,
@@ -304,8 +304,8 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     heroTitle: {
       fontFamily: fontFamilies.display,
-      fontSize: 28,
-      lineHeight: 32,
+      fontSize: 24,
+      lineHeight: 28,
       fontWeight: '700',
       flexShrink: 1,
       includeFontPadding: false,
@@ -318,42 +318,42 @@ export function createHomeScreenStyles(theme: Theme) {
       maxWidth: '100%',
     },
     heroVisualShell: {
-      width: 54,
-      height: 54,
-      borderRadius: 16,
+      width: 44,
+      height: 44,
+      borderRadius: 13,
       backgroundColor: 'rgba(28, 34, 53, 0.82)',
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: 'center',
       justifyContent: 'center',
       shadowColor: theme.colors.primaryAlt,
-      shadowOffset: { width: 0, height: 6 },
-      shadowOpacity: 0.12,
-      shadowRadius: 12,
-      elevation: 4,
-      marginTop: 10,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.1,
+      shadowRadius: 10,
+      elevation: 3,
+      marginTop: 4,
       marginRight: 4,
       zIndex: 1,
     },
     heroFacet: {
       position: 'absolute',
-      width: 20,
-      height: 20,
-      borderRadius: 8,
+      width: 16,
+      height: 16,
+      borderRadius: 6,
       transform: [{ rotate: '45deg' }],
     },
     heroFacetPrimary: {
-      top: 14,
+      top: 10,
       backgroundColor: theme.colors.primary,
     },
     heroFacetAccent: {
-      left: 15,
-      bottom: 16,
+      left: 11,
+      bottom: 12,
       backgroundColor: theme.colors.accent,
     },
     heroFacetAlt: {
-      right: 15,
-      bottom: 16,
+      right: 11,
+      bottom: 12,
       backgroundColor: theme.colors.auroraMid,
     },
     heroFooter: {
@@ -398,7 +398,7 @@ export function createHomeScreenStyles(theme: Theme) {
       marginTop: -4,
     },
     spotlightCard: {
-      gap: 8,
+      gap: 7,
       overflow: 'hidden',
     },
     spotlightHeader: {
@@ -503,7 +503,7 @@ export function createHomeScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 6,
       borderColor: `${theme.colors.accent}55`,
-      backgroundColor: 'rgba(124, 200, 255, 0.08)',
+      backgroundColor: `${theme.colors.accent}14`,
     },
     spotlightCueBadgeText: {
       color: theme.colors.accent,
@@ -588,8 +588,8 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     searchCard: {
       gap: 8,
-      paddingVertical: 14,
-      paddingHorizontal: 14,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
     },
     searchBarRow: {
       flexDirection: 'row',
@@ -773,7 +773,7 @@ export function createHomeScreenStyles(theme: Theme) {
     filterSheetRoot: {
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: 'rgba(7, 11, 28, 0.35)',
+      backgroundColor: `${theme.colors.ink}59`,
     },
     filterSheetBackdrop: {
       flex: 1,
@@ -914,6 +914,9 @@ export function createHomeScreenStyles(theme: Theme) {
     previewAccent: {
       width: 3,
       borderRadius: 999,
+    },
+    previewAccentPrimary: {
+      backgroundColor: theme.colors.primary,
     },
     preview: {
       color: theme.colors.textDim,

@@ -56,8 +56,7 @@ export function DreamComposer({
     () => getDreamPreSleepEmotions(locale),
     [locale],
   );
-  const styles = React.useMemo(() => createNewDreamScreenStyles(theme, false), [theme]);
-  const activeStyles = React.useMemo(() => createNewDreamScreenStyles(theme, true), [theme]);
+  const styles = React.useMemo(() => createNewDreamScreenStyles(theme), [theme]);
 
   const form = useDreamComposerForm({
     mode,
@@ -82,11 +81,7 @@ export function DreamComposer({
   );
   const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(form.hasRestoredDraft);
 
-  React.useEffect(() => {
-    setShowRestoredDraftCard(form.hasRestoredDraft);
-  }, [form.hasRestoredDraft]);
-
-  const refineActions = [
+  const refineActions = React.useMemo(() => [
     ...(!form.isWakeMode
       ? [
           {
@@ -116,7 +111,7 @@ export function DreamComposer({
       active: form.showTagsSection || form.hasTagSelections,
       onPress: () => form.setShowTagsSection(current => !current),
     },
-  ];
+  ], [copy, form]);
 
   return (
     <ScreenContainer scroll keyboardShouldPersistTaps="handled">
@@ -184,8 +179,10 @@ export function DreamComposer({
           styles={styles}
           copy={copy}
           recording={form.recording}
+          recordingDuration={form.recordingDuration}
           audioUri={form.audioUri}
           audioFileLabel={audioFileLabel}
+          isBusy={form.isBusy}
           onToggleRecord={() => {
             form.onToggleRecord().catch(e =>
               logActionError('DreamComposer.onToggleRecord', e),
@@ -205,8 +202,10 @@ export function DreamComposer({
             copy={copy}
             isWakeMode={form.isWakeMode}
             recording={form.recording}
+            recordingDuration={form.recordingDuration}
             audioUri={form.audioUri}
             audioFileLabel={audioFileLabel}
+            isBusy={form.isBusy}
             onToggleRecord={() => {
               form.onToggleRecord().catch(e =>
                 logActionError('DreamComposer.onToggleRecord', e),
@@ -257,7 +256,6 @@ export function DreamComposer({
       {form.showMoodCard ? (
         <DreamComposerMoodCard
           styles={styles}
-          activeStyles={activeStyles}
           copy={copy}
           moods={moods}
           mood={form.mood}
@@ -273,7 +271,6 @@ export function DreamComposer({
       {form.showContextSection ? (
         <DreamComposerContextCard
           styles={styles}
-          activeStyles={activeStyles}
           copy={copy}
           preSleepEmotionOptions={preSleepEmotionOptions}
           preSleepEmotions={form.preSleepEmotions}

@@ -19,7 +19,6 @@ import {
 
 type MoodCardProps = {
   styles: DreamComposerStyles;
-  activeStyles: DreamComposerStyles;
   copy: DreamComposerCopy;
   moods: DreamComposerMoodOption[];
   mood?: DreamComposerMoodOption['value'];
@@ -31,7 +30,6 @@ type MoodCardProps = {
 
 export function DreamComposerMoodCard({
   styles,
-  activeStyles,
   copy,
   moods,
   mood,
@@ -56,8 +54,7 @@ export function DreamComposerMoodCard({
             label={option.label}
             selected={mood === option.value}
             onPress={() => onToggleMood(option.value)}
-            baseStyles={styles}
-            activeStyles={activeStyles}
+            styles={styles}
           />
         ))}
       </View>
@@ -82,7 +79,6 @@ export function DreamComposerMoodCard({
 
 type ContextCardProps = {
   styles: DreamComposerStyles;
-  activeStyles: DreamComposerStyles;
   copy: DreamComposerCopy;
   preSleepEmotionOptions: DreamComposerPreSleepEmotionOption[];
   preSleepEmotions: PreSleepEmotion[];
@@ -104,7 +100,6 @@ type ContextCardProps = {
 
 export function DreamComposerContextCard({
   styles,
-  activeStyles,
   copy,
   preSleepEmotionOptions,
   preSleepEmotions,
@@ -160,8 +155,7 @@ export function DreamComposerContextCard({
               label={option.label}
               selected={stressLevel === option.value}
               onPress={() => onToggleStressLevel(option.value)}
-              baseStyles={styles}
-              activeStyles={activeStyles}
+              styles={styles}
             />
           ))}
         </View>
@@ -177,8 +171,7 @@ export function DreamComposerContextCard({
               label={option.label}
               selected={alcoholTaken === option.value}
               onPress={() => onToggleAlcoholTaken(option.value)}
-              baseStyles={styles}
-              activeStyles={activeStyles}
+              styles={styles}
             />
           ))}
         </View>
@@ -194,8 +187,7 @@ export function DreamComposerContextCard({
               label={option.label}
               selected={caffeineLate === option.value}
               onPress={() => onToggleCaffeineLate(option.value)}
-              baseStyles={styles}
-              activeStyles={activeStyles}
+              styles={styles}
             />
           ))}
         </View>

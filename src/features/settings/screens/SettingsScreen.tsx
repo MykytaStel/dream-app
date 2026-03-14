@@ -40,7 +40,7 @@ export default function SettingsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
-  const styles = createSettingsScreenStyles(theme);
+  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
 
   const controller = useSettingsScreenController({
     locale,

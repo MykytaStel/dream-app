@@ -9,8 +9,19 @@ declare module 'react-native' {
     cleanupOrphanedAudioFiles(maxAgeDays: number): Promise<number>;
   }
 
+  interface AudioUploadNativeModule {
+    upload(options: {
+      uploadUrl: string;
+      localPath: string;
+      mimeType: string;
+      anonKey: string;
+      accessToken?: string | null;
+    }): Promise<void>;
+  }
+
   interface NativeModulesStatic {
     AudioRecorder?: AudioRecorderNativeModule;
+    AudioUpload?: AudioUploadNativeModule;
   }
 }
 

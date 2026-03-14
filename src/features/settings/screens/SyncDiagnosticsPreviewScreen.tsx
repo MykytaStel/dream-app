@@ -23,7 +23,7 @@ import { createSettingsScreenStyles } from './SettingsScreen.styles';
 
 export default function SyncDiagnosticsPreviewScreen() {
   const theme = useTheme<Theme>();
-  const styles = createSettingsScreenStyles(theme);
+  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
   const { locale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const navigation =

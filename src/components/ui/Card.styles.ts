@@ -1,7 +1,9 @@
 import { StyleSheet } from 'react-native';
 import { Theme } from '../../theme/theme';
 
-export function createCardStyles(theme: Theme) {
+const cache = new WeakMap<Theme, ReturnType<typeof build>>();
+
+function build(theme: Theme) {
   return StyleSheet.create({
     card: {
       backgroundColor: theme.colors.surfaceElevated,
@@ -16,4 +18,13 @@ export function createCardStyles(theme: Theme) {
       elevation: 4,
     },
   });
+}
+
+export function getCardStyles(theme: Theme) {
+  let styles = cache.get(theme);
+  if (!styles) {
+    styles = build(theme);
+    cache.set(theme, styles);
+  }
+  return styles;
 }

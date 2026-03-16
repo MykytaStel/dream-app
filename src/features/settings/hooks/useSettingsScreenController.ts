@@ -1,5 +1,12 @@
 import React from 'react';
 import { Alert, Platform } from 'react-native';
+import {
+  authenticateWithBiometrics,
+  checkBiometricAvailability,
+  getBiometricLockEnabled,
+  setBiometricLockEnabled,
+  type BiometricAvailability,
+} from '../../../services/security/biometricService';
 import { useFocusEffect } from '@react-navigation/native';
 import type { DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { APP_VERSION_LABEL } from '../../../config/app';
@@ -72,6 +79,12 @@ export function useSettingsScreenController({
   const [isUpdatingSeedDreams, setIsUpdatingSeedDreams] = React.useState(false);
   const [analysisSettings, setAnalysisSettings] =
     React.useState<DreamAnalysisSettings>(() => getDreamAnalysisSettings());
+  const [biometricAvailability, setBiometricAvailability] =
+    React.useState<BiometricAvailability | null>(null);
+  const [biometricLockEnabled, setBiometricLockEnabledState] =
+    React.useState<boolean>(() => getBiometricLockEnabled());
+  const [isApplyingBiometricLock, setIsApplyingBiometricLock] =
+    React.useState(false);
   const cloudBackup = useCloudBackupController({
     locale,
     copy,
@@ -106,6 +119,8 @@ export function useSettingsScreenController({
   const refreshReminderState = React.useCallback(async () => {
     setReminderSettings(getDreamReminderSettings());
     setAnalysisSettings(getDreamAnalysisSettings());
+    setBiometricLockEnabledState(getBiometricLockEnabled());
+    setBiometricAvailability(await checkBiometricAvailability());
     setPermissionGranted(await getDreamReminderPermissionGranted());
     setTranscriptionModelStatus(await getDreamTranscriptionModelStatus());
     if (__DEV__) {
@@ -317,6 +332,44 @@ export function useSettingsScreenController({
     [copy],
   );
 
+  const onToggleBiometricLock = React.useCallback(async () => {
+    if (biometricLockEnabled) {
+      setBiometricLockEnabled(false);
+      setBiometricLockEnabledState(false);
+      return;
+    }
+
+    const availability = biometricAvailability ?? (await checkBiometricAvailability());
+    setBiometricAvailability(availability);
+
+    if (!availability.available) {
+      const message =
+        availability.reason === 'not-enrolled'
+          ? copy.biometricLockEnableErrorNotEnrolled
+          : copy.biometricLockEnableErrorUnsupported;
+      Alert.alert(copy.biometricLockEnableErrorTitle, message);
+      return;
+    }
+
+    setIsApplyingBiometricLock(true);
+
+    try {
+      const success = await authenticateWithBiometrics(copy.biometricLockPrompt);
+      if (!success) {
+        Alert.alert(
+          copy.biometricLockEnableErrorTitle,
+          copy.biometricLockEnableErrorFailed,
+        );
+        return;
+      }
+
+      setBiometricLockEnabled(true);
+      setBiometricLockEnabledState(true);
+    } finally {
+      setIsApplyingBiometricLock(false);
+    }
+  }, [biometricAvailability, biometricLockEnabled, copy]);
+
   const onClearSeedDreams = React.useCallback(() => {
     Alert.alert(copy.scaleTestClearTitle, copy.scaleTestClearDescription, [
       {
@@ -348,6 +401,10 @@ export function useSettingsScreenController({
   return {
     APP_VERSION_LABEL,
     footerMeta,
+    biometricAvailability,
+    biometricLockEnabled,
+    isApplyingBiometricLock,
+    onToggleBiometricLock,
     reminderSettings,
     permissionGranted,
     isApplyingReminder,

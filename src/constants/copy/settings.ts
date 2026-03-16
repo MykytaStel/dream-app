@@ -396,6 +396,24 @@ const SETTINGS_COPY_EN = {
   scaleTestSeededDescription:
     'The archive was filled with generated dreams for scale testing.',
   scaleTestErrorTitle: 'Could not prepare sample dreams',
+  biometricLockTitle: 'App lock',
+  biometricLockDescription:
+    'Require Face ID, Touch ID, or fingerprint when opening the app.',
+  biometricLockEnabledValue: 'On',
+  biometricLockDisabledValue: 'Off',
+  biometricLockNotSupportedValue: 'Not supported',
+  biometricLockNotEnrolledValue: 'Not enrolled',
+  biometricLockPrompt: 'Unlock Kaleidoscope',
+  biometricLockUnlockLabel: 'Unlock',
+  biometricLockScreenSubtitle: 'Your dreams are protected.',
+  biometricLockAppName: 'Kaleidoscope',
+  biometricLockEnableErrorTitle: 'Could not enable app lock',
+  biometricLockEnableErrorUnsupported:
+    'Your device does not support biometric authentication.',
+  biometricLockEnableErrorNotEnrolled:
+    'No biometrics are set up on this device. Enable Face ID or fingerprint in system settings first.',
+  biometricLockEnableErrorFailed:
+    'Biometric check failed. App lock was not enabled.',
   analysisTitle: 'Dream analysis',
   analysisDescription:
     'Generate a local reflection from saved dream data.',
@@ -805,6 +823,24 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   scaleTestSeededDescription:
     'Архів заповнено згенерованими снами для перевірки масштабу.',
   scaleTestErrorTitle: 'Не вдалося підготувати тестові сни',
+  biometricLockTitle: 'Блокування застосунку',
+  biometricLockDescription:
+    'Вимагати Face ID, Touch ID або відбиток пальця під час відкриття застосунку.',
+  biometricLockEnabledValue: 'Увімкнено',
+  biometricLockDisabledValue: 'Вимкнено',
+  biometricLockNotSupportedValue: 'Не підтримується',
+  biometricLockNotEnrolledValue: 'Не налаштовано',
+  biometricLockPrompt: 'Розблокуй Kaleidoscope',
+  biometricLockUnlockLabel: 'Розблокувати',
+  biometricLockScreenSubtitle: 'Твої сни захищені.',
+  biometricLockAppName: 'Kaleidoscope',
+  biometricLockEnableErrorTitle: 'Не вдалося увімкнути блокування',
+  biometricLockEnableErrorUnsupported:
+    'Цей пристрій не підтримує біометричну автентифікацію.',
+  biometricLockEnableErrorNotEnrolled:
+    'На цьому пристрої не налаштовано біометрію. Спочатку увімкни Face ID або відбиток у системних налаштуваннях.',
+  biometricLockEnableErrorFailed:
+    'Біометрична перевірка не пройшла. Блокування не увімкнено.',
   analysisTitle: 'Аналіз сну',
   analysisDescription:
     'Генеруй локальну рефлексію зі збережених даних сну.',

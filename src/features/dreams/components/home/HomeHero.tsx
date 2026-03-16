@@ -1,6 +1,7 @@
 import React from 'react';
 import { View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button } from '../../../../components/ui/Button';
 import { Text } from '../../../../components/ui/Text';
@@ -36,7 +37,7 @@ export const HomeHero = React.memo(function HomeHero({
   const t = useTheme<Theme>();
 
   return (
-    <View style={[styles.heroCard, { paddingTop: insetTop }]}>
+    <Animated.View entering={FadeIn.duration(400)} style={[styles.heroCard, { paddingTop: insetTop }]}>
       <View pointerEvents="none" style={styles.heroGlowLarge} />
       {prompt ? <View pointerEvents="none" style={styles.heroGlowSmall} /> : null}
       <View style={styles.heroFrame}>
@@ -88,6 +89,6 @@ export const HomeHero = React.memo(function HomeHero({
           </View>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 });

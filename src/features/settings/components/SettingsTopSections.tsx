@@ -8,6 +8,7 @@ import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { type AppLocale } from '../../../i18n/types';
 import { Theme } from '../../../theme/theme';
+import { type BiometricAvailability } from '../../../services/security/biometricService';
 import { type DreamReminderSettings } from '../../reminders/services/dreamReminderService';
 import { SettingsActionRow } from './SettingsActionRow';
 import { type SettingsMetaItem } from './SettingsMetaGrid';
@@ -161,6 +162,72 @@ export function ReminderSection({
           ) : null}
         </>
       ) : null}
+    </Card>
+  );
+}
+
+export function BiometricLockSection({
+  copy,
+  styles,
+  biometricAvailability,
+  biometricLockEnabled,
+  isApplyingBiometricLock,
+  onToggleBiometricLock,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+  biometricAvailability: BiometricAvailability | null;
+  biometricLockEnabled: boolean;
+  isApplyingBiometricLock: boolean;
+  onToggleBiometricLock: () => void;
+}) {
+  const t = useTheme<Theme>();
+
+  const isSupported = biometricAvailability?.available === true;
+  const isNotEnrolled =
+    biometricAvailability?.available === false &&
+    biometricAvailability.reason === 'not-enrolled';
+
+  const statusValue = React.useMemo(() => {
+    if (!biometricAvailability) {
+      return copy.biometricLockDisabledValue;
+    }
+    if (!isSupported) {
+      return isNotEnrolled
+        ? copy.biometricLockNotEnrolledValue
+        : copy.biometricLockNotSupportedValue;
+    }
+    return biometricLockEnabled
+      ? copy.biometricLockEnabledValue
+      : copy.biometricLockDisabledValue;
+  }, [biometricAvailability, biometricLockEnabled, copy, isNotEnrolled, isSupported]);
+
+  return (
+    <Card style={styles.sectionCard}>
+      <SettingsSectionHeader
+        title={copy.biometricLockTitle}
+        description={copy.biometricLockDescription}
+        trailing={
+          <Switch
+            value={biometricLockEnabled}
+            onValueChange={onToggleBiometricLock}
+            disabled={!isSupported || isApplyingBiometricLock}
+            trackColor={{
+              false: t.colors.switchTrackOff,
+              true: t.colors.primary,
+            }}
+            thumbColor={t.colors.text}
+          />
+        }
+      />
+      <SettingsActionRow
+        title={
+          isSupported && biometricAvailability?.available
+            ? biometricAvailability.biometryType
+            : copy.biometricLockNotSupportedValue
+        }
+        value={statusValue}
+      />
     </Card>
   );
 }

@@ -137,9 +137,8 @@ const DREAM_COPY_EN = {
   swipeDelete: 'Delete',
   swipeArchive: 'Archive',
   swipeUnarchive: 'Unarchive',
-  emptyTitle: 'No dreams yet',
-  emptyDescription:
-    'Capture the first one from the + button. Keep it fast: title, voice note, or a few raw lines are enough.',
+  emptyTitle: 'Your first dream is waiting',
+  emptyDescription: 'Write it before it fades — a fragment, a feeling, or a single image is enough.',
   emptyActiveTitle: 'No active dreams',
   emptyActiveDescription:
     'All entries are archived right now. Switch filter or record a new dream.',
@@ -557,6 +556,13 @@ const DREAM_COPY_EN = {
     'Microphone access was denied. Turn on microphone permission in system settings to record voice notes.',
   audioPermissionUnavailable:
     'Microphone permission could not be requested. Check system settings.',
+  templateSectionHint: 'Quick type',
+  templateLucidLabel: 'Lucid',
+  templateNightmareLabel: 'Nightmare',
+  templateVividLabel: 'Vivid',
+  templateRecurringLabel: 'Recurring',
+  templateFragmentLabel: 'Fragment',
+  templatePeacefulLabel: 'Peaceful',
 };
 
 const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
@@ -693,9 +699,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   swipeDelete: 'Видалити',
   swipeArchive: 'Архів',
   swipeUnarchive: 'Розархівувати',
-  emptyTitle: 'Поки немає снів',
-  emptyDescription:
-    'Додай перший запис через кнопку +. Достатньо назви, голосу або кількох рядків.',
+  emptyTitle: 'Перший сон уже чекає',
+  emptyDescription: 'Запиши до того, як він зникне — фрагмент, відчуття чи один образ — цього достатньо.',
   emptyActiveTitle: 'Немає активних снів',
   emptyActiveDescription: 'Усі записи в архіві. Зміни фільтр або створи новий сон.',
   emptyArchivedTitle: 'Архів порожній',
@@ -1106,6 +1111,13 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Доступ до мікрофона заборонено. Увімкни дозвіл у системних налаштуваннях, щоб записувати голосові нотатки.',
   audioPermissionUnavailable:
     'Не вдалося запитати дозвіл мікрофона. Перевір налаштування системи.',
+  templateSectionHint: 'Тип сну',
+  templateLucidLabel: 'Усвідомлений',
+  templateNightmareLabel: 'Кошмар',
+  templateVividLabel: 'Яскравий',
+  templateRecurringLabel: 'Повторюваний',
+  templateFragmentLabel: 'Фрагмент',
+  templatePeacefulLabel: 'Спокійний',
 };
 
 const DREAM_MOODS_EN: Array<{ label: string; value: Mood }> = [

@@ -38,6 +38,8 @@ import {
   useDreamComposerForm,
 } from './useDreamComposerForm';
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
+import { DreamComposerTemplateRow } from './DreamComposerTemplateRow';
+import { type DreamTemplate } from '../model/dreamTemplates';
 
 export function DreamComposer({
   mode,
@@ -80,6 +82,29 @@ export function DreamComposer({
     [copy, restoredDraftSnapshot],
   );
   const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(form.hasRestoredDraft);
+
+  const showTemplateRow =
+    mode === 'create' &&
+    !form.isWakeMode &&
+    form.isEntryEmpty &&
+    !form.hasRestoredDraft;
+
+  const handleApplyTemplate = React.useCallback(
+    (template: DreamTemplate) => {
+      form.setTags(template.tags);
+      if (template.mood !== undefined) {
+        form.setMood(template.mood);
+      }
+      if (template.wakeEmotions && template.wakeEmotions.length > 0) {
+        form.setWakeEmotions(template.wakeEmotions);
+      }
+      if (template.opensMoodSection) {
+        form.setShowMoodSection(true);
+      }
+      form.setShowTagsSection(true);
+    },
+    [form],
+  );
 
   const refineActions = React.useMemo(() => [
     ...(!form.isWakeMode
@@ -124,6 +149,13 @@ export function DreamComposer({
         hasAudio={Boolean(form.audioUri)}
         hasRestoredDraft={form.hasRestoredDraft}
       />
+
+      {showTemplateRow ? (
+        <DreamComposerTemplateRow
+          copy={copy}
+          onApplyTemplate={handleApplyTemplate}
+        />
+      ) : null}
 
       {showRestoredDraftCard ? (
         <Card style={styles.card}>

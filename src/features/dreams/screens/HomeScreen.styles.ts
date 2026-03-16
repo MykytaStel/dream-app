@@ -52,8 +52,11 @@ export function createHomeScreenStyles(theme: Theme) {
       gap: 12,
     },
     dreamCard: {
-      gap: 12,
+      gap: 10,
       padding: 12,
+    },
+    dreamCardStarred: {
+      borderColor: `${theme.colors.accent}55`,
     },
     dreamPressable: {
       borderRadius: theme.borderRadii.xl,
@@ -854,8 +857,7 @@ export function createHomeScreenStyles(theme: Theme) {
       fontSize: 11,
     },
     dreamHeaderCopy: {
-      flex: 1,
-      gap: 5,
+      gap: 4,
     },
     titleRow: {
       flexDirection: 'row',
@@ -873,6 +875,12 @@ export function createHomeScreenStyles(theme: Theme) {
       width: 10,
       height: 10,
       borderRadius: 999,
+    },
+    lucidityGlyph: {
+      color: theme.colors.accent,
+      fontSize: 10,
+      lineHeight: 14,
+      includeFontPadding: false,
     },
     timestampRow: {
       flexDirection: 'row',
@@ -904,16 +912,14 @@ export function createHomeScreenStyles(theme: Theme) {
       flexDirection: 'row',
       alignItems: 'stretch',
       gap: 10,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 9,
-      paddingHorizontal: 10,
     },
     previewAccent: {
       width: 3,
       borderRadius: 999,
+    },
+    previewAudioIcon: {
+      alignSelf: 'flex-start',
+      marginTop: 2,
     },
     previewAccentPrimary: {
       backgroundColor: theme.colors.primary,
@@ -923,6 +929,9 @@ export function createHomeScreenStyles(theme: Theme) {
       flex: 1,
       lineHeight: 18,
       fontSize: 13,
+    },
+    previewTranscript: {
+      fontStyle: 'italic',
     },
     dreamFooterRow: {
       flexDirection: 'row',
@@ -978,7 +987,7 @@ export function createHomeScreenStyles(theme: Theme) {
       borderRadius: theme.borderRadii.pill,
       paddingVertical: 4,
       paddingHorizontal: 8,
-      backgroundColor: theme.colors.surface,
+      backgroundColor: `${theme.colors.primary}10`,
       borderWidth: 1,
       borderColor: theme.colors.border,
     },

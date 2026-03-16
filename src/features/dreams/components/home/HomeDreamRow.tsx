@@ -3,6 +3,8 @@ import { Pressable, StyleProp, TextStyle, View, ViewStyle } from 'react-native';
 import ReanimatedSwipeable, {
   type SwipeableMethods,
 } from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Animated, { FadeInDown } from 'react-native-reanimated';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Card } from '../../../../components/ui/Card';
 import { Text } from '../../../../components/ui/Text';
 import {
@@ -111,6 +113,7 @@ function SwipeActionButton({
 
 type HomeDreamRowProps = {
   dream: Dream;
+  index: number;
   copy: DreamCopy;
   searchQuery?: string;
   moodLabels: Record<Mood, string>;
@@ -132,6 +135,7 @@ type HomeDreamRowProps = {
 
 export const HomeDreamRow = React.memo(function HomeDreamRow({
   dream,
+  index,
   copy,
   searchQuery,
   moodLabels,
@@ -258,7 +262,11 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
     ],
   );
 
+  const hasFooter = Boolean(stateLabels.length || visibleTags.length || hiddenTagCount);
+  const entering = index < 8 ? FadeInDown.delay(index * 45).duration(300) : undefined;
+
   return (
+    <Animated.View entering={entering}>
     <ReanimatedSwipeable
       containerStyle={styles.swipeableContainer}
       overshootRight={false}
@@ -286,15 +294,14 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
         onLongPress={() => openDreamQuickActions(dream)}
         delayLongPress={220}
       >
-        <Card style={styles.dreamCard}>
+        <Card style={[styles.dreamCard, dream.mood ? { backgroundColor: `${accentColor}0B` } : null, starred ? styles.dreamCardStarred : null]}>
           <View style={styles.dreamHeaderRow}>
             <View style={[styles.dateBadge, starred ? styles.dateBadgeFeatured : null]}>
               <Text style={styles.weekday}>{dateParts.weekday}</Text>
-              <Text style={styles.dayNumber}>{dateParts.day}</Text>
+              <Text style={styles.dayNumber}>{String(dateParts.day)}</Text>
               <Text style={styles.month}>{dateParts.month}</Text>
             </View>
-
-            <View style={styles.dreamHeaderCopy}>
+            <View style={[styles.dreamHeaderCopy, { flex: 1 }]}>
               <View style={styles.titleRow}>
                 <Text style={styles.title} numberOfLines={1}>
                   {dream.title || copy.untitled}
@@ -302,29 +309,28 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                 {!mood ? (
                   <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
                 ) : null}
-              </View>
-              <View style={styles.timestampRow}>
-                {mood ? (
-                  <View style={styles.moodPill}>
-                    <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
-                    <Text style={styles.moodPillText}>{mood}</Text>
-                  </View>
+                {(dream.lucidity ?? 0) >= 2 ? (
+                  <Text style={styles.lucidityGlyph}>✦</Text>
                 ) : null}
-                <Text style={styles.timestamp}>
-                  {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
-                  {' · '}
-                  {new Date(dream.createdAt).toLocaleTimeString([], {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                  })}
-                </Text>
               </View>
+              {mood ? (
+                <View style={styles.moodPill}>
+                  <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
+                  <Text style={styles.moodPillText}>{mood}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
 
           <View style={styles.previewPanel}>
             <View style={[styles.previewAccent, { backgroundColor: accentColor }]} />
-            <Text style={styles.preview} numberOfLines={3}>
+            {dream.audioUri && !dream.text?.trim() ? (
+              <Ionicons name="mic-outline" size={12} color={theme.colors.textDim} style={styles.previewAudioIcon} />
+            ) : null}
+            <Text
+              style={[styles.preview, !dream.text?.trim() && dream.transcript ? styles.previewTranscript : null]}
+              numberOfLines={3}
+            >
               {formatPreview(dream, copy)}
             </Text>
           </View>
@@ -339,36 +345,37 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
             </View>
           ) : null}
 
-          <View style={styles.dreamFooterRow}>
-            {stateLabels.length ? (
-              <View style={styles.statePills}>
-                {stateLabels.map(label => (
-                  <View key={label} style={styles.statePill}>
-                    <Text style={styles.statePillText}>{label}</Text>
-                  </View>
-                ))}
-              </View>
-            ) : (
-              <View />
-            )}
+          {hasFooter ? (
+            <View style={styles.dreamFooterRow}>
+              {stateLabels.length ? (
+                <View style={styles.statePills}>
+                  {stateLabels.map(label => (
+                    <View key={label} style={styles.statePill}>
+                      <Text style={styles.statePillText}>{label}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : null}
 
-            {visibleTags.length || hiddenTagCount ? (
-              <View style={styles.tags}>
-                {visibleTags.map(tag => (
-                  <View key={tag} style={styles.tagPill}>
-                    <Text style={styles.tagPillText}>{tag}</Text>
-                  </View>
-                ))}
-                {hiddenTagCount ? (
-                  <View style={[styles.tagPill, styles.tagOverflowPill]}>
-                    <Text style={styles.tagPillText}>{`+${hiddenTagCount}`}</Text>
-                  </View>
-                ) : null}
-              </View>
-            ) : null}
-          </View>
+              {visibleTags.length || hiddenTagCount ? (
+                <View style={styles.tags}>
+                  {visibleTags.map(tag => (
+                    <View key={tag} style={styles.tagPill}>
+                      <Text style={styles.tagPillText}>{tag}</Text>
+                    </View>
+                  ))}
+                  {hiddenTagCount ? (
+                    <View style={[styles.tagPill, styles.tagOverflowPill]}>
+                      <Text style={styles.tagPillText}>{`+${hiddenTagCount}`}</Text>
+                    </View>
+                  ) : null}
+                </View>
+              ) : null}
+            </View>
+          ) : null}
         </Card>
       </Pressable>
     </ReanimatedSwipeable>
+    </Animated.View>
   );
 });

@@ -28,6 +28,7 @@ import {
   TranscriptionSection,
 } from '../components/SettingsAdvancedSections';
 import {
+  BiometricLockSection,
   PrivacySection,
   ReminderSection,
   SettingsHeroSection,
@@ -99,6 +100,19 @@ export default function SettingsScreen() {
           onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.Backup)}
         />
       </Card>
+
+      <BiometricLockSection
+        copy={copy}
+        styles={styles}
+        biometricAvailability={controller.biometricAvailability}
+        biometricLockEnabled={controller.biometricLockEnabled}
+        isApplyingBiometricLock={controller.isApplyingBiometricLock}
+        onToggleBiometricLock={() =>
+          controller.onToggleBiometricLock().catch(e =>
+            logActionError('SettingsScreen.onToggleBiometricLock', e),
+          )
+        }
+      />
 
       <PrivacySection
         copy={copy}

@@ -328,23 +328,21 @@ export default function HomeScreen() {
         ]}
       >
         <Card style={styles.dreamCard}>
-          <View style={styles.dreamHeaderRow}>
-            <View style={styles.dreamHeaderCopy}>
-              <View style={styles.titleRow}>
-                <Text style={styles.title} numberOfLines={1}>
-                  {dream.title || copy.untitled}
-                </Text>
-              </View>
-              <View style={styles.timestampRow}>
-                {dream.mood ? (
-                  <View style={styles.moodPill}>
-                    <Text style={styles.moodPillText}>{moodLabels[dream.mood]}</Text>
-                  </View>
-                ) : null}
-                <Text style={styles.timestamp}>
-                  {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
-                </Text>
-              </View>
+          <View style={styles.dreamHeaderCopy}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title} numberOfLines={1}>
+                {dream.title || copy.untitled}
+              </Text>
+            </View>
+            <View style={styles.timestampRow}>
+              <Text style={styles.timestamp}>
+                {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
+              </Text>
+              {dream.mood ? (
+                <View style={styles.moodPill}>
+                  <Text style={styles.moodPillText}>{moodLabels[dream.mood]}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
 
@@ -357,12 +355,13 @@ export default function HomeScreen() {
         </Card>
       </Pressable>
     ),
-    [copy, moodLabels, navigation, styles, theme.colors.primary],
+    [copy, moodLabels, navigation, styles],
   );
   const renderDream = React.useCallback(
-    ({ item: dream }: { item: Dream }) => (
+    ({ item: dream, index }: { item: Dream; index: number }) => (
       <HomeDreamRow
         dream={dream}
+        index={index}
         copy={copy}
         searchQuery={timeline.deferredSearchQuery}
         moodLabels={moodLabels}

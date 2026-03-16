@@ -36,7 +36,7 @@ export default function ArchiveScreen() {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const styles = createArchiveScreenStyles(theme);
+  const styles = React.useMemo(() => createArchiveScreenStyles(theme), [theme]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const listRef = React.useRef<SectionList<Dream, ArchiveSection>>(null);

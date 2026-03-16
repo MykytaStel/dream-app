@@ -553,18 +553,27 @@ export function useCloudBackupController({
       const result = await runCloudSync({ reason: 'manual' });
       refreshCloudState();
       if (result.status === 'error' && result.errorMessage) {
-        Alert.alert(copy.cloudSyncManualErrorTitle, result.errorMessage);
+        const message =
+          result.errorMessage === 'audio-file-too-large'
+            ? copy.cloudSyncAudioTooLarge
+            : result.errorMessage;
+        Alert.alert(copy.cloudSyncManualErrorTitle, message);
       }
     } catch (error) {
       refreshCloudState();
-      Alert.alert(
-        copy.cloudSyncManualErrorTitle,
-        error instanceof Error ? error.message : String(error),
-      );
+      const raw = error instanceof Error ? error.message : String(error);
+      const message =
+        raw === 'audio-file-too-large' ? copy.cloudSyncAudioTooLarge : raw;
+      Alert.alert(copy.cloudSyncManualErrorTitle, message);
     } finally {
       setIsSyncingCloud(false);
     }
-  }, [cloudSession.status, copy.cloudSyncManualErrorTitle, refreshCloudState]);
+  }, [
+    cloudSession.status,
+    copy.cloudSyncAudioTooLarge,
+    copy.cloudSyncManualErrorTitle,
+    refreshCloudState,
+  ]);
 
   return {
     cloudConfigDraft,

@@ -25,3 +25,7 @@ export const CLOUD_SUPABASE_ANON_KEY_STORAGE_KEY = 'cloud-supabase-anon-key';
 export const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
 export const REMINDER_PENDING_WAKE_OPEN_KEY =
   'dream-reminder-pending-open-record';
+
+export const BIOMETRIC_LOCK_ENABLED_KEY = 'biometric-lock-enabled';
+
+export const ONBOARDING_SEEN_KEY = 'onboarding-seen';

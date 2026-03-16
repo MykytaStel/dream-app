@@ -23,7 +23,7 @@ import { createSettingsScreenStyles } from './SettingsScreen.styles';
 
 export default function SyncDiagnosticsPreviewScreen() {
   const theme = useTheme<Theme>();
-  const styles = createSettingsScreenStyles(theme);
+  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
   const { locale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const navigation =
@@ -101,6 +101,21 @@ export default function SyncDiagnosticsPreviewScreen() {
           variant="inline"
         />
         <SettingsActionRow
+          title={copy.devSyncSnapshotPendingDreamsTitle}
+          value={String(snapshot.pendingDreamCount)}
+          variant="inline"
+        />
+        <SettingsActionRow
+          title={copy.devSyncSnapshotPendingDeletesTitle}
+          value={String(snapshot.pendingTombstoneCount)}
+          variant="inline"
+        />
+        <SettingsActionRow
+          title={copy.devSyncSnapshotPendingReviewTitle}
+          value={String(snapshot.pendingReviewStateCount)}
+          variant="inline"
+        />
+        <SettingsActionRow
           title={copy.devSyncSnapshotUploadsTitle}
           value={String(snapshot.uploadedCount)}
           variant="inline"
@@ -117,7 +132,11 @@ export default function SyncDiagnosticsPreviewScreen() {
         />
         <SettingsActionRow
           title={copy.devSyncSnapshotErrorsTitle}
-          meta={snapshot.errorMessage ?? copy.devSyncHistoryEmptyDescription}
+          meta={
+            snapshot.errorMessage === 'audio-file-too-large'
+              ? copy.cloudSyncAudioTooLarge
+              : (snapshot.errorMessage ?? copy.devSyncHistoryEmptyDescription)
+          }
           value={String(snapshot.failedCount)}
           variant="inline"
         />

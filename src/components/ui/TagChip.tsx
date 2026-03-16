@@ -18,7 +18,7 @@ export function TagChip({
   removable?: boolean;
 }) {
   const t = useTheme<Theme>();
-  const styles = createTagChipStyles(t, selected);
+  const styles = React.useMemo(() => createTagChipStyles(t, selected), [t, selected]);
   const iconColor = selected ? t.colors.background : t.colors.textDim;
   const content = (
     <View style={styles.chip}>

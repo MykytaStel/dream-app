@@ -378,14 +378,13 @@ export function applyHomeTimelineFilters(
     return sorted;
   }
 
-  return [...sorted].sort((a, b) => {
-    const scoreDiff = getDreamSearchScore(b, normalizedQuery) - getDreamSearchScore(a, normalizedQuery);
-    if (scoreDiff !== 0) {
-      return scoreDiff;
-    }
+  // Pre-compute each score once — avoids O(n log n) × 2 calls per comparison
+  const scoreCache = new Map<string, number>();
+  for (const dream of sorted) {
+    scoreCache.set(dream.id, getDreamSearchScore(dream, normalizedQuery));
+  }
 
-    return 0;
-  });
+  return [...sorted].sort((a, b) => (scoreCache.get(b.id) ?? 0) - (scoreCache.get(a.id) ?? 0));
 }
 
 export function hasActiveTimelineRefinements(filters: HomeTimelineFilters) {

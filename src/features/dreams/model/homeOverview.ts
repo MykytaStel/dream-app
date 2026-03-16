@@ -1,7 +1,7 @@
 import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type AppLocale } from '../../../i18n/types';
 import { Dream, Mood } from './dream';
-import { getRelatedDreams } from './relatedDreams';
+import { getDreamSignalWeights } from './relatedDreams';
 import { getDreamResurfacingMatch, type DreamResurfacingWindow } from './resurfacingCue';
 import {
   type HomeArchiveFilter,
@@ -287,10 +287,46 @@ export function getHomeRevisitCue(
   copy: DreamCopy,
   now = Date.now(),
 ): HomeRevisitCue | null {
+  // Pre-compute signal weights once
+  const allWeights = new Map<string, Map<string, number>>();
+  for (const dream of dreams) {
+    allWeights.set(dream.id, getDreamSignalWeights(dream));
+  }
+
+  // Build inverted index: signal → dream IDs — reduces related-count lookup from O(n²×s) to O(n×s×k)
+  const signalIndex = new Map<string, Set<string>>();
+  for (const [dreamId, weights] of allWeights) {
+    for (const signal of weights.keys()) {
+      let ids = signalIndex.get(signal);
+      if (!ids) {
+        ids = new Set();
+        signalIndex.set(signal, ids);
+      }
+      ids.add(dreamId);
+    }
+  }
+
+  // Pre-compute related-dream count for each dream via inverted index
+  const relatedCountMap = new Map<string, number>();
+  for (const [dreamId, weights] of allWeights) {
+    const relatedIds = new Set<string>();
+    for (const signal of weights.keys()) {
+      const sharingIds = signalIndex.get(signal);
+      if (sharingIds) {
+        for (const id of sharingIds) {
+          if (id !== dreamId) {
+            relatedIds.add(id);
+          }
+        }
+      }
+    }
+    relatedCountMap.set(dreamId, relatedIds.size);
+  }
+
   const candidates = dreams
     .filter(dream => now - dream.createdAt >= HOME_REVISIT_MIN_AGE_MS)
     .map(dream => {
-      const relatedCount = getRelatedDreams(dream, dreams).length;
+      const relatedCount = relatedCountMap.get(dream.id) ?? 0;
       const hasAnalysis = Boolean(dream.analysis?.summary?.trim());
       const hasTranscript = Boolean(dream.transcript?.trim());
       const resurfacingMatch = getDreamResurfacingMatch(dream, now);

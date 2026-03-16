@@ -16,6 +16,7 @@ import {
   openSyncDiagnosticsPreview,
   openWakeEntry,
 } from '../../../app/navigation/navigationRef';
+import { logActionError } from '../../../app/errorReporting';
 import {
   ROOT_ROUTE_NAMES,
   type RootStackParamList,
@@ -27,6 +28,7 @@ import {
   TranscriptionSection,
 } from '../components/SettingsAdvancedSections';
 import {
+  BiometricLockSection,
   PrivacySection,
   ReminderSection,
   SettingsHeroSection,
@@ -39,7 +41,7 @@ export default function SettingsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
-  const styles = createSettingsScreenStyles(theme);
+  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
 
   const controller = useSettingsScreenController({
     locale,
@@ -81,7 +83,9 @@ export default function SettingsScreen() {
         pickerLocale={controller.pickerLocale}
         getReminderDate={controller.getReminderDate}
         onToggleReminder={() =>
-          controller.onToggleReminder().catch(() => undefined)
+          controller.onToggleReminder().catch(e =>
+            logActionError('SettingsScreen.onToggleReminder', e),
+          )
         }
         onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
         onNativeTimePickerChange={controller.onNativeTimePickerChange}
@@ -96,6 +100,19 @@ export default function SettingsScreen() {
           onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.Backup)}
         />
       </Card>
+
+      <BiometricLockSection
+        copy={copy}
+        styles={styles}
+        biometricAvailability={controller.biometricAvailability}
+        biometricLockEnabled={controller.biometricLockEnabled}
+        isApplyingBiometricLock={controller.isApplyingBiometricLock}
+        onToggleBiometricLock={() =>
+          controller.onToggleBiometricLock().catch(e =>
+            logActionError('SettingsScreen.onToggleBiometricLock', e),
+          )
+        }
+      />
 
       <PrivacySection
         copy={copy}
@@ -119,10 +136,14 @@ export default function SettingsScreen() {
         downloadLabel={controller.transcriptionDownloadLabel}
         installed={controller.transcriptionModelInstalled}
         onDownload={() =>
-          controller.onDownloadTranscriptionModel().catch(() => undefined)
+          controller.onDownloadTranscriptionModel().catch(e =>
+            logActionError('SettingsScreen.onDownloadTranscriptionModel', e),
+          )
         }
         onDelete={() =>
-          controller.onDeleteTranscriptionModel().catch(() => undefined)
+          controller.onDeleteTranscriptionModel().catch(e =>
+            logActionError('SettingsScreen.onDeleteTranscriptionModel', e),
+          )
         }
       />
 
@@ -134,10 +155,14 @@ export default function SettingsScreen() {
           isUpdatingSeedDreams={controller.isUpdatingSeedDreams}
           onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
           onSeed250={() =>
-            controller.onSeedDreams(250).catch(() => undefined)
+            controller.onSeedDreams(250).catch(e =>
+              logActionError('SettingsScreen.onSeedDreams', e),
+            )
           }
           onSeed1000={() =>
-            controller.onSeedDreams(1000).catch(() => undefined)
+            controller.onSeedDreams(1000).catch(e =>
+              logActionError('SettingsScreen.onSeedDreams', e),
+            )
           }
           onPreviewMonthlyReport={() => openMonthlyReport()}
           onPreviewBackupOnboarding={() => openBackupOnboardingPreview()}

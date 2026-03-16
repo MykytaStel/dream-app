@@ -1,5 +1,6 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Animated, { LinearTransition } from 'react-native-reanimated';
@@ -22,12 +23,123 @@ import {
 } from '../model/dreamDetailPresentation';
 import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionService';
 import type { DreamDetailScreenStyles } from '../screens/DreamDetailScreen.styles';
+import { play, stop } from '../services/audioService';
 
 const detailLayoutTransition = LinearTransition.duration(160);
 
 function getAudioFileLabel(audioUri: string) {
   const filename = audioUri.split('/').filter(Boolean).pop();
   return filename ? decodeURIComponent(filename) : audioUri;
+}
+
+function formatPlaybackTime(ms: number): string {
+  const totalSec = Math.floor(ms / 1000);
+  const m = Math.floor(totalSec / 60);
+  const s = totalSec % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
+type AudioPlayerWidgetProps = {
+  uri: string;
+  styles: DreamDetailScreenStyles;
+  playbackErrorTitle: string;
+};
+
+function AudioPlayerWidget({ uri, styles, playbackErrorTitle }: AudioPlayerWidgetProps) {
+  const theme = useTheme<Theme>();
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const [positionMs, setPositionMs] = React.useState(0);
+  const [durationMs, setDurationMs] = React.useState(0);
+  const [playError, setPlayError] = React.useState<string | null>(null);
+  const isBusyRef = React.useRef(false);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        stop().catch(() => {});
+        setIsPlaying(false);
+        setPositionMs(0);
+      };
+    }, []),
+  );
+
+  const onToggle = React.useCallback(async () => {
+    if (isBusyRef.current) {
+      return;
+    }
+    isBusyRef.current = true;
+    try {
+      if (isPlaying) {
+        await stop();
+        setIsPlaying(false);
+        setPositionMs(0);
+        return;
+      }
+
+      setPlayError(null);
+      setPositionMs(0);
+      setDurationMs(0);
+      await play(uri, {
+        onFinished: () => {
+          setIsPlaying(false);
+          setPositionMs(0);
+        },
+        onProgress: (pos, dur) => {
+          setPositionMs(pos);
+          setDurationMs(dur);
+        },
+      });
+      setIsPlaying(true);
+    } catch (e) {
+      setIsPlaying(false);
+      setPositionMs(0);
+      const msg = e instanceof Error ? e.message : String(e);
+      setPlayError(msg);
+      Alert.alert(playbackErrorTitle, msg);
+    } finally {
+      isBusyRef.current = false;
+    }
+  }, [isPlaying, playbackErrorTitle, uri]);
+
+  const progressPercent =
+    durationMs > 0 ? Math.min(100, (positionMs / durationMs) * 100) : 0;
+
+  return (
+    <View style={styles.audioPlayer}>
+      <View style={styles.audioPlayerRow}>
+        <Pressable
+          style={({ pressed }) => [
+            styles.audioPlayButton,
+            pressed ? styles.audioPlayButtonPressed : null,
+          ]}
+          onPress={onToggle}
+        >
+          <Ionicons
+            name={isPlaying ? 'pause' : 'play'}
+            size={18}
+            color={theme.colors.background}
+            style={{ marginLeft: isPlaying ? 0 : 2 }}
+          />
+        </Pressable>
+        <View style={styles.audioProgressShell}>
+          <View style={styles.audioProgressTrack}>
+            <View
+              style={[styles.audioProgressFill, { width: `${progressPercent}%` }]}
+            />
+          </View>
+          <View style={styles.audioTimeRow}>
+            <Text style={styles.audioTimeLabel}>{formatPlaybackTime(positionMs)}</Text>
+            {durationMs > 0 ? (
+              <Text style={styles.audioTimeLabel}>{formatPlaybackTime(durationMs)}</Text>
+            ) : null}
+          </View>
+        </View>
+      </View>
+      {playError ? (
+        <Text style={styles.statusErrorText}>{playError}</Text>
+      ) : null}
+    </View>
+  );
 }
 
 type DreamDetailSectionsProps = {
@@ -37,7 +149,6 @@ type DreamDetailSectionsProps = {
   viewModel: DreamDetailViewModel;
   relatedDreams: RelatedDream[];
   sections: DreamDetailSectionsState;
-  isPlayingAudio: boolean;
   isTranscribingAudio: boolean;
   isEditingTranscript: boolean;
   transcriptDraft: string;
@@ -57,7 +168,8 @@ type DreamDetailSectionsProps = {
   onTranscribeAudio: () => void;
   onGenerateAnalysis: () => void;
   onClearAnalysis: () => void;
-  onToggleAudioPlayback: () => void;
+  isDownloadingAudio: boolean;
+  onDownloadAudio: () => void;
   onEditDream: () => void;
   onOpenRelatedDream: (dreamId: string) => void;
   onOpenSettingsForAnalysis: () => void;
@@ -70,7 +182,6 @@ export function DreamDetailSections({
   viewModel,
   relatedDreams,
   sections: _sections,
-  isPlayingAudio,
   isTranscribingAudio,
   isEditingTranscript,
   transcriptDraft,
@@ -90,7 +201,8 @@ export function DreamDetailSections({
   onTranscribeAudio,
   onGenerateAnalysis,
   onClearAnalysis,
-  onToggleAudioPlayback,
+  isDownloadingAudio,
+  onDownloadAudio,
   onEditDream,
   onOpenRelatedDream,
   onOpenSettingsForAnalysis,
@@ -271,23 +383,35 @@ export function DreamDetailSections({
           {dream.audioUri ? (
             <View style={styles.supportBlock}>
               <Text style={styles.supportHeading}>{copy.voiceTitle}</Text>
-              <View style={styles.utilityRows}>
-                <InfoRow label={copy.detailAudioPathLabel} value={audioFileLabel ?? dream.audioUri} />
-              </View>
               {viewModel.audioSyncHint ? (
                 <View style={styles.syncNoteCard}>
                   <Text style={styles.syncNoteText}>{viewModel.audioSyncHint}</Text>
                 </View>
               ) : null}
-              <View style={styles.actionGroup}>
-                <Button
-                  title={isPlayingAudio ? copy.detailAudioStop : copy.detailAudioPlay}
-                  variant={isPlayingAudio ? 'ghost' : 'primary'}
-                  onPress={onToggleAudioPlayback}
-                  icon={isPlayingAudio ? 'stop-circle-outline' : 'play-outline'}
-                  size="sm"
-                />
+              <AudioPlayerWidget
+                uri={dream.audioUri}
+                styles={styles}
+                playbackErrorTitle={copy.detailAudioPlaybackErrorTitle}
+              />
+            </View>
+          ) : dream.audioRemotePath && !dream.audioUri ? (
+            <View style={styles.supportBlock}>
+              <Text style={styles.supportHeading}>{copy.voiceTitle}</Text>
+              <View style={styles.syncNoteCard}>
+                <Text style={styles.syncNoteText}>{copy.detailAudioCloudOnlyHint}</Text>
               </View>
+              <Button
+                title={
+                  isDownloadingAudio
+                    ? copy.detailAudioDownloading
+                    : copy.detailAudioDownload
+                }
+                onPress={onDownloadAudio}
+                disabled={isDownloadingAudio}
+                variant="ghost"
+                icon="cloud-download-outline"
+                size="sm"
+              />
             </View>
           ) : null}
         </View>

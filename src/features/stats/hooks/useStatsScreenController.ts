@@ -59,11 +59,14 @@ export function useStatsScreenController({
     () => filterDreamsByRange(dreams, selectedRange),
     [dreams, selectedRange],
   );
+  // Defer expensive derived computations so they don't block tab-switch renders
+  const deferredDreams = React.useDeferredValue(dreams);
+  const deferredScopedDreams = React.useDeferredValue(scopedDreams);
   const derivedContent = useStatsDerivedContent({
     locale,
     copy,
-    dreams,
-    scopedDreams,
+    dreams: deferredDreams,
+    scopedDreams: deferredScopedDreams,
     selectedRange,
     isOverviewMode,
     isThreadsMode,

@@ -6,7 +6,7 @@ import { createPulseStyles } from './Pulse.styles';
 
 export const Pulse = ({ size = 64, active }: { size?: number; active: boolean }) => {
   const t = useTheme<Theme>();
-  const styles = createPulseStyles(t, size);
+  const styles = React.useMemo(() => createPulseStyles(t, size), [t, size]);
   const scale = useSharedValue(1);
 
   React.useEffect(() => {

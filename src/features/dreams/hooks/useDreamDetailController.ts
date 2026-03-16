@@ -4,11 +4,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
 import { generateDreamAnalysis } from '../../analysis/services/dreamAnalysisService';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
+import { logActionError } from '../../../app/errorReporting';
 import {
   clearLastViewedDream,
   saveLastViewedDream,
 } from '../services/lastViewedDreamService';
-import { play, stop } from '../services/audioService';
+import { stop } from '../services/audioService';
+import { downloadDreamAudio } from '../../../services/cloud/audioDownload';
 import {
   type DreamTranscriptionProgress,
   transcribeDreamAudio,
@@ -29,6 +31,7 @@ import {
   getDream,
   listDreams,
   saveDreamTranscriptEdit,
+  setDreamAudioUri,
   starDream,
   unarchiveDream,
   unstarDream,
@@ -73,7 +76,6 @@ export function useDreamDetailController({
 }: UseDreamDetailControllerArgs) {
   const [dream, setDream] = React.useState(() => getDream(dreamId));
   const [showSavedHighlight, setShowSavedHighlight] = React.useState(Boolean(justSaved));
-  const [isPlayingAudio, setIsPlayingAudio] = React.useState(false);
   const [isTranscribingAudio, setIsTranscribingAudio] = React.useState(false);
   const [isEditingTranscript, setIsEditingTranscript] = React.useState(false);
   const [transcriptDraft, setTranscriptDraft] = React.useState('');
@@ -84,6 +86,7 @@ export function useDreamDetailController({
     getDreamAnalysisSettings(),
   );
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = React.useState(false);
+  const [isDownloadingAudio, setIsDownloadingAudio] = React.useState(false);
   const [relatedDreams, setRelatedDreams] = React.useState<RelatedDream[]>([]);
   const [transcriptionProgress, setTranscriptionProgress] =
     React.useState<DreamTranscriptionProgress | null>(null);
@@ -98,12 +101,10 @@ export function useDreamDetailController({
     );
     setAnalysisSettings(getDreamAnalysisSettings());
     setTranscriptDraft(nextDream?.transcript ?? '');
-    setIsPlayingAudio(false);
     setIsTranscribingAudio(false);
     setIsEditingTranscript(false);
     setTranscriptionProgress(null);
     setShowSavedHighlight(Boolean(justSaved));
-    setRelatedDreams([]);
 
     if (nextDream) {
       saveLastViewedDream(nextDream.id);
@@ -119,7 +120,7 @@ export function useDreamDetailController({
       }
 
       return () => {
-        stop().catch(() => undefined);
+        stop().catch(e => logActionError('useDreamDetailController.stop', e));
       };
     }, [justSaved, onAcknowledgeSaved, refreshDream]),
   );
@@ -142,7 +143,8 @@ export function useDreamDetailController({
 
           setRelatedDreams(nextRelatedDreams);
         });
-      } catch {
+      } catch (e) {
+        logActionError('useDreamDetailController.getRelatedDreams', e);
         if (!cancelled) {
           setRelatedDreams([]);
         }
@@ -268,29 +270,6 @@ export function useDreamDetailController({
     );
   }, [copy, dreamId, onDeleteComplete]);
 
-  const onToggleAudioPlayback = React.useCallback(async () => {
-    const audioUri = dream?.audioUri;
-    if (!audioUri) {
-      return;
-    }
-
-    try {
-      if (isPlayingAudio) {
-        await stop();
-        setIsPlayingAudio(false);
-        return;
-      }
-
-      await play(audioUri);
-      setIsPlayingAudio(true);
-    } catch (error) {
-      setIsPlayingAudio(false);
-      Alert.alert(
-        copy.detailAudioPlaybackErrorTitle,
-        error instanceof Error ? error.message : String(error),
-      );
-    }
-  }, [copy, dream?.audioUri, isPlayingAudio]);
 
   const onTranscribeAudio = React.useCallback(async () => {
     const currentDream = dream;
@@ -416,6 +395,25 @@ export function useDreamDetailController({
     }
   }, [analysisSettings.enabled, analysisSettings.provider, copy, dreamId, isGeneratingAnalysis, updateSections]);
 
+  const onDownloadAudio = React.useCallback(async () => {
+    const remotePath = dream?.audioRemotePath;
+    if (!remotePath || isDownloadingAudio) {
+      return;
+    }
+
+    setIsDownloadingAudio(true);
+    try {
+      const audioUri = await downloadDreamAudio(remotePath, dreamId);
+      const nextDream = setDreamAudioUri(dreamId, audioUri);
+      setDream(nextDream);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      Alert.alert(copy.detailAudioDownloadErrorTitle, message);
+    } finally {
+      setIsDownloadingAudio(false);
+    }
+  }, [copy, dream?.audioRemotePath, dreamId, isDownloadingAudio]);
+
   const onClearAnalysis = React.useCallback(() => {
     const nextDream = clearDreamAnalysis(dreamId);
     setDream(nextDream);
@@ -425,7 +423,6 @@ export function useDreamDetailController({
     dream,
     relatedDreams,
     showSavedHighlight,
-    isPlayingAudio,
     isTranscribingAudio,
     isEditingTranscript,
     transcriptDraft,
@@ -440,7 +437,6 @@ export function useDreamDetailController({
     onToggleArchiveDream,
     onToggleStarDream,
     onDeleteDream,
-    onToggleAudioPlayback,
     onTranscribeAudio,
     onStartTranscriptEdit,
     onCancelTranscriptEdit,
@@ -448,5 +444,7 @@ export function useDreamDetailController({
     onClearTranscript,
     onGenerateAnalysis,
     onClearAnalysis,
+    isDownloadingAudio,
+    onDownloadAudio,
   };
 }

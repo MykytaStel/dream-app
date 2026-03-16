@@ -60,7 +60,7 @@ export default function StatsScreen() {
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const styles = createStatsScreenStyles(theme);
+  const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
   const [activeThread, setActiveThread] = React.useState<ActiveThreadSelection | null>(null);
   const [selectedMemoryMode, setSelectedMemoryMode] =
     React.useState<MemoryMode>('overview');

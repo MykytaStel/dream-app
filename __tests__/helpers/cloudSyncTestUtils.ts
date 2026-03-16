@@ -4,6 +4,7 @@ export function createMockSupabaseClient(options?: {
   dreamEntryError?: Error | null;
   tagInsertError?: Error | null;
   uploadError?: Error | null;
+  reviewSavedStateUpsertError?: Error | null;
   remoteBundles?: DreamSyncBundle[];
   tombstoneUpsertError?: Error | null;
   remoteDeletionTombstones?: Array<{
@@ -46,12 +47,17 @@ export function createMockSupabaseClient(options?: {
     data: remoteDreamRows,
     error: null,
   }));
-  const dreamEntriesSelectEq = jest.fn(() => ({
-    order: dreamEntriesSelectOrder,
-  }));
-  const dreamEntriesSelect = jest.fn(() => ({
-    eq: dreamEntriesSelectEq,
-  }));
+  const dreamEntriesSelectQuery: {
+    eq: jest.Mock;
+    gte: jest.Mock;
+    in: jest.Mock;
+    order: jest.Mock;
+  } = {} as never;
+  dreamEntriesSelectQuery.eq = jest.fn(() => dreamEntriesSelectQuery);
+  dreamEntriesSelectQuery.gte = jest.fn(() => dreamEntriesSelectQuery);
+  dreamEntriesSelectQuery.in = jest.fn(() => dreamEntriesSelectQuery);
+  dreamEntriesSelectQuery.order = dreamEntriesSelectOrder;
+  const dreamEntriesSelect = jest.fn(() => dreamEntriesSelectQuery);
   const makeDeleteChain = (error: Error | null = null) => ({
     eq: jest.fn(async () => ({ error })),
   });
@@ -84,13 +90,20 @@ export function createMockSupabaseClient(options?: {
     data: remoteDeletionTombstones,
     error: null,
   }));
-  const tombstonesSelectEq = jest.fn(() => ({
-    order: tombstonesSelectOrder,
+  const tombstonesSelectQuery: {
+    eq: jest.Mock;
+    gte: jest.Mock;
+    in: jest.Mock;
+    order: jest.Mock;
+  } = {} as never;
+  tombstonesSelectQuery.eq = jest.fn(() => tombstonesSelectQuery);
+  tombstonesSelectQuery.gte = jest.fn(() => tombstonesSelectQuery);
+  tombstonesSelectQuery.in = jest.fn(() => tombstonesSelectQuery);
+  tombstonesSelectQuery.order = tombstonesSelectOrder;
+  const tombstonesSelect = jest.fn(() => tombstonesSelectQuery);
+  const reviewSavedStateUpsert = jest.fn(async () => ({
+    error: options?.reviewSavedStateUpsertError ?? null,
   }));
-  const tombstonesSelect = jest.fn(() => ({
-    eq: tombstonesSelectEq,
-  }));
-  const reviewSavedStateUpsert = jest.fn(async () => ({ error: null }));
   const reviewSavedStateMaybeSingle = jest.fn(async () => ({
     data: options?.remoteSavedReviewState ?? null,
     error: null,
@@ -162,9 +175,11 @@ export function createMockSupabaseClient(options?: {
   return {
     client,
     dreamEntriesUpsert,
+    dreamEntriesSelectQuery,
     reviewSavedStateUpsert,
     tagsInsert,
     tombstonesUpsert,
+    tombstonesSelectQuery,
     upload,
   };
 }

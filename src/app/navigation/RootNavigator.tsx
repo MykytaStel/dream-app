@@ -11,6 +11,8 @@ import ProgressScreen from '../../features/stats/screens/ProgressScreen';
 import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
+import OnboardingScreen from '../../features/onboarding/screens/OnboardingScreen';
+import { hasSeenOnboarding } from '../../features/onboarding/services/onboardingService';
 import SyncDiagnosticsPreviewScreen from '../../features/settings/screens/SyncDiagnosticsPreviewScreen';
 import {
   consumePendingWakeOpenFromReminder,
@@ -26,6 +28,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
   const t = useTheme<any>();
+  const initialRouteName = React.useMemo(
+    () => (hasSeenOnboarding() ? ROOT_ROUTE_NAMES.Tabs : ROOT_ROUTE_NAMES.Onboarding),
+    [],
+  );
 
   React.useEffect(() => {
     const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
@@ -90,11 +96,13 @@ export default function RootNavigator() {
       }}
     >
       <Stack.Navigator
+        initialRouteName={initialRouteName}
         screenOptions={{
           headerShown: false,
           headerBackButtonDisplayMode: 'minimal',
         }}
       >
+        <Stack.Screen name={ROOT_ROUTE_NAMES.Onboarding} component={OnboardingScreen} />
         <Stack.Screen name={ROOT_ROUTE_NAMES.Tabs} component={Tabs} />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.Backup}

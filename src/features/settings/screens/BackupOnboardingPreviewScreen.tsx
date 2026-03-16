@@ -27,7 +27,7 @@ import { createSettingsScreenStyles } from './SettingsScreen.styles';
 
 export default function BackupOnboardingPreviewScreen() {
   const theme = useTheme<Theme>();
-  const styles = createSettingsScreenStyles(theme);
+  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
   const { locale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const [dreamCount, setDreamCount] = React.useState(0);

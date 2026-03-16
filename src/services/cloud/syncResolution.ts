@@ -12,6 +12,11 @@ export type RemoteDreamDeletionTombstoneRow = {
   deleted_at: string;
 };
 
+export type RemoteDreamRevisionRow = {
+  id: string;
+  updated_at: string;
+};
+
 export type RemoteSavedReviewStateRow = {
   user_id: string;
   updated_at: string;
@@ -22,6 +27,8 @@ export type RemoteSavedReviewStateRow = {
 export type CloudSyncConflictContext = {
   pendingDreamIds: Set<string>;
   pendingTombstoneIds: Set<string>;
+  resolvedDreamIds: Set<string>;
+  resolvedTombstoneIds: Set<string>;
 };
 
 type RemoteConflictDecision =
@@ -49,6 +56,38 @@ type RemoteConflictDecision =
         | 'skip-local-newer-than-delete';
     };
 
+type LocalUploadConflictDecision =
+  | {
+      action: 'upload';
+      conflict: boolean;
+      winner?: 'local' | 'remote';
+      reason:
+        | 'upload-no-remote'
+        | 'upload-equal-remote-pending'
+        | 'upload-local-newer-than-remote'
+        | 'upload-local-newer-than-remote-delete'
+        | 'upload-local-delete-newer-than-remote'
+        | 'upload-local-delete-newer-than-remote-dream';
+    }
+  | {
+      action: 'defer-to-remote';
+      conflict: boolean;
+      winner?: 'local' | 'remote';
+      reason:
+        | 'defer-to-remote-newer'
+        | 'defer-to-remote-delete-newer'
+        | 'defer-to-remote-dream-newer';
+    }
+  | {
+      action: 'mark-synced';
+      conflict: boolean;
+      winner?: 'local' | 'remote';
+      syncedAt: number;
+      reason:
+        | 'mark-synced-equal-remote'
+        | 'mark-synced-equal-remote-delete';
+    };
+
 export type ReviewStateConflictDecision =
   | {
       action: 'skip';
@@ -59,6 +98,12 @@ export type ReviewStateConflictDecision =
       action: 'upload-local';
       conflict: boolean;
       winner?: 'local' | 'remote';
+    }
+  | {
+      action: 'mark-synced';
+      conflict: boolean;
+      winner?: 'local' | 'remote';
+      syncedAt: number;
     }
   | {
       action: 'apply-remote';
@@ -75,11 +120,87 @@ function getDreamUpdatedAt(value: { createdAt: number; updatedAt?: number }) {
   return value.updatedAt ?? value.createdAt;
 }
 
+function getRemoteUpdatedAt(value: { updated_at: string }) {
+  return new Date(value.updated_at).getTime();
+}
+
+function getRemoteDeletedAt(value: { deleted_at: string }) {
+  return new Date(value.deleted_at).getTime();
+}
+
+function normalizeSavedMonths(
+  savedMonths: SavedReviewStateSnapshot['savedMonths'],
+) {
+  return savedMonths
+    .slice()
+    .sort((left, right) =>
+      left.monthKey === right.monthKey
+        ? left.savedAt - right.savedAt
+        : left.monthKey.localeCompare(right.monthKey),
+    );
+}
+
+function normalizeSavedThreads(
+  savedThreads: SavedReviewStateSnapshot['savedThreads'],
+) {
+  return savedThreads
+    .slice()
+    .sort((left, right) => {
+      const leftKey = `${left.kind}:${left.signal}`;
+      const rightKey = `${right.kind}:${right.signal}`;
+      return leftKey === rightKey
+        ? left.savedAt - right.savedAt
+        : leftKey.localeCompare(rightKey);
+    });
+}
+
+function reviewStateContentEquals(
+  left: Pick<SavedReviewStateSnapshot, 'savedMonths' | 'savedThreads'>,
+  right: Pick<SavedReviewStateSnapshot, 'savedMonths' | 'savedThreads'>,
+) {
+  const leftMonths = normalizeSavedMonths(left.savedMonths);
+  const rightMonths = normalizeSavedMonths(right.savedMonths);
+  if (leftMonths.length !== rightMonths.length) {
+    return false;
+  }
+
+  for (let index = 0; index < leftMonths.length; index += 1) {
+    if (
+      leftMonths[index].monthKey !== rightMonths[index].monthKey ||
+      leftMonths[index].savedAt !== rightMonths[index].savedAt
+    ) {
+      return false;
+    }
+  }
+
+  const leftThreads = normalizeSavedThreads(left.savedThreads);
+  const rightThreads = normalizeSavedThreads(right.savedThreads);
+  if (leftThreads.length !== rightThreads.length) {
+    return false;
+  }
+
+  for (let index = 0; index < leftThreads.length; index += 1) {
+    if (
+      leftThreads[index].kind !== rightThreads[index].kind ||
+      leftThreads[index].signal !== rightThreads[index].signal ||
+      leftThreads[index].savedAt !== rightThreads[index].savedAt
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 function hasPendingLocalDreamState(
   dreamId: string,
   dream: ReturnType<typeof getDream>,
   context: CloudSyncConflictContext,
 ) {
+  if (context.resolvedDreamIds.has(dreamId)) {
+    return false;
+  }
+
   return Boolean(
     context.pendingDreamIds.has(dreamId) ||
       (dream && dream.syncStatus !== 'synced'),
@@ -91,6 +212,10 @@ function hasPendingLocalTombstoneState(
   tombstone: DreamDeletionTombstone | null,
   context: CloudSyncConflictContext,
 ) {
+  if (context.resolvedTombstoneIds.has(dreamId)) {
+    return false;
+  }
+
   return Boolean(
     context.pendingTombstoneIds.has(dreamId) ||
       (tombstone && tombstone.syncStatus !== 'synced'),
@@ -102,7 +227,7 @@ export function decideRemoteBundleResolution(
   context: CloudSyncConflictContext,
 ): RemoteConflictDecision {
   const localTombstone = getDreamDeletionTombstone(bundle.dream.id);
-  const remoteUpdatedAt = new Date(bundle.dream.updated_at).getTime();
+  const remoteUpdatedAt = getRemoteUpdatedAt(bundle.dream);
   if (localTombstone && localTombstone.deletedAt >= remoteUpdatedAt) {
     const hasPendingLocalTombstone = hasPendingLocalTombstoneState(
       bundle.dream.id,
@@ -172,7 +297,7 @@ export function decideRemoteTombstoneResolution(
   row: RemoteDreamDeletionTombstoneRow,
   context: CloudSyncConflictContext,
 ): RemoteConflictDecision {
-  const remoteDeletedAt = new Date(row.deleted_at).getTime();
+  const remoteDeletedAt = getRemoteDeletedAt(row);
   const localTombstone = getDreamDeletionTombstone(row.dream_id);
   if (localTombstone && localTombstone.deletedAt >= remoteDeletedAt) {
     const hasPendingLocalTombstone = hasPendingLocalTombstoneState(
@@ -219,6 +344,138 @@ export function decideRemoteTombstoneResolution(
   };
 }
 
+export function decideLocalDreamUploadResolution(
+  dream: { id: string; createdAt: number; updatedAt?: number },
+  remoteDream: RemoteDreamRevisionRow | null,
+  remoteTombstone: RemoteDreamDeletionTombstoneRow | null,
+): LocalUploadConflictDecision {
+  const localUpdatedAt = getDreamUpdatedAt(dream);
+
+  if (remoteTombstone) {
+    const remoteDeletedAt = getRemoteDeletedAt(remoteTombstone);
+    if (remoteDeletedAt >= localUpdatedAt) {
+      return {
+        action: 'defer-to-remote',
+        conflict: true,
+        winner: 'remote',
+        reason: 'defer-to-remote-delete-newer',
+      };
+    }
+
+    return {
+      action: 'upload',
+      conflict: true,
+      winner: 'local',
+      reason: 'upload-local-newer-than-remote-delete',
+    };
+  }
+
+  if (!remoteDream) {
+    return {
+      action: 'upload',
+      conflict: false,
+      reason: 'upload-no-remote',
+    };
+  }
+
+  const remoteUpdatedAt = getRemoteUpdatedAt(remoteDream);
+  if (localUpdatedAt > remoteUpdatedAt) {
+    return {
+      action: 'upload',
+      conflict: true,
+      winner: 'local',
+      reason: 'upload-local-newer-than-remote',
+    };
+  }
+
+  if (localUpdatedAt === remoteUpdatedAt) {
+    if (getDream(dream.id)?.syncStatus !== 'synced') {
+      return {
+        action: 'upload',
+        conflict: false,
+        reason: 'upload-equal-remote-pending',
+      };
+    }
+
+    return {
+      action: 'mark-synced',
+      conflict: false,
+      syncedAt: remoteUpdatedAt,
+      reason: 'mark-synced-equal-remote',
+    };
+  }
+
+  return {
+    action: 'defer-to-remote',
+    conflict: true,
+    winner: 'remote',
+    reason: 'defer-to-remote-newer',
+  };
+}
+
+export function decideLocalTombstoneUploadResolution(
+  tombstone: { deletedAt: number },
+  remoteDream: RemoteDreamRevisionRow | null,
+  remoteTombstone: RemoteDreamDeletionTombstoneRow | null,
+): LocalUploadConflictDecision {
+  const localDeletedAt = tombstone.deletedAt;
+
+  if (remoteDream) {
+    const remoteUpdatedAt = getRemoteUpdatedAt(remoteDream);
+    if (remoteUpdatedAt >= localDeletedAt) {
+      return {
+        action: 'defer-to-remote',
+        conflict: true,
+        winner: 'remote',
+        reason: 'defer-to-remote-dream-newer',
+      };
+    }
+  }
+
+  if (!remoteTombstone) {
+    if (remoteDream) {
+      return {
+        action: 'upload',
+        conflict: true,
+        winner: 'local',
+        reason: 'upload-local-delete-newer-than-remote-dream',
+      };
+    }
+
+    return {
+      action: 'upload',
+      conflict: false,
+      reason: 'upload-no-remote',
+    };
+  }
+
+  const remoteDeletedAt = getRemoteDeletedAt(remoteTombstone);
+  if (localDeletedAt > remoteDeletedAt) {
+    return {
+      action: 'upload',
+      conflict: true,
+      winner: 'local',
+      reason: 'upload-local-delete-newer-than-remote',
+    };
+  }
+
+  if (localDeletedAt === remoteDeletedAt) {
+    return {
+      action: 'mark-synced',
+      conflict: false,
+      syncedAt: remoteDeletedAt,
+      reason: 'mark-synced-equal-remote-delete',
+    };
+  }
+
+  return {
+    action: 'defer-to-remote',
+    conflict: true,
+    winner: 'remote',
+    reason: 'defer-to-remote-delete-newer',
+  };
+}
+
 export function decideSavedReviewStateResolution(
   remoteRow: RemoteSavedReviewStateRow | null,
   localSnapshot: SavedReviewStateSnapshot,
@@ -248,6 +505,7 @@ export function decideSavedReviewStateResolution(
   };
   const remoteHasItems =
     remoteSnapshot.savedMonths.length > 0 || remoteSnapshot.savedThreads.length > 0;
+  const sameContent = reviewStateContentEquals(localSnapshot, remoteSnapshot);
 
   if (!localHasItems && !localPending) {
     if (!remoteHasItems) {
@@ -261,6 +519,21 @@ export function decideSavedReviewStateResolution(
       action: 'apply-remote',
       conflict: false,
       remoteSnapshot,
+    };
+  }
+
+  if (sameContent) {
+    if (localPending) {
+      return {
+        action: 'mark-synced',
+        conflict: false,
+        syncedAt: Math.max(localSnapshot.updatedAt, remoteSnapshot.updatedAt),
+      };
+    }
+
+    return {
+      action: 'skip',
+      conflict: false,
     };
   }
 

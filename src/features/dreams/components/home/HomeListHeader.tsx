@@ -348,7 +348,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
               <Ionicons
                 name={isSearchDetailsExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}
                 size={14}
-                color="#A7B3D1"
+                color={t.colors.textDim}
               />
             </Pressable>
           </View>

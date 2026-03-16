@@ -7,6 +7,7 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { ScreenStateCard } from './ScreenStateCard';
+import { logActionError } from '../../../app/errorReporting';
 import {
   getDreamCopy,
   getDreamMoods,
@@ -37,6 +38,8 @@ import {
   useDreamComposerForm,
 } from './useDreamComposerForm';
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
+import { DreamComposerTemplateRow } from './DreamComposerTemplateRow';
+import { type DreamTemplate } from '../model/dreamTemplates';
 
 export function DreamComposer({
   mode,
@@ -55,8 +58,7 @@ export function DreamComposer({
     () => getDreamPreSleepEmotions(locale),
     [locale],
   );
-  const styles = React.useMemo(() => createNewDreamScreenStyles(theme, false), [theme]);
-  const activeStyles = React.useMemo(() => createNewDreamScreenStyles(theme, true), [theme]);
+  const styles = React.useMemo(() => createNewDreamScreenStyles(theme), [theme]);
 
   const form = useDreamComposerForm({
     mode,
@@ -81,11 +83,30 @@ export function DreamComposer({
   );
   const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(form.hasRestoredDraft);
 
-  React.useEffect(() => {
-    setShowRestoredDraftCard(form.hasRestoredDraft);
-  }, [form.hasRestoredDraft]);
+  const showTemplateRow =
+    mode === 'create' &&
+    !form.isWakeMode &&
+    form.isEntryEmpty &&
+    !form.hasRestoredDraft;
 
-  const refineActions = [
+  const handleApplyTemplate = React.useCallback(
+    (template: DreamTemplate) => {
+      form.setTags(template.tags);
+      if (template.mood !== undefined) {
+        form.setMood(template.mood);
+      }
+      if (template.wakeEmotions && template.wakeEmotions.length > 0) {
+        form.setWakeEmotions(template.wakeEmotions);
+      }
+      if (template.opensMoodSection) {
+        form.setShowMoodSection(true);
+      }
+      form.setShowTagsSection(true);
+    },
+    [form],
+  );
+
+  const refineActions = React.useMemo(() => [
     ...(!form.isWakeMode
       ? [
           {
@@ -115,7 +136,7 @@ export function DreamComposer({
       active: form.showTagsSection || form.hasTagSelections,
       onPress: () => form.setShowTagsSection(current => !current),
     },
-  ];
+  ], [copy, form]);
 
   return (
     <ScreenContainer scroll keyboardShouldPersistTaps="handled">
@@ -128,6 +149,13 @@ export function DreamComposer({
         hasAudio={Boolean(form.audioUri)}
         hasRestoredDraft={form.hasRestoredDraft}
       />
+
+      {showTemplateRow ? (
+        <DreamComposerTemplateRow
+          copy={copy}
+          onApplyTemplate={handleApplyTemplate}
+        />
+      ) : null}
 
       {showRestoredDraftCard ? (
         <Card style={styles.card}>
@@ -183,10 +211,14 @@ export function DreamComposer({
           styles={styles}
           copy={copy}
           recording={form.recording}
+          recordingDuration={form.recordingDuration}
           audioUri={form.audioUri}
           audioFileLabel={audioFileLabel}
+          isBusy={form.isBusy}
           onToggleRecord={() => {
-            form.onToggleRecord().catch(() => undefined);
+            form.onToggleRecord().catch(e =>
+              logActionError('DreamComposer.onToggleRecord', e),
+            );
           }}
           onRemoveAudio={() => form.setAudioUri(undefined)}
           text={form.text}
@@ -202,10 +234,14 @@ export function DreamComposer({
             copy={copy}
             isWakeMode={form.isWakeMode}
             recording={form.recording}
+            recordingDuration={form.recordingDuration}
             audioUri={form.audioUri}
             audioFileLabel={audioFileLabel}
+            isBusy={form.isBusy}
             onToggleRecord={() => {
-              form.onToggleRecord().catch(() => undefined);
+              form.onToggleRecord().catch(e =>
+                logActionError('DreamComposer.onToggleRecord', e),
+              );
             }}
             onRemoveAudio={() => form.setAudioUri(undefined)}
           />
@@ -252,7 +288,6 @@ export function DreamComposer({
       {form.showMoodCard ? (
         <DreamComposerMoodCard
           styles={styles}
-          activeStyles={activeStyles}
           copy={copy}
           moods={moods}
           mood={form.mood}
@@ -268,7 +303,6 @@ export function DreamComposer({
       {form.showContextSection ? (
         <DreamComposerContextCard
           styles={styles}
-          activeStyles={activeStyles}
           copy={copy}
           preSleepEmotionOptions={preSleepEmotionOptions}
           preSleepEmotions={form.preSleepEmotions}

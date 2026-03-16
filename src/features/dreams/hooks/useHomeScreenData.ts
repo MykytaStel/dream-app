@@ -115,11 +115,13 @@ export function useHomeScreenData(): HomeScreenDataState {
           ? nextDreamListItems.find(dream => dream.id === nextLastViewedDreamRecord.dreamId) ?? null
           : null;
       setDreamListItems(nextDreamListItems);
-      setDreams([]);
       setDraft(nextDraft);
       setSavedSearchPresets(nextSavedSearchPresets);
       setLastViewedDream(nextLastViewedDream);
-      setDetailsReady(false);
+      if (mode !== 'silent') {
+        setDreams([]);
+        setDetailsReady(false);
+      }
       trackLocalSurfaceLoad('home_refresh', startedAt, nextDreamListItems.length);
       hydrateDreamDetails();
     } catch (error) {

@@ -1,11 +1,12 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Alert, Pressable, View } from 'react-native';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { FormField } from '../../../components/ui/FormField';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { DreamComposerCopy, DreamComposerStyles } from './DreamComposer.types';
+import { play, stop } from '../services/audioService';
 
 type HeroCardProps = {
   styles: DreamComposerStyles;
@@ -81,13 +82,95 @@ export function DreamComposerHeroCard({
   );
 }
 
+function ComposerAudioPlayback({
+  uri,
+  styles,
+  errorTitle,
+}: {
+  uri: string;
+  styles: DreamComposerStyles;
+  errorTitle: string;
+}) {
+  const [isPlaying, setIsPlaying] = React.useState(false);
+  const [positionSec, setPositionSec] = React.useState(0);
+  const [durationSec, setDurationSec] = React.useState(0);
+  const isBusyRef = React.useRef(false);
+
+  React.useEffect(() => {
+    return () => {
+      stop().catch(() => {});
+    };
+  }, []);
+
+  const onToggle = React.useCallback(async () => {
+    if (isBusyRef.current) {
+      return;
+    }
+    isBusyRef.current = true;
+    try {
+      if (isPlaying) {
+        await stop();
+        setIsPlaying(false);
+        setPositionSec(0);
+        return;
+      }
+      setPositionSec(0);
+      setDurationSec(0);
+      await play(uri, {
+        onFinished: () => {
+          setIsPlaying(false);
+          setPositionSec(0);
+        },
+        onProgress: (posMs, durMs) => {
+          setPositionSec(Math.floor(posMs / 1000));
+          setDurationSec(Math.floor(durMs / 1000));
+        },
+      });
+      setIsPlaying(true);
+    } catch (e) {
+      setIsPlaying(false);
+      setPositionSec(0);
+      Alert.alert(errorTitle, e instanceof Error ? e.message : String(e));
+    } finally {
+      isBusyRef.current = false;
+    }
+  }, [errorTitle, isPlaying, uri]);
+
+  const timeLabel =
+    durationSec > 0
+      ? `${formatRecordingDuration(positionSec)} / ${formatRecordingDuration(durationSec)}`
+      : isPlaying
+        ? formatRecordingDuration(positionSec)
+        : '--:--';
+
+  return (
+    <View style={styles.composerAudioPlayback}>
+      <Button
+        title={timeLabel}
+        onPress={onToggle}
+        icon={isPlaying ? 'stop-circle-outline' : 'play-outline'}
+        variant="ghost"
+        size="sm"
+      />
+    </View>
+  );
+}
+
+function formatRecordingDuration(seconds: number): string {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+}
+
 type VoiceCardProps = {
   styles: DreamComposerStyles;
   copy: DreamComposerCopy;
   isWakeMode: boolean;
   recording: boolean;
+  recordingDuration?: number;
   audioUri?: string;
   audioFileLabel?: string;
+  isBusy?: boolean;
   onToggleRecord: () => void;
   onRemoveAudio: () => void;
 };
@@ -97,8 +180,9 @@ export function DreamComposerVoiceCard({
   copy,
   isWakeMode,
   recording,
+  recordingDuration,
   audioUri,
-  audioFileLabel,
+  isBusy,
   onToggleRecord,
   onRemoveAudio,
 }: VoiceCardProps) {
@@ -110,36 +194,58 @@ export function DreamComposerVoiceCard({
       </View>
       <SectionHeader
         title={copy.voiceTitle}
-        subtitle={audioUri ? undefined : isWakeMode ? copy.wakeVoiceDescription : copy.voiceDescription}
+        subtitle={audioUri || recording ? undefined : isWakeMode ? copy.wakeVoiceDescription : copy.voiceDescription}
       />
 
-      <View style={styles.voiceStatusRow}>
-        <View style={styles.voiceStatusPill}>
-          <Text style={styles.voiceStatusLabel}>
-            {recording
-              ? copy.recordingHint
-              : audioUri
-                ? copy.attachedAudioTitle
-                : copy.voiceIdleHint}
-          </Text>
-        </View>
-        {audioUri ? <Text style={styles.voiceFileLabel}>{audioFileLabel}</Text> : null}
-      </View>
-
-      <Button
-        title={recording ? copy.stopRecording : copy.startRecording}
-        onPress={onToggleRecord}
-        icon={recording ? 'stop-circle-outline' : 'mic-outline'}
-        size="md"
-      />
-
-      {audioUri ? (
+      {recording ? (
+        <>
+          <View style={styles.voiceStatusRow}>
+            <View style={styles.voiceStatusPill}>
+              <Text style={[styles.voiceStatusLabel, styles.recordingHint]}>{copy.recordingHint}</Text>
+            </View>
+          </View>
+          <Button
+            title={copy.stopRecording}
+            onPress={onToggleRecord}
+            icon="stop-circle-outline"
+            size="md"
+            disabled={isBusy}
+          />
+          {recordingDuration != null ? (
+            <Text style={styles.voiceRecordingTimer}>{formatRecordingDuration(recordingDuration)}</Text>
+          ) : null}
+        </>
+      ) : audioUri ? (
         <View style={styles.attachedAudioCard}>
-          <Text style={styles.attachedAudioTitle}>{copy.attachedAudioTitle}</Text>
-          <Text style={styles.attachedAudioUri}>{audioFileLabel}</Text>
-          <Button title={copy.removeAudio} variant="ghost" size="sm" onPress={onRemoveAudio} />
+          <ComposerAudioPlayback uri={audioUri} styles={styles} errorTitle={copy.audioErrorTitle} />
+          <View style={styles.attachedAudioActions}>
+            <Button
+              title={copy.startRecording}
+              onPress={onToggleRecord}
+              icon="mic-outline"
+              variant="ghost"
+              size="sm"
+              disabled={isBusy}
+            />
+            <Button title={copy.removeAudio} variant="ghost" size="sm" onPress={onRemoveAudio} />
+          </View>
         </View>
-      ) : null}
+      ) : (
+        <>
+          <View style={styles.voiceStatusRow}>
+            <View style={styles.voiceStatusPill}>
+              <Text style={styles.voiceStatusLabel}>{copy.voiceIdleHint}</Text>
+            </View>
+          </View>
+          <Button
+            title={copy.startRecording}
+            onPress={onToggleRecord}
+            icon="mic-outline"
+            size="md"
+            disabled={isBusy}
+          />
+        </>
+      )}
     </Card>
   );
 }
@@ -148,8 +254,10 @@ type WakeCaptureCardProps = {
   styles: DreamComposerStyles;
   copy: DreamComposerCopy;
   recording: boolean;
+  recordingDuration?: number;
   audioUri?: string;
   audioFileLabel?: string;
+  isBusy?: boolean;
   onToggleRecord: () => void;
   onRemoveAudio: () => void;
   text: string;
@@ -163,8 +271,9 @@ export function DreamComposerWakeCaptureCard({
   styles,
   copy,
   recording,
+  recordingDuration,
   audioUri,
-  audioFileLabel,
+  isBusy,
   onToggleRecord,
   onRemoveAudio,
   text,
@@ -204,33 +313,55 @@ export function DreamComposerWakeCaptureCard({
       <View style={styles.captureAlternateBlock}>
         <Text style={styles.captureAlternateLabel}>{copy.wakeCaptureAlternateTitle}</Text>
 
-        <View style={styles.voiceStatusRow}>
-          <View style={styles.voiceStatusPill}>
-            <Text style={styles.voiceStatusLabel}>
-              {recording
-                ? copy.recordingHint
-                : audioUri
-                  ? copy.attachedAudioTitle
-                  : copy.wakeCaptureVoiceHint}
-            </Text>
-          </View>
-          {audioUri ? <Text style={styles.voiceFileLabel}>{audioFileLabel}</Text> : null}
-        </View>
-
-        <Button
-          title={recording ? copy.stopRecording : copy.startRecording}
-          onPress={onToggleRecord}
-          icon={recording ? 'stop-circle-outline' : 'mic-outline'}
-          size="md"
-        />
-
-        {audioUri ? (
+        {recording ? (
+          <>
+            <View style={styles.voiceStatusRow}>
+              <View style={styles.voiceStatusPill}>
+                <Text style={[styles.voiceStatusLabel, styles.recordingHint]}>{copy.recordingHint}</Text>
+              </View>
+            </View>
+            <Button
+              title={copy.stopRecording}
+              onPress={onToggleRecord}
+              icon="stop-circle-outline"
+              size="md"
+              disabled={isBusy}
+            />
+            {recordingDuration != null ? (
+              <Text style={styles.voiceRecordingTimer}>{formatRecordingDuration(recordingDuration)}</Text>
+            ) : null}
+          </>
+        ) : audioUri ? (
           <View style={styles.attachedAudioCard}>
-            <Text style={styles.attachedAudioTitle}>{copy.attachedAudioTitle}</Text>
-            <Text style={styles.attachedAudioUri}>{audioFileLabel}</Text>
-            <Button title={copy.removeAudio} variant="ghost" size="sm" onPress={onRemoveAudio} />
+            <ComposerAudioPlayback uri={audioUri} styles={styles} errorTitle={copy.audioErrorTitle} />
+            <View style={styles.attachedAudioActions}>
+              <Button
+                title={copy.startRecording}
+                onPress={onToggleRecord}
+                icon="mic-outline"
+                variant="ghost"
+                size="sm"
+                disabled={isBusy}
+              />
+              <Button title={copy.removeAudio} variant="ghost" size="sm" onPress={onRemoveAudio} />
+            </View>
           </View>
-        ) : null}
+        ) : (
+          <>
+            <View style={styles.voiceStatusRow}>
+              <View style={styles.voiceStatusPill}>
+                <Text style={styles.voiceStatusLabel}>{copy.wakeCaptureVoiceHint}</Text>
+              </View>
+            </View>
+            <Button
+              title={copy.startRecording}
+              onPress={onToggleRecord}
+              icon="mic-outline"
+              size="md"
+              disabled={isBusy}
+            />
+          </>
+        )}
       </View>
     </Card>
   );

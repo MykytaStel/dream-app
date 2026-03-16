@@ -8,8 +8,7 @@ type DreamComposerChoiceChipProps = {
   selected: boolean;
   onPress: () => void;
   variant: 'mood' | 'context';
-  baseStyles: DreamComposerStyles;
-  activeStyles: DreamComposerStyles;
+  styles: DreamComposerStyles;
 };
 
 export function DreamComposerChoiceChip({
@@ -17,26 +16,17 @@ export function DreamComposerChoiceChip({
   selected,
   onPress,
   variant,
-  baseStyles,
-  activeStyles,
+  styles,
 }: DreamComposerChoiceChipProps) {
   const containerStyle =
     variant === 'mood'
-      ? selected
-        ? activeStyles.moodOption
-        : baseStyles.moodOption
-      : selected
-        ? activeStyles.contextOption
-        : baseStyles.contextOption;
+      ? [styles.moodOption, selected ? styles.moodOptionSelected : null]
+      : [styles.contextOption, selected ? styles.contextOptionSelected : null];
 
   const labelStyle =
     variant === 'mood'
-      ? selected
-        ? activeStyles.moodLabel
-        : baseStyles.moodLabel
-      : selected
-        ? activeStyles.contextOptionLabel
-        : baseStyles.contextOptionLabel;
+      ? [styles.moodLabel, selected ? styles.moodLabelSelected : null]
+      : [styles.contextOptionLabel, selected ? styles.contextOptionLabelSelected : null];
 
   return (
     <Pressable onPress={onPress} style={containerStyle}>

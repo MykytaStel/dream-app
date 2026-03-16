@@ -409,6 +409,57 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 8,
     },
+    audioPlayer: {
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: `${theme.colors.border}99`,
+      backgroundColor: theme.colors.surface,
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      gap: 10,
+    },
+    audioPlayerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    audioPlayButton: {
+      width: 40,
+      height: 40,
+      borderRadius: 20,
+      backgroundColor: theme.colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    audioPlayButtonPressed: {
+      opacity: 0.85,
+    },
+    audioProgressShell: {
+      flex: 1,
+      gap: 5,
+    },
+    audioProgressTrack: {
+      height: 3,
+      borderRadius: 2,
+      backgroundColor: `${theme.colors.border}`,
+      overflow: 'hidden',
+    },
+    audioProgressFill: {
+      height: 3,
+      borderRadius: 2,
+      backgroundColor: theme.colors.accent,
+    },
+    audioTimeRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    audioTimeLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 14,
+      fontWeight: '600',
+      letterSpacing: 0.3,
+    },
     tagsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',

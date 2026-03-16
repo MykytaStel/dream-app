@@ -101,7 +101,11 @@ export function buildCloudSyncEventItems(
     }
 
     if (event.errorMessage) {
-      metaParts.push(event.errorMessage);
+      metaParts.push(
+        event.errorMessage === 'audio-file-too-large'
+          ? copy.cloudSyncAudioTooLarge
+          : event.errorMessage,
+      );
     }
 
     return {

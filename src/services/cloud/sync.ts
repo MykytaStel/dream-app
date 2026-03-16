@@ -12,6 +12,7 @@ import {
 import { getSupabaseClient } from '../api/supabase/client';
 import { syncCloudSessionFromAuth } from '../auth/cloudAuth';
 import { getCloudSyncEnabled } from '../auth/session';
+import { uploadDreamAudio } from './audioUpload';
 import {
   listDreams,
   applyRemoteDreamDeletion,
@@ -38,7 +39,7 @@ import {
 import {
   appendCloudSyncEvent,
   getCloudSyncSnapshot,
-  getLocalCloudSyncPendingCount,
+  getLocalCloudSyncPendingCounts,
   getPendingReviewStateCount,
   persistCloudSyncSnapshot,
   type CloudSyncReason,
@@ -46,10 +47,13 @@ import {
 } from './syncState';
 import {
   accumulateConflictDecision,
+  decideLocalDreamUploadResolution,
+  decideLocalTombstoneUploadResolution,
   decideRemoteBundleResolution,
   decideRemoteTombstoneResolution,
   decideSavedReviewStateResolution,
   type CloudSyncConflictContext,
+  type RemoteDreamRevisionRow,
   type RemoteDreamDeletionTombstoneRow,
   type RemoteSavedReviewStateRow,
 } from './syncResolution';
@@ -93,46 +97,13 @@ function getAudioMimeType(filename: string) {
   return 'audio/mp4';
 }
 
-function decodeBase64ToUint8Array(input: string) {
-  const clean = input.replace(/[^A-Za-z0-9+/=]/g, '');
-  const output: number[] = [];
-  let buffer = 0;
-  let bits = 0;
-
-  for (const char of clean) {
-    if (char === '=') {
-      break;
-    }
-
-    const value =
-      char >= 'A' && char <= 'Z'
-        ? char.charCodeAt(0) - 65
-        : char >= 'a' && char <= 'z'
-        ? char.charCodeAt(0) - 71
-        : char >= '0' && char <= '9'
-        ? char.charCodeAt(0) + 4
-        : char === '+'
-        ? 62
-        : char === '/'
-        ? 63
-        : -1;
-
-    if (value < 0) {
-      continue;
-    }
-
-    buffer = buffer * 64 + value;
-    bits += 6;
-
-    if (bits >= 8) {
-      bits -= 8;
-      const divisor = 2 ** bits;
-      output.push(Math.floor(buffer / divisor) % 256);
-      buffer %= divisor;
-    }
+function decodeBase64ToUint8Array(input: string): Uint8Array {
+  const binary = atob(input);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
   }
-
-  return new Uint8Array(output);
+  return bytes;
 }
 
 function normalizeSyncError(error: unknown) {
@@ -143,11 +114,35 @@ function normalizeSyncError(error: unknown) {
   return String(error);
 }
 
+function getPendingDreamCount() {
+  return listDreams().filter(dream => dream.syncStatus !== 'synced').length;
+}
+
+function getPendingTombstoneCount() {
+  return listDreamDeletionTombstones().filter(
+    tombstone => tombstone.syncStatus !== 'synced',
+  ).length;
+}
+
+function getCurrentPendingCounts(
+  reviewStateSnapshot = getStoredReviewStateSnapshot(),
+) {
+  return getLocalCloudSyncPendingCounts({
+    pendingDreamCount: getPendingDreamCount(),
+    pendingTombstoneCount: getPendingTombstoneCount(),
+    pendingReviewStateCount: getPendingReviewStateCount(reviewStateSnapshot),
+  });
+}
+
 async function ensureDreamAudioUploaded(
   userId: string,
   dream: ReturnType<typeof listDreams>[number],
 ) {
   if (!dream.audioUri?.trim()) {
+    return dream.audioRemotePath;
+  }
+
+  if (dream.audioRemotePath?.trim()) {
     return dream.audioRemotePath;
   }
 
@@ -166,6 +161,12 @@ async function ensureDreamAudioUploaded(
     throw new Error('local-audio-file-missing');
   }
 
+  const MAX_AUDIO_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
+  const stat = await RNFS.stat(audioFilePath);
+  if (Number(stat.size) > MAX_AUDIO_UPLOAD_BYTES) {
+    throw new Error('audio-file-too-large');
+  }
+
   const filename = getAudioFilename(dream.audioUri, dream.id);
   const remotePath =
     dream.audioRemotePath ??
@@ -175,17 +176,29 @@ async function ensureDreamAudioUploaded(
       filename,
     });
 
-  const base64 = await RNFS.readFile(audioFilePath, 'base64');
-  const bytes = decodeBase64ToUint8Array(base64);
-  const { error } = await client.storage
-    .from(DREAM_AUDIO_BUCKET)
-    .upload(remotePath, bytes, {
-      contentType: getAudioMimeType(filename),
-      upsert: true,
-    });
+  const mimeType = getAudioMimeType(filename);
+  try {
+    await uploadDreamAudio(remotePath, audioFilePath, mimeType);
+  } catch (error) {
+    // If native upload is unavailable for some reason, fall back to JS upload.
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message.includes('supabase-rest-config-missing') && !message.includes('Supabase runtime config is missing.')) {
+      // Native path tried and failed with a specific error; rethrow.
+      throw error;
+    }
 
-  if (error) {
-    throw error;
+    const base64 = await RNFS.readFile(audioFilePath, 'base64');
+    const bytes = decodeBase64ToUint8Array(base64);
+    const { error: uploadError } = await client.storage
+      .from(DREAM_AUDIO_BUCKET)
+      .upload(remotePath, bytes, {
+        contentType: mimeType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      throw uploadError;
+    }
   }
 
   return remotePath;
@@ -274,18 +287,20 @@ async function uploadDream(
     throw dreamError;
   }
 
-  await replaceDreamRelationRows('dream_tags', dream.id, bundle.tags);
-  await replaceDreamRelationRows(
-    'dream_wake_emotions',
-    dream.id,
-    bundle.wakeEmotions,
-  );
-  await replaceDreamRelationRows(
-    'dream_pre_sleep_emotions',
-    dream.id,
-    bundle.preSleepEmotions,
-  );
-  await replaceDreamSleepContext(dream.id, bundle.sleepContext);
+  await Promise.all([
+    replaceDreamRelationRows('dream_tags', dream.id, bundle.tags),
+    replaceDreamRelationRows(
+      'dream_wake_emotions',
+      dream.id,
+      bundle.wakeEmotions,
+    ),
+    replaceDreamRelationRows(
+      'dream_pre_sleep_emotions',
+      dream.id,
+      bundle.preSleepEmotions,
+    ),
+    replaceDreamSleepContext(dream.id, bundle.sleepContext),
+  ]);
 
   return {
     audioRemotePath,
@@ -378,17 +393,28 @@ async function fetchRowsByDreamIds<T extends { dream_id: string }>(
   return (data ?? []) as T[];
 }
 
-async function fetchRemoteDreamBundles(userId: string) {
+async function fetchRemoteDreamBundles(
+  userId: string,
+  options?: { updatedAtOrAfter?: number },
+) {
   const client = getSupabaseClient();
   if (!client) {
     throw new Error('Supabase runtime config is missing.');
   }
 
-  const { data: dreamRows, error: dreamRowsError } = await client
-    .from('dream_entries')
-    .select('*')
-    .eq('user_id', userId)
-    .order('updated_at', { ascending: false });
+  let query = client.from('dream_entries').select('*').eq('user_id', userId);
+
+  if (typeof options?.updatedAtOrAfter === 'number' && Number.isFinite(options.updatedAtOrAfter)) {
+    query = query.gte(
+      'updated_at',
+      new Date(options.updatedAtOrAfter).toISOString(),
+    );
+  }
+
+  const { data: dreamRows, error: dreamRowsError } = await query.order(
+    'updated_at',
+    { ascending: false },
+  );
 
   if (dreamRowsError) {
     throw dreamRowsError;
@@ -461,17 +487,61 @@ async function fetchRemoteDreamBundles(userId: string) {
   }));
 }
 
-async function fetchRemoteDreamDeletionTombstones(userId: string) {
+async function fetchRemoteDreamRevisions(userId: string, dreamIds?: string[]) {
   const client = getSupabaseClient();
   if (!client) {
     throw new Error('Supabase runtime config is missing.');
   }
 
-  const { data, error } = await client
+  if (dreamIds && !dreamIds.length) {
+    return [] as RemoteDreamRevisionRow[];
+  }
+
+  let query = client.from('dream_entries').select('id, updated_at').eq('user_id', userId);
+  if (dreamIds?.length) {
+    query = query.in('id', dreamIds);
+  }
+
+  const { data, error } = await query.order('updated_at', { ascending: false });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []) as RemoteDreamRevisionRow[];
+}
+
+async function fetchRemoteDreamDeletionTombstones(
+  userId: string,
+  options?: { dreamIds?: string[]; deletedAtOrAfter?: number },
+) {
+  const client = getSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase runtime config is missing.');
+  }
+
+  if (options?.dreamIds && !options.dreamIds.length) {
+    return [] as RemoteDreamDeletionTombstoneRow[];
+  }
+
+  let query = client
     .from('dream_entry_tombstones')
     .select('*')
-    .eq('user_id', userId)
-    .order('deleted_at', { ascending: false });
+    .eq('user_id', userId);
+  if (options?.dreamIds?.length) {
+    query = query.in('dream_id', options.dreamIds);
+  }
+  if (
+    typeof options?.deletedAtOrAfter === 'number' &&
+    Number.isFinite(options.deletedAtOrAfter)
+  ) {
+    query = query.gte(
+      'deleted_at',
+      new Date(options.deletedAtOrAfter).toISOString(),
+    );
+  }
+
+  const { data, error } = await query.order('deleted_at', { ascending: false });
 
   if (error) {
     throw error;
@@ -505,6 +575,7 @@ async function performCloudSync(
 ) {
   const previousSnapshot = getCloudSyncSnapshot();
   if (requireSyncEnabled && !getCloudSyncEnabled()) {
+    const pendingCounts = getCurrentPendingCounts();
     return persistCloudSyncSnapshot({
       ...previousSnapshot,
       status: 'idle',
@@ -516,12 +587,7 @@ async function performCloudSync(
       localWinsCount: 0,
       remoteWinsCount: 0,
       failedCount: 0,
-      pendingCount: getLocalCloudSyncPendingCount({
-        pendingDreamCount: listDreams().filter(dream => dream.syncStatus !== 'synced').length,
-        pendingTombstoneCount: listDreamDeletionTombstones().filter(
-          tombstone => tombstone.syncStatus !== 'synced',
-        ).length,
-      }),
+      ...pendingCounts,
     });
   }
 
@@ -537,6 +603,8 @@ async function performCloudSync(
     pendingTombstoneIds: new Set(
       pendingTombstones.map(tombstone => tombstone.dreamId),
     ),
+    resolvedDreamIds: new Set(),
+    resolvedTombstoneIds: new Set(),
   };
   const syncStartedAt = Date.now();
 
@@ -555,6 +623,27 @@ async function performCloudSync(
       throw new Error('cloud-session-required');
     }
 
+    const pendingRemoteLookupIds = Array.from(
+      new Set([
+        ...pendingDreams.map(dream => dream.id),
+        ...pendingTombstones.map(tombstone => tombstone.dreamId),
+      ]),
+    );
+    const pendingCounts = getCurrentPendingCounts(pendingReviewState);
+    const [remoteDreamRevisionsBeforeUpload, remoteTombstonesBeforeUpload] =
+      await Promise.all([
+        fetchRemoteDreamRevisions(session.userId, pendingRemoteLookupIds),
+        fetchRemoteDreamDeletionTombstones(session.userId, {
+          dreamIds: pendingRemoteLookupIds,
+        }),
+      ]);
+    const remoteDreamRevisionMap = new Map(
+      remoteDreamRevisionsBeforeUpload.map(row => [row.id, row] as const),
+    );
+    const remoteTombstoneMap = new Map(
+      remoteTombstonesBeforeUpload.map(row => [row.dream_id, row] as const),
+    );
+
     persistCloudSyncSnapshot({
       status: 'syncing',
       reason,
@@ -566,14 +655,40 @@ async function performCloudSync(
       localWinsCount: 0,
       remoteWinsCount: 0,
       failedCount: 0,
-      pendingCount: getLocalCloudSyncPendingCount({
-        pendingDreamCount: pendingDreams.length,
-        pendingTombstoneCount: pendingTombstones.length,
-        pendingReviewStateCount: getPendingReviewStateCount(pendingReviewState),
-      }),
+      ...pendingCounts,
     });
 
     for (const dream of pendingDreams) {
+      const localUploadDecision = decideLocalDreamUploadResolution(
+        dream,
+        remoteDreamRevisionMap.get(dream.id) ?? null,
+        remoteTombstoneMap.get(dream.id) ?? null,
+      );
+      ({
+        conflictsResolvedCount,
+        localWinsCount,
+        remoteWinsCount,
+      } = accumulateConflictDecision(localUploadDecision, {
+        conflictsResolvedCount,
+        localWinsCount,
+        remoteWinsCount,
+      }));
+
+      if (localUploadDecision.action === 'mark-synced') {
+        conflictContext.resolvedDreamIds.add(dream.id);
+        markDreamSynced(dream.id, {
+          syncedAt: localUploadDecision.syncedAt,
+        });
+        skippedCount += 1;
+        continue;
+      }
+
+      if (localUploadDecision.action === 'defer-to-remote') {
+        conflictContext.resolvedDreamIds.add(dream.id);
+        skippedCount += 1;
+        continue;
+      }
+
       markDreamSyncing(dream.id);
 
       try {
@@ -582,6 +697,7 @@ async function performCloudSync(
           audioRemotePath: uploadResult.audioRemotePath,
           syncedAt: Date.now(),
         });
+        conflictContext.resolvedDreamIds.add(dream.id);
         uploadedCount += 1;
       } catch (error) {
         lastErrorMessage = normalizeSyncError(error);
@@ -591,11 +707,43 @@ async function performCloudSync(
     }
 
     for (const tombstone of pendingTombstones) {
+      const localUploadDecision = decideLocalTombstoneUploadResolution(
+        tombstone,
+        remoteDreamRevisionMap.get(tombstone.dreamId) ?? null,
+        remoteTombstoneMap.get(tombstone.dreamId) ?? null,
+      );
+      ({
+        conflictsResolvedCount,
+        localWinsCount,
+        remoteWinsCount,
+      } = accumulateConflictDecision(localUploadDecision, {
+        conflictsResolvedCount,
+        localWinsCount,
+        remoteWinsCount,
+      }));
+
+      if (localUploadDecision.action === 'mark-synced') {
+        conflictContext.resolvedTombstoneIds.add(tombstone.dreamId);
+        markDreamDeletionTombstoneSynced(
+          tombstone.dreamId,
+          localUploadDecision.syncedAt,
+        );
+        skippedCount += 1;
+        continue;
+      }
+
+      if (localUploadDecision.action === 'defer-to-remote') {
+        conflictContext.resolvedTombstoneIds.add(tombstone.dreamId);
+        skippedCount += 1;
+        continue;
+      }
+
       markDreamDeletionTombstoneSyncing(tombstone.dreamId);
 
       try {
         await uploadDreamDeletionTombstone(session.userId, tombstone);
         markDreamDeletionTombstoneSynced(tombstone.dreamId, Date.now());
+        conflictContext.resolvedTombstoneIds.add(tombstone.dreamId);
         uploadedCount += 1;
       } catch (error) {
         lastErrorMessage = normalizeSyncError(error);
@@ -607,8 +755,12 @@ async function performCloudSync(
       }
     }
 
+    const remoteChangesSince = previousSnapshot.lastSuccessAt;
     const remoteTombstones = await fetchRemoteDreamDeletionTombstones(
       session.userId,
+      {
+        deletedAtOrAfter: remoteChangesSince,
+      },
     );
     for (const row of remoteTombstones) {
       const decision = decideRemoteTombstoneResolution(row, conflictContext);
@@ -634,7 +786,9 @@ async function performCloudSync(
       pulledCount += 1;
     }
 
-    const remoteBundles = await fetchRemoteDreamBundles(session.userId);
+    const remoteBundles = await fetchRemoteDreamBundles(session.userId, {
+      updatedAtOrAfter: remoteChangesSince,
+    });
     for (const bundle of remoteBundles) {
       const decision = decideRemoteBundleResolution(bundle, conflictContext);
       ({
@@ -677,6 +831,9 @@ async function performCloudSync(
         syncedAt: Date.now(),
       });
       pulledCount += 1;
+    } else if (savedReviewStateDecision.action === 'mark-synced') {
+      markSavedReviewStateSynced(savedReviewStateDecision.syncedAt);
+      skippedCount += 1;
     } else if (savedReviewStateDecision.action === 'upload-local') {
       markSavedReviewStateSyncing();
 
@@ -699,6 +856,7 @@ async function performCloudSync(
     lastErrorMessage = normalizeSyncError(error);
 
     const finishedAt = Date.now();
+    const pendingCounts = getCurrentPendingCounts();
     const errorSnapshot = persistCloudSyncSnapshot({
       status: 'error',
       reason,
@@ -712,12 +870,7 @@ async function performCloudSync(
       localWinsCount,
       remoteWinsCount,
       failedCount,
-      pendingCount: getLocalCloudSyncPendingCount({
-        pendingDreamCount: listDreams().filter(dream => dream.syncStatus !== 'synced').length,
-        pendingTombstoneCount: listDreamDeletionTombstones().filter(
-          tombstone => tombstone.syncStatus !== 'synced',
-        ).length,
-      }),
+      ...pendingCounts,
       errorMessage: lastErrorMessage,
     });
     appendCloudSyncEvent(errorSnapshot);
@@ -725,6 +878,7 @@ async function performCloudSync(
   }
 
   const finishedAt = Date.now();
+  const pendingCounts = getCurrentPendingCounts();
   const finishedSnapshot = persistCloudSyncSnapshot({
     status: failedCount ? 'error' : 'success',
     reason,
@@ -738,12 +892,7 @@ async function performCloudSync(
     localWinsCount,
     remoteWinsCount,
     failedCount,
-    pendingCount: getLocalCloudSyncPendingCount({
-      pendingDreamCount: listDreams().filter(dream => dream.syncStatus !== 'synced').length,
-      pendingTombstoneCount: listDreamDeletionTombstones().filter(
-        tombstone => tombstone.syncStatus !== 'synced',
-      ).length,
-    }),
+    ...pendingCounts,
     errorMessage: lastErrorMessage,
   });
   appendCloudSyncEvent(finishedSnapshot);

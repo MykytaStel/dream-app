@@ -28,7 +28,7 @@ export const Button = ({
 }) => {
   const t = useTheme<Theme>();
   const [pressed, setPressed] = React.useState(false);
-  const styles = createButtonStyles(t, variant, size, disabled);
+  const styles = React.useMemo(() => createButtonStyles(t, variant, size, disabled), [t, variant, size, disabled]);
   const anim = useAnimatedStyle(() => ({
     transform: [
       { scale: withTiming(pressed && !disabled ? 0.985 : 1, { duration: 120 }) },

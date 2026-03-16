@@ -10,6 +10,7 @@ export const TAB_ROUTE_NAMES = {
 } as const;
 
 export const ROOT_ROUTE_NAMES = {
+  Onboarding: 'Onboarding',
   Tabs: 'Tabs',
   Backup: 'Backup',
   BackupOnboardingPreview: 'BackupOnboardingPreview',
@@ -65,6 +66,7 @@ export type TabParamList = {
 };
 
 export type RootStackParamList = {
+  [ROOT_ROUTE_NAMES.Onboarding]: undefined;
   [ROOT_ROUTE_NAMES.Tabs]: NavigatorScreenParams<TabParamList> | undefined;
   [ROOT_ROUTE_NAMES.Backup]: undefined;
   [ROOT_ROUTE_NAMES.BackupOnboardingPreview]: undefined;

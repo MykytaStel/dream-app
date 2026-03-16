@@ -1,10 +1,10 @@
 import React from 'react';
 import { View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Button } from '../../../../components/ui/Button';
 import { Text } from '../../../../components/ui/Text';
-import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 import { Theme } from '../../../../theme/theme';
 
@@ -20,7 +20,6 @@ type HomeHeroPrompt = {
 };
 
 type HomeHeroProps = {
-  copy: DreamCopy;
   styles: ReturnType<typeof createHomeScreenStyles>;
   insetTop: number;
   greeting: string;
@@ -29,7 +28,6 @@ type HomeHeroProps = {
 };
 
 export const HomeHero = React.memo(function HomeHero({
-  copy,
   styles,
   insetTop,
   greeting,
@@ -39,24 +37,13 @@ export const HomeHero = React.memo(function HomeHero({
   const t = useTheme<Theme>();
 
   return (
-    <View
-      style={[
-        styles.heroCard,
-        {
-          paddingTop: insetTop,
-        },
-      ]}
-    >
+    <Animated.View entering={FadeIn.duration(400)} style={[styles.heroCard, { paddingTop: insetTop }]}>
       <View pointerEvents="none" style={styles.heroGlowLarge} />
       {prompt ? <View pointerEvents="none" style={styles.heroGlowSmall} /> : null}
       <View style={styles.heroFrame}>
         <View style={styles.heroTopRow}>
           <View style={styles.heroCopy}>
-            <View style={styles.heroMetaRow}>
-              <Text style={styles.heroEyebrow}>{copy.homeTitle}</Text>
-            </View>
             <Text style={styles.heroTitle}>{greeting}</Text>
-            <Text style={styles.heroSubtitle}>{copy.homeSubtitle}</Text>
             <View style={styles.heroDateRow}>
               <View style={styles.heroDateChip}>
                 <Text style={styles.heroDateChipLabel}>{dateLabel}</Text>
@@ -102,6 +89,6 @@ export const HomeHero = React.memo(function HomeHero({
           </View>
         </View>
       </View>
-    </View>
+    </Animated.View>
   );
 });

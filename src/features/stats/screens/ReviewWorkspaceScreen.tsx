@@ -33,7 +33,7 @@ export default function ReviewWorkspaceScreen() {
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const settingsCopy = React.useMemo(() => getSettingsCopy(locale), [locale]);
-  const styles = createStatsScreenStyles(theme);
+  const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [cloudSession, setCloudSession] = React.useState(() => getCloudSession());
   const [cloudSyncEnabled, setCloudSyncEnabledState] = React.useState(() =>

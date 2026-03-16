@@ -67,7 +67,11 @@ export default function HomeScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const styles = createHomeScreenStyles(theme);
+  const styles = React.useMemo(() => createHomeScreenStyles(theme), [theme]);
+  const listContentStyle = React.useMemo(
+    () => [styles.listContent, { paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs }],
+    [insets.bottom, styles.listContent, theme.spacing.xs],
+  );
   const {
     dreamListItems,
     dreams,
@@ -85,8 +89,6 @@ export default function HomeScreen() {
   const showWakeCapturePrompt = isWakeCaptureWindow();
   const [hasSeenBackupOnboardingState, setHasSeenBackupOnboardingState] =
     React.useState(() => hasSeenBackupOnboarding());
-  const [isBackupOnboardingVisible, setIsBackupOnboardingVisible] =
-    React.useState(false);
   const fullLastViewedDream = React.useMemo(
     () =>
       lastViewedDream && 'tags' in lastViewedDream
@@ -170,18 +172,15 @@ export default function HomeScreen() {
       refreshOnboardingState();
     }, [refreshOnboardingState]),
   );
-  React.useEffect(() => {
-    if (loading) {
-      return;
-    }
-
-    setIsBackupOnboardingVisible(
+  const isBackupOnboardingVisible = React.useMemo(
+    () =>
+      !loading &&
       shouldShowBackupOnboarding({
         dreamCount: dreams.length,
         hasSeen: hasSeenBackupOnboardingState,
       }),
-    );
-  }, [dreams.length, hasSeenBackupOnboardingState, loading]);
+    [dreams.length, hasSeenBackupOnboardingState, loading],
+  );
   const heroPrompt = React.useMemo(
     () =>
       draft
@@ -211,7 +210,6 @@ export default function HomeScreen() {
   const closeBackupOnboarding = React.useCallback(() => {
     markBackupOnboardingSeen();
     setHasSeenBackupOnboardingState(true);
-    setIsBackupOnboardingVisible(false);
   }, []);
   const openBackupFromOnboarding = React.useCallback(() => {
     closeBackupOnboarding();
@@ -221,7 +219,6 @@ export default function HomeScreen() {
     () => (
       <>
         <HomeHero
-          copy={copy}
           styles={styles}
           insetTop={insets.top + theme.spacing.sm}
           greeting={timeline.heroGreeting}
@@ -331,33 +328,26 @@ export default function HomeScreen() {
         ]}
       >
         <Card style={styles.dreamCard}>
-          <View style={styles.dreamHeaderRow}>
-            <View style={styles.dreamHeaderCopy}>
-              <View style={styles.titleRow}>
-                <Text style={styles.title} numberOfLines={1}>
-                  {dream.title || copy.untitled}
-                </Text>
-              </View>
-              <View style={styles.timestampRow}>
-                {dream.mood ? (
-                  <View style={styles.moodPill}>
-                    <Text style={styles.moodPillText}>{moodLabels[dream.mood]}</Text>
-                  </View>
-                ) : null}
-                <Text style={styles.timestamp}>
-                  {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
-                </Text>
-              </View>
+          <View style={styles.dreamHeaderCopy}>
+            <View style={styles.titleRow}>
+              <Text style={styles.title} numberOfLines={1}>
+                {dream.title || copy.untitled}
+              </Text>
+            </View>
+            <View style={styles.timestampRow}>
+              <Text style={styles.timestamp}>
+                {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
+              </Text>
+              {dream.mood ? (
+                <View style={styles.moodPill}>
+                  <Text style={styles.moodPillText}>{moodLabels[dream.mood]}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
 
           <View style={styles.previewPanel}>
-            <View
-              style={[
-                styles.previewAccent,
-                { backgroundColor: theme.colors.primary },
-              ]}
-            />
+            <View style={[styles.previewAccent, styles.previewAccentPrimary]} />
             <Text style={styles.preview} numberOfLines={4}>
               {formatPreview(dream, copy)}
             </Text>
@@ -365,12 +355,13 @@ export default function HomeScreen() {
         </Card>
       </Pressable>
     ),
-    [copy, moodLabels, navigation, styles, theme.colors.primary],
+    [copy, moodLabels, navigation, styles],
   );
   const renderDream = React.useCallback(
-    ({ item: dream }: { item: Dream }) => (
+    ({ item: dream, index }: { item: Dream; index: number }) => (
       <HomeDreamRow
         dream={dream}
+        index={index}
         copy={copy}
         searchQuery={timeline.deferredSearchQuery}
         moodLabels={moodLabels}
@@ -478,7 +469,6 @@ export default function HomeScreen() {
           keyExtractor={item => item.id}
           ListHeaderComponent={
             <HomeHero
-              copy={copy}
               styles={styles}
               insetTop={insets.top + theme.spacing.sm}
               greeting={timeline.heroGreeting}
@@ -542,12 +532,7 @@ export default function HomeScreen() {
             progressBackgroundColor={theme.colors.surface}
           />
         }
-        contentContainerStyle={[
-          styles.listContent,
-          {
-            paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
-          },
-        ]}
+        contentContainerStyle={listContentStyle}
         renderItem={renderDream}
       />
     </ScreenContainer>

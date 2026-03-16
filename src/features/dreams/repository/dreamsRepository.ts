@@ -166,9 +166,10 @@ function persistDreams(dreams: Dream[]) {
   kv.set(DREAMS_STORAGE_KEY, raw);
   persistDreamIndex(normalized);
   persistDreamsMeta(normalized);
-  reconcileDerivedReviewState(normalized);
   dreamCache = normalized;
   dreamCacheRaw = raw;
+  // Defer shelf reconciliation — not needed synchronously and can be expensive with many dreams
+  setTimeout(() => reconcileDerivedReviewState(normalized), 0);
 }
 
 function normalizeDreamListItem(raw: Partial<DreamListItem>): DreamListItem | null {
@@ -481,6 +482,13 @@ export function clearDreamTranscript(id: string) {
 
     return nextDream;
   });
+}
+
+export function setDreamAudioUri(id: string, audioUri: string) {
+  return updateDreamById(id, dream => ({
+    ...dream,
+    audioUri,
+  }));
 }
 
 export function saveDreamAnalysis(id: string, analysis: DreamAnalysisRecord) {

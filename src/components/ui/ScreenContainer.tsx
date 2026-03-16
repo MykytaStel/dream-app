@@ -25,7 +25,7 @@ type StaticContainerProps = BaseProps &
 export function ScreenContainer(props: ScrollContainerProps | StaticContainerProps) {
   const t = useTheme<Theme>();
   const insets = useSafeAreaInsets();
-  const styles = createScreenContainerStyles(t);
+  const styles = React.useMemo(() => createScreenContainerStyles(t), [t]);
   const { padded = true, withTopInset = true, withBottomInset = true } = props;
   const insetStyle = {
     paddingTop: padded && withTopInset ? insets.top + t.spacing.xs : undefined,

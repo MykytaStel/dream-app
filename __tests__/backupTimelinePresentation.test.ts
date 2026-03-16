@@ -26,6 +26,9 @@ describe('backup timeline presentation', () => {
         remoteWinsCount: 0,
         failedCount: 0,
         pendingCount: 0,
+        pendingDreamCount: 0,
+        pendingTombstoneCount: 0,
+        pendingReviewStateCount: 0,
       },
       dreams: [
         {
@@ -109,6 +112,9 @@ describe('backup timeline presentation', () => {
         remoteWinsCount: 0,
         failedCount: 0,
         pendingCount: 2,
+        pendingDreamCount: 2,
+        pendingTombstoneCount: 0,
+        pendingReviewStateCount: 0,
       },
       dreams: [
         {
@@ -307,6 +313,9 @@ describe('cloud sync event presentation', () => {
           remoteWinsCount: 0,
           failedCount: 1,
           pendingCount: 3,
+          pendingDreamCount: 2,
+          pendingTombstoneCount: 0,
+          pendingReviewStateCount: 1,
           errorMessage: 'cloud-session-required',
         },
       ],

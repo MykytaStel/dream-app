@@ -137,9 +137,8 @@ const DREAM_COPY_EN = {
   swipeDelete: 'Delete',
   swipeArchive: 'Archive',
   swipeUnarchive: 'Unarchive',
-  emptyTitle: 'No dreams yet',
-  emptyDescription:
-    'Capture the first one from the + button. Keep it fast: title, voice note, or a few raw lines are enough.',
+  emptyTitle: 'Your first dream is waiting',
+  emptyDescription: 'Write it before it fades — a fragment, a feeling, or a single image is enough.',
   emptyActiveTitle: 'No active dreams',
   emptyActiveDescription:
     'All entries are archived right now. Switch filter or record a new dream.',
@@ -393,6 +392,10 @@ const DREAM_COPY_EN = {
   detailAudioPlaybackHint: 'Listen back to verify the original capture is still usable.',
   detailAudioPlaybackErrorTitle: 'Playback error',
   detailAudioAttachedMeta: 'Attached',
+  detailAudioCloudOnlyHint: 'This voice note is stored in the cloud. Download it to play it back on this device.',
+  detailAudioDownload: 'Download voice note',
+  detailAudioDownloading: 'Downloading…',
+  detailAudioDownloadErrorTitle: 'Download failed',
   createTitle: 'Capture a dream',
   createSubtitle:
     'Capture the shape now. Sort the details later.',
@@ -549,6 +552,17 @@ const DREAM_COPY_EN = {
   audioErrorTitle: 'Audio error',
   audioSimulatorHint:
     'Voice capture may be unavailable on the iOS Simulator. Use text here or test recording on a real device.',
+  audioPermissionDenied:
+    'Microphone access was denied. Turn on microphone permission in system settings to record voice notes.',
+  audioPermissionUnavailable:
+    'Microphone permission could not be requested. Check system settings.',
+  templateSectionHint: 'Quick type',
+  templateLucidLabel: 'Lucid',
+  templateNightmareLabel: 'Nightmare',
+  templateVividLabel: 'Vivid',
+  templateRecurringLabel: 'Recurring',
+  templateFragmentLabel: 'Fragment',
+  templatePeacefulLabel: 'Peaceful',
 };
 
 const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
@@ -685,9 +699,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   swipeDelete: 'Видалити',
   swipeArchive: 'Архів',
   swipeUnarchive: 'Розархівувати',
-  emptyTitle: 'Поки немає снів',
-  emptyDescription:
-    'Додай перший запис через кнопку +. Достатньо назви, голосу або кількох рядків.',
+  emptyTitle: 'Перший сон уже чекає',
+  emptyDescription: 'Запиши до того, як він зникне — фрагмент, відчуття чи один образ — цього достатньо.',
   emptyActiveTitle: 'Немає активних снів',
   emptyActiveDescription: 'Усі записи в архіві. Зміни фільтр або створи новий сон.',
   emptyArchivedTitle: 'Архів порожній',
@@ -938,6 +951,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailAudioPlaybackHint: 'Прослухай запис, щоб перевірити, що початкове захоплення збереглося.',
   detailAudioPlaybackErrorTitle: 'Помилка відтворення',
   detailAudioAttachedMeta: 'Є запис',
+  detailAudioCloudOnlyHint: 'Ця голосова нотатка зберігається в хмарі. Завантаж її, щоб прослухати на цьому пристрої.',
+  detailAudioDownload: 'Завантажити голосову нотатку',
+  detailAudioDownloading: 'Завантаження…',
+  detailAudioDownloadErrorTitle: 'Помилка завантаження',
   createTitle: 'Запис сну',
   createSubtitle:
     'Злови форму сну зараз. Деталі відсортуєш пізніше.',
@@ -1090,6 +1107,17 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   audioErrorTitle: 'Помилка аудіо',
   audioSimulatorHint:
     'Голосовий запис може не працювати в iOS Simulator. Тут краще тестувати текст, а запис перевіряти на реальному пристрої.',
+  audioPermissionDenied:
+    'Доступ до мікрофона заборонено. Увімкни дозвіл у системних налаштуваннях, щоб записувати голосові нотатки.',
+  audioPermissionUnavailable:
+    'Не вдалося запитати дозвіл мікрофона. Перевір налаштування системи.',
+  templateSectionHint: 'Тип сну',
+  templateLucidLabel: 'Усвідомлений',
+  templateNightmareLabel: 'Кошмар',
+  templateVividLabel: 'Яскравий',
+  templateRecurringLabel: 'Повторюваний',
+  templateFragmentLabel: 'Фрагмент',
+  templatePeacefulLabel: 'Спокійний',
 };
 
 const DREAM_MOODS_EN: Array<{ label: string; value: Mood }> = [

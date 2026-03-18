@@ -27,6 +27,9 @@ export function createSettingsScreenStyles(theme: Theme) {
       gap: 7,
       flexWrap: 'wrap',
     },
+    inlineLanguageControlsPending: {
+      opacity: 0.72,
+    },
     inlineLanguageChip: {
       ...createControlPill(theme, {
         tone: 'surface',
@@ -53,6 +56,36 @@ export function createSettingsScreenStyles(theme: Theme) {
       color: theme.colors.textDim,
       lineHeight: 17,
       fontSize: 12,
+    },
+    reminderSuggestionRow: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 10,
+        paddingVertical: 9,
+        paddingHorizontal: 10,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    reminderSuggestionText: {
+      flex: 1,
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 16,
+    },
+    reminderSuggestionApplyChip: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 5,
+        paddingHorizontal: 9,
+      }),
+      borderColor: theme.colors.primary,
+    },
+    reminderSuggestionApplyText: {
+      color: theme.colors.primary,
+      fontSize: 11,
+      fontWeight: '700',
     },
     iosPickerWrap: {
       ...createSoftTile(theme, {

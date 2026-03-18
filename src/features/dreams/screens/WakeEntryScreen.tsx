@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -38,6 +38,7 @@ export default function WakeEntryScreen() {
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.WakeEntry>>();
+  const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.WakeEntry>>();
   const [draftSnapshot, setDraftSnapshot] = React.useState<DreamDraftSnapshot | null>(null);
   const draftSummary = React.useMemo(
     () => getDreamDraftSummaryLabels(draftSnapshot, copy),
@@ -63,8 +64,12 @@ export default function WakeEntryScreen() {
                 entryMode,
                 autoStartRecording,
                 launchKey: autoStartRecording ? Date.now() : undefined,
+                source: route.params?.source ?? 'manual',
               }
-            : { entryMode },
+            : {
+                entryMode,
+                source: route.params?.source ?? 'manual',
+              },
         );
       };
 
@@ -75,7 +80,7 @@ export default function WakeEntryScreen() {
 
       setTimeout(openComposer, 0);
     },
-    [navigation],
+    [navigation, route.params?.source],
   );
 
   const draftPrimaryIcon =
@@ -84,6 +89,7 @@ export default function WakeEntryScreen() {
       : draftSnapshot?.resumeMode === 'wake'
         ? 'sunny-outline'
         : 'create-outline';
+  const hasDraft = Boolean(draftSnapshot);
 
   return (
     <View style={styles.root}>
@@ -122,12 +128,12 @@ export default function WakeEntryScreen() {
           </View>
 
           <View style={styles.actionDeck}>
-            {draftSnapshot ? (
+            {hasDraft ? (
               <Pressable
                 accessibilityHint={draftHint}
                 accessibilityLabel={copy.wakeEntryDraftAction}
                 accessibilityRole="button"
-                onPress={() => handoffToComposer(draftSnapshot.resumeMode)}
+                onPress={() => draftSnapshot && handoffToComposer(draftSnapshot.resumeMode)}
                 style={({ pressed }) => [
                   styles.primaryActionCard,
                   pressed ? styles.primaryActionCardPressed : null,
@@ -155,10 +161,10 @@ export default function WakeEntryScreen() {
               </Pressable>
             ) : (
               <Pressable
-                accessibilityHint={copy.wakeEntryOrbHint}
-                accessibilityLabel={copy.wakeEntryWriteAction}
+                accessibilityHint={copy.wakeEntrySpeakHint}
+                accessibilityLabel={copy.wakeEntrySpeakAction}
                 accessibilityRole="button"
-                onPress={() => handoffToComposer('wake')}
+                onPress={() => handoffToComposer('voice', true)}
                 style={({ pressed }) => [
                   styles.primaryActionCard,
                   pressed ? styles.primaryActionCardPressed : null,
@@ -166,24 +172,41 @@ export default function WakeEntryScreen() {
               >
                 <View style={styles.primaryActionHeader}>
                   <View style={styles.primaryActionIconWrap}>
-                    <Ionicons name="create-outline" size={20} color={t.colors.ink} />
+                    <Ionicons name="mic-outline" size={20} color={t.colors.ink} />
                   </View>
                   <View style={styles.primaryActionCopy}>
-                    <Text style={styles.primaryActionTitle}>{copy.wakeEntryWriteAction}</Text>
-                    <Text style={styles.primaryActionHint}>{copy.wakeEntryOrbHint}</Text>
+                    <Text style={styles.primaryActionTitle}>{copy.wakeEntrySpeakAction}</Text>
+                    <Text style={styles.primaryActionHint}>{copy.wakeEntrySpeakHint}</Text>
                   </View>
                   <Ionicons name="chevron-forward" size={20} color={t.colors.ink} />
                 </View>
                 <View style={styles.primaryActionMetaRow}>
                   <View style={styles.primaryActionMetaChip}>
-                    <Text style={styles.primaryActionMetaLabel}>{copy.wakeModeChip}</Text>
+                    <Text style={styles.primaryActionMetaLabel}>{copy.quickAddVoiceAction}</Text>
                   </View>
                 </View>
               </Pressable>
             )}
 
             <View style={styles.secondaryActions}>
-              {draftSnapshot ? (
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => handoffToComposer('voice', true)}
+                style={({ pressed }) => [
+                  styles.actionCard,
+                  pressed ? styles.actionCardPressed : null,
+                ]}
+              >
+                <View style={styles.actionCardIconWrap}>
+                  <Ionicons name="mic-outline" size={18} color={t.colors.primary} />
+                </View>
+                <View style={styles.actionCardCopy}>
+                  <Text style={styles.actionCardTitle}>{copy.wakeEntrySpeakAction}</Text>
+                  <Text style={styles.actionCardHint}>{copy.wakeEntrySpeakHint}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+              </Pressable>
+              {hasDraft ? (
                 <Pressable
                   accessibilityRole="button"
                   onPress={() => handoffToComposer('wake')}
@@ -202,23 +225,25 @@ export default function WakeEntryScreen() {
                   <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
                 </Pressable>
               ) : null}
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => handoffToComposer('voice', true)}
-              style={({ pressed }) => [
-                styles.actionCard,
-                pressed ? styles.actionCardPressed : null,
-              ]}
-            >
-              <View style={styles.actionCardIconWrap}>
-                <Ionicons name="mic-outline" size={18} color={t.colors.primary} />
-              </View>
-                <View style={styles.actionCardCopy}>
-                  <Text style={styles.actionCardTitle}>{copy.wakeEntrySpeakAction}</Text>
-                  <Text style={styles.actionCardHint}>{copy.wakeEntrySpeakHint}</Text>
-                </View>
-                <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
-              </Pressable>
+              {!hasDraft ? (
+                <Pressable
+                  accessibilityRole="button"
+                  onPress={() => handoffToComposer('wake')}
+                  style={({ pressed }) => [
+                    styles.actionCard,
+                    pressed ? styles.actionCardPressed : null,
+                  ]}
+                >
+                  <View style={styles.actionCardIconWrap}>
+                    <Ionicons name="create-outline" size={18} color={t.colors.primary} />
+                  </View>
+                  <View style={styles.actionCardCopy}>
+                    <Text style={styles.actionCardTitle}>{copy.wakeEntryWriteAction}</Text>
+                    <Text style={styles.actionCardHint}>{copy.wakeEntryOrbHint}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+                </Pressable>
+              ) : null}
             </View>
           </View>
         </View>

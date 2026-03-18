@@ -84,6 +84,9 @@ export function DreamComposer({
     [copy, restoredDraftSnapshot],
   );
   const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(form.hasRestoredDraft);
+  const isCreateMode = mode === 'create';
+  const isCreateVoiceFlow = isCreateMode && entryMode === 'voice';
+  const isCreateTextFlow = isCreateMode && entryMode === 'default';
 
   const showTemplateRow =
     mode === 'create' &&
@@ -139,6 +142,53 @@ export function DreamComposer({
       onPress: () => form.setShowTagsSection(current => !current),
     },
   ], [copy, form]);
+
+  const voiceCard = (
+    <DreamComposerVoiceCard
+      styles={styles}
+      copy={copy}
+      isWakeMode={form.isWakeMode}
+      recording={form.recording}
+      recordingDuration={form.recordingDuration}
+      audioUri={form.audioUri}
+      audioFileLabel={audioFileLabel}
+      isBusy={form.isBusy}
+      onToggleRecord={() => {
+        form.onToggleRecord().catch(e =>
+          logActionError('DreamComposer.onToggleRecord', e),
+        );
+      }}
+      onRemoveAudio={() => form.setAudioUri(undefined)}
+    />
+  );
+
+  const coreCard = (
+    <DreamComposerCoreCard
+      styles={styles}
+      copy={copy}
+      isWakeMode={form.isWakeMode}
+      isEntryEmpty={form.isEntryEmpty}
+      hasRestoredDraft={form.hasRestoredDraft}
+      title={form.title}
+      onChangeTitle={form.setTitle}
+      sleepDate={form.sleepDate}
+      onChangeSleepDate={form.setSleepDate}
+      text={form.text}
+      onChangeText={form.setText}
+      hasInvalidSleepDate={form.hasInvalidSleepDate}
+      hasTriedSave={form.hasTriedSave}
+      hasMissingContent={form.hasMissingContent}
+      textWordCount={form.textWordCount}
+    />
+  );
+
+  const inlineSaveButton = isCreateMode ? (
+    <Button
+      title={copy.saveDream}
+      onPress={form.onSave}
+      disabled={form.saveDisabled}
+    />
+  ) : null;
 
   return (
     <ScreenContainer scroll keyboardShouldPersistTaps="handled">
@@ -209,32 +259,10 @@ export function DreamComposer({
       ) : null}
 
       {form.isWakeMode ? (
-        <DreamComposerWakeCaptureCard
-          styles={styles}
-          copy={copy}
-          recording={form.recording}
-          recordingDuration={form.recordingDuration}
-          audioUri={form.audioUri}
-          audioFileLabel={audioFileLabel}
-          isBusy={form.isBusy}
-          onToggleRecord={() => {
-            form.onToggleRecord().catch(e =>
-              logActionError('DreamComposer.onToggleRecord', e),
-            );
-          }}
-          onRemoveAudio={() => form.setAudioUri(undefined)}
-          text={form.text}
-          onChangeText={form.setText}
-          hasTriedSave={form.hasTriedSave}
-          hasMissingContent={form.hasMissingContent}
-          textWordCount={form.textWordCount}
-        />
-      ) : (
         <>
-          <DreamComposerVoiceCard
+          <DreamComposerWakeCaptureCard
             styles={styles}
             copy={copy}
-            isWakeMode={form.isWakeMode}
             recording={form.recording}
             recordingDuration={form.recordingDuration}
             audioUri={form.audioUri}
@@ -246,26 +274,33 @@ export function DreamComposer({
               );
             }}
             onRemoveAudio={() => form.setAudioUri(undefined)}
-          />
-
-          <DreamComposerCoreCard
-            styles={styles}
-            copy={copy}
-            isWakeMode={form.isWakeMode}
-            isEntryEmpty={form.isEntryEmpty}
-            hasRestoredDraft={form.hasRestoredDraft}
-            title={form.title}
-            onChangeTitle={form.setTitle}
-            sleepDate={form.sleepDate}
-            onChangeSleepDate={form.setSleepDate}
             text={form.text}
             onChangeText={form.setText}
-            hasInvalidSleepDate={form.hasInvalidSleepDate}
             hasTriedSave={form.hasTriedSave}
             hasMissingContent={form.hasMissingContent}
             textWordCount={form.textWordCount}
           />
+          {inlineSaveButton}
         </>
+      ) : (
+        isCreateVoiceFlow ? (
+          <>
+            {voiceCard}
+            {inlineSaveButton}
+            {coreCard}
+          </>
+        ) : isCreateTextFlow ? (
+          <>
+            {coreCard}
+            {inlineSaveButton}
+            {voiceCard}
+          </>
+        ) : (
+          <>
+            {voiceCard}
+            {coreCard}
+          </>
+        )
       )}
 
       <DreamComposerRefineCard
@@ -348,11 +383,13 @@ export function DreamComposer({
         />
       ) : null}
 
-      <Button
-        title={form.isEdit ? copy.updateDream : copy.saveDream}
-        onPress={form.onSave}
-        disabled={form.saveDisabled}
-      />
+      {!isCreateMode ? (
+        <Button
+          title={form.isEdit ? copy.updateDream : copy.saveDream}
+          onPress={form.onSave}
+          disabled={form.saveDisabled}
+        />
+      ) : null}
     </ScreenContainer>
   );
 }

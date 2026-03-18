@@ -382,6 +382,7 @@ export function CloudSection({
   const showSaveBackupForm = cloudSessionIsAnonymous;
   const showNamedAccountActions =
     cloudSessionStatus === 'signed-in' && !cloudSessionIsAnonymous;
+  const showHighlights = cloudSessionStatus === 'signed-in' || showDeveloperCloudConfig;
   const backupGuideSteps = getCloudGuideSteps(
     copy,
     cloudSessionStatus,
@@ -410,7 +411,7 @@ export function CloudSection({
           ) : null
         }
       />
-      <SettingsMetaGrid items={highlights} dense />
+      {showHighlights ? <SettingsMetaGrid items={highlights} dense /> : null}
       {showPathSelector ? (
         <View style={styles.backupModeBlock}>
           <SettingsSectionHeader
@@ -527,11 +528,13 @@ export function CloudSection({
           onDisconnectCloud={onDisconnectCloud}
         />
       ) : null}
-      <SettingsActionRow
-        title={copy.cloudLastSyncLabel}
-        meta={cloudSyncMetaDescription}
-        value={cloudSyncMetaTitle}
-      />
+      {cloudSessionStatus === 'signed-in' ? (
+        <SettingsActionRow
+          title={copy.cloudLastSyncLabel}
+          meta={cloudSyncMetaDescription}
+          value={cloudSyncMetaTitle}
+        />
+      ) : null}
       <Text style={styles.privacyFootnote}>{cloudFootnote}</Text>
     </Card>
   );

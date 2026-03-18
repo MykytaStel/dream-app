@@ -19,11 +19,15 @@ type HomeHeroPrompt = {
   onSecondaryAction?: () => void;
 };
 
+const STREAK_MILESTONES = new Set([3, 7, 14, 30]);
+
 type HomeHeroProps = {
   styles: ReturnType<typeof createHomeScreenStyles>;
   insetTop: number;
   greeting: string;
   dateLabel: string;
+  streak?: number;
+  streakLabel?: string;
   prompt?: HomeHeroPrompt | null;
 };
 
@@ -32,9 +36,12 @@ export const HomeHero = React.memo(function HomeHero({
   insetTop,
   greeting,
   dateLabel,
+  streak,
+  streakLabel,
   prompt,
 }: HomeHeroProps) {
   const t = useTheme<Theme>();
+  const isMilestone = streak != null && streak >= 2 && STREAK_MILESTONES.has(streak);
 
   return (
     <Animated.View entering={FadeIn.duration(400)} style={[styles.heroCard, { paddingTop: insetTop }]}>
@@ -48,6 +55,13 @@ export const HomeHero = React.memo(function HomeHero({
               <View style={styles.heroDateChip}>
                 <Text style={styles.heroDateChipLabel}>{dateLabel}</Text>
               </View>
+              {streak != null && streak >= 2 && streakLabel ? (
+                <View style={[styles.heroStreakChip, isMilestone ? styles.heroStreakChipMilestone : null]}>
+                  <Text style={[styles.heroStreakChipText, isMilestone ? styles.heroStreakChipTextMilestone : null]}>
+                    {streakLabel}
+                  </Text>
+                </View>
+              ) : null}
             </View>
             {prompt ? (
               <View style={styles.heroPromptCard}>

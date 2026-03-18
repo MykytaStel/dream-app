@@ -1,21 +1,23 @@
 import React from 'react';
 import { type AppLocale } from '../../../i18n/types';
 import { type getStatsCopy } from '../../../constants/copy/stats';
+import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type Dream } from '../../dreams/model/dream';
 import { getRecurringReflectionSignals, getRecurringWordSignals } from '../model/dreamReflection';
-import { buildSavedDreamThreadShelfItems } from '../model/dreamThread';
 import {
-  createReflectionPatternItems,
-  createWordPatternItems,
-  type PatternGroupKey,
-} from '../model/statsScreenModel';
+  buildReflectionRecurringDashboardItems,
+  buildSavedDreamThreadShelfItems,
+  buildWordRecurringDashboardItems,
+  type RecurringSignalDashboardItem,
+} from '../model/dreamThread';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
-import { type PatternGroupCardItem } from '../components/PatternGroupCard';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
+const RECURRING_GROUP_LIMIT = 4;
 
 export function useStatsThreadsContent(args: {
   copy: StatsCopy;
+  dreamCopy: DreamCopy;
   locale: AppLocale;
   scopedDreams: Dream[];
   savedThreadRecords: Array<{
@@ -23,47 +25,44 @@ export function useStatsThreadsContent(args: {
     kind: 'word' | 'theme' | 'symbol';
     savedAt: number;
   }>;
-  openPatternDetail: (signal: string, kind: PatternDetailKind) => void;
-  isOverviewMode: boolean;
   isThreadsMode: boolean;
 }) {
   const {
     copy,
+    dreamCopy,
     locale,
     scopedDreams,
     savedThreadRecords,
-    openPatternDetail,
-    isOverviewMode,
     isThreadsMode,
   } = args;
   const recurringThemes = React.useMemo(
     () =>
-      isOverviewMode || isThreadsMode
-        ? getRecurringReflectionSignals(scopedDreams, { limit: 6 })
+      isThreadsMode
+        ? getRecurringReflectionSignals(scopedDreams, { limit: RECURRING_GROUP_LIMIT })
         : [],
-    [isOverviewMode, isThreadsMode, scopedDreams],
+    [isThreadsMode, scopedDreams],
   );
   const recurringSymbols = React.useMemo(
     () =>
       isThreadsMode
         ? getRecurringReflectionSignals(scopedDreams, {
-            limit: 6,
+            limit: RECURRING_GROUP_LIMIT,
             transcriptOnly: true,
           })
         : [],
     [isThreadsMode, scopedDreams],
   );
   const recurringWords = React.useMemo(
-    () => ((isOverviewMode || isThreadsMode) ? getRecurringWordSignals(scopedDreams, 6) : []),
-    [isOverviewMode, isThreadsMode, scopedDreams],
+    () => (isThreadsMode ? getRecurringWordSignals(scopedDreams, RECURRING_GROUP_LIMIT) : []),
+    [isThreadsMode, scopedDreams],
   );
 
   const patternGroups = React.useMemo<
     Array<{
-      key: PatternGroupKey;
+      key: PatternDetailKind;
       label: string;
       description: string;
-      values: PatternGroupCardItem[];
+      values: RecurringSignalDashboardItem[];
       empty: string;
     }>
   >(
@@ -72,47 +71,56 @@ export function useStatsThreadsContent(args: {
         ? []
         : [
             {
-              key: 'themes',
+              key: 'symbol',
+              label: copy.recurringSymbols,
+              description: copy.recurringSymbolsDescription,
+              values: buildReflectionRecurringDashboardItems({
+                signals: recurringSymbols,
+                kind: 'symbol',
+                locale,
+                dreams: scopedDreams,
+                statsCopy: copy,
+                dreamCopy,
+              }),
+              empty: copy.recurringSymbolsEmpty,
+            },
+            {
+              key: 'theme',
               label: copy.recurringThemes,
               description: copy.recurringThemesDescription,
-              values: createReflectionPatternItems(
-                recurringThemes,
+              values: buildReflectionRecurringDashboardItems({
+                signals: recurringThemes,
+                kind: 'theme',
                 locale,
-                'theme',
-                copy,
-                openPatternDetail,
-              ),
+                dreams: scopedDreams,
+                statsCopy: copy,
+                dreamCopy,
+              }),
               empty: copy.recurringThemesEmpty,
             },
             {
-              key: 'words',
+              key: 'word',
               label: copy.recurringWords,
               description: copy.recurringWordsDescription,
-              values: createWordPatternItems(recurringWords, locale, openPatternDetail),
-              empty: copy.recurringWordsEmpty,
-            },
-            {
-              key: 'symbols',
-              label: copy.recurringSymbols,
-              description: copy.recurringSymbolsDescription,
-              values: createReflectionPatternItems(
-                recurringSymbols,
+              values: buildWordRecurringDashboardItems({
+                signals: recurringWords,
                 locale,
-                'symbol',
-                copy,
-                openPatternDetail,
-              ),
-              empty: copy.recurringSymbolsEmpty,
+                dreams: scopedDreams,
+                statsCopy: copy,
+                dreamCopy,
+              }),
+              empty: copy.recurringWordsEmpty,
             },
           ],
     [
       copy,
+      dreamCopy,
       isThreadsMode,
       locale,
-      openPatternDetail,
       recurringSymbols,
       recurringThemes,
       recurringWords,
+      scopedDreams,
     ],
   );
   const savedThreadItems = React.useMemo(

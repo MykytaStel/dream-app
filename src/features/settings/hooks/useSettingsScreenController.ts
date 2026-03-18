@@ -47,6 +47,7 @@ import {
   getSettingsFooterMeta,
 } from '../model/settingsPresentation';
 import { useCloudBackupController } from './useCloudBackupController';
+import { trackReminderToggled } from '../../../services/observability/events';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 
@@ -165,12 +166,15 @@ export function useSettingsScreenController({
             copy.reminderPermissionDeniedDescription,
           );
         }
+
+        return appliedSettings;
       } catch (error) {
         await refreshReminderState();
         Alert.alert(
           copy.reminderSaveErrorTitle,
           error instanceof Error ? error.message : String(error),
         );
+        return null;
       } finally {
         setIsApplyingReminder(false);
       }
@@ -193,10 +197,17 @@ export function useSettingsScreenController({
       setPermissionGranted(true);
     }
 
-    await updateReminderSettings({
+    const appliedSettings = await updateReminderSettings({
       ...reminderSettings,
       enabled: !reminderSettings.enabled,
     });
+    if (!appliedSettings) {
+      return;
+    }
+
+    if (appliedSettings.enabled !== reminderSettings.enabled) {
+      trackReminderToggled({ enabled: appliedSettings.enabled });
+    }
   }, [copy, reminderSettings, updateReminderSettings]);
 
   const onSelectTime = React.useCallback(
@@ -413,6 +424,7 @@ export function useSettingsScreenController({
     onToggleReminder,
     onOpenReminderTimePicker,
     onNativeTimePickerChange,
+    onSelectReminderTime: onSelectTime,
     getReminderDate: () => getReminderDate(reminderSettings),
     pickerLocale: getPickerLocale(locale),
     onSelectLocale,

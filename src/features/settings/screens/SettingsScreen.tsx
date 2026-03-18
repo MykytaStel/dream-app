@@ -3,7 +3,6 @@ import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
-import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
@@ -16,24 +15,27 @@ import {
   openSyncDiagnosticsPreview,
   openWakeEntry,
 } from '../../../app/navigation/navigationRef';
+import { listDreamListItems } from '../../dreams/repository/dreamsRepository';
+import { getOptimalReminderTime } from '../../reminders/services/dreamReminderService';
 import { logActionError } from '../../../app/errorReporting';
 import {
   ROOT_ROUTE_NAMES,
   type RootStackParamList,
 } from '../../../app/navigation/routes';
 import { useSettingsScreenController } from '../hooks/useSettingsScreenController';
+import { formatReminderTime } from '../model/settingsPresentation';
 import {
   AnalysisSection,
   DevSection,
   TranscriptionSection,
 } from '../components/SettingsAdvancedSections';
 import {
+  BackupSummarySection,
   BiometricLockSection,
   PrivacySection,
   ReminderSection,
   SettingsHeroSection,
 } from '../components/SettingsTopSections';
-import { SettingsActionRow } from '../components/SettingsActionRow';
 
 export default function SettingsScreen() {
   const theme = useTheme<Theme>();
@@ -49,12 +51,58 @@ export default function SettingsScreen() {
     copy,
   });
 
-  const backupTeaserMeta = React.useMemo(() => {
+  const suggestedReminderTime = React.useMemo(() => {
+    const dreams = listDreamListItems();
+    const optimal = getOptimalReminderTime(dreams);
+    if (!optimal) {
+      return null;
+    }
+    // Don't suggest if it matches the current setting
+    if (
+      optimal.hour === controller.reminderSettings.hour &&
+      optimal.minute === controller.reminderSettings.minute
+    ) {
+      return null;
+    }
+    return optimal;
+  }, [controller.reminderSettings.hour, controller.reminderSettings.minute]);
+
+  const suggestedTime = React.useMemo(() => {
+    if (!suggestedReminderTime) {
+      return null;
+    }
+
+    return {
+      label: formatReminderTime(
+        {
+          enabled: true,
+          hour: suggestedReminderTime.hour,
+          minute: suggestedReminderTime.minute,
+        },
+        locale,
+      ),
+    };
+  }, [locale, suggestedReminderTime]);
+
+  const onApplySuggestedTime = React.useCallback(() => {
+    if (!suggestedReminderTime) {
+      return;
+    }
+
+    controller
+      .onSelectReminderTime(
+        suggestedReminderTime.hour,
+        suggestedReminderTime.minute,
+      )
+      .catch(e => logActionError('SettingsScreen.onApplySuggestedTime', e));
+  }, [controller, suggestedReminderTime]);
+
+  const backupSummaryMeta = React.useMemo(() => {
     if (controller.cloudSession.status !== 'signed-in') {
       return controller.cloudSummaryAccountValue;
     }
 
-    return `${controller.cloudSummaryAccountValue} • ${copy.cloudLastSyncLabel} ${controller.cloudSyncMetaTitle}`;
+    return `${copy.cloudLastSyncLabel}: ${controller.cloudSyncMetaTitle}`;
   }, [
     controller.cloudSummaryAccountValue,
     controller.cloudSession.status,
@@ -81,6 +129,7 @@ export default function SettingsScreen() {
         reminderTime={controller.reminderTime}
         showIosTimePicker={controller.showIosTimePicker}
         pickerLocale={controller.pickerLocale}
+        suggestedTime={suggestedTime}
         getReminderDate={controller.getReminderDate}
         onToggleReminder={() =>
           controller.onToggleReminder().catch(e =>
@@ -89,17 +138,16 @@ export default function SettingsScreen() {
         }
         onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
         onNativeTimePickerChange={controller.onNativeTimePickerChange}
+        onApplySuggestedTime={onApplySuggestedTime}
       />
 
-      <Card style={styles.sectionCard}>
-        <SettingsActionRow
-          title={copy.backupScreenTitle}
-          meta={backupTeaserMeta}
-          value={controller.cloudSummaryStatusValue}
-          variant="inline"
-          onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.Backup)}
-        />
-      </Card>
+      <BackupSummarySection
+        copy={copy}
+        styles={styles}
+        summaryMeta={backupSummaryMeta}
+        summaryValue={controller.cloudSummaryStatusValue}
+        onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.Backup)}
+      />
 
       <BiometricLockSection
         copy={copy}

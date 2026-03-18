@@ -6,6 +6,7 @@ import {
   getDreamEntryType,
   getDreamSearchMatchReasons,
   getDreamSearchScore,
+  hasActiveTimelineFilters,
   hasActiveTimelineRefinements,
   isDreamStarred,
   matchesDreamSearch,
@@ -252,6 +253,7 @@ describe('homeTimeline', () => {
       'train',
     ]);
     expect(hasActiveTimelineRefinements(DEFAULT_HOME_TIMELINE_FILTERS)).toBe(false);
+    expect(hasActiveTimelineFilters(DEFAULT_HOME_TIMELINE_FILTERS)).toBe(false);
     expect(
       hasActiveTimelineRefinements({
         ...DEFAULT_HOME_TIMELINE_FILTERS,
@@ -260,5 +262,11 @@ describe('homeTimeline', () => {
         dateRange: '7d',
       }),
     ).toBe(true);
+    expect(
+      hasActiveTimelineRefinements({
+        ...DEFAULT_HOME_TIMELINE_FILTERS,
+        sortOrder: 'oldest',
+      }),
+    ).toBe(false);
   });
 });

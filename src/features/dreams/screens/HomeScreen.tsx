@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  FlatList,
-  Pressable,
-  RefreshControl,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, RefreshControl, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
@@ -15,11 +10,18 @@ import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { Text } from '../../../components/ui/Text';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { type RootStackParamList } from '../../../app/navigation/routes';
-import { openBackupScreen, openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
+import {
+  openBackupScreen,
+  openNewDreamTab,
+  openWakeEntry,
+} from '../../../app/navigation/navigationRef';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { ScreenStateCard } from '../components/ScreenStateCard';
-import { getDreamCopy, getDreamMoodLabels } from '../../../constants/copy/dreams';
+import {
+  getDreamCopy,
+  getDreamMoodLabels,
+} from '../../../constants/copy/dreams';
 import { getDreamLayout } from '../constants/layout';
 import { HomeDreamRow } from '../components/home/HomeDreamRow';
 import { HomeFilterSheet } from '../components/home/HomeFilterSheet';
@@ -41,7 +43,10 @@ import {
   markBackupOnboardingSeen,
 } from '../../settings/services/backupOnboardingService';
 
-function formatPreview(dream: DreamListItem, copy: ReturnType<typeof getDreamCopy>) {
+function formatPreview(
+  dream: DreamListItem,
+  copy: ReturnType<typeof getDreamCopy>,
+) {
   const text = dream.textPreview?.trim();
   if (text) {
     return text;
@@ -64,12 +69,18 @@ export default function HomeScreen() {
   const layout = React.useMemo(() => getDreamLayout(theme), [theme]);
   const insets = useSafeAreaInsets();
   const { locale } = useI18n();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = React.useMemo(() => createHomeScreenStyles(theme), [theme]);
   const listContentStyle = React.useMemo(
-    () => [styles.listContent, { paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs }],
+    () => [
+      styles.listContent,
+      {
+        paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
+      },
+    ],
     [insets.bottom, styles.listContent, theme.spacing.xs],
   );
   const {
@@ -91,12 +102,13 @@ export default function HomeScreen() {
     React.useState(() => hasSeenBackupOnboarding());
   const fullLastViewedDream = React.useMemo(
     () =>
-      lastViewedDream && 'tags' in lastViewedDream
-        ? lastViewedDream
-        : null,
+      lastViewedDream && 'tags' in lastViewedDream ? lastViewedDream : null,
     [lastViewedDream],
   );
-  const draftSnapshot = React.useMemo(() => getDreamDraftSnapshot(draft), [draft]);
+  const draftSnapshot = React.useMemo(
+    () => getDreamDraftSnapshot(draft),
+    [draft],
+  );
   const draftResumeDescription = React.useMemo(
     () => getDreamDraftResumeDescription(draftSnapshot, copy),
     [copy, draftSnapshot],
@@ -163,7 +175,13 @@ export default function HomeScreen() {
     }
 
     openDefaultCapture();
-  }, [draft, openDefaultCapture, openDraftCapture, openWakeCapture, showWakeCapturePrompt]);
+  }, [
+    draft,
+    openDefaultCapture,
+    openDraftCapture,
+    openWakeCapture,
+    showWakeCapturePrompt,
+  ]);
   const refreshOnboardingState = React.useCallback(() => {
     setHasSeenBackupOnboardingState(hasSeenBackupOnboarding());
   }, []);
@@ -189,11 +207,19 @@ export default function HomeScreen() {
             description: draftResumeDescription,
             primaryActionLabel: copy.homeContinueDraft,
             primaryActionIcon:
-              draftSnapshot?.resumeMode === 'voice' ? 'mic-outline' : 'document-text-outline',
+              draftSnapshot?.resumeMode === 'voice'
+                ? 'mic-outline'
+                : 'document-text-outline',
             onPrimaryAction: openDraftCapture,
-            secondaryActionLabel: showWakeCapturePrompt ? copy.quickAddWakeAction : undefined,
-            secondaryActionIcon: showWakeCapturePrompt ? 'sunny-outline' : undefined,
-            onSecondaryAction: showWakeCapturePrompt ? openWakeCapture : undefined,
+            secondaryActionLabel: showWakeCapturePrompt
+              ? copy.quickAddWakeAction
+              : undefined,
+            secondaryActionIcon: showWakeCapturePrompt
+              ? 'sunny-outline'
+              : undefined,
+            onSecondaryAction: showWakeCapturePrompt
+              ? openWakeCapture
+              : undefined,
           }
         : null,
     [
@@ -223,6 +249,12 @@ export default function HomeScreen() {
           insetTop={insets.top + theme.spacing.sm}
           greeting={timeline.heroGreeting}
           dateLabel={timeline.heroDateLabel}
+          streak={timeline.streak}
+          streakLabel={
+            timeline.streak >= 2
+              ? `${timeline.streak} ${copy.homeDaysUnit}`
+              : undefined
+          }
           prompt={heroPrompt}
         />
 
@@ -237,13 +269,8 @@ export default function HomeScreen() {
           lastViewedDreamTitle={lastViewedDream?.title || copy.untitled}
           lastViewedDreamMeta={timeline.lastViewedDreamMeta}
           onOpenLastDream={
-            lastViewedDream
-              ? () => openDreamDetail(lastViewedDream.id)
-              : null
+            lastViewedDream ? () => openDreamDetail(lastViewedDream.id) : null
           }
-          streak={timeline.streak}
-          totalDreams={timeline.activeDreams.length}
-          averageWords={timeline.averageWords}
           isSearchPending={timeline.isSearchPending}
           isFilterMutationPending={timeline.isFilterMutationPending}
           hasSearchQuery={timeline.hasSearchQuery}
@@ -251,12 +278,12 @@ export default function HomeScreen() {
           savedSearchPresets={timeline.savedSearchPresets}
           activeSearchPresetId={timeline.activeSearchPresetId}
           canSaveSearchPreset={timeline.canSaveSearchPreset}
+          sortOptions={timeline.sortOptions}
           spotlightPattern={timeline.spotlightPattern}
           spotlightPatternKind={timeline.spotlightPatternKind}
           spotlightCountLabel={timeline.spotlightCountLabel}
           revisitCue={timeline.revisitCue}
-          weeklyValue={timeline.weeklyValue}
-          weeklyHint={timeline.weeklyHint}
+          weeklyPatternCards={timeline.weeklyPatternCards}
           attentionValue={timeline.attentionValue}
           attentionHint={timeline.attentionHint}
           onOpenRevisitDream={openDreamDetail}
@@ -281,7 +308,6 @@ export default function HomeScreen() {
           transcriptFilters={timeline.transcriptFilters}
           availableTags={timeline.availableTags}
           dateRangeFilters={timeline.dateRangeFilters}
-          sortOptions={timeline.sortOptions}
           onClose={() => timeline.setIsFilterSheetOpen(false)}
           updateTimelineFilters={timeline.updateTimelineFilters}
         />
@@ -336,11 +362,14 @@ export default function HomeScreen() {
             </View>
             <View style={styles.timestampRow}>
               <Text style={styles.timestamp}>
-                {dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10)}
+                {dream.sleepDate ||
+                  new Date(dream.createdAt).toISOString().slice(0, 10)}
               </Text>
               {dream.mood ? (
                 <View style={styles.moodPill}>
-                  <Text style={styles.moodPillText}>{moodLabels[dream.mood]}</Text>
+                  <Text style={styles.moodPillText}>
+                    {moodLabels[dream.mood]}
+                  </Text>
                 </View>
               ) : null}
             </View>
@@ -452,7 +481,9 @@ export default function HomeScreen() {
           variant="empty"
           title={copy.emptyTitle}
           subtitle={copy.emptyDescription}
-          actionLabel={showWakeCapturePrompt ? copy.quickAddWakeAction : copy.createTitle}
+          actionLabel={
+            showWakeCapturePrompt ? copy.quickAddWakeAction : copy.createTitle
+          }
           onAction={openRecommendedCapture}
         />
       </ScreenContainer>
@@ -473,6 +504,12 @@ export default function HomeScreen() {
               insetTop={insets.top + theme.spacing.sm}
               greeting={timeline.heroGreeting}
               dateLabel={timeline.heroDateLabel}
+              streak={timeline.streak}
+              streakLabel={
+                timeline.streak >= 2
+                  ? `${timeline.streak} ${copy.homeDaysUnit}`
+                  : undefined
+              }
               prompt={heroPrompt}
             />
           }
@@ -493,7 +530,8 @@ export default function HomeScreen() {
           contentContainerStyle={[
             styles.listContent,
             {
-              paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
+              paddingBottom:
+                getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
             },
           ]}
           ListEmptyComponent={

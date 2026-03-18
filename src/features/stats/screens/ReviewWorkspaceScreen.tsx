@@ -54,6 +54,7 @@ export default function ReviewWorkspaceScreen() {
   const controller = useStatsScreenController({
     locale,
     copy,
+    dreamCopy,
     selectedMemoryMode: 'overview',
     openPatternDetail,
   });

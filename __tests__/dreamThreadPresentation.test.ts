@@ -1,10 +1,16 @@
 import { getDreamCopy, getDreamMoodLabels } from '../src/constants/copy/dreams';
 import { getStatsCopy } from '../src/constants/copy/stats';
 import {
+  buildReflectionRecurringDashboardItems,
   buildDreamThreadViewModel,
   buildSavedDreamThreadShelfItems,
+  buildWordRecurringDashboardItems,
 } from '../src/features/stats/model/dreamThread';
 import { getPatternDreamMatches } from '../src/features/stats/model/patternMatches';
+import {
+  getRecurringReflectionSignals,
+  getRecurringWordSignals,
+} from '../src/features/stats/model/dreamReflection';
 import type { Dream } from '../src/features/dreams/model/dream';
 
 describe('dreamThread presentation', () => {
@@ -167,6 +173,103 @@ describe('dreamThread presentation', () => {
     expect(items[0]).toMatchObject({
       signal: 'Hello-World',
       kind: 'theme',
+    });
+  });
+
+  test('builds recurring reflection dashboard items with latest dream context', () => {
+    const dreams: Dream[] = [
+      {
+        id: 'dream-1',
+        createdAt: Date.UTC(2026, 1, 2, 8, 0),
+        sleepDate: '2026-02-02',
+        title: 'First bridge',
+        transcript: 'The bridge opened beside a station.',
+        transcriptSource: 'generated',
+        tags: ['bridge'],
+      },
+      {
+        id: 'dream-2',
+        createdAt: Date.UTC(2026, 2, 12, 8, 0),
+        sleepDate: '2026-03-12',
+        title: 'Bridge returns',
+        text: 'I was back on the same bridge at sunrise.',
+        transcript: 'The bridge returned above the station.',
+        transcriptSource: 'edited',
+        tags: ['bridge'],
+      },
+    ];
+
+    const signals = getRecurringReflectionSignals(dreams);
+    const items = buildReflectionRecurringDashboardItems({
+      signals,
+      kind: 'theme',
+      locale: 'en',
+      dreams,
+      statsCopy,
+      dreamCopy,
+    });
+
+    expect(items[0]).toMatchObject({
+      signal: 'bridge',
+      kind: 'theme',
+      rank: 1,
+      kindLabel: statsCopy.patternDetailThemeLabel,
+      matchesLabel: `2 ${statsCopy.patternDetailMatchesPlural}`,
+      sourceLabel: statsCopy.reflectionSourceMixed,
+      latestDreamId: 'dream-2',
+      latestDreamTitle: 'Bridge returns',
+      latestDreamMeta: '2026-03-12',
+      latestSourceLabels: [
+        statsCopy.patternDetailSourceTag,
+        statsCopy.patternDetailSourceTranscript,
+      ],
+    });
+    expect(items[0].timelineLabel).toContain(statsCopy.threadDetailFirstSeenLabel);
+    expect(items[0].timelineLabel).toContain(statsCopy.threadDetailLatestSeenLabel);
+  });
+
+  test('builds recurring word dashboard items with mention counts', () => {
+    const dreams: Dream[] = [
+      {
+        id: 'dream-1',
+        createdAt: Date.UTC(2026, 1, 2, 8, 0),
+        sleepDate: '2026-02-02',
+        title: 'Lantern dock',
+        text: 'Lantern light moved across the water.',
+        transcript: 'Lantern beside the bridge.',
+        transcriptSource: 'generated',
+        tags: [],
+      },
+      {
+        id: 'dream-2',
+        createdAt: Date.UTC(2026, 2, 12, 8, 0),
+        sleepDate: '2026-03-12',
+        title: 'Lantern room',
+        text: 'A lantern kept burning in the room.',
+        tags: [],
+      },
+    ];
+
+    const signals = getRecurringWordSignals(dreams);
+    const items = buildWordRecurringDashboardItems({
+      signals,
+      locale: 'en',
+      dreams,
+      statsCopy,
+      dreamCopy,
+    });
+
+    expect(items).toHaveLength(1);
+    expect(items[0]).toMatchObject({
+      signal: 'lantern',
+      kind: 'word',
+      rank: 1,
+      kindLabel: statsCopy.patternDetailWordLabel,
+      matchesLabel: `2 ${statsCopy.patternDetailMatchesPlural}`,
+      sourceLabel: statsCopy.patternDetailSourceText,
+      supportingLabel: '3 mentions',
+      latestDreamId: 'dream-2',
+      latestDreamTitle: 'Lantern room',
     });
   });
 });

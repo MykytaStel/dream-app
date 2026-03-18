@@ -17,7 +17,6 @@ import { Theme } from '../../../theme/theme';
 import { createStatsScreenStyles } from './StatsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { useStatsScreenController } from '../hooks/useStatsScreenController';
-import { getPatternDreamMatches } from '../model/patternMatches';
 import {
   StatsHeroSection,
   StatsMilestonesSection,
@@ -27,43 +26,21 @@ import {
   type MemoryMode,
 } from '../components/StatsScreenSections';
 
-type ActiveThreadSelection = {
-  signal: string;
-  kind: PatternDetailKind;
-};
-
-function getPatternKindSubtitle(kind: PatternDetailKind, copy: ReturnType<typeof getStatsCopy>) {
-  switch (kind) {
-    case 'word':
-      return copy.patternDetailWordDescription;
-    case 'theme':
-      return copy.patternDetailThemeDescription;
-    case 'symbol':
-      return copy.patternDetailSymbolDescription;
-  }
-}
-
-function getPatternKindLabel(kind: PatternDetailKind, copy: ReturnType<typeof getStatsCopy>) {
-  switch (kind) {
-    case 'word':
-      return copy.patternDetailWordLabel;
-    case 'theme':
-      return copy.patternDetailThemeLabel;
-    case 'symbol':
-      return copy.patternDetailSymbolLabel;
-  }
-}
-
 export default function StatsScreen() {
   const theme = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
-  const [activeThread, setActiveThread] = React.useState<ActiveThreadSelection | null>(null);
   const [selectedMemoryMode, setSelectedMemoryMode] =
     React.useState<MemoryMode>('overview');
+  const handleSelectMemoryMode = React.useCallback((value: MemoryMode) => {
+    React.startTransition(() => {
+      setSelectedMemoryMode(value);
+    });
+  }, []);
 
   const memoryModeOptions = React.useMemo(
     () => [
@@ -76,62 +53,29 @@ export default function StatsScreen() {
 
   const openPatternDetail = React.useCallback(
     (signal: string, kind: PatternDetailKind) => {
-      setActiveThread({
+      navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
         signal,
         kind,
       });
     },
-    [],
+    [navigation],
   );
 
   const controller = useStatsScreenController({
     locale,
     copy,
+    dreamCopy,
     selectedMemoryMode,
     openPatternDetail,
   });
-
-  React.useEffect(() => {
-    const hasActiveSelection = controller.activePatternGroup?.values.some(
-      item =>
-        item.signalKind === activeThread?.kind &&
-        item.label === activeThread?.signal,
-    );
-
-    if (hasActiveSelection) {
-      return;
-    }
-
-    const firstInteractiveSignal = controller.activePatternGroup?.values.find(
-      item => item.signalKind,
-    );
-
-    if (!firstInteractiveSignal?.signalKind) {
-      if (activeThread) {
-        setActiveThread(null);
-      }
-      return;
-    }
-
-    setActiveThread({
-      signal: firstInteractiveSignal.label,
-      kind: firstInteractiveSignal.signalKind,
-    });
-  }, [activeThread, controller.activePatternGroup]);
-
-  const activeThreadMatches = React.useMemo(
-    () =>
-      activeThread
-        ? getPatternDreamMatches(controller.scopedDreams, activeThread.signal, activeThread.kind)
-        : [],
-    [activeThread, controller.scopedDreams],
+  const handleSelectRange = React.useCallback(
+    (value: 'all' | '30d' | '7d') => {
+      React.startTransition(() => {
+        controller.setSelectedRange(value);
+      });
+    },
+    [controller],
   );
-  const activeThreadLabel = activeThread
-    ? getPatternKindLabel(activeThread.kind, copy)
-    : null;
-  const activeThreadDescription = activeThread
-    ? getPatternKindSubtitle(activeThread.kind, copy)
-    : null;
   const shouldShowScopedEmptyState =
     selectedMemoryMode !== 'monthly' && !controller.scopedDreams.length;
 
@@ -185,10 +129,10 @@ export default function StatsScreen() {
         copy={copy}
         styles={styles}
         selectedMemoryMode={selectedMemoryMode}
-        onSelectMemoryMode={setSelectedMemoryMode}
+        onSelectMemoryMode={handleSelectMemoryMode}
         memoryModeOptions={memoryModeOptions}
         selectedRange={controller.selectedRange}
-        onSelectRange={controller.setSelectedRange}
+        onSelectRange={handleSelectRange}
         rangeOptions={controller.rangeOptions}
         topSignal={controller.topSignal}
         memoryNudge={controller.memoryNudge}
@@ -216,7 +160,9 @@ export default function StatsScreen() {
               fingerprintLeadSignals={controller.fingerprintLeadSignals}
               fingerprintFacets={controller.fingerprintFacets}
               isDetailsExpanded={controller.isDetailsExpanded}
-              onToggleDetails={() => controller.setIsDetailsExpanded(current => !current)}
+              onToggleDetails={() =>
+                controller.setIsDetailsExpanded(current => !current)
+              }
               selectedMode={controller.selectedMode}
               onSelectMode={controller.setSelectedMode}
               canCompare={controller.canCompare}
@@ -226,8 +172,9 @@ export default function StatsScreen() {
               activityBars={controller.activityBars}
               emotionalTrendSeries={controller.emotionalTrendSeries}
               emotionalTrendInsight={controller.emotionalTrendInsight}
+              nightmareMetrics={controller.nightmareMetrics}
+              weeklyPatternCards={controller.weeklyPatternCards}
               summaryTiles={controller.summaryTiles}
-              overallLastSevenDays={controller.overallLastSevenDays}
               coverageItems={controller.coverageItems}
               attentionItems={controller.attentionItems}
               workQueueItems={controller.workQueueItems}
@@ -236,6 +183,7 @@ export default function StatsScreen() {
               onOpenReviewWorkspace={() =>
                 navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
               }
+              onOpenPatternDetail={openPatternDetail}
             />
           ) : null}
 
@@ -244,27 +192,8 @@ export default function StatsScreen() {
               copy={copy}
               styles={styles}
               patternGroups={controller.patternGroups}
-              activePatternGroup={controller.activePatternGroup}
-              selectedPatternGroup={controller.selectedPatternGroup}
-              onSelectPatternGroup={controller.setSelectedPatternGroup}
-              activeThread={activeThread}
-              activeThreadLabel={activeThreadLabel}
-              activeThreadDescription={activeThreadDescription}
-              activeThreadMatches={activeThreadMatches}
               savedThreadItems={controller.savedThreadItems}
-              dreamCopy={dreamCopy}
-              onOpenThreadDream={dreamId =>
-                navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
-                  dreamId,
-                })
-              }
-              onOpenThreadDetail={(signal, kind) =>
-                navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
-                  signal,
-                  kind: kind as PatternDetailKind,
-                })
-              }
-              onClearThread={() => setActiveThread(null)}
+              onOpenThreadDetail={openPatternDetail}
             />
           ) : null}
 
@@ -274,8 +203,12 @@ export default function StatsScreen() {
               styles={styles}
               latestMonthlyReport={controller.latestMonthlyReport}
               latestMonthlyReportTitle={controller.latestMonthlyReportTitle}
-              monthlyReportPreviewSignals={controller.monthlyReportPreviewSignals}
-              onOpenMonthlyReport={() => navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport)}
+              monthlyReportPreviewSignals={
+                controller.monthlyReportPreviewSignals
+              }
+              onOpenMonthlyReport={() =>
+                navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport)
+              }
             />
           ) : null}
         </>
@@ -292,7 +225,9 @@ export default function StatsScreen() {
           totalCount={controller.achievementSummary.totalCount}
           milestoneSummaryHint={controller.milestoneSummaryHint}
           achievements={controller.achievements}
-          highlightedAchievementId={controller.achievementSummary.highlightedId ?? null}
+          highlightedAchievementId={
+            controller.achievementSummary.highlightedId ?? null
+          }
           isExpanded={controller.isMilestonesExpanded}
           onToggleExpanded={() =>
             controller.setIsMilestonesExpanded(current => !current)

@@ -14,8 +14,13 @@ const SETTINGS_COPY_EN = {
     'One daily nudge after waking so you capture dreams faster.',
   reminderPermissionLabel: 'Notifications',
   reminderPermissionBlocked: 'Blocked',
+  reminderCurrentScheduleLabel: 'Current schedule',
+  reminderEnableHint: 'Turn it on to choose a daily reminder time.',
+  reminderOffValue: 'Off',
   reminderTimeLabel: 'Reminder time',
   reminderTimeHint: 'Tap to change.',
+  reminderSmartSuggestionLabel: 'Based on your recording patterns',
+  reminderSmartSuggestionApply: 'Set to',
   reminderPreviewWakeAction: 'Preview wake flow',
   reminderPreviewWakeMeta:
     'Open the reminder entry screen without waiting for the next notification.',
@@ -48,7 +53,7 @@ const SETTINGS_COPY_EN = {
     'If you delete the app, local entries, downloaded transcription model, and drafts may be removed with it until export or sync exists.',
   cloudTitle: 'Cloud backup',
   cloudDescription:
-    'Keep one archive available across devices.',
+    'Optional device-to-device sync for one archive.',
   cloudConfigLabel: 'Runtime config',
   cloudConfigReady: 'Ready',
   cloudConfigMissing: 'Missing',
@@ -139,17 +144,49 @@ const SETTINGS_COPY_EN = {
     'In production this modal opens once after the archive reaches 3 saved dreams.',
   backupScreenTitle: 'Backup & sync',
   backupScreenSubtitle:
-    'Sync, export, and restore one archive.',
-  backupTimelineTitle: 'Sync activity',
+    'Restore backups bring data back into the app. PDFs are for reading or sharing. Cloud backup stays optional.',
+  backupSummaryDescription:
+    'Restore files, PDFs, and optional cloud backup live here.',
+  backupSummaryOpenTitle: 'Open backup workspace',
+  backupLocalSectionTitle: 'Local files',
+  backupLocalSectionDescription:
+    'Create a restore backup, restore from one, or export a readable PDF.',
+  backupCloudSectionTitle: 'Cloud backup',
+  backupCloudSectionDescription:
+    'Optional sync for one archive across devices.',
+  backupStatusTitle: 'Status details',
+  backupStatusDescription:
+    'Open this only when you need sync state or local-only details.',
+  backupStatusToggleTitle: 'Cloud sync and local-only status',
+  backupStatusToggleMetaCollapsed:
+    'Hidden by default so the screen stays focused on backup, restore, and PDF actions.',
+  backupStatusToggleMetaExpanded:
+    'Shows recent sync state, latest restore backup, and what is still only on this device.',
+  backupFlowGuideTitle: 'Choose the right file',
+  backupFlowGuideDescription:
+    'Each action creates or uses a different kind of file.',
+  backupFlowBackupTitle: 'Backup export',
+  backupFlowBackupMeta:
+    'Creates a JSON restore file for this app. Use it later in Local restore or save it somewhere else.',
+  backupFlowBackupValue: 'Restore file',
+  backupFlowPdfTitle: 'PDF export',
+  backupFlowPdfMeta:
+    'Creates a readable snapshot for reading or sharing. It is not a restore file.',
+  backupFlowPdfValue: 'Readable file',
+  backupFlowRestoreTitle: 'Restore',
+  backupFlowRestoreMeta:
+    'Applies a backup export to this device after preview. PDFs never appear here.',
+  backupFlowRestoreValue: 'Applies backup',
+  backupTimelineTitle: 'Cloud sync activity',
   backupTimelineDescription:
-    'See the last sync, latest snapshot, and this device state.',
+    'See the last cloud sync, latest restore backup, and this device state.',
   backupTimelineSyncTitle: 'Last successful sync',
-  backupTimelineSnapshotTitle: 'Latest backup snapshot',
+  backupTimelineSnapshotTitle: 'Latest restore backup',
   backupTimelineDeviceTitle: 'This device',
   backupTimelineDeviceFreshnessLabel: 'Freshest local change',
-  backupTimelineSnapshotMissing: 'No local snapshot yet',
+  backupTimelineSnapshotMissing: 'No restore backup yet',
   backupTimelineSnapshotMissingMeta:
-    'Create one backup and the latest restore preview will appear here.',
+    'Create one restore backup and the latest preview will appear here.',
   backupTimelineDeviceLocalOnly: 'Local only',
   backupTimelineDeviceNeedsAttention: 'Needs attention',
   backupTimelineDeviceAheadSingle: '1 change ahead',
@@ -160,15 +197,15 @@ const SETTINGS_COPY_EN = {
   backupTimelineDeviceNoLocalChanges: 'No local changes yet',
   backupTimelineReviewSetsLabel: 'Review sets',
   backupTimelineReviewSetsPending: 'Review sets waiting for sync',
-  backupContentTrustTitle: 'What may still be local',
+  backupContentTrustTitle: 'What is still only on this device',
   backupContentTrustDescription:
-    'Check what may still be local on this device.',
+    'These counts show what has not reached cloud backup yet. Local backup files and PDFs are separate from this.',
   backupContentTrustAudioTitle: 'Voice notes',
   backupContentTrustAudioMeta: '{total} saved • {synced} already in cloud',
   backupContentTrustAudioEmpty: 'No voice notes yet',
   backupContentTrustAudioEmptyMeta:
     'Audio trust will appear here once a dream includes a voice note.',
-  backupContentTrustAudioAllBackedUp: 'All backed up',
+  backupContentTrustAudioAllBackedUp: 'In cloud backup',
   backupContentTrustAudioStillLocalSingle: '1 still local',
   backupContentTrustAudioStillLocalPlural: '{count} still local',
   backupContentTrustTranscriptTitle: 'Saved transcripts',
@@ -176,7 +213,7 @@ const SETTINGS_COPY_EN = {
   backupContentTrustTranscriptEmpty: 'No saved transcripts',
   backupContentTrustTranscriptEmptyMeta:
     'Transcript trust will appear here once a dream includes saved transcript text.',
-  backupContentTrustTranscriptCaughtUp: 'Caught up',
+  backupContentTrustTranscriptCaughtUp: 'Up to date in cloud',
   backupContentTrustTranscriptStillLocalSingle: '1 newer locally',
   backupContentTrustTranscriptStillLocalPlural: '{count} newer locally',
   backupContentTrustReviewTitle: 'Saved review sets',
@@ -184,7 +221,7 @@ const SETTINGS_COPY_EN = {
   backupContentTrustReviewEmpty: 'No saved sets yet',
   backupContentTrustReviewEmptyMeta:
     'Saved months and threads will appear here once you start curating review work.',
-  backupContentTrustReviewCaughtUp: 'Caught up',
+  backupContentTrustReviewCaughtUp: 'Up to date in cloud',
   backupContentTrustReviewStillLocal: 'Newer locally',
   backupContentTrustLocalOnly: 'Local only',
   cloudExistingBackupTitle: 'Open existing backup',
@@ -253,11 +290,21 @@ const SETTINGS_COPY_EN = {
   cloudAccountUpgradeErrorTitle: 'Account upgrade failed',
   cloudDisconnectErrorTitle: 'Backup disconnect failed',
   cloudFootnote:
-    'Your dreams stay local first. Cloud backup only adds sync and restore across devices when you choose to connect it.',
+    'Cloud backup is optional sync between connected devices. Restore backups and PDFs are separate files, and this app does not add end-to-end encryption to them.',
+  backupExportTitle: 'Backup export',
+  backupExportDescription:
+    'Create a JSON backup file for restore on this or another device.',
+  backupExportFootnote:
+    'Backup exports are plain files. Anyone with the file can read or import it. This app does not encrypt the file.',
+  pdfExportTitle: 'PDF export',
+  pdfExportDescription:
+    'Create a readable PDF for reference, printing, or sharing. It cannot be restored into the app.',
+  pdfExportFootnote:
+    'PDF exports are plain files for reading or sharing. This app does not encrypt the file.',
   exportTitle: 'Local export',
   exportDescription:
     'Create a restore backup or a readable PDF snapshot.',
-  exportLatestPathLabel: 'Ready file',
+  exportLatestPathLabel: 'Latest file',
   exportFootnote:
     'Backup is for restore later. PDF is for reading or sharing.',
   exportButton: 'Create backup',
@@ -280,13 +327,13 @@ const SETTINGS_COPY_EN = {
   exportPdfErrorTitle: 'PDF export failed',
   restoreTitle: 'Local restore',
   restoreDescription:
-    'Choose a backup, review it, then restore.',
-  restoreAvailableLabel: 'Available backups',
-  restoreLoading: 'Loading backups...',
-  restoreEmptyTitle: 'No local backups yet',
+    'Choose a backup export, review it, then restore it on this device. PDFs cannot be restored.',
+  restoreAvailableLabel: 'Available restore backups',
+  restoreLoading: 'Loading restore backups...',
+  restoreEmptyTitle: 'No restore backups yet',
   restoreEmptyDescription:
-    'Create one export first, then it will appear here for preview and restore.',
-  restorePreviewTitle: 'Backup preview',
+    'Create a backup export first, then it will appear here for preview and restore.',
+  restorePreviewTitle: 'Restore preview',
   restoreSelectedValue: 'Selected',
   restoreModeLabel: 'Mode',
   restoreModeReplace: 'Replace',
@@ -295,9 +342,9 @@ const SETTINGS_COPY_EN = {
     'Replace local dreams, draft, locale, reminders, and analysis settings.',
   restoreModeMergeHint:
     'Add backup dreams, keep current settings, and import the backup draft only if the local draft is empty.',
-  restoreNoBackupAction: 'Create backup first',
-  restoreSelectBackupAction: 'Choose a backup first',
-  restoreLoadingAction: 'Preparing backup preview...',
+  restoreNoBackupAction: 'Create a restore backup first',
+  restoreSelectBackupAction: 'Choose a restore backup first',
+  restoreLoadingAction: 'Preparing restore preview...',
   restoreReplaceWarning: 'Replace overwrites the local archive on this device.',
   restoreMergeGuidance:
     'Merge keeps current settings and adds dreams from the backup.',
@@ -441,8 +488,13 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Одне щоденне нагадування після пробудження, щоб швидше фіксувати сни.',
   reminderPermissionLabel: 'Сповіщення',
   reminderPermissionBlocked: 'Заблоковані',
+  reminderCurrentScheduleLabel: 'Поточний розклад',
+  reminderEnableHint: 'Увімкни, щоб вибрати щоденний час нагадування.',
+  reminderOffValue: 'Вимкнено',
   reminderTimeLabel: 'Час нагадування',
   reminderTimeHint: 'Натисни, щоб змінити.',
+  reminderSmartSuggestionLabel: 'На основі твоїх патернів запису',
+  reminderSmartSuggestionApply: 'Встановити на',
   reminderPreviewWakeAction: 'Переглянути ранковий режим',
   reminderPreviewWakeMeta:
     'Відкрий екран після нагадування без очікування наступного сповіщення.',
@@ -475,7 +527,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Якщо видалити застосунок, локальні записи, завантажена модель транскрипції і чернетки можуть зникнути, доки не зʼявиться експорт або синхронізація.',
   cloudTitle: 'Хмарний backup',
   cloudDescription:
-    'Тримай один архів доступним на кількох пристроях.',
+    'Опційний sync одного архіву між пристроями.',
   cloudConfigLabel: 'Runtime-конфіг',
   cloudConfigReady: 'Готово',
   cloudConfigMissing: 'Відсутній',
@@ -566,17 +618,49 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'У production цей modal відкривається один раз після 3 збережених снів.',
   backupScreenTitle: 'Backup і sync',
   backupScreenSubtitle:
-    'Синк, експорт і відновлення одного архіву.',
-  backupTimelineTitle: 'Активність синку',
+    'Restore-backup повертає дані в застосунок. PDF потрібен для читання або поширення. Хмарний backup лишається опційним.',
+  backupSummaryDescription:
+    'Тут живуть restore-файли, PDF і опційний хмарний backup.',
+  backupSummaryOpenTitle: 'Відкрити простір backup',
+  backupLocalSectionTitle: 'Локальні файли',
+  backupLocalSectionDescription:
+    'Створи restore-backup, відновися з нього або експортуй читабельний PDF.',
+  backupCloudSectionTitle: 'Хмарний backup',
+  backupCloudSectionDescription:
+    'Опційний sync одного архіву між пристроями.',
+  backupStatusTitle: 'Деталі статусу',
+  backupStatusDescription:
+    'Відкривай лише коли треба перевірити sync-стан або що лишилось тільки локально.',
+  backupStatusToggleTitle: 'Статус cloud sync і локальних даних',
+  backupStatusToggleMetaCollapsed:
+    'Сховано за замовчуванням, щоб екран лишався сфокусованим на backup, restore і PDF.',
+  backupStatusToggleMetaExpanded:
+    'Показує недавній sync-стан, останній restore-backup і що ще є лише на цьому пристрої.',
+  backupFlowGuideTitle: 'Обери правильний файл',
+  backupFlowGuideDescription:
+    'Кожна дія створює або використовує інший тип файла.',
+  backupFlowBackupTitle: 'Експорт backup',
+  backupFlowBackupMeta:
+    'Створює JSON-файл для відновлення в цьому застосунку. Його можна використати пізніше в Локальному відновленні або зберегти деінде.',
+  backupFlowBackupValue: 'Файл для restore',
+  backupFlowPdfTitle: 'Експорт PDF',
+  backupFlowPdfMeta:
+    'Створює читабельний знімок для читання або поширення. Це не файл для відновлення.',
+  backupFlowPdfValue: 'Файл для читання',
+  backupFlowRestoreTitle: 'Відновлення',
+  backupFlowRestoreMeta:
+    'Застосовує backup-експорт на цьому пристрої після preview. PDF тут ніколи не зʼявляється.',
+  backupFlowRestoreValue: 'Застосовує backup',
+  backupTimelineTitle: 'Активність хмарного sync',
   backupTimelineDescription:
-    'Подивись на останній синк, snapshot і стан цього пристрою.',
+    'Подивись на останній хмарний sync, останній restore-backup і стан цього пристрою.',
   backupTimelineSyncTitle: 'Останній успішний синк',
-  backupTimelineSnapshotTitle: 'Останній backup snapshot',
+  backupTimelineSnapshotTitle: 'Останній restore-backup',
   backupTimelineDeviceTitle: 'Цей пристрій',
   backupTimelineDeviceFreshnessLabel: 'Найсвіжіша локальна зміна',
-  backupTimelineSnapshotMissing: 'Локального snapshot ще немає',
+  backupTimelineSnapshotMissing: 'Restore-backup ще немає',
   backupTimelineSnapshotMissingMeta:
-    'Створи backup один раз, і тут з’явиться найновіший restore preview.',
+    'Створи restore-backup один раз, і тут з’явиться найновіший preview.',
   backupTimelineDeviceLocalOnly: 'Лише локально',
   backupTimelineDeviceNeedsAttention: 'Потрібна увага',
   backupTimelineDeviceAheadSingle: 'На 1 зміну попереду',
@@ -587,15 +671,15 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupTimelineDeviceNoLocalChanges: 'Локальних змін ще немає',
   backupTimelineReviewSetsLabel: 'Набори ревʼю',
   backupTimelineReviewSetsPending: 'Набори ревʼю чекають на синк',
-  backupContentTrustTitle: 'Що ще може бути лише локально',
+  backupContentTrustTitle: 'Що ще є лише на цьому пристрої',
   backupContentTrustDescription:
-    'Перевір, що ще може лишатися тільки на цьому пристрої.',
+    'Ці числа показують, що ще не дійшло до хмарного backup. Локальні backup-файли й PDF рахуються окремо.',
   backupContentTrustAudioTitle: 'Голосові нотатки',
   backupContentTrustAudioMeta: '{total} збережено • {synced} уже в хмарі',
   backupContentTrustAudioEmpty: 'Ще немає голосових нотаток',
   backupContentTrustAudioEmptyMeta:
     'Статус аудіо з’явиться тут, щойно якийсь сон матиме голосову нотатку.',
-  backupContentTrustAudioAllBackedUp: 'Усе в backup',
+  backupContentTrustAudioAllBackedUp: 'Є в хмарному backup',
   backupContentTrustAudioStillLocalSingle: '1 ще локально',
   backupContentTrustAudioStillLocalPlural: '{count} ще локально',
   backupContentTrustTranscriptTitle: 'Збережені транскрипти',
@@ -603,7 +687,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupContentTrustTranscriptEmpty: 'Ще немає збережених транскриптів',
   backupContentTrustTranscriptEmptyMeta:
     'Статус транскриптів з’явиться тут, щойно якийсь сон матиме збережений текст транскрипту.',
-  backupContentTrustTranscriptCaughtUp: 'Актуально',
+  backupContentTrustTranscriptCaughtUp: 'Актуально в хмарі',
   backupContentTrustTranscriptStillLocalSingle: '1 новіший локально',
   backupContentTrustTranscriptStillLocalPlural: '{count} новіші локально',
   backupContentTrustReviewTitle: 'Збережені набори ревʼю',
@@ -611,7 +695,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupContentTrustReviewEmpty: 'Ще немає збережених наборів',
   backupContentTrustReviewEmptyMeta:
     'Збережені місяці й нитки зʼявляться тут, щойно ти почнеш збирати ревʼю-набори.',
-  backupContentTrustReviewCaughtUp: 'Актуально',
+  backupContentTrustReviewCaughtUp: 'Актуально в хмарі',
   backupContentTrustReviewStillLocal: 'Новіше локально',
   backupContentTrustLocalOnly: 'Лише локально',
   cloudExistingBackupTitle: 'Відкрити існуючий backup',
@@ -680,11 +764,21 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudAccountUpgradeErrorTitle: 'Не вдалося оновити акаунт',
   cloudDisconnectErrorTitle: 'Не вдалося вимкнути backup',
   cloudFootnote:
-    'Твої сни лишаються локальними в першу чергу. Хмарний backup лише додає sync і restore між пристроями, коли ти сам цього хочеш.',
+    'Хмарний backup це опційний sync між підключеними пристроями. Restore-backup і PDF це окремі файли, і застосунок не додає їм end-to-end encryption.',
+  backupExportTitle: 'Експорт backup',
+  backupExportDescription:
+    'Створи JSON-файл backup для відновлення на цьому або іншому пристрої.',
+  backupExportFootnote:
+    'Backup-експорт це звичайний файл. Будь-хто з доступом до файла може його прочитати або імпортувати. Застосунок не шифрує цей файл.',
+  pdfExportTitle: 'Експорт PDF',
+  pdfExportDescription:
+    'Створи читабельний PDF для довідки, друку або поширення. Його не можна відновити назад у застосунок.',
+  pdfExportFootnote:
+    'PDF-експорт це звичайний файл для читання або поширення. Застосунок не шифрує цей файл.',
   exportTitle: 'Локальний експорт',
   exportDescription:
     'Створи backup для відновлення або читабельний PDF-знімок.',
-  exportLatestPathLabel: 'Готовий файл',
+  exportLatestPathLabel: 'Останній файл',
   exportFootnote:
     'Backup потрібен для відновлення пізніше. PDF підходить для читання або поширення.',
   exportButton: 'Створити backup',
@@ -707,13 +801,13 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   exportPdfErrorTitle: 'Помилка PDF-експорту',
   restoreTitle: 'Локальне відновлення',
   restoreDescription:
-    'Обери backup, переглянь його і віднови.',
-  restoreAvailableLabel: 'Доступні копії',
-  restoreLoading: 'Завантаження копій...',
-  restoreEmptyTitle: 'Локальних копій ще немає',
+    'Обери backup-експорт, переглянь його і віднови на цьому пристрої. PDF відновити не можна.',
+  restoreAvailableLabel: 'Доступні restore-backup',
+  restoreLoading: 'Завантаження restore-backup...',
+  restoreEmptyTitle: 'Restore-backup ще немає',
   restoreEmptyDescription:
-    'Спершу створи експорт, і він з’явиться тут для перегляду та відновлення.',
-  restorePreviewTitle: 'Попередній перегляд копії',
+    'Спершу створи backup-експорт, і він з’явиться тут для preview та відновлення.',
+  restorePreviewTitle: 'Preview відновлення',
   restoreSelectedValue: 'Вибрано',
   restoreModeLabel: 'Режим',
   restoreModeReplace: 'Замінити',
@@ -722,9 +816,9 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Замінити локальні сни, чернетку, мову, нагадування й налаштування аналізу.',
   restoreModeMergeHint:
     'Додати сни з копії, лишити поточні налаштування і взяти чернетку з копії лише якщо локальна порожня.',
-  restoreNoBackupAction: 'Спершу створи backup',
-  restoreSelectBackupAction: 'Спершу обери backup',
-  restoreLoadingAction: 'Готуємо preview backup...',
+  restoreNoBackupAction: 'Спершу створи restore-backup',
+  restoreSelectBackupAction: 'Спершу обери restore-backup',
+  restoreLoadingAction: 'Готуємо preview відновлення...',
   restoreReplaceWarning: 'Replace перезапише локальний архів на цьому пристрої.',
   restoreMergeGuidance:
     'Merge лишає поточні налаштування й додає сни з backup.',

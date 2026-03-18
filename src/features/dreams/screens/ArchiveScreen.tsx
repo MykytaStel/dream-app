@@ -113,8 +113,6 @@ export default function ArchiveScreen() {
               selectedDate={browse.selectedDate}
               onSelectMonth={browse.selectMonth}
               onClearDate={browse.clearSelectedDate}
-              onToggleCalendar={browse.toggleCalendarExpanded}
-              isCalendarExpanded={browse.isCalendarExpanded}
               weekdayLabels={browse.weekdayLabels}
               calendarRows={browse.calendarRows}
               onSelectCalendarDate={browse.selectCalendarDate}
@@ -139,6 +137,9 @@ export default function ArchiveScreen() {
               onOpenRevisitDream={dreamId =>
                 navigation.navigate('DreamDetail', { dreamId })
               }
+              topMonthTags={browse.topMonthTags}
+              tagFilter={browse.tagFilter}
+              onSelectTagFilter={browse.selectTagFilter}
             />
           </>
         ) : null}

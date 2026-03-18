@@ -1,5 +1,6 @@
 import { type AppLocale } from '../../../i18n/types';
 import { type getStatsCopy } from '../../../constants/copy/stats';
+import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type Dream } from '../../dreams/model/dream';
 import { type DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
@@ -12,6 +13,7 @@ type StatsCopy = ReturnType<typeof getStatsCopy>;
 type UseStatsDerivedContentArgs = {
   locale: AppLocale;
   copy: StatsCopy;
+  dreamCopy: DreamCopy;
   dreams: Dream[];
   scopedDreams: Dream[];
   selectedRange: 'all' | '30d' | '7d';
@@ -26,6 +28,7 @@ type UseStatsDerivedContentArgs = {
     savedAt: number;
   }>;
   wakeEmotionLabels: Record<string, string>;
+  moodLabels: Record<string, string>;
   preSleepEmotionLabels: Record<string, string>;
   openPatternDetail: (signal: string, kind: PatternDetailKind) => void;
 };
@@ -33,6 +36,7 @@ type UseStatsDerivedContentArgs = {
 export function useStatsDerivedContent({
   locale,
   copy,
+  dreamCopy,
   dreams,
   scopedDreams,
   selectedRange,
@@ -43,6 +47,7 @@ export function useStatsDerivedContent({
   savedMonths,
   savedThreadRecords,
   wakeEmotionLabels,
+  moodLabels,
   preSleepEmotionLabels,
   openPatternDetail,
 }: UseStatsDerivedContentArgs) {
@@ -56,6 +61,7 @@ export function useStatsDerivedContent({
     savedMonths,
     savedThreadRecords,
     wakeEmotionLabels,
+    moodLabels,
     preSleepEmotionLabels,
     openPatternDetail,
     isOverviewMode,
@@ -63,11 +69,10 @@ export function useStatsDerivedContent({
   });
   const threads = useStatsThreadsContent({
     copy,
+    dreamCopy,
     locale,
     scopedDreams,
     savedThreadRecords,
-    openPatternDetail,
-    isOverviewMode,
     isThreadsMode,
   });
   const monthly = useStatsMonthlyContent({

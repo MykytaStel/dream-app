@@ -48,6 +48,8 @@ export type DreamReflectionSignal = {
   tagHits: number;
   transcriptHits: number;
   source: 'tag' | 'transcript' | 'mixed';
+  firstSeenAt: number;
+  latestSeenAt: number;
 };
 
 export type TranscriptArchiveStats = {
@@ -61,6 +63,8 @@ export type DreamWordSignal = {
   label: string;
   dreamCount: number;
   hitCount: number;
+  firstSeenAt: number;
+  latestSeenAt: number;
 };
 
 function formatTagLabel(tag: string) {
@@ -148,6 +152,8 @@ export function getRecurringReflectionSignals(
       dreamIds: Set<string>;
       tagHits: number;
       transcriptHits: number;
+      firstSeenAt: number;
+      latestSeenAt: number;
     }
   >();
 
@@ -165,9 +171,13 @@ export function getRecurringReflectionSignals(
           dreamIds: new Set<string>(),
           tagHits: 0,
           transcriptHits: 0,
+          firstSeenAt: dream.createdAt,
+          latestSeenAt: dream.createdAt,
         };
         current.dreamIds.add(dream.id);
         current.tagHits += 1;
+        current.firstSeenAt = Math.min(current.firstSeenAt, dream.createdAt);
+        current.latestSeenAt = Math.max(current.latestSeenAt, dream.createdAt);
         signalMap.set(tagKey, current);
       });
     }
@@ -184,9 +194,13 @@ export function getRecurringReflectionSignals(
         dreamIds: new Set<string>(),
         tagHits: 0,
         transcriptHits: 0,
+        firstSeenAt: dream.createdAt,
+        latestSeenAt: dream.createdAt,
       };
       current.dreamIds.add(dream.id);
       current.transcriptHits += 1;
+      current.firstSeenAt = Math.min(current.firstSeenAt, dream.createdAt);
+      current.latestSeenAt = Math.max(current.latestSeenAt, dream.createdAt);
       signalMap.set(token, current);
     });
   });
@@ -198,6 +212,8 @@ export function getRecurringReflectionSignals(
       tagHits: entry.tagHits,
       transcriptHits: entry.transcriptHits,
       source: buildSignalSource(entry.tagHits, entry.transcriptHits),
+      firstSeenAt: entry.firstSeenAt,
+      latestSeenAt: entry.latestSeenAt,
     }))
     .filter(entry => entry.dreamCount >= 2)
     .sort((a, b) => {
@@ -225,6 +241,8 @@ export function getRecurringWordSignals(dreams: Dream[], limit = 6) {
     {
       dreamIds: Set<string>;
       hitCount: number;
+      firstSeenAt: number;
+      latestSeenAt: number;
     }
   >();
 
@@ -241,9 +259,13 @@ export function getRecurringWordSignals(dreams: Dream[], limit = 6) {
       const current = signalMap.get(token) ?? {
         dreamIds: new Set<string>(),
         hitCount: 0,
+        firstSeenAt: dream.createdAt,
+        latestSeenAt: dream.createdAt,
       };
       current.dreamIds.add(dream.id);
       current.hitCount += count;
+      current.firstSeenAt = Math.min(current.firstSeenAt, dream.createdAt);
+      current.latestSeenAt = Math.max(current.latestSeenAt, dream.createdAt);
       signalMap.set(token, current);
     });
   });
@@ -253,6 +275,8 @@ export function getRecurringWordSignals(dreams: Dream[], limit = 6) {
       label,
       dreamCount: entry.dreamIds.size,
       hitCount: entry.hitCount,
+      firstSeenAt: entry.firstSeenAt,
+      latestSeenAt: entry.latestSeenAt,
     }))
     .filter(entry => entry.dreamCount >= 2)
     .sort((a, b) => {

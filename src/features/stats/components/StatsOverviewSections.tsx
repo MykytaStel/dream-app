@@ -8,7 +8,10 @@ import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 import { Theme } from '../../../theme/theme';
-import { DreamFingerprintCard, type DreamFingerprintFacet } from './DreamFingerprintCard';
+import {
+  DreamFingerprintCard,
+  type DreamFingerprintFacet,
+} from './DreamFingerprintCard';
 import { EmotionalTrendSection } from './EmotionalTrendSection';
 import {
   disabledRangeChipStyle,
@@ -17,7 +20,11 @@ import {
   type StatsStyles,
 } from './StatsScreenSection.shared';
 import { type EmotionalTrendEntry } from '../model/emotionalTrends';
-import { formatCoverageValue, formatSignedDelta } from '../model/statsScreenModel';
+import {
+  formatCoverageValue,
+  formatSignedDelta,
+} from '../model/statsScreenModel';
+import { type WeeklyPatternCard } from '../model/weeklyPatternCards';
 
 export function StatsOverviewSections({
   copy,
@@ -35,14 +42,16 @@ export function StatsOverviewSections({
   activityBars,
   emotionalTrendSeries,
   emotionalTrendInsight,
+  nightmareMetrics,
+  weeklyPatternCards,
   summaryTiles,
-  overallLastSevenDays,
   coverageItems,
   attentionItems,
   workQueueItems,
   importantDreamItems,
   savedSetItems,
   onOpenReviewWorkspace,
+  onOpenPatternDetail,
 }: {
   copy: StatsCopy;
   styles: StatsStyles;
@@ -54,14 +63,32 @@ export function StatsOverviewSections({
   onSelectMode: (value: 'snapshot' | 'compare') => void;
   canCompare: boolean;
   selectedRangeLabel: string;
-  compareOptions: ReadonlyArray<{ key: 'snapshot' | 'compare'; label: string; disabled: boolean }>;
-  compareMetrics: ReadonlyArray<{ label: string; current: number; previous: number }>;
+  compareOptions: ReadonlyArray<{
+    key: 'snapshot' | 'compare';
+    label: string;
+    disabled: boolean;
+  }>;
+  compareMetrics: ReadonlyArray<{
+    label: string;
+    current: number;
+    previous: number;
+  }>;
   activityBars: ReadonlyArray<{ key: string; label: string; count: number }>;
   emotionalTrendSeries: ReadonlyArray<EmotionalTrendEntry>;
   emotionalTrendInsight: string;
+  nightmareMetrics: ReadonlyArray<{
+    label: string;
+    value: string;
+    hint: string;
+  }>;
+  weeklyPatternCards: ReadonlyArray<WeeklyPatternCard>;
   summaryTiles: ReadonlyArray<{ label: string; value: number }>;
-  overallLastSevenDays: number;
-  coverageItems: ReadonlyArray<{ label: string; value: number; total: number; hint: string }>;
+  coverageItems: ReadonlyArray<{
+    label: string;
+    value: number;
+    total: number;
+    hint: string;
+  }>;
   attentionItems: ReadonlyArray<{ label: string; value: number; hint: string }>;
   workQueueItems: ReadonlyArray<{
     dreamId: string;
@@ -85,10 +112,13 @@ export function StatsOverviewSections({
     eyebrow: string;
   }>;
   onOpenReviewWorkspace: () => void;
+  onOpenPatternDetail: (signal: string, kind: 'word' | 'theme') => void;
 }) {
   const t = useTheme<Theme>();
   const hasReviewShelf =
-    workQueueItems.length > 0 || importantDreamItems.length > 0 || savedSetItems.length > 0;
+    workQueueItems.length > 0 ||
+    importantDreamItems.length > 0 ||
+    savedSetItems.length > 0;
   const reviewWorkspacePreview = workQueueItems[0]
     ? {
         eyebrow: copy.reviewShelfContinueEyebrow,
@@ -96,18 +126,18 @@ export function StatsOverviewSections({
         meta: workQueueItems[0].reason,
       }
     : importantDreamItems[0]
-      ? {
-          eyebrow: copy.reviewShelfImportantDreamEyebrow,
-          title: importantDreamItems[0].title,
-          meta: importantDreamItems[0].meta,
-        }
-      : savedSetItems[0]
-        ? {
-            eyebrow: savedSetItems[0].eyebrow,
-            title: savedSetItems[0].title,
-            meta: savedSetItems[0].meta,
-          }
-        : null;
+    ? {
+        eyebrow: copy.reviewShelfImportantDreamEyebrow,
+        title: importantDreamItems[0].title,
+        meta: importantDreamItems[0].meta,
+      }
+    : savedSetItems[0]
+    ? {
+        eyebrow: savedSetItems[0].eyebrow,
+        title: savedSetItems[0].title,
+        meta: savedSetItems[0].meta,
+      }
+    : null;
 
   return (
     <>
@@ -134,14 +164,101 @@ export function StatsOverviewSections({
 
       <Animated.View layout={statsLayoutTransition}>
         <Card style={styles.sectionCard}>
+          <View style={styles.detailsSubsection}>
+            <SectionHeader
+              title={copy.nightmareFrequencyTitle}
+              subtitle={copy.nightmareFrequencyDescription}
+            />
+            <View style={styles.metricGrid}>
+              {nightmareMetrics.map(metric => (
+                <View key={metric.label} style={styles.metricTile}>
+                  <Text style={styles.metricLabel}>{metric.label}</Text>
+                  <Text style={styles.metricValue}>{metric.value}</Text>
+                  <Text style={styles.detailsListHint}>{metric.hint}</Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </Card>
+      </Animated.View>
+
+      {weeklyPatternCards.length ? (
+        <Animated.View layout={statsLayoutTransition}>
+          <Card style={styles.sectionCard}>
+            <View style={styles.detailsSubsection}>
+              <SectionHeader
+                title={copy.weeklyPatternsTitle}
+                subtitle={copy.weeklyPatternsDescription}
+              />
+              <View style={styles.weeklyPatternGrid}>
+                {weeklyPatternCards.map(card => {
+                  const content = (
+                    <>
+                      <Text style={styles.weeklyPatternLabel}>
+                        {card.label}
+                      </Text>
+                      <Text style={styles.weeklyPatternTitle}>
+                        {card.title}
+                      </Text>
+                      <Text style={styles.weeklyPatternHint}>{card.hint}</Text>
+                    </>
+                  );
+
+                  if (card.signal && card.signalKind) {
+                    const signal = card.signal;
+                    const signalKind = card.signalKind;
+
+                    return (
+                      <Pressable
+                        key={card.key}
+                        onPress={() => onOpenPatternDetail(signal, signalKind)}
+                        style={({ pressed }) => [
+                          styles.weeklyPatternCard,
+                          card.accent ? styles.weeklyPatternCardAccent : null,
+                          pressed ? styles.insightCardPressed : null,
+                        ]}
+                      >
+                        {content}
+                      </Pressable>
+                    );
+                  }
+
+                  return (
+                    <View
+                      key={card.key}
+                      style={[
+                        styles.weeklyPatternCard,
+                        card.accent ? styles.weeklyPatternCardAccent : null,
+                      ]}
+                    >
+                      {content}
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+          </Card>
+        </Animated.View>
+      ) : null}
+
+      <Animated.View layout={statsLayoutTransition}>
+        <Card style={styles.sectionCard}>
           {hasReviewShelf ? (
             <View style={styles.detailsSubsection}>
               <View style={styles.threadHeaderRow}>
                 <View style={styles.threadHeaderCopy}>
-                  <SectionHeader title={copy.reviewShelfTitle} subtitle={copy.reviewShelfDescription} />
+                  <SectionHeader
+                    title={copy.reviewShelfTitle}
+                    subtitle={copy.reviewShelfDescription}
+                  />
                 </View>
-                <Pressable style={styles.toggleButton} onPress={onOpenReviewWorkspace}>
-                  <Text style={styles.toggleButtonText}>{copy.reviewWorkspaceOpenAction}</Text>
+                <Pressable
+                  style={styles.toggleButton}
+                  onPress={onOpenReviewWorkspace}
+                >
+                  <Text style={styles.toggleButtonText}>
+                    {copy.reviewWorkspaceOpenAction}
+                  </Text>
                 </Pressable>
               </View>
               <Pressable
@@ -153,16 +270,22 @@ export function StatsOverviewSections({
               >
                 <View style={styles.reviewShelfCompactCopy}>
                   <Text style={styles.reviewShelfCompactEyebrow}>
-                    {reviewWorkspacePreview?.eyebrow ?? copy.reviewWorkspaceTitle}
+                    {reviewWorkspacePreview?.eyebrow ??
+                      copy.reviewWorkspaceTitle}
                   </Text>
                   <Text style={styles.reviewShelfCompactTitle}>
                     {reviewWorkspacePreview?.title ?? copy.reviewWorkspaceTitle}
                   </Text>
                   <Text style={styles.reviewShelfCompactMeta}>
-                    {reviewWorkspacePreview?.meta ?? copy.reviewWorkspaceSubtitle}
+                    {reviewWorkspacePreview?.meta ??
+                      copy.reviewWorkspaceSubtitle}
                   </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={16} color={t.colors.textDim} />
+                <Ionicons
+                  name="chevron-forward"
+                  size={16}
+                  color={t.colors.textDim}
+                />
               </Pressable>
             </View>
           ) : null}
@@ -170,7 +293,9 @@ export function StatsOverviewSections({
           <Pressable style={styles.detailsToggleRow} onPress={onToggleDetails}>
             <View style={styles.detailsToggleCopy}>
               <Text style={styles.detailsToggleTitle}>{copy.detailsTitle}</Text>
-              <Text style={styles.detailsToggleDescription}>{copy.detailsDescription}</Text>
+              <Text style={styles.detailsToggleDescription}>
+                {copy.detailsDescription}
+              </Text>
             </View>
             <View style={styles.detailsTogglePill}>
               <Text style={styles.detailsTogglePillText}>
@@ -242,15 +367,26 @@ export function StatsOverviewSections({
                           delta > 0
                             ? styles.compareMetricDeltaPositive
                             : delta < 0
-                              ? styles.compareMetricDeltaNegative
-                              : styles.compareMetricDeltaNeutral;
+                            ? styles.compareMetricDeltaNegative
+                            : styles.compareMetricDeltaNeutral;
 
                         return (
-                          <View key={metric.label} style={styles.compareMetricTile}>
-                            <Text style={styles.compareMetricLabel}>{metric.label}</Text>
-                            <Text style={styles.compareMetricValue}>{metric.current}</Text>
-                            <Text style={[styles.compareMetricMeta, deltaStyle]}>
-                              {`${formatSignedDelta(delta)} ${copy.compareDeltaLabel}`}
+                          <View
+                            key={metric.label}
+                            style={styles.compareMetricTile}
+                          >
+                            <Text style={styles.compareMetricLabel}>
+                              {metric.label}
+                            </Text>
+                            <Text style={styles.compareMetricValue}>
+                              {metric.current}
+                            </Text>
+                            <Text
+                              style={[styles.compareMetricMeta, deltaStyle]}
+                            >
+                              {`${formatSignedDelta(delta)} ${
+                                copy.compareDeltaLabel
+                              }`}
                             </Text>
                           </View>
                         );
@@ -260,21 +396,35 @@ export function StatsOverviewSections({
                 ) : (
                   <View style={styles.overviewPanel}>
                     <View style={styles.overviewPanelHeader}>
-                      <Text style={styles.overviewPanelTitle}>{copy.overviewActivityTitle}</Text>
-                      <Text style={styles.overviewPanelSubtitle}>{copy.overviewActivityDescription}</Text>
+                      <Text style={styles.overviewPanelTitle}>
+                        {copy.overviewActivityTitle}
+                      </Text>
+                      <Text style={styles.overviewPanelSubtitle}>
+                        {copy.overviewActivityDescription}
+                      </Text>
                     </View>
 
                     <View style={styles.activityBarsRow}>
                       {activityBars.map(bar => {
-                        const maxCount = Math.max(...activityBars.map(item => item.count), 1);
-                        const height = bar.count > 0 ? Math.max(10, (bar.count / maxCount) * 48) : 4;
+                        const maxCount = Math.max(
+                          ...activityBars.map(item => item.count),
+                          1,
+                        );
+                        const height =
+                          bar.count > 0
+                            ? Math.max(10, (bar.count / maxCount) * 48)
+                            : 4;
 
                         return (
                           <View key={bar.key} style={styles.activityBarColumn}>
                             <View style={styles.activityBarTrack}>
-                              <View style={[styles.activityBarFill, { height }]} />
+                              <View
+                                style={[styles.activityBarFill, { height }]}
+                              />
                             </View>
-                            <Text style={styles.activityBarLabel}>{bar.label}</Text>
+                            <Text style={styles.activityBarLabel}>
+                              {bar.label}
+                            </Text>
                           </View>
                         );
                       })}
@@ -286,10 +436,6 @@ export function StatsOverviewSections({
               <View>
                 <SectionHeader title={copy.snapshotTitle} />
                 <View style={styles.metricGrid}>
-                  <View style={styles.metricTile}>
-                    <Text style={styles.metricLabel}>{copy.lastSevenDays}</Text>
-                    <Text style={styles.metricValue}>{overallLastSevenDays}</Text>
-                  </View>
                   {summaryTiles.map(tile => (
                     <View key={tile.label} style={styles.metricTile}>
                       <Text style={styles.metricLabel}>{tile.label}</Text>
@@ -306,8 +452,12 @@ export function StatsOverviewSections({
                     <View key={item.label} style={styles.detailsListRow}>
                       <View style={styles.detailsListHeader}>
                         <View style={styles.detailsListCopy}>
-                          <Text style={styles.detailsListLabel}>{item.label}</Text>
-                          <Text style={styles.detailsListHint}>{item.hint}</Text>
+                          <Text style={styles.detailsListLabel}>
+                            {item.label}
+                          </Text>
+                          <Text style={styles.detailsListHint}>
+                            {item.hint}
+                          </Text>
                         </View>
                         <View style={styles.detailsListValueChip}>
                           <Text style={styles.detailsListValue}>
@@ -327,11 +477,17 @@ export function StatsOverviewSections({
                     <View key={item.label} style={styles.detailsListRow}>
                       <View style={styles.detailsListHeader}>
                         <View style={styles.detailsListCopy}>
-                          <Text style={styles.detailsListLabel}>{item.label}</Text>
-                          <Text style={styles.detailsListHint}>{item.hint}</Text>
+                          <Text style={styles.detailsListLabel}>
+                            {item.label}
+                          </Text>
+                          <Text style={styles.detailsListHint}>
+                            {item.hint}
+                          </Text>
                         </View>
                         <View style={styles.detailsListValueChip}>
-                          <Text style={styles.detailsListValue}>{item.value}</Text>
+                          <Text style={styles.detailsListValue}>
+                            {item.value}
+                          </Text>
                         </View>
                       </View>
                     </View>

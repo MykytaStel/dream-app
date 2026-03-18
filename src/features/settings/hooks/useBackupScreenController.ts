@@ -30,6 +30,12 @@ import {
   shareLocalBackupFile,
 } from '../services/backupFileActions';
 import { useCloudBackupController } from './useCloudBackupController';
+import {
+  trackBackupExportCompleted,
+  trackBackupExportStarted,
+  trackRestoreCompleted,
+  trackRestoreStarted,
+} from '../../../services/observability/events';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 
@@ -46,7 +52,11 @@ export function useBackupScreenController({
 }: UseBackupScreenControllerArgs) {
   const [exportingFormat, setExportingFormat] =
     React.useState<'json' | 'pdf' | null>(null);
-  const [lastExportArtifact, setLastExportArtifact] =
+  const [lastJsonExportArtifact, setLastJsonExportArtifact] =
+    React.useState<LocalDreamExportArtifact | null>(
+      null,
+    );
+  const [lastPdfExportArtifact, setLastPdfExportArtifact] =
     React.useState<LocalDreamExportArtifact | null>(
       null,
     );
@@ -102,43 +112,8 @@ export function useBackupScreenController({
         : [],
     [copy, lastRestorePreview],
   );
-  const lastExportFormat = lastExportArtifact?.format ?? null;
-  const lastExportName = lastExportArtifact?.fileName ?? null;
-  const lastExportSummaryTitle = React.useMemo(
-    () =>
-      lastExportFormat === 'pdf'
-        ? copy.exportPdfReadyTitle
-        : lastExportFormat === 'json'
-          ? copy.exportBackupReadyTitle
-          : null,
-    [
-      copy.exportBackupReadyTitle,
-      copy.exportPdfReadyTitle,
-      lastExportFormat,
-    ],
-  );
-  const lastExportSummaryDescription = React.useMemo(
-    () =>
-      lastExportFormat === 'pdf'
-        ? copy.exportPdfReadyDescription
-        : lastExportFormat === 'json'
-          ? copy.exportBackupReadyDescription
-          : null,
-    [
-      copy.exportBackupReadyDescription,
-      copy.exportPdfReadyDescription,
-      lastExportFormat,
-    ],
-  );
-  const shareLastExportTitle = React.useMemo(
-    () =>
-      lastExportFormat === 'pdf'
-        ? copy.exportSharePdfButton
-        : copy.exportShareBackupButton,
-    [copy.exportShareBackupButton, copy.exportSharePdfButton, lastExportFormat],
-  );
-  const canOpenLastPdf =
-    lastExportArtifact?.format === 'pdf' && Boolean(lastExportArtifact.filePath);
+  const lastBackupName = lastJsonExportArtifact?.fileName ?? null;
+  const lastPdfName = lastPdfExportArtifact?.fileName ?? null;
 
   const refreshLocalExports = React.useCallback(async () => {
     setIsLoadingLocalExports(true);
@@ -149,7 +124,12 @@ export function useBackupScreenController({
         listLocalDreamExportArtifacts(),
       ]);
       setLocalExportFiles(files);
-      setLastExportArtifact(artifacts[0] ?? null);
+      setLastJsonExportArtifact(
+        artifacts.find(artifact => artifact.format === 'json') ?? null,
+      );
+      setLastPdfExportArtifact(
+        artifacts.find(artifact => artifact.format === 'pdf') ?? null,
+      );
 
       setSelectedImportPath(currentPath => {
         if (!currentPath) {
@@ -213,10 +193,14 @@ export function useBackupScreenController({
 
   const onExportData = React.useCallback(async () => {
     setExportingFormat('json');
+    trackBackupExportStarted();
 
     try {
       const result = await exportDreamDataSnapshot();
-      setLastExportArtifact({
+      trackBackupExportCompleted({
+        dreamCount: result.payload.summary.dreamCount,
+      });
+      setLastJsonExportArtifact({
         fileName: result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
         filePath: result.filePath,
         modifiedAt: Date.now(),
@@ -242,7 +226,7 @@ export function useBackupScreenController({
 
     try {
       const result = await exportDreamArchivePdf();
-      setLastExportArtifact({
+      setLastPdfExportArtifact({
         fileName: result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
         filePath: result.filePath,
         modifiedAt: Date.now(),
@@ -259,28 +243,38 @@ export function useBackupScreenController({
     }
   }, [copy, refreshLocalExports]);
 
-  const onShareLastExport = React.useCallback(async () => {
-    if (!lastExportArtifact) {
+  const onShareLastBackup = React.useCallback(async () => {
+    if (!lastJsonExportArtifact) {
       return;
     }
 
     await shareLocalBackupFile(
-      lastExportArtifact.filePath,
-      lastExportArtifact.format === 'pdf'
-        ? 'application/pdf'
-        : 'application/json',
-      lastExportArtifact.fileName,
+      lastJsonExportArtifact.filePath,
+      'application/json',
+      lastJsonExportArtifact.fileName,
     );
-  }, [lastExportArtifact]);
+  }, [lastJsonExportArtifact]);
+
+  const onShareLastPdf = React.useCallback(async () => {
+    if (!lastPdfExportArtifact) {
+      return;
+    }
+
+    await shareLocalBackupFile(
+      lastPdfExportArtifact.filePath,
+      'application/pdf',
+      lastPdfExportArtifact.fileName,
+    );
+  }, [lastPdfExportArtifact]);
 
   const onOpenLastPdf = React.useCallback(async () => {
-    if (!lastExportArtifact || lastExportArtifact.format !== 'pdf') {
+    if (!lastPdfExportArtifact) {
       return;
     }
 
     try {
       await openLocalBackupFile(
-        lastExportArtifact.filePath,
+        lastPdfExportArtifact.filePath,
         'application/pdf',
       );
     } catch {
@@ -292,7 +286,7 @@ export function useBackupScreenController({
   }, [
     copy.exportPdfOpenErrorDescription,
     copy.exportPdfOpenErrorTitle,
-    lastExportArtifact,
+    lastPdfExportArtifact,
   ]);
 
   const onSelectImportFile = React.useCallback((filePath: string) => {
@@ -316,9 +310,15 @@ export function useBackupScreenController({
         style: 'destructive',
         onPress: () => {
           setIsRestoringImport(true);
+          trackRestoreStarted({ mode: importMode });
 
           restoreDreamImportFromFile(selectedImportPath, importMode)
             .then(async preview => {
+              trackRestoreCompleted({
+                mode: preview.mode,
+                importedDreamCount: preview.diff.importDreamCount,
+                resultingDreamCount: preview.diff.resultingDreamCount,
+              });
               setSelectedImportPreview(preview);
               setLastRestorePreview(preview);
               if (preview.mode === 'replace') {
@@ -358,17 +358,13 @@ export function useBackupScreenController({
     ...cloudBackup,
     isExportingJson: exportingFormat === 'json',
     isExportingPdf: exportingFormat === 'pdf',
-    lastExportName,
-    lastExportSummaryTitle,
-    lastExportSummaryDescription,
-    canOpenLastPdf,
-    canShareLastExport: Boolean(lastExportArtifact),
-    openLastPdfTitle: copy.exportOpenPdfButton,
-    shareLastExportTitle,
+    lastBackupName,
+    lastPdfName,
     onExportData,
     onExportPdfData,
     onOpenLastPdf,
-    onShareLastExport,
+    onShareLastBackup,
+    onShareLastPdf,
     localExportFiles,
     isLoadingLocalExports,
     selectedImportPreview,

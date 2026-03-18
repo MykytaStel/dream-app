@@ -130,8 +130,8 @@ export function StatsMilestonesSection({
                 >
                   <View style={styles.achievementHeaderRow}>
                     <View style={styles.achievementCopy}>
-                      <Text style={styles.achievementTitle}>{content.title}</Text>
-                      <Text style={styles.achievementDescription}>{content.description}</Text>
+                      <Text style={styles.achievementTitle}>{content?.title}</Text>
+                      <Text style={styles.achievementDescription}>{content?.description}</Text>
                     </View>
                     <View
                       style={[

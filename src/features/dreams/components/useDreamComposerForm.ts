@@ -34,6 +34,7 @@ import {
   DreamComposerEntryMode,
   DreamComposerMode,
 } from './DreamComposer.types';
+import { trackDreamSaved } from '../../../services/observability/events';
 
 export function getTodayDate() {
   const now = new Date();
@@ -454,6 +455,12 @@ export function useDreamComposerForm({
       };
 
       saveDream(dream);
+      trackDreamSaved({
+        mode: isEdit ? 'edit' : 'create',
+        entryMode,
+        hasAudio: Boolean(audioUri),
+        hasText: Boolean(cleanText),
+      });
 
       if (!isEdit) {
         resetForm();

@@ -52,6 +52,8 @@ describe('dreamReflection', () => {
         tagHits: 2,
         transcriptHits: 2,
         source: 'mixed',
+        firstSeenAt: 1,
+        latestSeenAt: 2,
       },
       {
         label: 'lantern',
@@ -59,6 +61,8 @@ describe('dreamReflection', () => {
         tagHits: 1,
         transcriptHits: 2,
         source: 'mixed',
+        firstSeenAt: 1,
+        latestSeenAt: 2,
       },
     ]);
   });
@@ -71,6 +75,8 @@ describe('dreamReflection', () => {
         tagHits: 0,
         transcriptHits: 2,
         source: 'transcript',
+        firstSeenAt: 1,
+        latestSeenAt: 2,
       },
       {
         label: 'water',
@@ -78,6 +84,8 @@ describe('dreamReflection', () => {
         tagHits: 0,
         transcriptHits: 2,
         source: 'transcript',
+        firstSeenAt: 1,
+        latestSeenAt: 2,
       },
     ]);
   });
@@ -88,11 +96,15 @@ describe('dreamReflection', () => {
         label: 'lantern',
         dreamCount: 2,
         hitCount: 3,
+        firstSeenAt: 1,
+        latestSeenAt: 2,
       },
       {
         label: 'water',
         dreamCount: 2,
         hitCount: 3,
+        firstSeenAt: 1,
+        latestSeenAt: 2,
       },
     ]);
   });

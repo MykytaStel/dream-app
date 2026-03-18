@@ -55,8 +55,39 @@ export function createHomeScreenStyles(theme: Theme) {
       gap: 10,
       padding: 12,
     },
+    dreamCardVisual: {
+      overflow: 'hidden',
+      position: 'relative',
+    },
     dreamCardStarred: {
       borderColor: `${theme.colors.accent}55`,
+    },
+    dreamCardGlowLarge: {
+      position: 'absolute',
+      width: 108,
+      height: 108,
+      borderRadius: 999,
+      top: -26,
+      right: -18,
+      opacity: 0.9,
+    },
+    dreamCardGlowSmall: {
+      position: 'absolute',
+      width: 76,
+      height: 76,
+      borderRadius: 999,
+      bottom: -26,
+      left: 26,
+      opacity: 0.7,
+    },
+    dreamCardAccentBar: {
+      position: 'absolute',
+      left: 12,
+      right: 18,
+      top: 0,
+      height: 3,
+      borderRadius: 999,
+      opacity: 0.95,
     },
     dreamPressable: {
       borderRadius: theme.borderRadii.xl,
@@ -172,7 +203,10 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     heroDateRow: {
       marginTop: 2,
-      alignItems: 'flex-start',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flexWrap: 'wrap',
     },
     heroPromptCard: {
       ...createSoftTile(theme, {
@@ -305,6 +339,27 @@ export function createHomeScreenStyles(theme: Theme) {
       textTransform: 'uppercase',
       letterSpacing: 0.4,
     },
+    heroStreakChip: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingHorizontal: 9,
+        paddingVertical: 5,
+      }),
+    },
+    heroStreakChipMilestone: {
+      backgroundColor: `${theme.colors.auroraMid}22`,
+      borderColor: `${theme.colors.auroraMid}44`,
+    },
+    heroStreakChipText: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
+    },
+    heroStreakChipTextMilestone: {
+      color: theme.colors.auroraMid,
+    },
     heroTitle: {
       fontFamily: fontFamilies.display,
       fontSize: 24,
@@ -362,11 +417,6 @@ export function createHomeScreenStyles(theme: Theme) {
     heroFooter: {
       gap: 8,
     },
-    statsRow: {
-      flexDirection: 'row',
-      gap: 8,
-      marginTop: 2,
-    },
     timelineHeaderRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -406,64 +456,25 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     spotlightHeader: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       gap: 10,
+    },
+    spotlightHeaderCopy: {
+      flex: 1,
+      gap: 3,
+    },
+    spotlightHeaderHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
     spotlightLeadRow: {
       gap: 6,
     },
-    spotlightToggleButton: {
-      ...createControlPill(theme, {
-        tone: 'surface',
-        paddingVertical: 4,
-        paddingHorizontal: 9,
-      }),
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    spotlightToggleButtonPressed: {
-      opacity: 0.94,
-      transform: [{ scale: 0.992 }],
-    },
-    spotlightToggleButtonText: {
-      color: theme.colors.text,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    spotlightSecondaryRow: {
+    spotlightSupportRow: {
       flexDirection: 'row',
       gap: 7,
       flexWrap: 'wrap',
-    },
-    spotlightMetaRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
-    },
-    spotlightMetaChip: {
-      ...createControlPill(theme, {
-        tone: 'surface',
-        paddingVertical: 6,
-        paddingHorizontal: 10,
-      }),
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    spotlightMetaLabel: {
-      color: theme.colors.textDim,
-      fontSize: 10,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      letterSpacing: 0.4,
-    },
-    spotlightMetaValue: {
-      color: theme.colors.text,
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '700',
     },
     spotlightTile: {
       ...createSoftTile(theme),
@@ -538,6 +549,54 @@ export function createHomeScreenStyles(theme: Theme) {
       fontSize: 11,
       lineHeight: 15,
     },
+    weeklyPatternsSection: {
+      gap: 8,
+    },
+    weeklyPatternsHeader: {
+      gap: 3,
+    },
+    weeklyPatternsSubtitle: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    weeklyPatternsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 7,
+    },
+    weeklyPatternCard: {
+      ...createSoftTile(theme),
+      flexGrow: 1,
+      flexBasis: '47%',
+      minWidth: 146,
+      gap: 4,
+      paddingVertical: 10,
+      paddingHorizontal: 11,
+    },
+    weeklyPatternCardAccent: {
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    weeklyPatternLabel: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    weeklyPatternTitle: {
+      color: theme.colors.text,
+      fontSize: 16,
+      lineHeight: 20,
+      fontWeight: '700',
+    },
+    weeklyPatternHint: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 15,
+    },
     spotlightActionHint: {
       color: theme.colors.accent,
       fontSize: 11,
@@ -551,27 +610,6 @@ export function createHomeScreenStyles(theme: Theme) {
       justifyContent: 'space-between',
       gap: 8,
       marginTop: 3,
-    },
-    statChip: {
-      ...createSoftTile(theme, {
-        tone: 'surface',
-        radius: 12,
-        paddingVertical: 7,
-        paddingHorizontal: 10,
-      }),
-      flex: 1,
-      gap: 2,
-      minHeight: 54,
-    },
-    statLabel: {
-      color: theme.colors.textDim,
-      fontSize: 10,
-      lineHeight: 13,
-    },
-    statValue: {
-      fontSize: 15,
-      lineHeight: 18,
-      fontWeight: '700',
     },
     sectionLabel: {
       color: theme.colors.textDim,
@@ -599,6 +637,13 @@ export function createHomeScreenStyles(theme: Theme) {
       alignItems: 'flex-start',
       gap: 8,
     },
+    searchCardHeaderRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 8,
+    },
     searchFieldContainer: {
       flex: 1,
       gap: 4,
@@ -606,6 +651,21 @@ export function createHomeScreenStyles(theme: Theme) {
     searchFieldInput: {
       paddingVertical: 10,
       minHeight: 0,
+    },
+    controlSection: {
+      gap: 8,
+    },
+    controlCard: {
+      gap: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 12,
+    },
+    controlSectionHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      gap: 10,
+      flexWrap: 'wrap',
     },
     searchDetailsToggleRow: {
       alignItems: 'flex-start',
@@ -634,6 +694,14 @@ export function createHomeScreenStyles(theme: Theme) {
       gap: 8,
       flexWrap: 'wrap',
       marginTop: -2,
+    },
+    controlSectionDivider: {
+      height: 1,
+      backgroundColor: theme.colors.border,
+      opacity: 0.65,
+    },
+    sortControlBlock: {
+      gap: 8,
     },
     resultCount: {
       color: theme.colors.textDim,
@@ -859,6 +927,10 @@ export function createHomeScreenStyles(theme: Theme) {
     dreamHeaderCopy: {
       gap: 4,
     },
+    dreamHeaderCopyExpanded: {
+      flex: 1,
+      minWidth: 0,
+    },
     titleRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -881,6 +953,18 @@ export function createHomeScreenStyles(theme: Theme) {
       fontSize: 10,
       lineHeight: 14,
       includeFontPadding: false,
+    },
+    headerMetaRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      flexWrap: 'wrap',
+      minHeight: 24,
+    },
+    headerMetaHint: {
+      color: `${theme.colors.textDim}CC`,
+      fontSize: 11,
+      lineHeight: 15,
     },
     timestampRow: {
       flexDirection: 'row',
@@ -908,14 +992,64 @@ export function createHomeScreenStyles(theme: Theme) {
       fontSize: 11,
       fontWeight: '600',
     },
+    signalRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    signalChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderRadius: theme.borderRadii.pill,
+      borderWidth: 1,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+    },
+    signalChipText: {
+      fontSize: 10,
+      fontWeight: '700',
+    },
     previewPanel: {
       flexDirection: 'row',
       alignItems: 'stretch',
       gap: 10,
+      borderRadius: 18,
+      borderWidth: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 10,
     },
     previewAccent: {
-      width: 3,
+      width: 4,
       borderRadius: 999,
+    },
+    previewContent: {
+      flex: 1,
+      gap: 7,
+      minWidth: 0,
+    },
+    previewHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    previewLabelPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderRadius: theme.borderRadii.pill,
+      borderWidth: 1,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      alignSelf: 'flex-start',
+    },
+    previewLabelText: {
+      fontSize: 10,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
     },
     previewAudioIcon: {
       alignSelf: 'flex-start',
@@ -935,7 +1069,6 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     dreamFooterRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'flex-start',
       gap: 10,
       flexWrap: 'wrap',

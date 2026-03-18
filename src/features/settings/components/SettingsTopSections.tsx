@@ -1,5 +1,5 @@
 import React from 'react';
-import { Platform, Pressable, Switch, View } from 'react-native';
+import { Platform, Pressable, Switch, TouchableOpacity, View } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
@@ -45,7 +45,12 @@ export function SettingsHeroSection({
       <SectionHeader title={copy.title} subtitle={copy.subtitle} />
       <View style={styles.inlineLanguageRow}>
         <Text style={styles.inlineLanguageLabel}>{copy.languageTitle}</Text>
-        <View style={[styles.inlineLanguageControls, isPending ? { opacity: 0.72 } : null]}>
+        <View
+          style={[
+            styles.inlineLanguageControls,
+            isPending ? styles.inlineLanguageControlsPending : null,
+          ]}
+        >
           {(
             [
               { value: 'en', label: copy.languageEnglish },
@@ -93,10 +98,12 @@ export function ReminderSection({
   reminderTime,
   showIosTimePicker,
   pickerLocale,
+  suggestedTime,
   getReminderDate,
   onToggleReminder,
   onOpenReminderTimePicker,
   onNativeTimePickerChange,
+  onApplySuggestedTime,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
@@ -106,12 +113,22 @@ export function ReminderSection({
   reminderTime: string;
   showIosTimePicker: boolean;
   pickerLocale: string;
+  suggestedTime: { label: string } | null;
   getReminderDate: () => Date;
   onToggleReminder: () => void;
   onOpenReminderTimePicker: () => void;
   onNativeTimePickerChange: (event: any, date?: Date) => void;
+  onApplySuggestedTime: () => void;
 }) {
   const t = useTheme<Theme>();
+  const reminderSummaryMeta = !reminderSettings.enabled
+    ? !permissionGranted
+      ? `${copy.reminderPermissionLabel}: ${copy.reminderPermissionBlocked}.`
+      : copy.reminderEnableHint
+    : copy.reminderTimeHint;
+  const reminderSummaryValue = reminderSettings.enabled
+    ? reminderTime
+    : copy.reminderOffValue;
 
   return (
     <Card style={styles.sectionCard}>
@@ -132,21 +149,31 @@ export function ReminderSection({
         }
       />
 
-      {!permissionGranted ? (
-        <Text style={styles.reminderHint}>
-          {`${copy.reminderPermissionLabel}: ${copy.reminderPermissionBlocked}.`}
-        </Text>
-      ) : null}
+      <SettingsActionRow
+        title={copy.reminderCurrentScheduleLabel}
+        meta={reminderSummaryMeta}
+        value={reminderSummaryValue}
+        disabled={isApplyingReminder}
+        onPress={reminderSettings.enabled ? onOpenReminderTimePicker : undefined}
+      />
 
       {reminderSettings.enabled ? (
         <>
-          <SettingsActionRow
-            title={copy.reminderTimeLabel}
-            meta={copy.reminderTimeHint}
-            value={reminderTime}
-            disabled={isApplyingReminder}
-            onPress={onOpenReminderTimePicker}
-          />
+          {suggestedTime ? (
+            <TouchableOpacity
+              activeOpacity={0.7}
+              style={styles.reminderSuggestionRow}
+              onPress={onApplySuggestedTime}
+              disabled={isApplyingReminder}
+            >
+              <Text style={styles.reminderSuggestionText}>
+                {`${copy.reminderSmartSuggestionLabel} · ${suggestedTime.label}`}
+              </Text>
+              <View style={styles.reminderSuggestionApplyChip}>
+                <Text style={styles.reminderSuggestionApplyText}>{copy.reminderSmartSuggestionApply}</Text>
+              </View>
+            </TouchableOpacity>
+          ) : null}
 
           {Platform.OS === 'ios' && showIosTimePicker ? (
             <View style={styles.iosPickerWrap}>
@@ -227,6 +254,35 @@ export function BiometricLockSection({
             : copy.biometricLockNotSupportedValue
         }
         value={statusValue}
+      />
+    </Card>
+  );
+}
+
+export function BackupSummarySection({
+  copy,
+  styles,
+  summaryMeta,
+  summaryValue,
+  onPress,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+  summaryMeta: string;
+  summaryValue: string;
+  onPress: () => void;
+}) {
+  return (
+    <Card style={styles.sectionCard}>
+      <SettingsSectionHeader
+        title={copy.backupScreenTitle}
+        description={copy.backupSummaryDescription}
+      />
+      <SettingsActionRow
+        title={copy.backupSummaryOpenTitle}
+        meta={summaryMeta}
+        value={summaryValue}
+        onPress={onPress}
       />
     </Card>
   );

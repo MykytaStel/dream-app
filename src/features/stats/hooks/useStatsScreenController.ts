@@ -1,6 +1,8 @@
 import React from 'react';
 import {
+  type DreamCopy,
   getDreamPreSleepEmotionLabels,
+  getDreamMoodLabels,
   getDreamWakeEmotionLabels,
 } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
@@ -8,7 +10,6 @@ import { type AppLocale } from '../../../i18n/types';
 import {
   filterDreamsByRange,
   type InsightRange,
-  type PatternGroupKey,
 } from '../model/statsScreenModel';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
 import { type MemoryMode } from '../components/StatsScreenSections';
@@ -21,6 +22,7 @@ export type InsightMode = 'snapshot' | 'compare';
 type UseStatsScreenControllerArgs = {
   locale: AppLocale;
   copy: StatsCopy;
+  dreamCopy: DreamCopy;
   selectedMemoryMode: MemoryMode;
   openPatternDetail: (signal: string, kind: PatternDetailKind) => void;
 };
@@ -28,6 +30,7 @@ type UseStatsScreenControllerArgs = {
 export function useStatsScreenController({
   locale,
   copy,
+  dreamCopy,
   selectedMemoryMode,
   openPatternDetail,
 }: UseStatsScreenControllerArgs) {
@@ -38,7 +41,11 @@ export function useStatsScreenController({
     () => getDreamPreSleepEmotionLabels(locale),
     [locale],
   );
-  const wakeEmotionLabels = React.useMemo(() => getDreamWakeEmotionLabels(locale), [locale]);
+  const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
+  const wakeEmotionLabels = React.useMemo(
+    () => getDreamWakeEmotionLabels(locale),
+    [locale],
+  );
   const {
     analysisSettings,
     dreams,
@@ -49,9 +56,8 @@ export function useStatsScreenController({
     savedThreadRecords,
   } = useStatsCatalogState();
   const [selectedRange, setSelectedRange] = React.useState<InsightRange>('all');
-  const [selectedMode, setSelectedMode] = React.useState<InsightMode>('snapshot');
-  const [selectedPatternGroup, setSelectedPatternGroup] =
-    React.useState<PatternGroupKey>('themes');
+  const [selectedMode, setSelectedMode] =
+    React.useState<InsightMode>('snapshot');
   const [isDetailsExpanded, setIsDetailsExpanded] = React.useState(false);
   const [isMilestonesExpanded, setIsMilestonesExpanded] = React.useState(false);
 
@@ -65,6 +71,7 @@ export function useStatsScreenController({
   const derivedContent = useStatsDerivedContent({
     locale,
     copy,
+    dreamCopy,
     dreams: deferredDreams,
     scopedDreams: deferredScopedDreams,
     selectedRange,
@@ -75,6 +82,7 @@ export function useStatsScreenController({
     savedMonths,
     savedThreadRecords,
     wakeEmotionLabels,
+    moodLabels,
     preSleepEmotionLabels,
     openPatternDetail,
   });
@@ -89,13 +97,22 @@ export function useStatsScreenController({
   const canCompare = selectedRange !== 'all';
   const compareOptions = React.useMemo(
     () => [
-      { key: 'snapshot' as const, label: copy.compareSnapshot, disabled: false },
-      { key: 'compare' as const, label: copy.compareMode, disabled: !canCompare },
+      {
+        key: 'snapshot' as const,
+        label: copy.compareSnapshot,
+        disabled: false,
+      },
+      {
+        key: 'compare' as const,
+        label: copy.compareMode,
+        disabled: !canCompare,
+      },
     ],
     [canCompare, copy],
   );
   const selectedRangeLabel =
-    rangeOptions.find(option => option.key === selectedRange)?.label ?? copy.rangeAll;
+    rangeOptions.find(option => option.key === selectedRange)?.label ??
+    copy.rangeAll;
   const {
     achievementSummary,
     achievements,
@@ -113,6 +130,7 @@ export function useStatsScreenController({
     latestMonthlyReportTitle,
     memoryNudge,
     milestoneSummaryHint,
+    nightmareMetrics,
     monthlyReportPreviewSignals,
     overallLastSevenDays,
     patternGroups,
@@ -122,28 +140,16 @@ export function useStatsScreenController({
     savedThreadItems,
     summaryTiles,
     topSignal,
+    weeklyPatternCards,
     weeklyGoalComplete,
     weeklyGoalTarget,
     workQueueItems,
   } = derivedContent;
-  const activePatternGroup =
-    patternGroups.find(group => group.key === selectedPatternGroup) ?? patternGroups[0];
-
   React.useEffect(() => {
     if (!canCompare && selectedMode === 'compare') {
       setSelectedMode('snapshot');
     }
   }, [canCompare, selectedMode]);
-
-  React.useEffect(() => {
-    if (!isThreadsMode) {
-      return;
-    }
-
-    if (!patternGroups.some(group => group.key === selectedPatternGroup)) {
-      setSelectedPatternGroup(patternGroups[0]?.key ?? 'themes');
-    }
-  }, [isThreadsMode, patternGroups, selectedPatternGroup]);
 
   return {
     loading,
@@ -155,8 +161,6 @@ export function useStatsScreenController({
     setSelectedRange,
     selectedMode,
     setSelectedMode,
-    selectedPatternGroup,
-    setSelectedPatternGroup,
     isDetailsExpanded,
     setIsDetailsExpanded,
     isMilestonesExpanded,
@@ -172,15 +176,16 @@ export function useStatsScreenController({
     topSignal,
     memoryNudge,
     coverageGap,
+    nightmareMetrics,
     latestMonthlyReport,
     latestMonthlyReportTitle,
     monthlyReportPreviewSignals,
     fingerprintLeadSignals,
     fingerprintFacets,
     patternGroups,
-    activePatternGroup,
     summaryTiles,
     overallLastSevenDays,
+    weeklyPatternCards,
     coverageItems,
     attentionItems,
     workQueueItems,

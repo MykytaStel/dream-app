@@ -459,9 +459,9 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     calendarDaysWrap: {
       gap: 5,
-      paddingTop: 4,
+      paddingTop: 6,
       borderTopWidth: 1,
-      borderTopColor: theme.colors.border,
+      borderTopColor: `${theme.colors.border}99`,
     },
     calendarWeekRow: {
       flexDirection: 'row',
@@ -471,20 +471,24 @@ export function createArchiveScreenStyles(theme: Theme) {
       ...createSoftTile(theme, {
         tone: 'surface',
         radius: 12,
-        paddingVertical: 5,
+        paddingVertical: 6,
         paddingHorizontal: 4,
       }),
       flex: 1,
-      minHeight: 40,
+      minHeight: 46,
       alignItems: 'center',
       justifyContent: 'center',
-      gap: 2,
+      gap: 4,
     },
     calendarCellPlaceholder: {
       opacity: 0,
     },
     calendarCellActive: {
       backgroundColor: theme.colors.surface,
+    },
+    calendarCellToday: {
+      borderColor: `${theme.colors.primary}66`,
+      borderWidth: 1.5,
     },
     calendarCellSelected: {
       borderColor: theme.colors.primary,
@@ -500,16 +504,18 @@ export function createArchiveScreenStyles(theme: Theme) {
       color: theme.colors.primary,
     },
     calendarCellDayMuted: {
-      color: theme.colors.textDim,
+      color: `${theme.colors.textDim}88`,
+      fontWeight: '500',
     },
-    calendarCellCount: {
-      color: theme.colors.textDim,
-      fontSize: 9,
-      fontWeight: '700',
+    calendarMoodDot: {
+      width: 5,
+      height: 5,
+      borderRadius: 3,
+      opacity: 0.85,
     },
-    calendarCellCountSelected: {
-      color: theme.colors.primary,
-      opacity: 0.9,
+    calendarMoodDotNeutral: {
+      backgroundColor: theme.colors.textDim,
+      opacity: 0.5,
     },
     selectedDateRow: {
       flexDirection: 'row',
@@ -575,6 +581,28 @@ export function createArchiveScreenStyles(theme: Theme) {
       backgroundColor: theme.colors.surfaceElevated,
       borderColor: `${theme.colors.border}D9`,
     },
+    listRowCardVisual: {
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    listRowGlow: {
+      position: 'absolute',
+      width: 112,
+      height: 112,
+      borderRadius: 999,
+      top: -26,
+      right: -20,
+      opacity: 0.9,
+    },
+    listRowAccentBar: {
+      position: 'absolute',
+      left: 14,
+      right: 22,
+      top: 0,
+      height: 3,
+      borderRadius: 999,
+      opacity: 0.95,
+    },
     listRowCardCompact: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -628,8 +656,29 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 11,
       fontWeight: '700',
     },
+    rowDateChipTextStrong: {
+      color: theme.colors.text,
+    },
     rowDateChipTextCompact: {
       fontSize: 9,
+    },
+    signalRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+    },
+    signalChip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderRadius: theme.borderRadii.pill,
+      borderWidth: 1,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+    },
+    signalChipText: {
+      fontSize: 10,
+      fontWeight: '700',
     },
     rowPreview: {
       flex: 1,
@@ -646,6 +695,40 @@ export function createArchiveScreenStyles(theme: Theme) {
       }),
       backgroundColor: 'rgba(20, 24, 38, 0.38)',
       borderColor: `${theme.colors.border}CC`,
+      flexDirection: 'row',
+      gap: 10,
+    },
+    rowPreviewAccent: {
+      width: 4,
+      borderRadius: 999,
+    },
+    rowPreviewContent: {
+      flex: 1,
+      gap: 7,
+      minWidth: 0,
+    },
+    rowPreviewHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 8,
+      flexWrap: 'wrap',
+    },
+    rowPreviewTypePill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      borderRadius: theme.borderRadii.pill,
+      borderWidth: 1,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+      alignSelf: 'flex-start',
+    },
+    rowPreviewTypeText: {
+      fontSize: 10,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.4,
     },
     rowPreviewCompact: {
       color: theme.colors.textDim,
@@ -721,6 +804,27 @@ export function createArchiveScreenStyles(theme: Theme) {
       gap: 3,
       minWidth: 0,
     },
+    compactSignalRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      flexWrap: 'wrap',
+      minHeight: 22,
+    },
+    compactSignalChip: {
+      width: 22,
+      height: 22,
+      borderRadius: 999,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    compactMatchText: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: '700',
+    },
     compactTitleRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -737,8 +841,74 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 11,
       lineHeight: 14,
     },
+    compactTagRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: 1,
+    },
+    compactTagPill: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 3,
+        paddingHorizontal: 7,
+      }),
+      backgroundColor: 'rgba(20, 24, 38, 0.3)',
+    },
+    compactTagText: {
+      color: theme.colors.textDim,
+      fontSize: 9,
+      fontWeight: '700',
+    },
     emptyWrap: {
       paddingTop: theme.spacing.md,
+    },
+    tagRailRow: {
+      gap: 5,
+    },
+    tagRailLabel: {
+      color: theme.colors.textDim,
+      fontSize: 9,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+    tagRail: {
+      gap: 5,
+      paddingRight: 2,
+    },
+    tagChip: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingVertical: 4,
+        paddingHorizontal: 9,
+      }),
+      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+    },
+    tagChipActive: {
+      borderColor: theme.colors.auroraMid,
+      backgroundColor: theme.colors.auroraMid,
+    },
+    tagChipText: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    tagChipTextActive: {
+      color: theme.colors.background,
+    },
+    tagChipCount: {
+      color: theme.colors.textDim,
+      fontSize: 9,
+      fontWeight: '700',
+      opacity: 0.7,
+    },
+    tagChipCountActive: {
+      color: theme.colors.background,
+      opacity: 0.8,
     },
   });
 }

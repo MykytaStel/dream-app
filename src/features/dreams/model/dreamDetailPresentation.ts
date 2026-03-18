@@ -2,6 +2,7 @@ import {
   getDreamCopy,
   getDreamMoodLabels,
 } from '../../../constants/copy/dreams';
+import { getMoodValence } from './dreamAnalytics';
 import { Theme } from '../../../theme/theme';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionService';
@@ -74,11 +75,16 @@ export type DreamDetailViewModel = {
 };
 
 export function moodColor(theme: Theme, mood?: Dream['mood']) {
-  if (mood === 'positive') {
+  if (!mood) {
+    return theme.colors.primary;
+  }
+
+  const valence = getMoodValence(mood);
+  if (valence === 'positive') {
     return theme.colors.accent;
   }
 
-  if (mood === 'negative') {
+  if (valence === 'negative') {
     return theme.colors.primaryAlt;
   }
 

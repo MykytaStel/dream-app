@@ -1,6 +1,21 @@
 import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
 
-export type Mood = 'neutral' | 'positive' | 'negative';
+export type Mood =
+  // legacy values — still valid in storage, not shown in UI
+  | 'neutral'
+  | 'positive'
+  | 'negative'
+  // dream tone values
+  | 'peaceful'
+  | 'joyful'
+  | 'mysterious'
+  | 'nostalgic'
+  | 'melancholic'
+  | 'anxious'
+  | 'dark'
+  | 'surreal';
+
+export type DreamIntensity = 1 | 2 | 3 | 4 | 5;
 export type StressLevel = 0 | 1 | 2 | 3;
 export type DreamTranscriptStatus = 'idle' | 'processing' | 'ready' | 'error';
 export type DreamTranscriptSource = 'generated' | 'edited';
@@ -51,6 +66,7 @@ export type Dream = {
   analysis?: DreamAnalysisRecord;
   tags: string[];
   mood?: Mood;
+  dreamIntensity?: DreamIntensity;
   wakeEmotions?: WakeEmotion[];
   sleepContext?: SleepContext;
   lucidity?: 0 | 1 | 2 | 3;

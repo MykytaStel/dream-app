@@ -6,10 +6,11 @@ import { FormField } from '../../../components/ui/FormField';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
-import { PreSleepEmotion, StressLevel, WakeEmotion } from '../model/dream';
+import { DreamIntensity, PreSleepEmotion, StressLevel, WakeEmotion } from '../model/dream';
 import { DreamComposerChoiceChip } from './DreamComposerChoiceChip';
 import {
   DreamComposerCopy,
+  DreamComposerIntensityOption,
   DreamComposerMoodOption,
   DreamComposerPreSleepEmotionOption,
   DreamComposerStressOption,
@@ -23,6 +24,9 @@ type MoodCardProps = {
   moods: DreamComposerMoodOption[];
   mood?: DreamComposerMoodOption['value'];
   onToggleMood: (value: DreamComposerMoodOption['value']) => void;
+  intensityOptions: DreamComposerIntensityOption[];
+  dreamIntensity?: DreamIntensity;
+  onToggleDreamIntensity: (value: DreamIntensity) => void;
   wakeEmotionOptions: DreamComposerWakeEmotionOption[];
   wakeEmotions: WakeEmotion[];
   onToggleWakeEmotion: (value: WakeEmotion) => void;
@@ -34,6 +38,9 @@ export function DreamComposerMoodCard({
   moods,
   mood,
   onToggleMood,
+  intensityOptions,
+  dreamIntensity,
+  onToggleDreamIntensity,
   wakeEmotionOptions,
   wakeEmotions,
   onToggleWakeEmotion,
@@ -46,7 +53,7 @@ export function DreamComposerMoodCard({
       </View>
       <SectionHeader title={copy.moodTitle} subtitle={copy.moodDescription} />
 
-      <View style={styles.moodRow}>
+      <View style={styles.moodGrid}>
         {moods.map(option => (
           <DreamComposerChoiceChip
             key={option.value}
@@ -57,6 +64,23 @@ export function DreamComposerMoodCard({
             styles={styles}
           />
         ))}
+      </View>
+
+      <View style={styles.contextBlock}>
+        <Text style={styles.contextFieldLabel}>{copy.moodIntensityLabel}</Text>
+        <Text style={styles.contextHint}>{copy.moodIntensityHint}</Text>
+        <View style={styles.intensityRow}>
+          {intensityOptions.map(option => (
+            <DreamComposerChoiceChip
+              key={option.value}
+              variant="intensity"
+              label={option.label}
+              selected={dreamIntensity === option.value}
+              onPress={() => onToggleDreamIntensity(option.value)}
+              styles={styles}
+            />
+          ))}
+        </View>
       </View>
 
       <View style={styles.contextBlock}>

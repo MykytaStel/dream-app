@@ -171,13 +171,15 @@ export function createNewDreamScreenStyles(theme: Theme) {
     textInput: {
       minHeight: 180,
     },
-    moodRow: {
+    moodGrid: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 8,
     },
     moodOption: {
-      flex: 1,
-      paddingVertical: 12,
+      flexGrow: 1,
+      flexBasis: 140,
+      paddingVertical: 11,
       paddingHorizontal: 10,
       borderRadius: 14,
       borderWidth: 1,
@@ -190,10 +192,38 @@ export function createNewDreamScreenStyles(theme: Theme) {
     },
     moodLabel: {
       textAlign: 'center',
-      fontWeight: '700',
+      fontSize: 12,
+      fontWeight: '600',
       color: theme.colors.text,
     },
     moodLabelSelected: {
+      color: theme.colors.background,
+    },
+    intensityRow: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    intensityOption: {
+      flex: 1,
+      paddingVertical: 10,
+      paddingHorizontal: 4,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    intensityOptionSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    intensityOptionLabel: {
+      textAlign: 'center',
+      fontWeight: '600',
+      fontSize: 11,
+      lineHeight: 14,
+      color: theme.colors.text,
+    },
+    intensityOptionLabelSelected: {
       color: theme.colors.background,
     },
     contextBlock: {

@@ -29,6 +29,7 @@ type DreamDetailOverviewProps = {
   onDeleteDream: () => void;
   onToggleStarDream: () => void;
   onToggleArchiveDream: () => void;
+  onShareDream: () => void;
 };
 
 export function DreamDetailOverview({
@@ -44,6 +45,7 @@ export function DreamDetailOverview({
   onDeleteDream,
   onToggleStarDream,
   onToggleArchiveDream,
+  onShareDream,
 }: DreamDetailOverviewProps) {
   const theme = useTheme<Theme>();
   const wakeHighlights = React.useMemo(() => {
@@ -98,6 +100,16 @@ export function DreamDetailOverview({
               accessibilityLabel={viewModel.archived ? copy.detailUnarchive : copy.detailArchive}
             >
               <Ionicons name="archive-outline" size={17} color={theme.colors.text} />
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
+                styles.heroIconButton,
+                pressed ? styles.heroIconButtonPressed : null,
+              ]}
+              onPress={onShareDream}
+              accessibilityLabel={copy.dreamCardShareAction}
+            >
+              <Ionicons name="share-outline" size={17} color={theme.colors.text} />
             </Pressable>
             <Pressable
               style={({ pressed }) => [

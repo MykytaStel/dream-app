@@ -12,10 +12,22 @@ import {
 import type { Dream } from '../model/dream';
 import { CaptureSavedSheet } from '../components/CaptureSavedSheet';
 import { DreamComposer } from '../components/DreamComposer';
+import { listDreamListItems } from '../repository/dreamsRepository';
+import { getCurrentStreak } from '../model/dreamAnalytics';
+import { getStreakMilestoneToast, type StreakMilestoneToast as StreakMilestoneToastData } from '../../stats/model/achievements';
+import {
+  getLastStreakCelebrated,
+  saveLastStreakCelebrated,
+} from '../../stats/services/streakMilestoneService';
+import { StreakMilestoneToast } from '../../stats/components/StreakMilestoneToast';
+import { getStatsCopy } from '../../../constants/copy/stats';
+import { useI18n } from '../../../i18n/I18nProvider';
 
 export default function NewDreamScreen() {
   const route = useRoute<RouteProp<TabParamList, typeof TAB_ROUTE_NAMES.New>>();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { locale } = useI18n();
+  const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const entryMode = route.params?.entryMode ?? 'default';
   const shouldAutoStartRecording =
     route.params?.entryMode === 'voice' && route.params?.autoStartRecording === true;
@@ -28,6 +40,7 @@ export default function NewDreamScreen() {
   );
   const [savedDream, setSavedDream] = React.useState<Dream | null>(null);
   const [isSavedSheetVisible, setIsSavedSheetVisible] = React.useState(false);
+  const [streakToast, setStreakToast] = React.useState<StreakMilestoneToastData | null>(null);
   const [autoStartRecordingKey, setAutoStartRecordingKey] = React.useState<number | undefined>(
     shouldAutoStartRecording ? route.params?.launchKey ?? Date.now() : undefined,
   );
@@ -78,6 +91,20 @@ export default function NewDreamScreen() {
         onSaved={dream => {
           setSavedDream(dream);
           setIsSavedSheetVisible(true);
+
+          // Check streak milestones (fire-and-forget, non-blocking)
+          try {
+            const allDreams = listDreamListItems();
+            const streak = getCurrentStreak(allDreams);
+            const lastCelebrated = getLastStreakCelebrated();
+            const toast = getStreakMilestoneToast(streak, lastCelebrated, statsCopy);
+            if (toast) {
+              saveLastStreakCelebrated(streak);
+              setStreakToast(toast);
+            }
+          } catch {
+            // Non-critical: ignore errors
+          }
         }}
         autoStartRecordingKey={autoStartRecordingKey}
       />
@@ -89,6 +116,13 @@ export default function NewDreamScreen() {
         onCaptureAnother={handleCaptureAnother}
         onOpenDetail={handleOpenDetail}
       />
+      {streakToast ? (
+        <StreakMilestoneToast
+          title={streakToast.title}
+          subtitle={streakToast.subtitle}
+          onDismiss={() => setStreakToast(null)}
+        />
+      ) : null}
     </>
   );
 }

@@ -7,7 +7,7 @@ type DreamComposerChoiceChipProps = {
   label: string;
   selected: boolean;
   onPress: () => void;
-  variant: 'mood' | 'context';
+  variant: 'mood' | 'context' | 'intensity';
   styles: DreamComposerStyles;
 };
 
@@ -21,20 +21,24 @@ export function DreamComposerChoiceChip({
   const containerStyle =
     variant === 'mood'
       ? [styles.moodOption, selected ? styles.moodOptionSelected : null]
-      : [styles.contextOption, selected ? styles.contextOptionSelected : null];
+      : variant === 'intensity'
+        ? [styles.intensityOption, selected ? styles.intensityOptionSelected : null]
+        : [styles.contextOption, selected ? styles.contextOptionSelected : null];
 
   const labelStyle =
     variant === 'mood'
       ? [styles.moodLabel, selected ? styles.moodLabelSelected : null]
-      : [styles.contextOptionLabel, selected ? styles.contextOptionLabelSelected : null];
+      : variant === 'intensity'
+        ? [styles.intensityOptionLabel, selected ? styles.intensityOptionLabelSelected : null]
+        : [styles.contextOptionLabel, selected ? styles.contextOptionLabelSelected : null];
 
   return (
     <Pressable onPress={onPress} style={containerStyle}>
       <Text
         style={labelStyle}
-        numberOfLines={variant === 'context' ? 1 : undefined}
-        adjustsFontSizeToFit={variant === 'context'}
-        minimumFontScale={variant === 'context' ? 0.85 : undefined}
+        numberOfLines={variant !== 'mood' ? 1 : undefined}
+        adjustsFontSizeToFit={variant !== 'mood'}
+        minimumFontScale={variant !== 'mood' ? 0.85 : undefined}
       >
         {label}
       </Text>

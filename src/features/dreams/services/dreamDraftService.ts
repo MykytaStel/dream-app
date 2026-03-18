@@ -1,6 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { DREAM_DRAFT_STORAGE_KEY } from '../../../services/storage/keys';
-import { Mood, PreSleepEmotion, StressLevel, WakeEmotion } from '../model/dream';
+import { DreamIntensity, Mood, PreSleepEmotion, StressLevel, WakeEmotion } from '../model/dream';
 import { normalizeTags } from '../model/dreamRules';
 
 export type DreamDraftEntryMode = 'default' | 'voice' | 'wake';
@@ -13,6 +13,7 @@ export type DreamDraft = {
   entryMode?: DreamDraftEntryMode;
   updatedAt?: number;
   mood?: Mood;
+  dreamIntensity?: DreamIntensity;
   wakeEmotions?: WakeEmotion[];
   stressLevel?: StressLevel;
   preSleepEmotions?: PreSleepEmotion[];
@@ -72,6 +73,7 @@ function normalizeDraft(raw?: Partial<DreamDraft>): DreamDraft {
         ? raw.updatedAt
         : undefined,
     mood: raw?.mood,
+    dreamIntensity: raw?.dreamIntensity,
     wakeEmotions: Array.isArray(raw?.wakeEmotions)
       ? Array.from(new Set(raw.wakeEmotions))
       : undefined,

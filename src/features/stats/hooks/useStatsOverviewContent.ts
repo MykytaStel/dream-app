@@ -32,6 +32,11 @@ import {
   type MemoryWorkQueueItem,
   type MemoryNudge,
 } from '../model/statsScreenModel';
+import {
+  buildEmotionalTrendSeries,
+  getEmotionalTrendInsight,
+  type EmotionalTrendEntry,
+} from '../model/emotionalTrends';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
 import { type DreamFingerprintFacet } from '../components/DreamFingerprintCard';
 import {
@@ -309,6 +314,24 @@ export function useStatsOverviewContent(args: {
     () => (isOverviewMode ? buildRecentActivityBars(scopedDreams, selectedRange, locale) : []),
     [isOverviewMode, locale, scopedDreams, selectedRange],
   );
+  const emotionalTrendSeries = React.useMemo<EmotionalTrendEntry[]>(
+    () => (isOverviewMode ? buildEmotionalTrendSeries(scopedDreams, selectedRange, locale) : []),
+    [isOverviewMode, locale, scopedDreams, selectedRange],
+  );
+  const emotionalTrendInsight = React.useMemo(
+    () =>
+      isOverviewMode
+        ? getEmotionalTrendInsight(emotionalTrendSeries, {
+            emotionalTrendArcPositive: copy.emotionalTrendArcPositive,
+            emotionalTrendArcNeutral: copy.emotionalTrendArcNeutral,
+            emotionalTrendArcNegative: copy.emotionalTrendArcNegative,
+            emotionalTrendArcMixed: copy.emotionalTrendArcMixed,
+            emotionalTrendArcEmpty: copy.emotionalTrendEmptyLabel,
+            emotionalTrendEmptyLabel: copy.emotionalTrendEmptyLabel,
+          })
+        : '',
+    [copy, emotionalTrendSeries, isOverviewMode],
+  );
   const coverageItems = React.useMemo(
     () =>
       !isOverviewMode
@@ -444,6 +467,8 @@ export function useStatsOverviewContent(args: {
     compareMetrics,
     coverageGap,
     coverageItems,
+    emotionalTrendInsight,
+    emotionalTrendSeries,
     fingerprintFacets,
     fingerprintLeadSignals,
     importantDreamItems,

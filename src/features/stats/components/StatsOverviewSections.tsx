@@ -9,12 +9,14 @@ import { Text } from '../../../components/ui/Text';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 import { Theme } from '../../../theme/theme';
 import { DreamFingerprintCard, type DreamFingerprintFacet } from './DreamFingerprintCard';
+import { EmotionalTrendSection } from './EmotionalTrendSection';
 import {
   disabledRangeChipStyle,
   statsLayoutTransition,
   type StatsCopy,
   type StatsStyles,
 } from './StatsScreenSection.shared';
+import { type EmotionalTrendEntry } from '../model/emotionalTrends';
 import { formatCoverageValue, formatSignedDelta } from '../model/statsScreenModel';
 
 export function StatsOverviewSections({
@@ -31,6 +33,8 @@ export function StatsOverviewSections({
   compareOptions,
   compareMetrics,
   activityBars,
+  emotionalTrendSeries,
+  emotionalTrendInsight,
   summaryTiles,
   overallLastSevenDays,
   coverageItems,
@@ -53,6 +57,8 @@ export function StatsOverviewSections({
   compareOptions: ReadonlyArray<{ key: 'snapshot' | 'compare'; label: string; disabled: boolean }>;
   compareMetrics: ReadonlyArray<{ label: string; current: number; previous: number }>;
   activityBars: ReadonlyArray<{ key: string; label: string; count: number }>;
+  emotionalTrendSeries: ReadonlyArray<EmotionalTrendEntry>;
+  emotionalTrendInsight: string;
   summaryTiles: ReadonlyArray<{ label: string; value: number }>;
   overallLastSevenDays: number;
   coverageItems: ReadonlyArray<{ label: string; value: number; total: number; hint: string }>;
@@ -117,6 +123,14 @@ export function StatsOverviewSections({
           />
         </Card>
       </Animated.View>
+
+      <EmotionalTrendSection
+        series={emotionalTrendSeries as EmotionalTrendEntry[]}
+        insight={emotionalTrendInsight}
+        title={copy.emotionalTrendTitle}
+        description={copy.emotionalTrendDescription}
+        emptyLabel={copy.emotionalTrendEmptyLabel}
+      />
 
       <Animated.View layout={statsLayoutTransition}>
         <Card style={styles.sectionCard}>

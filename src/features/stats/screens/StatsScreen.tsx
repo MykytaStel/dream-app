@@ -224,6 +224,8 @@ export default function StatsScreen() {
               compareOptions={controller.compareOptions}
               compareMetrics={controller.compareMetrics}
               activityBars={controller.activityBars}
+              emotionalTrendSeries={controller.emotionalTrendSeries}
+              emotionalTrendInsight={controller.emotionalTrendInsight}
               summaryTiles={controller.summaryTiles}
               overallLastSevenDays={controller.overallLastSevenDays}
               coverageItems={controller.coverageItems}

@@ -10,6 +10,7 @@ import { ScreenStateCard } from './ScreenStateCard';
 import { logActionError } from '../../../app/errorReporting';
 import {
   getDreamCopy,
+  getDreamIntensityLevels,
   getDreamMoods,
   getDreamPreSleepEmotions,
   getDreamStressLevels,
@@ -52,6 +53,7 @@ export function DreamComposer({
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moods = React.useMemo(() => getDreamMoods(locale), [locale]);
+  const intensityOptions = React.useMemo(() => getDreamIntensityLevels(locale), [locale]);
   const stressLevels = React.useMemo(() => getDreamStressLevels(locale), [locale]);
   const wakeEmotionOptions = React.useMemo(() => getDreamWakeEmotions(locale), [locale]);
   const preSleepEmotionOptions = React.useMemo(
@@ -112,7 +114,7 @@ export function DreamComposer({
           {
             key: 'mood',
             label: form.showMoodSection ? copy.refineHideAction : copy.refineMoodAction,
-            active: form.showMoodSection || form.hasMoodSelections,
+            active: form.showMoodSection,
             onPress: () => form.setShowMoodSection(current => !current),
           },
         ]
@@ -120,20 +122,20 @@ export function DreamComposer({
           {
             key: 'meta',
             label: form.showMetaSection ? copy.refineHideAction : copy.wakeRefineMetaAction,
-            active: form.showMetaSection || form.hasEditedMeta,
+            active: form.showMetaSection,
             onPress: () => form.setShowMetaSection(current => !current),
           },
         ]),
     {
       key: 'context',
       label: form.showContextSection ? copy.refineHideAction : copy.refineContextAction,
-      active: form.showContextSection || form.hasContextSelections,
+      active: form.showContextSection,
       onPress: () => form.setShowContextSection(current => !current),
     },
     {
       key: 'tags',
       label: form.showTagsSection ? copy.refineHideAction : copy.refineTagsAction,
-      active: form.showTagsSection || form.hasTagSelections,
+      active: form.showTagsSection,
       onPress: () => form.setShowTagsSection(current => !current),
     },
   ], [copy, form]);
@@ -293,6 +295,11 @@ export function DreamComposer({
           mood={form.mood}
           onToggleMood={value =>
             form.setMood(current => (current === value ? undefined : value))
+          }
+          intensityOptions={intensityOptions}
+          dreamIntensity={form.dreamIntensity}
+          onToggleDreamIntensity={value =>
+            form.setDreamIntensity(current => (current === value ? undefined : value))
           }
           wakeEmotionOptions={wakeEmotionOptions}
           wakeEmotions={form.wakeEmotions}

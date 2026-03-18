@@ -1,7 +1,9 @@
 import { AppLocale } from '../../i18n/types';
 import {
   Dream,
+  DreamIntensity,
   DreamSyncStatus,
+  Mood,
   PreSleepEmotion,
   SleepContext,
   WakeEmotion,
@@ -271,10 +273,24 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
             emotion === 'disoriented',
         )
       : undefined,
-    mood:
-      record.mood === 'positive' || record.mood === 'negative' || record.mood === 'neutral'
-        ? record.mood
-        : undefined,
+    mood: (
+      record.mood === 'positive' ||
+      record.mood === 'negative' ||
+      record.mood === 'neutral' ||
+      record.mood === 'peaceful' ||
+      record.mood === 'joyful' ||
+      record.mood === 'mysterious' ||
+      record.mood === 'nostalgic' ||
+      record.mood === 'melancholic' ||
+      record.mood === 'anxious' ||
+      record.mood === 'dark' ||
+      record.mood === 'surreal'
+    ) ? (record.mood as Mood) : undefined,
+    dreamIntensity: (
+      typeof record.dreamIntensity === 'number' &&
+      record.dreamIntensity >= 1 &&
+      record.dreamIntensity <= 5
+    ) ? (Math.floor(record.dreamIntensity) as DreamIntensity) : undefined,
     sleepContext: pickSleepContextFromLegacy(record),
     lucidity:
       typeof record.lucidity === 'number'
@@ -369,6 +385,10 @@ function migrateDreamsToV7() {
 }
 
 function migrateDreamsToV8() {
+  migrateDreamsFromLegacyShape();
+}
+
+function migrateDreamsToV10() {
   migrateDreamsFromLegacyShape();
 }
 
@@ -556,6 +576,16 @@ export function runStorageMigrations() {
   if (nextVersion < 9) {
     migrateReviewSavedStateToV9();
     nextVersion = 9;
+  }
+
+  if (nextVersion < 10) {
+    migrateDreamsToV10();
+    nextVersion = 10;
+  }
+
+  if (nextVersion < 11) {
+    // No-op: adds LAST_STREAK_CELEBRATED_KEY (missing = 0, correct default)
+    nextVersion = 11;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

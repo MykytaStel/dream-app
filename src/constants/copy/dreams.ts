@@ -1,5 +1,6 @@
 import { AppLocale } from '../../i18n/types';
 import {
+  DreamIntensity,
   Mood,
   PreSleepEmotion,
   StressLevel,
@@ -479,7 +480,9 @@ const DREAM_COPY_EN = {
   textPlaceholder: 'Write the dream while it is still fresh...',
   wordsUnit: 'words',
   moodTitle: 'Mood after waking',
-  moodDescription: 'Quick after-waking signals for later patterns.',
+  moodDescription: 'What tone did the dream leave behind?',
+  moodIntensityLabel: 'Vividness',
+  moodIntensityHint: 'How vivid or intense was this dream?',
   wakeEmotionsTitle: 'Emotions after waking',
   wakeEmotionsDescription:
     'Quick signals from the first minute after waking, before the dream starts to flatten out.',
@@ -563,6 +566,10 @@ const DREAM_COPY_EN = {
   templateRecurringLabel: 'Recurring',
   templateFragmentLabel: 'Fragment',
   templatePeacefulLabel: 'Peaceful',
+  dreamCardShareAction: 'Share dream',
+  dreamCardShareTitle: 'Kaleidoscope of Dreams',
+  dreamCardWatermark: 'Kaleidoscope of Dreams',
+  dreamCardShareMessage: 'Shared from my dream journal.',
 };
 
 const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
@@ -1035,7 +1042,9 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   textPlaceholder: 'Запиши сон, поки він ще свіжий...',
   wordsUnit: 'слів',
   moodTitle: 'Настрій після пробудження',
-  moodDescription: 'Швидкі сигнали після пробудження для майбутніх патернів.',
+  moodDescription: 'Який тон залишив сон?',
+  moodIntensityLabel: 'Яскравість',
+  moodIntensityHint: 'Наскільки яскравим або насиченим був цей сон?',
   wakeEmotionsTitle: 'Емоції після пробудження',
   wakeEmotionsDescription:
     'Швидкі сигнали з першої хвилини після пробудження, поки сон ще не встиг згладитися.',
@@ -1118,30 +1127,65 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   templateRecurringLabel: 'Повторюваний',
   templateFragmentLabel: 'Фрагмент',
   templatePeacefulLabel: 'Спокійний',
+  dreamCardShareAction: 'Поділитись сном',
+  dreamCardShareTitle: 'Kaleidoscope of Dreams',
+  dreamCardWatermark: 'Kaleidoscope of Dreams',
+  dreamCardShareMessage: 'Поділено з мого щоденника снів.',
 };
 
+// Mood options shown in the UI — 8 dream tone values (legacy positive/neutral/negative hidden)
 const DREAM_MOODS_EN: Array<{ label: string; value: Mood }> = [
-  { label: 'Calm', value: 'neutral' },
-  { label: 'Bright', value: 'positive' },
-  { label: 'Heavy', value: 'negative' },
+  { label: 'Peaceful', value: 'peaceful' },
+  { label: 'Joyful', value: 'joyful' },
+  { label: 'Mysterious', value: 'mysterious' },
+  { label: 'Nostalgic', value: 'nostalgic' },
+  { label: 'Melancholic', value: 'melancholic' },
+  { label: 'Anxious', value: 'anxious' },
+  { label: 'Dark', value: 'dark' },
+  { label: 'Surreal', value: 'surreal' },
 ];
 
 const DREAM_MOODS_UK: typeof DREAM_MOODS_EN = [
-  { label: 'Спокійний', value: 'neutral' },
-  { label: 'Світлий', value: 'positive' },
-  { label: 'Важкий', value: 'negative' },
+  { label: 'Спокійний', value: 'peaceful' },
+  { label: 'Радісний', value: 'joyful' },
+  { label: 'Таємничий', value: 'mysterious' },
+  { label: 'Ностальгійний', value: 'nostalgic' },
+  { label: 'Меланхолійний', value: 'melancholic' },
+  { label: 'Тривожний', value: 'anxious' },
+  { label: 'Темний', value: 'dark' },
+  { label: 'Сюрреальний', value: 'surreal' },
 ];
 
 const DREAM_MOOD_LABELS_EN: Record<Mood, string> = {
+  // legacy
   neutral: 'Calm',
   positive: 'Bright',
   negative: 'Heavy',
+  // tones
+  peaceful: 'Peaceful',
+  joyful: 'Joyful',
+  mysterious: 'Mysterious',
+  nostalgic: 'Nostalgic',
+  melancholic: 'Melancholic',
+  anxious: 'Anxious',
+  dark: 'Dark',
+  surreal: 'Surreal',
 };
 
 const DREAM_MOOD_LABELS_UK: typeof DREAM_MOOD_LABELS_EN = {
+  // legacy
   neutral: 'Спокійний',
   positive: 'Світлий',
   negative: 'Важкий',
+  // tones
+  peaceful: 'Спокійний',
+  joyful: 'Радісний',
+  mysterious: 'Таємничий',
+  nostalgic: 'Ностальгійний',
+  melancholic: 'Меланхолійний',
+  anxious: 'Тривожний',
+  dark: 'Темний',
+  surreal: 'Сюрреальний',
 };
 
 const DREAM_STRESS_LEVELS_EN: Array<{ label: string; value: StressLevel }> = [
@@ -1171,6 +1215,22 @@ const DREAM_STRESS_LABELS_UK: typeof DREAM_STRESS_LABELS_EN = {
   2: 'Високий',
   3: 'Перевантаження',
 };
+
+const DREAM_INTENSITY_LEVELS_EN: Array<{ label: string; value: DreamIntensity }> = [
+  { label: 'Faint', value: 1 },
+  { label: 'Soft', value: 2 },
+  { label: 'Moderate', value: 3 },
+  { label: 'Vivid', value: 4 },
+  { label: 'Intense', value: 5 },
+];
+
+const DREAM_INTENSITY_LEVELS_UK: typeof DREAM_INTENSITY_LEVELS_EN = [
+  { label: 'Ледь', value: 1 },
+  { label: 'Слабко', value: 2 },
+  { label: 'Помірно', value: 3 },
+  { label: 'Яскраво', value: 4 },
+  { label: 'Інтенсивно', value: 5 },
+];
 
 const DREAM_WAKE_EMOTIONS_EN: Array<{ label: string; value: WakeEmotion }> = [
   { label: 'Calm', value: 'calm' },
@@ -1239,6 +1299,10 @@ export function getDreamMoodLabels(locale: AppLocale) {
   return locale === 'uk' ? DREAM_MOOD_LABELS_UK : DREAM_MOOD_LABELS_EN;
 }
 
+export function getDreamIntensityLevels(locale: AppLocale) {
+  return locale === 'uk' ? DREAM_INTENSITY_LEVELS_UK : DREAM_INTENSITY_LEVELS_EN;
+}
+
 export function getDreamStressLevels(locale: AppLocale) {
   return locale === 'uk' ? DREAM_STRESS_LEVELS_UK : DREAM_STRESS_LEVELS_EN;
 }
@@ -1266,6 +1330,7 @@ export function getDreamPreSleepEmotionLabels(locale: AppLocale) {
 }
 
 export const DREAM_COPY = DREAM_COPY_EN;
+export const DREAM_INTENSITY_LEVELS = DREAM_INTENSITY_LEVELS_EN;
 export const DREAM_MOODS = DREAM_MOODS_EN;
 export const DREAM_MOOD_LABELS = DREAM_MOOD_LABELS_EN;
 export const DREAM_STRESS_LEVELS = DREAM_STRESS_LEVELS_EN;

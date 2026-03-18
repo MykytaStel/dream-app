@@ -1,5 +1,5 @@
 export const STORAGE_SCHEMA_VERSION_KEY = 'storage-schema-version';
-export const CURRENT_STORAGE_SCHEMA_VERSION = 9;
+export const CURRENT_STORAGE_SCHEMA_VERSION = 11;
 
 export const DREAMS_STORAGE_KEY = 'dreams';
 export const DREAMS_INDEX_STORAGE_KEY = 'dreams-index';
@@ -29,3 +29,5 @@ export const REMINDER_PENDING_WAKE_OPEN_KEY =
 export const BIOMETRIC_LOCK_ENABLED_KEY = 'biometric-lock-enabled';
 
 export const ONBOARDING_SEEN_KEY = 'onboarding-seen';
+
+export const LAST_STREAK_CELEBRATED_KEY = 'last-streak-celebrated';

@@ -9,8 +9,20 @@ type DreamAchievementSource = Pick<Dream, 'createdAt' | 'sleepDate'> & {
 export type DreamAchievementId =
   | 'first-dream'
   | 'three-day-streak'
+  | 'seven-day-streak'
+  | 'thirty-day-streak'
   | 'ten-dreams'
+  | 'fifty-dreams'
+  | 'hundred-dreams'
   | 'first-voice-dream';
+
+export type StreakMilestoneToast = {
+  milestoneId: DreamAchievementId;
+  title: string;
+  subtitle: string;
+};
+
+const STREAK_MILESTONES = [3, 7, 14, 30] as const;
 
 export type DreamAchievementProgress = {
   id: DreamAchievementId;
@@ -81,10 +93,34 @@ export function getDreamAchievements(
       unlocked: longestStreak >= 3,
     },
     {
+      id: 'seven-day-streak',
+      current: longestStreak,
+      target: 7,
+      unlocked: longestStreak >= 7,
+    },
+    {
+      id: 'thirty-day-streak',
+      current: longestStreak,
+      target: 30,
+      unlocked: longestStreak >= 30,
+    },
+    {
       id: 'ten-dreams',
       current: totalDreams,
       target: 10,
       unlocked: totalDreams >= 10,
+    },
+    {
+      id: 'fifty-dreams',
+      current: totalDreams,
+      target: 50,
+      unlocked: totalDreams >= 50,
+    },
+    {
+      id: 'hundred-dreams',
+      current: totalDreams,
+      target: 100,
+      unlocked: totalDreams >= 100,
     },
     {
       id: 'first-voice-dream',
@@ -93,6 +129,59 @@ export function getDreamAchievements(
       unlocked: voiceDreams >= 1,
     },
   ];
+}
+
+type StreakToastCopy = {
+  streakMilestoneThreeDaysTitle: string;
+  streakMilestoneThreeDaysSubtitle: string;
+  streakMilestoneSevenDaysTitle: string;
+  streakMilestoneSevenDaysSubtitle: string;
+  streakMilestoneFourteenDaysTitle: string;
+  streakMilestoneFourteenDaysSubtitle: string;
+  streakMilestoneThirtyDaysTitle: string;
+  streakMilestoneThirtyDaysSubtitle: string;
+};
+
+export function getStreakMilestoneToast(
+  currentStreak: number,
+  lastCelebrated: number,
+  copy: StreakToastCopy,
+): StreakMilestoneToast | null {
+  // Find the highest milestone we've crossed that hasn't been celebrated yet
+  const crossedMilestone = [...STREAK_MILESTONES]
+    .reverse()
+    .find(m => currentStreak >= m && lastCelebrated < m);
+
+  if (!crossedMilestone) {
+    return null;
+  }
+
+  switch (crossedMilestone) {
+    case 3:
+      return {
+        milestoneId: 'three-day-streak',
+        title: copy.streakMilestoneThreeDaysTitle,
+        subtitle: copy.streakMilestoneThreeDaysSubtitle,
+      };
+    case 7:
+      return {
+        milestoneId: 'seven-day-streak',
+        title: copy.streakMilestoneSevenDaysTitle,
+        subtitle: copy.streakMilestoneSevenDaysSubtitle,
+      };
+    case 14:
+      return {
+        milestoneId: 'seven-day-streak',
+        title: copy.streakMilestoneFourteenDaysTitle,
+        subtitle: copy.streakMilestoneFourteenDaysSubtitle,
+      };
+    case 30:
+      return {
+        milestoneId: 'thirty-day-streak',
+        title: copy.streakMilestoneThirtyDaysTitle,
+        subtitle: copy.streakMilestoneThirtyDaysSubtitle,
+      };
+  }
 }
 
 export function getDreamAchievementSummary(

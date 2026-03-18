@@ -2,6 +2,7 @@ import React from 'react';
 import { Alert, Platform } from 'react-native';
 import {
   Dream,
+  DreamIntensity,
   Mood,
   PreSleepEmotion,
   SleepContext,
@@ -89,6 +90,7 @@ export function useDreamComposerForm({
   const isEdit = mode === 'edit';
   const initialHasMoodDetails =
     Boolean(initialDream?.mood ?? initialDraft?.mood) ||
+    Boolean(initialDream?.dreamIntensity ?? initialDraft?.dreamIntensity) ||
     Boolean(initialDream?.wakeEmotions?.length ?? initialDraft?.wakeEmotions?.length);
   const initialHasContextDetails = hasSleepContextValues({
     stressLevel: initialDream?.sleepContext?.stressLevel ?? initialDraft?.stressLevel,
@@ -115,6 +117,9 @@ export function useDreamComposerForm({
     initialDream?.audioUri ?? initialDraft?.audioUri,
   );
   const [mood, setMood] = React.useState<Mood | undefined>(initialDream?.mood ?? initialDraft?.mood);
+  const [dreamIntensity, setDreamIntensity] = React.useState<DreamIntensity | undefined>(
+    initialDream?.dreamIntensity ?? initialDraft?.dreamIntensity,
+  );
   const [wakeEmotions, setWakeEmotions] = React.useState<WakeEmotion[]>(
     initialDream?.wakeEmotions ?? initialDraft?.wakeEmotions ?? [],
   );
@@ -175,7 +180,7 @@ export function useDreamComposerForm({
     importantEvents,
     healthNotes,
   });
-  const hasMoodSelections = Boolean(mood) || wakeEmotions.length > 0;
+  const hasMoodSelections = Boolean(mood) || Boolean(dreamIntensity) || wakeEmotions.length > 0;
   const hasTagSelections = tags.length > 0;
   const todayDate = React.useMemo(() => getTodayDate(), []);
   const hasEditedMeta = Boolean(title.trim()) || sleepDate !== todayDate;
@@ -202,6 +207,7 @@ export function useDreamComposerForm({
         audioUri,
         entryMode,
         mood,
+        dreamIntensity,
         wakeEmotions,
         stressLevel,
         preSleepEmotions,
@@ -219,6 +225,7 @@ export function useDreamComposerForm({
     alcoholTaken,
     audioUri,
     caffeineLate,
+    dreamIntensity,
     entryMode,
     healthNotes,
     importantEvents,
@@ -360,6 +367,7 @@ export function useDreamComposerForm({
     setSleepDate(getTodayDate());
     setAudioUri(undefined);
     setMood(undefined);
+    setDreamIntensity(undefined);
     setWakeEmotions([]);
     setStressLevel(undefined);
     setPreSleepEmotions([]);
@@ -440,6 +448,7 @@ export function useDreamComposerForm({
         audioUri,
         tags: normalizeTags(tags),
         mood,
+        dreamIntensity,
         wakeEmotions: wakeEmotions.length ? wakeEmotions : undefined,
         sleepContext: hasSleepContextValues(sleepContext) ? sleepContext : undefined,
       };
@@ -483,6 +492,8 @@ export function useDreamComposerForm({
     setAudioUri,
     mood,
     setMood,
+    dreamIntensity,
+    setDreamIntensity,
     wakeEmotions,
     setWakeEmotions,
     stressLevel,

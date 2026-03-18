@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, Share, View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
@@ -14,6 +14,7 @@ import {
   getDreamStressLabels,
   getDreamWakeEmotionLabels,
 } from '../../../constants/copy/dreams';
+import { buildDreamCardData, buildDreamShareText } from '../model/dreamCardPresentation';
 import {
   ROOT_ROUTE_NAMES,
   TAB_ROUTE_NAMES,
@@ -97,6 +98,21 @@ export default function DreamDetailScreen() {
     ],
   );
 
+  const handleShareDream = React.useCallback(async () => {
+    if (!controller.dream) return;
+    const cardData = buildDreamCardData(controller.dream, moodLabels, copy);
+    const message = buildDreamShareText(
+      cardData,
+      copy.dreamCardWatermark,
+      copy.dreamCardShareMessage,
+    );
+    try {
+      await Share.share({ title: copy.dreamCardShareTitle, message });
+    } catch {
+      // Share sheet dismissed or unavailable — ignore silently
+    }
+  }, [controller.dream, copy, moodLabels]);
+
   if (!controller.dream || !viewModel) {
     return (
       <ScreenContainer scroll>
@@ -141,6 +157,7 @@ export default function DreamDetailScreen() {
         onDeleteDream={controller.onDeleteDream}
         onToggleStarDream={controller.onToggleStarDream}
         onToggleArchiveDream={controller.onToggleArchiveDream}
+        onShareDream={handleShareDream}
       />
 
       <DreamDetailSections

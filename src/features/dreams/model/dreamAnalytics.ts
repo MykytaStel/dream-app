@@ -1,5 +1,25 @@
 import { Dream, Mood, PreSleepEmotion, WakeEmotion } from './dream';
 
+const MOOD_VALENCE: Record<Mood, 'positive' | 'neutral' | 'negative'> = {
+  // legacy
+  positive: 'positive',
+  neutral: 'neutral',
+  negative: 'negative',
+  // tones
+  peaceful: 'positive',
+  joyful: 'positive',
+  mysterious: 'neutral',
+  nostalgic: 'neutral',
+  surreal: 'neutral',
+  melancholic: 'negative',
+  anxious: 'negative',
+  dark: 'negative',
+};
+
+export function getMoodValence(mood: Mood): 'positive' | 'neutral' | 'negative' {
+  return MOOD_VALENCE[mood] ?? 'neutral';
+}
+
 type DreamDateLike = Pick<Dream, 'createdAt' | 'sleepDate'>;
 
 export function getDreamDate(dream: DreamDateLike) {
@@ -69,7 +89,7 @@ export function getMoodCounts(dreams: Dream[]): Record<Mood, number> {
   return dreams.reduce<Record<Mood, number>>(
     (acc, dream) => {
       if (dream.mood) {
-        acc[dream.mood] += 1;
+        acc[dream.mood] = (acc[dream.mood] ?? 0) + 1;
       }
       return acc;
     },
@@ -77,6 +97,14 @@ export function getMoodCounts(dreams: Dream[]): Record<Mood, number> {
       neutral: 0,
       positive: 0,
       negative: 0,
+      peaceful: 0,
+      joyful: 0,
+      mysterious: 0,
+      nostalgic: 0,
+      melancholic: 0,
+      anxious: 0,
+      dark: 0,
+      surreal: 0,
     },
   );
 }
@@ -239,7 +267,7 @@ export function getMoodCorrelationStats(dreams: Dream[]): MoodCorrelationStats {
       return;
     }
 
-    const isNegative = dream.mood === 'negative';
+    const isNegative = getMoodValence(dream.mood) === 'negative';
     const context = dream.sleepContext;
 
     overallTotal += 1;

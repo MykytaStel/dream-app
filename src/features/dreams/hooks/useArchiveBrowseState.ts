@@ -16,12 +16,18 @@ import {
   getDistinctDayCount,
   getQuickJumpMonthKeys,
   getMonthKey,
+  getTopArchiveTags,
   searchArchiveMonthDreams,
   toLocalDateKey,
   type ArchiveFilter,
+  type ArchiveTagSignal,
   type ArchiveViewMode,
 } from '../model/archiveBrowser';
 import { getDreamDate } from '../model/dreamAnalytics';
+import {
+  trackFiltersApplied,
+  trackSearchUsed,
+} from '../../../services/observability/events';
 
 const ARCHIVE_SEARCH_DEBOUNCE_MS = 160;
 const DEFAULT_ARCHIVE_FILTER: ArchiveFilter = 'archived';
@@ -44,8 +50,8 @@ export function useArchiveBrowseState({
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
-  const [isCalendarExpanded, setIsCalendarExpanded] = React.useState(false);
   const [viewMode, setViewMode] = React.useState<ArchiveViewMode>('comfortable');
+  const [tagFilter, setTagFilter] = React.useState<string | null>(null);
 
   const debouncedSearchQuery = useDebouncedValue(searchQuery, ARCHIVE_SEARCH_DEBOUNCE_MS);
   const deferredSearchQuery = React.useDeferredValue(debouncedSearchQuery);
@@ -89,9 +95,24 @@ export function useArchiveBrowseState({
     [selectedMonthKey, statusScopedDreams],
   );
 
+  const topMonthTags = React.useMemo<ArchiveTagSignal[]>(
+    () => getTopArchiveTags(monthDreams),
+    [monthDreams],
+  );
+
+  const tagFilteredMonthDreams = React.useMemo(
+    () =>
+      tagFilter
+        ? monthDreams.filter(dream =>
+            dream.tags.some(t => t.replace(/-/g, ' ').trim().toLowerCase() === tagFilter.toLowerCase()),
+          )
+        : monthDreams,
+    [monthDreams, tagFilter],
+  );
+
   const searchedMonthDreams = React.useMemo(
-    () => searchArchiveMonthDreams(monthDreams, deferredSearchQuery),
-    [deferredSearchQuery, monthDreams],
+    () => searchArchiveMonthDreams(tagFilteredMonthDreams, deferredSearchQuery),
+    [deferredSearchQuery, tagFilteredMonthDreams],
   );
 
   const visibleDreams = React.useMemo(
@@ -170,9 +191,55 @@ export function useArchiveBrowseState({
     hasScopedDreams,
     hasVisibleDreams,
   );
-  const hasResettableView = Boolean(searchQuery.trim()) || Boolean(selectedDate);
-  const hasHardReset = Boolean(searchQuery.trim());
+  const hasResettableView = Boolean(searchQuery.trim()) || Boolean(selectedDate) || Boolean(tagFilter);
+  const hasHardReset = Boolean(searchQuery.trim()) || Boolean(tagFilter);
   const visibleEntriesLabel = formatArchiveEntryCount(visibleDreams.length, locale);
+  const filterCount =
+    Number(filter !== DEFAULT_ARCHIVE_FILTER) +
+    Number(Boolean(selectedDate)) +
+    Number(Boolean(tagFilter));
+  const filterSignature = React.useMemo(
+    () => JSON.stringify({ filter, selectedDate, tagFilter }),
+    [filter, selectedDate, tagFilter],
+  );
+  const lastTrackedSearchQueryRef = React.useRef('');
+  const lastTrackedFilterSignatureRef = React.useRef(filterSignature);
+
+  React.useEffect(() => {
+    const normalizedQuery = deferredSearchQuery.trim();
+    if (!normalizedQuery) {
+      lastTrackedSearchQueryRef.current = '';
+      return;
+    }
+
+    if (lastTrackedSearchQueryRef.current === normalizedQuery) {
+      return;
+    }
+
+    lastTrackedSearchQueryRef.current = normalizedQuery;
+    trackSearchUsed({
+      surface: 'archive',
+      queryLength: normalizedQuery.length,
+      resultCount: visibleDreams.length,
+    });
+  }, [deferredSearchQuery, visibleDreams.length]);
+
+  React.useEffect(() => {
+    if (filterCount === 0) {
+      lastTrackedFilterSignatureRef.current = filterSignature;
+      return;
+    }
+
+    if (lastTrackedFilterSignatureRef.current === filterSignature) {
+      return;
+    }
+
+    lastTrackedFilterSignatureRef.current = filterSignature;
+    trackFiltersApplied({
+      surface: 'archive',
+      filterCount,
+    });
+  }, [filterCount, filterSignature]);
 
   const selectMonth = React.useCallback(
     (monthKey: string) => {
@@ -209,6 +276,7 @@ export function useArchiveBrowseState({
     setFilter(DEFAULT_ARCHIVE_FILTER);
     setSearchQuery('');
     setSelectedDate(null);
+    setTagFilter(null);
     onBrowseMutate?.();
   }, [onBrowseMutate]);
 
@@ -216,6 +284,15 @@ export function useArchiveBrowseState({
     (nextFilter: ArchiveFilter) => {
       setFilter(nextFilter);
       setSelectedDate(null);
+      setTagFilter(null);
+      onBrowseMutate?.();
+    },
+    [onBrowseMutate],
+  );
+
+  const selectTagFilter = React.useCallback(
+    (tag: string | null) => {
+      setTagFilter(current => (current === tag ? null : tag));
       onBrowseMutate?.();
     },
     [onBrowseMutate],
@@ -225,10 +302,6 @@ export function useArchiveBrowseState({
     setSelectedDate(null);
     onBrowseMutate?.();
   }, [onBrowseMutate]);
-
-  const toggleCalendarExpanded = React.useCallback(() => {
-    setIsCalendarExpanded(current => !current);
-  }, []);
 
   const selectCalendarDate = React.useCallback(
     (date: string | null) => {
@@ -244,9 +317,10 @@ export function useArchiveBrowseState({
     setSearchQuery,
     selectedMonthKey,
     selectedDate,
-    isCalendarExpanded,
     viewMode,
     setViewMode,
+    tagFilter,
+    topMonthTags,
     deferredSearchQuery,
     isSearchPending,
     archiveFilters,
@@ -269,8 +343,8 @@ export function useArchiveBrowseState({
     moveMonth,
     resetArchiveView,
     selectFilter,
+    selectTagFilter,
     clearSelectedDate,
-    toggleCalendarExpanded,
     selectCalendarDate,
   };
 }

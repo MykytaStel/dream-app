@@ -8,132 +8,137 @@ This backlog is grouped by priority:
 - **P2** — differentiation and expansion
 - **P3** — later-stage or experimental ideas
 
+### Status Legend
+- `[done]` — feature is available end-to-end in the product
+- `[partial]` — some meaningful implementation exists, but the full user-facing flow or polish is not complete
+- `[missing]` — no meaningful implementation is present in the current codebase
+
 ---
 
 ## P0 — Strong MVP
 
 ### Dream Capture
-- create dream entry
-- edit dream entry
-- delete dream entry
-- autosave draft
-- title + body fields
-- date/time support
-- quick save flow
+- [done] create dream entry
+- [done] edit dream entry
+- [done] delete dream entry
+- [done] autosave draft
+- [done] title + body fields
+- [done] date/time support
+- [partial] quick save flow
 
 ### Organization
-- tags
-- moods / emotions
-- dream type markers
-- favorites / pinned dreams
-- timeline or journal list
-- dream detail view
+- [done] tags
+- [done] moods / emotions
+- [done] dream type markers
+- [done] favorites / pinned dreams
+- [done] timeline or journal list
+- [done] dream detail view
 
 ### Discovery
-- local search
-- simple filters
-- sort recent / favorite / tagged
+- [done] local search
+- [done] simple filters
+- [partial] sort recent / favorite / tagged
 
 ### Product Basics
-- onboarding
-- settings
-- local notifications
-- local-first persistence
-- privacy explanation
+- [done] onboarding
+- [done] settings
+- [done] local notifications
+- [done] local-first persistence
+- [done] privacy explanation
 
 ### Quality
-- empty states
-- error states
-- basic analytics events
-- crash reporting foundation
+- [done] empty states
+- [done] error states
+- [partial] basic analytics events
+- [partial] crash reporting foundation
 
 ---
 
 ## P1 — Retention and Trust
 
 ### Better Revisit Value
-- calendar view
-- recurring symbol entry support
-- home screen recap
-- recent patterns preview
-- quick re-entry from notification
+- [done] calendar view
+- [partial] recurring symbol entry support
+- [done] home screen recap
+- [done] recent patterns preview
+- [done] quick re-entry from notification
 
 ### Better Capture Experience
-- voice-to-text
-- quick templates
-- richer mood model
-- intensity slider
-- sleep context notes
+- [done] voice-to-text
+- [done] quick templates
+- [done] richer mood model
+- [done] intensity slider
+- [done] sleep context notes
 
 ### Privacy and Safety
-- biometric lock
-- secure export options
-- clearer local vs cloud settings
+- [done] biometric lock
+- [partial] secure export options
+- [done] clearer local vs cloud settings
 
 ### Polish
-- stronger onboarding copy
-- first-week retention nudges
-- better animations
-- more refined journal cards
+- [partial] stronger onboarding copy
+- [partial] first-week retention nudges
+- [done] better animations
+- [partial] more refined journal cards
 
 ---
 
 ## P2 — Differentiation
 
 ### Insight Layer
-- recurring symbols dashboard
-- emotion trend cards
-- nightmare frequency tracking
-- lucid dream tracking
-- monthly dream summary
-- weekly pattern cards
+- [partial] recurring symbols dashboard
+- [done] emotion trend cards
+- [missing] nightmare frequency tracking
+- [missing] lucid dream tracking
+- [done] monthly dream summary
+- [partial] weekly pattern cards
 
 ### Personalization
-- themes
-- home screen customization
-- widgets
-- visual entry cards
-- custom reminder styles
+- [missing] themes
+- [partial] home screen customization
+- [missing] widgets
+- [partial] visual entry cards
+- [missing] custom reminder styles
 
 ### Export and Portability
-- PDF export
-- Markdown/text export
-- printable dream archive
+- [done] PDF export
+- [missing] Markdown/text export
+- [partial] printable dream archive
 
 ### Cloud Features
-- account system
-- cloud backup
-- sync across devices
-- sync conflict handling
+- [done] account system
+- [done] cloud backup
+- [done] sync across devices
+- [done] sync conflict handling
 
 ---
 
 ## P3 — Advanced / Experimental
 
 ### AI Features
-- AI dream summaries
-- AI symbol extraction
-- AI timeline recap
-- semantic search
-- pattern clustering
+- [missing] AI dream summaries
+- [missing] AI symbol extraction
+- [missing] AI timeline recap
+- [missing] semantic search
+- [missing] pattern clustering
 
 ### Creative Features
-- dream board / collage support
-- image attachments
-- voice note playback
-- sleep ritual mode
-- pre-sleep intention prompts
+- [missing] dream board / collage support
+- [missing] image attachments
+- [done] voice note playback
+- [missing] sleep ritual mode
+- [missing] pre-sleep intention prompts
 
 ### Premium Expansion
-- premium insight reports
-- exclusive themes
-- curated symbol libraries
-- deeper historical comparisons
+- [missing] premium insight reports
+- [missing] exclusive themes
+- [missing] curated symbol libraries
+- [missing] deeper historical comparisons
 
 ### Experimental
-- wearable integration later if useful
-- smart wake reminder concepts
-- community-safe optional sharing concepts
+- [missing] wearable integration later if useful
+- [partial] smart wake reminder concepts
+- [missing] community-safe optional sharing concepts
 
 ---
 
@@ -152,21 +157,31 @@ These can hurt the product if done badly:
 ## Recommended First Cut
 
 If scope must stay tight, keep only:
-- create/edit/delete
-- timeline
-- dream detail
-- mood/tag/type
-- search
-- onboarding
-- reminders
-- local-first persistence
-- favorites
+- [done] create/edit/delete
+- [done] timeline
+- [done] dream detail
+- [done] mood/tag/type
+- [done] search
+- [done] onboarding
+- [done] reminders
+- [done] local-first persistence
+- [done] favorites
 
 Then add:
-- calendar
-- voice capture
-- biometrics
-- insight previews
+- [done] calendar
+- [done] voice capture
+- [done] biometrics
+- [done] insight previews
+
+---
+
+## Current Execution Order
+
+Recommended next implementation sequence based on the current codebase:
+1. Close P0/P1 partials: quick save flow, sort clarity, analytics events, crash reporting, secure export options.
+2. Finish P2 differentiation core: recurring symbols dashboard, weekly pattern cards, visual entry cards, lucid/nightmare tracking.
+3. Add personalization extras after differentiation is solid: themes, widgets, custom reminder styles.
+4. Leave AI and premium expansion until the P2 layer is materially complete.
 
 ---
 

@@ -11,6 +11,7 @@ import { Theme } from '../../../../theme/theme';
 import {
   type ArchiveFilter,
   type ArchiveRevisitCue,
+  type ArchiveTagSignal,
   type ArchiveViewMode,
 } from '../../model/archiveBrowser';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
@@ -36,6 +37,9 @@ type ArchiveControlsPanelProps = {
   viewMode: ArchiveViewMode;
   onChangeViewMode: (mode: ArchiveViewMode) => void;
   onOpenRevisitDream: (dreamId: string) => void;
+  topMonthTags: ArchiveTagSignal[];
+  tagFilter: string | null;
+  onSelectTagFilter: (tag: string | null) => void;
 };
 
 export function ArchiveControlsPanel({
@@ -55,6 +59,9 @@ export function ArchiveControlsPanel({
   viewMode,
   onChangeViewMode,
   onOpenRevisitDream,
+  topMonthTags,
+  tagFilter,
+  onSelectTagFilter,
 }: ArchiveControlsPanelProps) {
   const theme = useTheme<Theme>();
 
@@ -102,6 +109,35 @@ export function ArchiveControlsPanel({
               );
             })}
           </ScrollView>
+
+          {topMonthTags.length > 0 ? (
+            <View style={styles.tagRailRow}>
+              <Text style={styles.tagRailLabel}>{copy.archiveTagsLabel}</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.tagRail}
+              >
+                {topMonthTags.map(signal => {
+                  const active = tagFilter === signal.tag;
+                  return (
+                    <Pressable
+                      key={signal.tag}
+                      style={[styles.tagChip, active ? styles.tagChipActive : null]}
+                      onPress={() => onSelectTagFilter(signal.tag)}
+                    >
+                      <Text style={[styles.tagChipText, active ? styles.tagChipTextActive : null]}>
+                        {signal.tag}
+                      </Text>
+                      <Text style={[styles.tagChipCount, active ? styles.tagChipCountActive : null]}>
+                        {signal.count}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </ScrollView>
+            </View>
+          ) : null}
 
           {hasHardReset || isSearchPending ? (
             <View style={styles.controlsFooterRow}>

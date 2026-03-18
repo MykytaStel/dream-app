@@ -4,7 +4,10 @@ import { type DreamCopy } from '../../../constants/copy/dreams';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { type AppLocale } from '../../../i18n/types';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
-import { type HomeFilterChip, type HomeOption } from '../components/home/homeTypes';
+import {
+  type HomeFilterChip,
+  type HomeOption,
+} from '../components/home/homeTypes';
 import {
   buildActiveFilterChips,
   buildSearchPresetLabel,
@@ -14,17 +17,14 @@ import {
   getContextGreeting,
   getHomeRevisitCue,
 } from '../model/homeOverview';
-import {
-  getAverageWords,
-  getCurrentStreak,
-  getEntriesLastSevenDays,
-} from '../model/dreamAnalytics';
+import { getAverageWords, getCurrentStreak } from '../model/dreamAnalytics';
 import { Dream, Mood } from '../model/dream';
 import {
   applyHomeTimelineFilters,
   DEFAULT_HOME_TIMELINE_FILTERS,
   getAvailableTimelineTags,
   getHomeTimelineFiltersSignature,
+  hasActiveTimelineFilters,
   hasActiveTimelineRefinements,
   isDreamArchived,
   type HomeArchiveFilter,
@@ -39,11 +39,16 @@ import {
   getRecurringWordSignals,
   getTranscriptArchiveStats,
 } from '../../stats/model/dreamReflection';
+import { buildWeeklyPatternCards } from '../../stats/model/weeklyPatternCards';
 import {
   removeHomeSearchPreset,
   saveHomeSearchPreset,
   type HomeSearchPreset,
 } from '../services/homeSearchPresetService';
+import {
+  trackFiltersApplied,
+  trackSearchUsed,
+} from '../../../services/observability/events';
 
 const HOME_RECENT_LIMIT = 12;
 const SEARCH_DEBOUNCE_MS = 160;
@@ -54,7 +59,9 @@ type UseHomeTimelineStateArgs = {
   locale: AppLocale;
   moodLabels: Record<Mood, string>;
   savedSearchPresets: HomeSearchPreset[];
-  setSavedSearchPresets: React.Dispatch<React.SetStateAction<HomeSearchPreset[]>>;
+  setSavedSearchPresets: React.Dispatch<
+    React.SetStateAction<HomeSearchPreset[]>
+  >;
   lastViewedDream: Dream | null;
   closeActiveSwipe: () => void;
 };
@@ -70,9 +77,8 @@ export function useHomeTimelineState({
   closeActiveSwipe,
 }: UseHomeTimelineStateArgs) {
   const [isFilterMutationPending, startFilterMutation] = React.useTransition();
-  const [timelineFilters, setTimelineFilters] = React.useState<HomeTimelineFilters>(
-    DEFAULT_HOME_TIMELINE_FILTERS,
-  );
+  const [timelineFilters, setTimelineFilters] =
+    React.useState<HomeTimelineFilters>(DEFAULT_HOME_TIMELINE_FILTERS);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = React.useState(false);
 
   const homeFilters = React.useMemo<Array<HomeOption<HomeArchiveFilter>>>(
@@ -82,7 +88,9 @@ export function useHomeTimelineState({
     ],
     [copy.homeFilterActive, copy.homeFilterAll],
   );
-  const moodFilters = React.useMemo<Array<HomeOption<HomeTimelineFilters['mood']>>>(
+  const moodFilters = React.useMemo<
+    Array<HomeOption<HomeTimelineFilters['mood']>>
+  >(
     () => [
       { key: 'all', label: copy.homeMoodFilterAll },
       { key: 'positive', label: moodLabels.positive },
@@ -105,10 +113,15 @@ export function useHomeTimelineState({
       copy.homeTypeFilterText,
     ],
   );
-  const transcriptFilters = React.useMemo<Array<HomeOption<HomeTranscriptFilter>>>(
+  const transcriptFilters = React.useMemo<
+    Array<HomeOption<HomeTranscriptFilter>>
+  >(
     () => [
       { key: 'all', label: copy.homeTranscriptFilterAll },
-      { key: 'with-transcript', label: copy.homeTranscriptFilterWithTranscript },
+      {
+        key: 'with-transcript',
+        label: copy.homeTranscriptFilterWithTranscript,
+      },
       { key: 'audio-only', label: copy.homeTranscriptFilterAudioOnly },
       { key: 'edited-transcript', label: copy.homeTranscriptFilterEdited },
     ],
@@ -119,7 +132,9 @@ export function useHomeTimelineState({
       copy.homeTranscriptFilterWithTranscript,
     ],
   );
-  const dateRangeFilters = React.useMemo<Array<HomeOption<HomeDateRangeFilter>>>(
+  const dateRangeFilters = React.useMemo<
+    Array<HomeOption<HomeDateRangeFilter>>
+  >(
     () => [
       { key: 'all', label: copy.homeDateRangeAll },
       { key: '7d', label: copy.homeDateRange7d },
@@ -164,7 +179,10 @@ export function useHomeTimelineState({
     () => getAvailableTimelineTags(archiveScopedDreams),
     [archiveScopedDreams],
   );
-  const debouncedSearchQuery = useDebouncedValue(timelineFilters.searchQuery, SEARCH_DEBOUNCE_MS);
+  const debouncedSearchQuery = useDebouncedValue(
+    timelineFilters.searchQuery,
+    SEARCH_DEBOUNCE_MS,
+  );
   const effectiveTimelineFilters = React.useMemo(
     () => ({
       ...timelineFilters,
@@ -172,7 +190,9 @@ export function useHomeTimelineState({
     }),
     [debouncedSearchQuery, timelineFilters],
   );
-  const deferredTimelineFilters = React.useDeferredValue(effectiveTimelineFilters);
+  const deferredTimelineFilters = React.useDeferredValue(
+    effectiveTimelineFilters,
+  );
   const visibleDreams = React.useMemo(
     () => applyHomeTimelineFilters(dreams, deferredTimelineFilters),
     [deferredTimelineFilters, dreams],
@@ -184,18 +204,28 @@ export function useHomeTimelineState({
     () => hasActiveTimelineRefinements(timelineFilters),
     [timelineFilters],
   );
-  const shouldLimitHomeFeed = !hasActiveRefinements;
+  const hasCustomSort =
+    timelineFilters.sortOrder !== DEFAULT_HOME_TIMELINE_FILTERS.sortOrder;
+  const shouldLimitHomeFeed = !hasActiveRefinements && !hasCustomSort;
   const displayedDreams = React.useMemo(
-    () => (shouldLimitHomeFeed ? visibleDreams.slice(0, HOME_RECENT_LIMIT) : visibleDreams),
+    () =>
+      shouldLimitHomeFeed
+        ? visibleDreams.slice(0, HOME_RECENT_LIMIT)
+        : visibleDreams,
     [shouldLimitHomeFeed, visibleDreams],
   );
 
   // Deferred: expensive O(n×m) analytics don't block the list render
   const deferredActiveDreams = React.useDeferredValue(activeDreams);
 
-  const streak = React.useMemo(() => getCurrentStreak(activeDreams), [activeDreams]);
-  const averageWords = React.useMemo(() => getAverageWords(activeDreams), [activeDreams]);
-  const weeklyEntries = React.useMemo(() => getEntriesLastSevenDays(activeDreams), [activeDreams]);
+  const streak = React.useMemo(
+    () => getCurrentStreak(activeDreams),
+    [activeDreams],
+  );
+  const averageWords = React.useMemo(
+    () => getAverageWords(activeDreams),
+    [activeDreams],
+  );
   const spotlightWord = React.useMemo(
     () => getRecurringWordSignals(deferredActiveDreams, 1)[0],
     [deferredActiveDreams],
@@ -214,7 +244,10 @@ export function useHomeTimelineState({
   );
 
   const heroGreeting = React.useMemo(() => getContextGreeting(copy), [copy]);
-  const heroDateLabel = React.useMemo(() => formatHeroDateLabel(locale), [locale]);
+  const heroDateLabel = React.useMemo(
+    () => formatHeroDateLabel(locale),
+    [locale],
+  );
   const revisitCue = React.useMemo(
     () => getHomeRevisitCue(deferredActiveDreams, copy),
     [deferredActiveDreams, copy],
@@ -224,40 +257,55 @@ export function useHomeTimelineState({
     [copy, lastViewedDream, locale],
   );
 
-  const spotlightPattern = spotlightWord?.label ?? spotlightTheme?.label ?? copy.homeSpotlightNoPattern;
+  const spotlightPattern =
+    spotlightWord?.label ??
+    spotlightTheme?.label ??
+    copy.homeSpotlightNoPattern;
   const spotlightPatternKind: PatternDetailKind | null = spotlightWord
     ? 'word'
     : spotlightTheme
-      ? 'theme'
-      : null;
+    ? 'theme'
+    : null;
   const searchResultsLabel = React.useMemo(
     () => formatResultCount(visibleDreams.length, copy),
     [copy, visibleDreams.length],
   );
   const spotlightCountLabel = React.useMemo(
     () =>
-      formatResultCount((spotlightWord?.dreamCount ?? spotlightTheme?.dreamCount) || 0, copy),
+      formatResultCount(
+        (spotlightWord?.dreamCount ?? spotlightTheme?.dreamCount) || 0,
+        copy,
+      ),
     [copy, spotlightTheme?.dreamCount, spotlightWord?.dreamCount],
   );
-  const weeklyValue = `${weeklyEntries}/3`;
-  const weeklyHint =
-    weeklyEntries >= 3 ? copy.homeSpotlightWeeklyOnTrack : copy.homeSpotlightWeeklyOffTrack;
+  const weeklyPatternCards = React.useMemo(
+    () =>
+      activeDreams.length
+        ? buildWeeklyPatternCards({
+            dreams: activeDreams,
+            locale,
+            copy,
+            moodLabels,
+          })
+        : [],
+    [activeDreams, copy, locale, moodLabels],
+  );
   const attentionValue =
     transcriptArchiveStats.audioOnly > 0
       ? transcriptArchiveStats.audioOnly === 1
         ? copy.homeSpotlightAttentionAudioSingle
         : `${transcriptArchiveStats.audioOnly} ${copy.homeSpotlightAttentionAudioPlural}`
       : moodBacklogCount > 0
-        ? moodBacklogCount === 1
-          ? copy.homeSpotlightAttentionMoodSingle
-          : `${moodBacklogCount} ${copy.homeSpotlightAttentionMoodPlural}`
-        : copy.homeSpotlightAttentionClear;
+      ? moodBacklogCount === 1
+        ? copy.homeSpotlightAttentionMoodSingle
+        : `${moodBacklogCount} ${copy.homeSpotlightAttentionMoodPlural}`
+      : copy.homeSpotlightAttentionClear;
   const attentionHint =
     transcriptArchiveStats.audioOnly > 0
       ? copy.homeSpotlightAttentionAudioHint
       : moodBacklogCount > 0
-        ? copy.homeSpotlightAttentionMoodHint
-        : copy.homeSpotlightAttentionClearHint;
+      ? copy.homeSpotlightAttentionMoodHint
+      : copy.homeSpotlightAttentionClearHint;
 
   const activeFilterChips = React.useMemo<HomeFilterChip[]>(
     () =>
@@ -269,14 +317,12 @@ export function useHomeTimelineState({
         typeFilters,
         transcriptFilters,
         dateRangeFilters,
-        sortOptions,
       }),
     [
       copy,
       dateRangeFilters,
       homeFilters,
       moodLabels,
-      sortOptions,
       timelineFilters,
       transcriptFilters,
       typeFilters,
@@ -284,8 +330,31 @@ export function useHomeTimelineState({
   );
   const hasSearchQuery = Boolean(timelineFilters.searchQuery.trim());
   const hasNonSearchRefinements = React.useMemo(
-    () => activeFilterChips.some(chip => chip.key !== 'search'),
-    [activeFilterChips],
+    () => hasActiveTimelineFilters(timelineFilters),
+    [timelineFilters],
+  );
+  const hasCustomView = hasActiveRefinements || hasCustomSort;
+  const filterGroupCount = React.useMemo(
+    () =>
+      Number(
+        timelineFilters.archive !== DEFAULT_HOME_TIMELINE_FILTERS.archive,
+      ) +
+      Number(timelineFilters.starredOnly) +
+      Number(timelineFilters.mood !== DEFAULT_HOME_TIMELINE_FILTERS.mood) +
+      Number(timelineFilters.tags.length > 0) +
+      Number(
+        timelineFilters.entryType !== DEFAULT_HOME_TIMELINE_FILTERS.entryType,
+      ) +
+      Number(
+        timelineFilters.transcript !== DEFAULT_HOME_TIMELINE_FILTERS.transcript,
+      ) +
+      Number(
+        timelineFilters.dateRange !== DEFAULT_HOME_TIMELINE_FILTERS.dateRange,
+      ) +
+      Number(
+        timelineFilters.sortOrder !== DEFAULT_HOME_TIMELINE_FILTERS.sortOrder,
+      ),
+    [timelineFilters],
   );
   const currentFilterSignature = React.useMemo(
     () => getHomeTimelineFiltersSignature(timelineFilters),
@@ -294,20 +363,23 @@ export function useHomeTimelineState({
   const activeSearchPresetId = React.useMemo(
     () =>
       savedSearchPresets.find(
-        preset => getHomeTimelineFiltersSignature(preset.filters) === currentFilterSignature,
+        preset =>
+          getHomeTimelineFiltersSignature(preset.filters) ===
+          currentFilterSignature,
       )?.id ?? null,
     [currentFilterSignature, savedSearchPresets],
   );
   const canSaveSearchPreset = React.useMemo(
-    () =>
-      (timelineFilters.archive !== DEFAULT_HOME_TIMELINE_FILTERS.archive ||
-        hasActiveTimelineRefinements(timelineFilters)) &&
-      !activeSearchPresetId,
-    [activeSearchPresetId, timelineFilters],
+    () => hasActiveRefinements && !activeSearchPresetId,
+    [activeSearchPresetId, hasActiveRefinements],
   );
+  const lastTrackedSearchQueryRef = React.useRef('');
+  const lastTrackedFilterSignatureRef = React.useRef(currentFilterSignature);
 
   React.useEffect(() => {
-    const nextTags = timelineFilters.tags.filter(tag => availableTags.includes(tag));
+    const nextTags = timelineFilters.tags.filter(tag =>
+      availableTags.includes(tag),
+    );
     if (nextTags.length === timelineFilters.tags.length) {
       return;
     }
@@ -317,6 +389,42 @@ export function useHomeTimelineState({
       tags: current.tags.filter(tag => availableTags.includes(tag)),
     }));
   }, [availableTags, timelineFilters.tags]);
+
+  React.useEffect(() => {
+    const normalizedQuery = deferredTimelineFilters.searchQuery.trim();
+    if (!normalizedQuery) {
+      lastTrackedSearchQueryRef.current = '';
+      return;
+    }
+
+    if (lastTrackedSearchQueryRef.current === normalizedQuery) {
+      return;
+    }
+
+    lastTrackedSearchQueryRef.current = normalizedQuery;
+    trackSearchUsed({
+      surface: 'home',
+      queryLength: normalizedQuery.length,
+      resultCount: visibleDreams.length,
+    });
+  }, [deferredTimelineFilters.searchQuery, visibleDreams.length]);
+
+  React.useEffect(() => {
+    if (filterGroupCount === 0) {
+      lastTrackedFilterSignatureRef.current = currentFilterSignature;
+      return;
+    }
+
+    if (lastTrackedFilterSignatureRef.current === currentFilterSignature) {
+      return;
+    }
+
+    lastTrackedFilterSignatureRef.current = currentFilterSignature;
+    trackFiltersApplied({
+      surface: 'home',
+      filterCount: filterGroupCount,
+    });
+  }, [currentFilterSignature, filterGroupCount]);
 
   const updateTimelineFilters = React.useCallback(
     (updater: (current: HomeTimelineFilters) => HomeTimelineFilters) => {
@@ -331,7 +439,11 @@ export function useHomeTimelineState({
   const clearTimelineFilters = React.useCallback(() => {
     closeActiveSwipe();
     startFilterMutation(() => {
-      setTimelineFilters(DEFAULT_HOME_TIMELINE_FILTERS);
+      setTimelineFilters(current => ({
+        ...DEFAULT_HOME_TIMELINE_FILTERS,
+        searchQuery: current.searchQuery,
+        sortOrder: current.sortOrder,
+      }));
     });
   }, [closeActiveSwipe, startFilterMutation]);
 
@@ -438,6 +550,8 @@ export function useHomeTimelineState({
     activeFilterChips,
     hasSearchQuery,
     hasNonSearchRefinements,
+    hasCustomView,
+    hasCustomSort,
     activeSearchPresetId,
     canSaveSearchPreset,
     heroGreeting,
@@ -449,8 +563,7 @@ export function useHomeTimelineState({
     spotlightPattern,
     spotlightPatternKind,
     spotlightCountLabel,
-    weeklyValue,
-    weeklyHint,
+    weeklyPatternCards,
     attentionValue,
     attentionHint,
     searchResultsLabel,

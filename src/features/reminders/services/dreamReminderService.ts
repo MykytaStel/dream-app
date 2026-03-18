@@ -221,6 +221,55 @@ export function isReminderInitialNotificationTarget(initial: {
   return initial?.notification?.data?.target === REMINDER_TARGET_RECORD;
 }
 
+const OPTIMAL_REMINDER_MIN_DREAMS = 5;
+
+/**
+ * Analyzes dream creation times and returns the preset reminder time closest
+ * to the user's most common recording hour.
+ * Returns null if there is not enough data or if no preset is a good match.
+ */
+export function getOptimalReminderTime(
+  dreams: ReadonlyArray<{ createdAt: string | number }>,
+): (typeof REMINDER_TIME_OPTIONS)[number] | null {
+  if (dreams.length < OPTIMAL_REMINDER_MIN_DREAMS) {
+    return null;
+  }
+
+  const hourCounts = new Map<number, number>();
+  for (const dream of dreams) {
+    const hour = new Date(dream.createdAt).getHours();
+    hourCounts.set(hour, (hourCounts.get(hour) ?? 0) + 1);
+  }
+
+  let modeHour = 0;
+  let modeCount = 0;
+  for (const [hour, count] of hourCounts) {
+    if (count > modeCount) {
+      modeCount = count;
+      modeHour = hour;
+    }
+  }
+
+  const modeMinutes = modeHour * 60;
+  let bestPreset = REMINDER_TIME_OPTIONS[0];
+  let bestDistance = Math.abs(modeMinutes - (bestPreset.hour * 60 + bestPreset.minute));
+
+  for (const preset of REMINDER_TIME_OPTIONS) {
+    const distance = Math.abs(modeMinutes - (preset.hour * 60 + preset.minute));
+    if (distance < bestDistance) {
+      bestDistance = distance;
+      bestPreset = preset;
+    }
+  }
+
+  // Only suggest if the mode hour is in the morning window (5–11am)
+  if (modeHour < 5 || modeHour > 11) {
+    return null;
+  }
+
+  return bestPreset;
+}
+
 export function markPendingWakeOpenFromReminder() {
   kv.set(REMINDER_PENDING_WAKE_OPEN_KEY, '1');
 }

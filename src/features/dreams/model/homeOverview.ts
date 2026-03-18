@@ -7,7 +7,6 @@ import {
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
   type HomeEntryTypeFilter,
-  type HomeSortOrder,
   type HomeTimelineFilters,
   type HomeTranscriptFilter,
 } from './homeTimeline';
@@ -141,7 +140,6 @@ type BuildActiveFilterChipsArgs = {
   typeFilters: Array<HomeOption<HomeEntryTypeFilter>>;
   transcriptFilters: Array<HomeOption<HomeTranscriptFilter>>;
   dateRangeFilters: Array<HomeOption<HomeDateRangeFilter>>;
-  sortOptions: Array<HomeOption<HomeSortOrder>>;
 };
 
 export function buildActiveFilterChips({
@@ -152,7 +150,6 @@ export function buildActiveFilterChips({
   typeFilters,
   transcriptFilters,
   dateRangeFilters,
-  sortOptions,
 }: BuildActiveFilterChipsArgs): HomeFilterChip[] {
   const chips: HomeFilterChip[] = [];
 
@@ -210,22 +207,6 @@ export function buildActiveFilterChips({
       label:
         dateRangeFilters.find(filter => filter.key === filters.dateRange)?.label ??
         filters.dateRange,
-    });
-  }
-
-  if (filters.sortOrder !== 'newest') {
-    chips.push({
-      key: `sort:${filters.sortOrder}`,
-      label:
-        sortOptions.find(option => option.key === filters.sortOrder)?.label ??
-        filters.sortOrder,
-    });
-  }
-
-  if (filters.searchQuery.trim()) {
-    chips.push({
-      key: 'search',
-      label: filters.searchQuery.trim(),
     });
   }
 

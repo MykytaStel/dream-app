@@ -526,6 +526,47 @@ export function createStatsScreenStyles(theme: Theme) {
       fontSize: 12,
       lineHeight: 17,
     },
+    weeklyPatternGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    weeklyPatternCard: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 11,
+        paddingHorizontal: 12,
+      }),
+      flexGrow: 1,
+      flexBasis: '47%',
+      minWidth: 146,
+      gap: 4,
+    },
+    weeklyPatternCardAccent: {
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    weeklyPatternLabel: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 14,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      fontWeight: '700',
+    },
+    weeklyPatternTitle: {
+      color: theme.colors.text,
+      fontSize: 17,
+      lineHeight: 22,
+      fontWeight: '700',
+      includeFontPadding: false,
+    },
+    weeklyPatternHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 16,
+    },
     takeawayLeadCard: {
       minHeight: 118,
       justifyContent: 'space-between',
@@ -622,6 +663,20 @@ export function createStatsScreenStyles(theme: Theme) {
     },
     savedThreadsList: {
       gap: 8,
+    },
+    recurringHeroBlock: {
+      gap: 10,
+    },
+    recurringHeroHighlights: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
+    recurringGroupHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      justifyContent: 'space-between',
+      gap: 10,
     },
     savedThreadRow: {
       ...createSoftTile(theme, {
@@ -733,6 +788,45 @@ export function createStatsScreenStyles(theme: Theme) {
       }),
       gap: 8,
       borderColor: theme.colors.border,
+    },
+    recurringItemCardFeatured: {
+      borderColor: theme.colors.accent,
+      backgroundColor: theme.colors.surfaceAlt,
+    },
+    recurringItemList: {
+      gap: 10,
+    },
+    recurringItemHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+    },
+    recurringRankChip: {
+      ...createControlPill(theme, {
+        tone: 'background',
+        paddingHorizontal: 8,
+        paddingVertical: 5,
+      }),
+    },
+    recurringRankChipText: {
+      color: theme.colors.text,
+      fontSize: 11,
+      fontWeight: '700',
+      letterSpacing: 0.3,
+    },
+    recurringLatestBlock: {
+      gap: 2,
+    },
+    recurringTimelineText: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 15,
+    },
+    recurringLatestTitle: {
+      color: theme.colors.text,
+      fontSize: 14,
+      lineHeight: 19,
+      fontWeight: '700',
     },
     threadMatchHeader: {
       flexDirection: 'row',

@@ -387,15 +387,21 @@ export function applyHomeTimelineFilters(
   return [...sorted].sort((a, b) => (scoreCache.get(b.id) ?? 0) - (scoreCache.get(a.id) ?? 0));
 }
 
-export function hasActiveTimelineRefinements(filters: HomeTimelineFilters) {
+export function hasActiveTimelineFilters(filters: HomeTimelineFilters) {
   return (
-    Boolean(filters.searchQuery.trim()) ||
+    filters.archive !== DEFAULT_HOME_TIMELINE_FILTERS.archive ||
     filters.starredOnly ||
     filters.mood !== 'all' ||
     filters.tags.length > 0 ||
     filters.entryType !== 'all' ||
     filters.transcript !== 'all' ||
-    filters.dateRange !== 'all' ||
-    filters.sortOrder !== DEFAULT_HOME_TIMELINE_FILTERS.sortOrder
+    filters.dateRange !== 'all'
+  );
+}
+
+export function hasActiveTimelineRefinements(filters: HomeTimelineFilters) {
+  return (
+    Boolean(filters.searchQuery.trim()) ||
+    hasActiveTimelineFilters(filters)
   );
 }

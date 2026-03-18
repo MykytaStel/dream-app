@@ -1,10 +1,12 @@
 import React from 'react';
 import { type AppLocale } from '../../../i18n/types';
 import { type getStatsCopy } from '../../../constants/copy/stats';
-import { type Dream } from '../../dreams/model/dream';
+import { type Dream, type Mood } from '../../dreams/model/dream';
 import { type DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import {
   getEntriesLastSevenDays,
+  getDreamDate,
+  getNightmareStats,
   getSleepContextStats,
   getTopPreSleepEmotionSignals,
   getTopWakeEmotionSignals,
@@ -22,6 +24,7 @@ import { buildSavedDreamThreadShelfItems } from '../model/dreamThread';
 import {
   buildSavedMonthlyReviewItems,
   buildRecentActivityBars,
+  formatCoverageValue,
   formatDreamCountLabel,
   formatEntryCountLabel,
   getAchievementContent,
@@ -43,8 +46,42 @@ import {
   buildReviewWorkspaceImportantDreamItems,
   buildReviewWorkspaceSavedSetItems,
 } from '../model/reviewWorkspace';
+import {
+  buildWeeklyPatternCards,
+  type WeeklyPatternCard,
+} from '../model/weeklyPatternCards';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
+
+function formatNightmareCadence(
+  nightmareCount: number,
+  totalDreams: number,
+  copy: StatsCopy,
+) {
+  if (!nightmareCount || !totalDreams) {
+    return copy.nightmareFrequencyShareEmptyHint;
+  }
+
+  const everyDreamCount = Math.max(1, Math.round(totalDreams / nightmareCount));
+  return `${copy.nightmareFrequencyShareHintPrefix}${everyDreamCount}${
+    copy.nightmareFrequencyShareHintSuffix
+  }`;
+}
+
+function formatNightmareLatestValue(
+  timestamp: number | undefined,
+  locale: AppLocale,
+  copy: StatsCopy,
+) {
+  if (typeof timestamp !== 'number') {
+    return copy.nightmareFrequencyLatestEmptyValue;
+  }
+
+  return new Date(timestamp).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
 
 export function useStatsOverviewContent(args: {
   locale: AppLocale;
@@ -60,6 +97,7 @@ export function useStatsOverviewContent(args: {
     savedAt: number;
   }>;
   wakeEmotionLabels: Record<string, string>;
+  moodLabels: Record<Mood, string>;
   preSleepEmotionLabels: Record<string, string>;
   openPatternDetail: (signal: string, kind: PatternDetailKind) => void;
   isOverviewMode: boolean;
@@ -75,23 +113,84 @@ export function useStatsOverviewContent(args: {
     savedMonths,
     savedThreadRecords,
     wakeEmotionLabels,
+    moodLabels,
     preSleepEmotionLabels,
     openPatternDetail,
     isOverviewMode,
-    isThreadsMode,
   } = args;
   const previousScopedDreams = React.useMemo(
-    () => getPreviousRangeDreams(dreams, selectedRange),
-    [dreams, selectedRange],
+    () => (isOverviewMode ? getPreviousRangeDreams(dreams, selectedRange) : []),
+    [dreams, isOverviewMode, selectedRange],
   );
-  const scopedSummary = React.useMemo(() => summarizeScopedDreams(scopedDreams), [scopedDreams]);
+  const scopedSummary = React.useMemo(
+    () =>
+      isOverviewMode
+        ? summarizeScopedDreams(scopedDreams)
+        : {
+            totalWords: 0,
+            voiceNotes: 0,
+            transcribedDreams: 0,
+            taggedEntries: 0,
+            moodEntries: 0,
+          },
+    [isOverviewMode, scopedDreams],
+  );
   const previousScopedSummary = React.useMemo(
-    () => summarizeScopedDreams(previousScopedDreams),
-    [previousScopedDreams],
+    () =>
+      isOverviewMode
+        ? summarizeScopedDreams(previousScopedDreams)
+        : {
+            totalWords: 0,
+            voiceNotes: 0,
+            transcribedDreams: 0,
+            taggedEntries: 0,
+            moodEntries: 0,
+          },
+    [isOverviewMode, previousScopedDreams],
+  );
+  const scopedNightmareStats = React.useMemo(
+    () =>
+      isOverviewMode
+        ? getNightmareStats(scopedDreams)
+        : {
+            totalDreams: 0,
+            nightmareCount: 0,
+            taggedCount: 0,
+            derivedCount: 0,
+            rate: undefined,
+            latestNightmareDream: null,
+          },
+    [isOverviewMode, scopedDreams],
+  );
+  const previousScopedNightmareStats = React.useMemo(
+    () =>
+      isOverviewMode
+        ? getNightmareStats(previousScopedDreams)
+        : {
+            totalDreams: 0,
+            nightmareCount: 0,
+            taggedCount: 0,
+            derivedCount: 0,
+            rate: undefined,
+            latestNightmareDream: null,
+          },
+    [isOverviewMode, previousScopedDreams],
   );
   const overallLastSevenDays = React.useMemo(
     () => (isOverviewMode ? getEntriesLastSevenDays(dreams) : 0),
     [dreams, isOverviewMode],
+  );
+  const weeklyPatternCards = React.useMemo<WeeklyPatternCard[]>(
+    () =>
+      isOverviewMode
+        ? buildWeeklyPatternCards({
+            dreams,
+            locale,
+            copy,
+            moodLabels,
+          })
+        : [],
+    [copy, dreams, isOverviewMode, locale, moodLabels],
   );
   const sleepContextStats = React.useMemo(
     () =>
@@ -127,26 +226,24 @@ export function useStatsOverviewContent(args: {
   );
   const recurringThemes = React.useMemo(
     () =>
-      isOverviewMode || isThreadsMode
+      isOverviewMode
         ? getRecurringReflectionSignals(scopedDreams, { limit: 6 })
         : [],
-    [isOverviewMode, isThreadsMode, scopedDreams],
+    [isOverviewMode, scopedDreams],
   );
   const recurringSymbols = React.useMemo(
     () =>
-      isThreadsMode
-        ? []
-        : isOverviewMode
+      isOverviewMode
         ? getRecurringReflectionSignals(scopedDreams, {
             limit: 6,
             transcriptOnly: true,
           })
         : [],
-    [isOverviewMode, isThreadsMode, scopedDreams],
+    [isOverviewMode, scopedDreams],
   );
   const recurringWords = React.useMemo(
-    () => ((isOverviewMode || isThreadsMode) ? getRecurringWordSignals(scopedDreams, 6) : []),
-    [isOverviewMode, isThreadsMode, scopedDreams],
+    () => (isOverviewMode ? getRecurringWordSignals(scopedDreams, 6) : []),
+    [isOverviewMode, scopedDreams],
   );
   const achievements = React.useMemo(
     () => (isOverviewMode ? getDreamAchievements(dreams) : []),
@@ -162,8 +259,14 @@ export function useStatsOverviewContent(args: {
   const topTheme = recurringThemes[0];
   const topSymbol = recurringSymbols[0];
   const topWord = recurringWords[0];
-  const entriesWithoutMood = Math.max(scopedDreams.length - scopedSummary.moodEntries, 0);
-  const entriesWithoutContext = Math.max(scopedDreams.length - sleepContextStats.withContext, 0);
+  const entriesWithoutMood = Math.max(
+    scopedDreams.length - scopedSummary.moodEntries,
+    0,
+  );
+  const entriesWithoutContext = Math.max(
+    scopedDreams.length - sleepContextStats.withContext,
+    0,
+  );
 
   const summaryTiles = React.useMemo(
     () => [
@@ -172,7 +275,13 @@ export function useStatsOverviewContent(args: {
       { label: copy.voiceNotes, value: scopedSummary.voiceNotes },
       { label: copy.transcribedDreams, value: scopedSummary.transcribedDreams },
     ],
-    [copy, scopedDreams.length, scopedSummary.totalWords, scopedSummary.transcribedDreams, scopedSummary.voiceNotes],
+    [
+      copy,
+      scopedDreams.length,
+      scopedSummary.totalWords,
+      scopedSummary.transcribedDreams,
+      scopedSummary.voiceNotes,
+    ],
   );
   const compareMetrics = React.useMemo(
     () => [
@@ -180,6 +289,11 @@ export function useStatsOverviewContent(args: {
         label: copy.entries,
         current: scopedDreams.length,
         previous: previousScopedDreams.length,
+      },
+      {
+        label: copy.nightmareFrequencyCountLabel,
+        current: scopedNightmareStats.nightmareCount,
+        previous: previousScopedNightmareStats.nightmareCount,
       },
       {
         label: copy.wordsSaved,
@@ -194,17 +308,60 @@ export function useStatsOverviewContent(args: {
     ],
     [
       copy,
+      previousScopedNightmareStats.nightmareCount,
       previousScopedDreams.length,
       previousScopedSummary.totalWords,
       previousScopedSummary.transcribedDreams,
+      scopedNightmareStats.nightmareCount,
       scopedDreams.length,
       scopedSummary.totalWords,
       scopedSummary.transcribedDreams,
     ],
   );
+  const nightmareMetrics = React.useMemo(
+    () => [
+      {
+        label: copy.nightmareFrequencyCountLabel,
+        value: formatCoverageValue(
+          scopedNightmareStats.nightmareCount,
+          scopedNightmareStats.totalDreams,
+        ),
+        hint:
+          scopedNightmareStats.nightmareCount > 0
+            ? copy.nightmareFrequencyCountHint
+            : copy.nightmareFrequencyCountEmptyHint,
+      },
+      {
+        label: copy.nightmareFrequencyShareLabel,
+        value: `${scopedNightmareStats.rate ?? 0}%`,
+        hint: formatNightmareCadence(
+          scopedNightmareStats.nightmareCount,
+          scopedNightmareStats.totalDreams,
+          copy,
+        ),
+      },
+      {
+        label: copy.nightmareFrequencyLatestLabel,
+        value: formatNightmareLatestValue(
+          scopedNightmareStats.latestNightmareDream
+            ? getDreamDate(scopedNightmareStats.latestNightmareDream).getTime()
+            : undefined,
+          locale,
+          copy,
+        ),
+        hint: scopedNightmareStats.latestNightmareDream
+          ? copy.nightmareFrequencyLatestHint
+          : copy.nightmareFrequencyLatestEmptyHint,
+      },
+    ],
+    [copy, locale, scopedNightmareStats],
+  );
   const coverageGap =
     [
-      { label: copy.takeawayGapAudioOnly, value: transcriptArchiveStats.audioOnly },
+      {
+        label: copy.takeawayGapAudioOnly,
+        value: transcriptArchiveStats.audioOnly,
+      },
       { label: copy.takeawayGapMood, value: entriesWithoutMood },
       { label: copy.takeawayGapContext, value: entriesWithoutContext },
     ].sort((a, b) => b.value - a.value)[0] ?? null;
@@ -244,10 +401,23 @@ export function useStatsOverviewContent(args: {
   }, [copy.reflectionThemeCountLabel, openPatternDetail, topTheme, topWord]);
   const memoryNudge = React.useMemo<MemoryNudge | null>(
     () =>
-      isOverviewMode || isThreadsMode
-        ? getMemoryNudge(scopedDreams, copy, recurringThemes, recurringWords, recurringSymbols)
+      isOverviewMode
+        ? getMemoryNudge(
+            scopedDreams,
+            copy,
+            recurringThemes,
+            recurringWords,
+            recurringSymbols,
+          )
         : null,
-    [copy, isOverviewMode, isThreadsMode, recurringSymbols, recurringThemes, recurringWords, scopedDreams],
+    [
+      copy,
+      isOverviewMode,
+      recurringSymbols,
+      recurringThemes,
+      recurringWords,
+      scopedDreams,
+    ],
   );
 
   const fingerprintFacets = React.useMemo<DreamFingerprintFacet[]>(
@@ -278,15 +448,22 @@ export function useStatsOverviewContent(args: {
                   key: 'wake',
                   label: copy.fingerprintWakeLabel,
                   value: wakeEmotionLabels[wakeEmotionSignals[0].emotion],
-                  meta: formatEntryCountLabel(wakeEmotionSignals[0].count, locale),
+                  meta: formatEntryCountLabel(
+                    wakeEmotionSignals[0].count,
+                    locale,
+                  ),
                 }
               : null,
             preSleepEmotionSignals[0]
               ? {
                   key: 'pre-sleep',
                   label: copy.fingerprintPreSleepLabel,
-                  value: preSleepEmotionLabels[preSleepEmotionSignals[0].emotion],
-                  meta: formatEntryCountLabel(preSleepEmotionSignals[0].count, locale),
+                  value:
+                    preSleepEmotionLabels[preSleepEmotionSignals[0].emotion],
+                  meta: formatEntryCountLabel(
+                    preSleepEmotionSignals[0].count,
+                    locale,
+                  ),
                 }
               : null,
           ].filter((value): value is DreamFingerprintFacet => value !== null),
@@ -311,11 +488,17 @@ export function useStatsOverviewContent(args: {
     [fingerprintFacets],
   );
   const activityBars = React.useMemo(
-    () => (isOverviewMode ? buildRecentActivityBars(scopedDreams, selectedRange, locale) : []),
+    () =>
+      isOverviewMode
+        ? buildRecentActivityBars(scopedDreams, selectedRange, locale)
+        : [],
     [isOverviewMode, locale, scopedDreams, selectedRange],
   );
   const emotionalTrendSeries = React.useMemo<EmotionalTrendEntry[]>(
-    () => (isOverviewMode ? buildEmotionalTrendSeries(scopedDreams, selectedRange, locale) : []),
+    () =>
+      isOverviewMode
+        ? buildEmotionalTrendSeries(scopedDreams, selectedRange, locale)
+        : [],
     [isOverviewMode, locale, scopedDreams, selectedRange],
   );
   const emotionalTrendInsight = React.useMemo(
@@ -382,7 +565,9 @@ export function useStatsOverviewContent(args: {
               label: copy.attentionMoodLabel,
               value: entriesWithoutMood,
               hint:
-                entriesWithoutMood > 0 ? copy.attentionMoodHint : copy.attentionAllSetHint,
+                entriesWithoutMood > 0
+                  ? copy.attentionMoodHint
+                  : copy.attentionAllSetHint,
             },
             {
               label: copy.attentionContextLabel,
@@ -393,7 +578,13 @@ export function useStatsOverviewContent(args: {
                   : copy.attentionAllSetHint,
             },
           ],
-    [copy, entriesWithoutContext, entriesWithoutMood, isOverviewMode, transcriptArchiveStats.audioOnly],
+    [
+      copy,
+      entriesWithoutContext,
+      entriesWithoutMood,
+      isOverviewMode,
+      transcriptArchiveStats.audioOnly,
+    ],
   );
   const workQueueItems = React.useMemo<MemoryWorkQueueItem[]>(
     () =>
@@ -449,7 +640,15 @@ export function useStatsOverviewContent(args: {
             copy,
             wakeEmotionLabels,
           }),
-    [copy, dreams, isOverviewMode, locale, savedMonths, savedThreadRecords, wakeEmotionLabels],
+    [
+      copy,
+      dreams,
+      isOverviewMode,
+      locale,
+      savedMonths,
+      savedThreadRecords,
+      wakeEmotionLabels,
+    ],
   );
   const highlightedAchievementTitle = achievementSummary.highlightedId
     ? getAchievementContent(achievementSummary.highlightedId, copy).title
@@ -474,12 +673,14 @@ export function useStatsOverviewContent(args: {
     importantDreamItems,
     memoryNudge,
     milestoneSummaryHint,
+    nightmareMetrics,
     overallLastSevenDays,
     savedMonthItems,
     savedOverviewThreadItems,
     savedSetItems,
     summaryTiles,
     topSignal,
+    weeklyPatternCards,
     weeklyGoalComplete,
     weeklyGoalTarget,
     workQueueItems,

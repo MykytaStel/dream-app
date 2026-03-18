@@ -16,7 +16,9 @@ import { SettingsActionRow } from '../components/SettingsActionRow';
 import { CloudSection } from '../components/SettingsCloudSection';
 import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import {
-  ExportSection,
+  BackupFlowGuideSection,
+  BackupExportSection,
+  PdfExportSection,
   RestoreSection,
 } from '../components/SettingsAdvancedSections';
 import { useBackupScreenController } from '../hooks/useBackupScreenController';
@@ -36,6 +38,7 @@ export default function BackupScreen() {
     setLocale,
     copy,
   });
+  const [showStatusDetails, setShowStatusDetails] = React.useState(false);
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -46,6 +49,79 @@ export default function BackupScreen() {
   return (
     <ScreenContainer scroll withTopInset={false}>
       <Text style={styles.restoreHint}>{copy.backupScreenSubtitle}</Text>
+      <SectionHeader
+        title={copy.backupLocalSectionTitle}
+        subtitle={copy.backupLocalSectionDescription}
+      />
+      <BackupFlowGuideSection copy={copy} styles={styles} />
+      <BackupExportSection
+        copy={copy}
+        styles={styles}
+        isExportingJson={controller.isExportingJson}
+        isBusy={controller.isExportingJson || controller.isExportingPdf}
+        lastBackupName={controller.lastBackupName}
+        onExportJson={() =>
+          controller.onExportData().catch(e =>
+            logActionError('BackupScreen.onExportData', e),
+          )
+        }
+        onShareLastBackup={() =>
+          controller.onShareLastBackup().catch(e =>
+            logActionError('BackupScreen.onShareLastBackup', e),
+          )
+        }
+      />
+      <RestoreSection
+        copy={copy}
+        styles={styles}
+        importMode={controller.importMode}
+        onChangeMode={controller.setImportMode}
+        localExportFiles={controller.localExportFiles}
+        isLoadingLocalExports={controller.isLoadingLocalExports}
+        selectedImportPath={controller.selectedImportPath}
+        onSelectImportFile={controller.onSelectImportFile}
+        formatBackupListTitle={controller.formatBackupListTitle}
+        formatBackupListMeta={controller.formatBackupListMeta}
+        importPreviewError={controller.importPreviewError}
+        selectedImportPreview={controller.selectedImportPreview}
+        showRestorePreview={controller.showRestorePreview}
+        onToggleRestorePreview={() =>
+          controller.setShowRestorePreview(current => !current)
+        }
+        restorePreviewMeta={controller.restorePreviewMeta}
+        restorePreviewItems={controller.restorePreviewItems}
+        lastRestorePreview={controller.lastRestorePreview}
+        restoreSuccessItems={controller.restoreSuccessItems}
+        isRestoringImport={controller.isRestoringImport}
+        isLoadingImportPreview={controller.isLoadingImportPreview}
+        onRestoreImport={controller.onRestoreImport}
+      />
+      <PdfExportSection
+        copy={copy}
+        styles={styles}
+        isExportingPdf={controller.isExportingPdf}
+        isBusy={controller.isExportingJson || controller.isExportingPdf}
+        lastPdfName={controller.lastPdfName}
+        onExportPdf={() =>
+          controller.onExportPdfData().catch(e =>
+            logActionError('BackupScreen.onExportPdfData', e),
+          )
+        }
+        onOpenLastPdf={() =>
+          controller.onOpenLastPdf().catch(e =>
+            logActionError('BackupScreen.onOpenLastPdf', e),
+          )
+        }
+        onShareLastPdf={() =>
+          controller.onShareLastPdf().catch(e =>
+            logActionError('BackupScreen.onShareLastPdf', e),
+          )
+        }
+      />
+      <SectionHeader
+        title={copy.backupCloudSectionTitle}
+        subtitle={copy.backupCloudSectionDescription}
+      />
       <CloudSection
         copy={copy}
         styles={styles}
@@ -114,121 +190,80 @@ export default function BackupScreen() {
       />
       <Card style={styles.sectionCard}>
         <SectionHeader
-          title={copy.backupTimelineTitle}
-          subtitle={copy.backupTimelineDescription}
+          title={copy.backupStatusTitle}
+          subtitle={copy.backupStatusDescription}
         />
-        {controller.backupTimelineItems.map(item => (
-          <SettingsActionRow
-            key={item.key}
-            title={item.title}
-            meta={item.meta}
-            value={item.value}
-          />
-        ))}
-
-        {controller.latestLocalBackupPreview ? (
+        <SettingsActionRow
+          title={copy.backupStatusToggleTitle}
+          meta={
+            showStatusDetails
+              ? copy.backupStatusToggleMetaExpanded
+              : copy.backupStatusToggleMetaCollapsed
+          }
+          value={showStatusDetails ? copy.toggleHide : copy.toggleShow}
+          onPress={() => setShowStatusDetails(current => !current)}
+        />
+        {showStatusDetails ? (
           <>
             <View style={styles.restorePreviewBlock}>
-              <Text style={styles.restoreLabel}>{copy.restorePreviewTitle}</Text>
-              <Text style={styles.restoreHint}>
-                {controller.latestLocalBackupPreviewMeta ?? copy.restoreDescription}
-              </Text>
+              <Text style={styles.restoreLabel}>{copy.backupTimelineTitle}</Text>
+              <Text style={styles.restoreHint}>{copy.backupTimelineDescription}</Text>
             </View>
+            {controller.backupTimelineItems.map(item => (
+              <SettingsActionRow
+                key={item.key}
+                title={item.title}
+                meta={item.meta}
+                value={item.value}
+              />
+            ))}
+
+            {controller.latestLocalBackupPreview ? (
+              <>
+                <View style={styles.restorePreviewBlock}>
+                  <Text style={styles.restoreLabel}>{copy.restorePreviewTitle}</Text>
+                  <Text style={styles.restoreHint}>
+                    {controller.latestLocalBackupPreviewMeta ?? copy.restoreDescription}
+                  </Text>
+                </View>
+                <View style={styles.restorePreviewBlock}>
+                  <SettingsMetaGrid items={controller.latestLocalBackupPreviewItems} />
+                </View>
+              </>
+            ) : controller.latestLocalBackupPreviewError ? (
+              <View style={styles.restoreEmptyBlock}>
+                <Text style={styles.restoreEmptyTitle}>{copy.restoreErrorTitle}</Text>
+                <Text style={styles.restoreHint}>
+                  {controller.latestLocalBackupPreviewError}
+                </Text>
+              </View>
+            ) : controller.isLoadingLatestLocalBackupPreview ? (
+              <View style={styles.restoreEmptyBlock}>
+                <Text style={styles.restoreEmptyTitle}>{copy.restoreLoading}</Text>
+                <Text style={styles.restoreHint}>{copy.restoreLoadingAction}</Text>
+              </View>
+            ) : (
+              <View style={styles.restoreEmptyBlock}>
+                <Text style={styles.restoreEmptyTitle}>{copy.backupTimelineSnapshotMissing}</Text>
+                <Text style={styles.restoreHint}>{copy.backupTimelineSnapshotMissingMeta}</Text>
+              </View>
+            )}
+
             <View style={styles.restorePreviewBlock}>
-              <SettingsMetaGrid items={controller.latestLocalBackupPreviewItems} />
+              <Text style={styles.restoreLabel}>{copy.backupContentTrustTitle}</Text>
+              <Text style={styles.restoreHint}>{copy.backupContentTrustDescription}</Text>
             </View>
+            {controller.backupContentTrustItems.map(item => (
+              <SettingsActionRow
+                key={item.key}
+                title={item.title}
+                meta={item.meta}
+                value={item.value}
+              />
+            ))}
           </>
-        ) : controller.latestLocalBackupPreviewError ? (
-          <View style={styles.restoreEmptyBlock}>
-            <Text style={styles.restoreEmptyTitle}>{copy.restoreErrorTitle}</Text>
-            <Text style={styles.restoreHint}>
-              {controller.latestLocalBackupPreviewError}
-            </Text>
-          </View>
-        ) : controller.isLoadingLatestLocalBackupPreview ? (
-          <View style={styles.restoreEmptyBlock}>
-            <Text style={styles.restoreEmptyTitle}>{copy.restoreLoading}</Text>
-            <Text style={styles.restoreHint}>{copy.restoreLoadingAction}</Text>
-          </View>
-        ) : (
-          <View style={styles.restoreEmptyBlock}>
-            <Text style={styles.restoreEmptyTitle}>{copy.backupTimelineSnapshotMissing}</Text>
-            <Text style={styles.restoreHint}>{copy.backupTimelineSnapshotMissingMeta}</Text>
-          </View>
-        )}
+        ) : null}
       </Card>
-      <Card style={styles.sectionCard}>
-        <SectionHeader
-          title={copy.backupContentTrustTitle}
-          subtitle={copy.backupContentTrustDescription}
-        />
-        {controller.backupContentTrustItems.map(item => (
-          <SettingsActionRow
-            key={item.key}
-            title={item.title}
-            meta={item.meta}
-            value={item.value}
-          />
-        ))}
-      </Card>
-      <ExportSection
-        copy={copy}
-        styles={styles}
-        isExportingJson={controller.isExportingJson}
-        isExportingPdf={controller.isExportingPdf}
-        lastExportName={controller.lastExportName}
-        lastExportSummaryTitle={controller.lastExportSummaryTitle}
-        lastExportSummaryDescription={controller.lastExportSummaryDescription}
-        canOpenLastPdf={controller.canOpenLastPdf}
-        canShareLastExport={controller.canShareLastExport}
-        openLastPdfTitle={controller.openLastPdfTitle}
-        shareLastExportTitle={controller.shareLastExportTitle}
-        onExportJson={() =>
-          controller.onExportData().catch(e =>
-            logActionError('BackupScreen.onExportData', e),
-          )
-        }
-        onExportPdf={() =>
-          controller.onExportPdfData().catch(e =>
-            logActionError('BackupScreen.onExportPdfData', e),
-          )
-        }
-        onOpenLastPdf={() =>
-          controller.onOpenLastPdf().catch(e =>
-            logActionError('BackupScreen.onOpenLastPdf', e),
-          )
-        }
-        onShareLastExport={() =>
-          controller.onShareLastExport().catch(e =>
-            logActionError('BackupScreen.onShareLastExport', e),
-          )
-        }
-      />
-      <RestoreSection
-        copy={copy}
-        styles={styles}
-        importMode={controller.importMode}
-        onChangeMode={controller.setImportMode}
-        localExportFiles={controller.localExportFiles}
-        isLoadingLocalExports={controller.isLoadingLocalExports}
-        selectedImportPath={controller.selectedImportPath}
-        onSelectImportFile={controller.onSelectImportFile}
-        formatBackupListTitle={controller.formatBackupListTitle}
-        formatBackupListMeta={controller.formatBackupListMeta}
-        importPreviewError={controller.importPreviewError}
-        selectedImportPreview={controller.selectedImportPreview}
-        showRestorePreview={controller.showRestorePreview}
-        onToggleRestorePreview={() =>
-          controller.setShowRestorePreview(current => !current)
-        }
-        restorePreviewMeta={controller.restorePreviewMeta}
-        restorePreviewItems={controller.restorePreviewItems}
-        lastRestorePreview={controller.lastRestorePreview}
-        restoreSuccessItems={controller.restoreSuccessItems}
-        isRestoringImport={controller.isRestoringImport}
-        isLoadingImportPreview={controller.isLoadingImportPreview}
-        onRestoreImport={controller.onRestoreImport}
-      />
     </ScreenContainer>
   );
 }

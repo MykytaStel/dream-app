@@ -22,9 +22,11 @@ const DREAM_COPY_EN = {
   homeLastDreamMetaPrefix: 'Last open',
   homeSectionLabel: 'Recent dreams',
   homeOpenArchive: 'Archive',
-  homeRecentLimitHint: 'Home stays focused on the latest dreams. Switch to the Archive tab for the full history.',
+  homeRecentLimitHint:
+    'Home stays focused on the latest dreams. Switch to the Archive tab for the full history.',
   homeSpotlightTitle: 'In focus',
-  homeSpotlightSubtitle: 'One recurring signal and one thing worth cleaning up.',
+  homeSpotlightSubtitle:
+    'One recurring signal and one thing worth cleaning up.',
   homeSpotlightPatternLabel: 'Pattern',
   homeSpotlightWeeklyLabel: 'This week',
   homeSpotlightAttentionLabel: 'Needs attention',
@@ -36,8 +38,10 @@ const DREAM_COPY_EN = {
   homeSpotlightAttentionAudioPlural: 'voice notes',
   homeSpotlightAttentionMoodSingle: '1 dream missing mood',
   homeSpotlightAttentionMoodPlural: 'dreams missing mood',
-  homeSpotlightAttentionAudioHint: 'Transcripts would make them easier to revisit.',
-  homeSpotlightAttentionMoodHint: 'A quick wake mood would make patterns clearer later.',
+  homeSpotlightAttentionAudioHint:
+    'Transcripts would make them easier to revisit.',
+  homeSpotlightAttentionMoodHint:
+    'A quick wake mood would make patterns clearer later.',
   homeSpotlightAttentionClearHint: 'Nothing obvious needs cleanup right now.',
   homeSpotlightRevisitLabel: 'Revisit now',
   homeSpotlightRevisitAction: 'Open dream',
@@ -56,7 +60,8 @@ const DREAM_COPY_EN = {
   homeSpotlightRevisitReasonAnalysis: 'Has a saved reflection to test again',
   homeSpotlightRevisitReasonTranscript: 'Transcript is ready for cleanup',
   homeSpotlightRevisitReasonTimePrefix: 'Resurfacing from ',
-  homeSpotlightRevisitReasonTimeSuffix: ' and worth reopening before it fades again.',
+  homeSpotlightRevisitReasonTimeSuffix:
+    ' and worth reopening before it fades again.',
   homeSpotlightRevisitTimeWeek: 'about a week ago',
   homeSpotlightRevisitTimeMonth: 'about a month ago',
   homeSpotlightRevisitTimeQuarter: 'about three months ago',
@@ -65,9 +70,26 @@ const DREAM_COPY_EN = {
   homeSpotlightRevisitReasonSignal: 'Still carries a clear signal worth naming',
   homeSpotlightShowDetails: 'More details',
   homeSpotlightHideDetails: 'Less details',
+  homeWeeklyPatternsTitle: 'Weekly patterns',
+  homeWeeklyPatternsSubtitle: 'A calm read of the last seven days.',
   homeStreakLabel: 'Streak',
   homeTotalLabel: 'Total',
   homeAverageLabel: 'Avg words',
+  weeklyPatternRhythmLabel: 'Rhythm',
+  weeklyPatternSignalLabel: 'Recent signal',
+  weeklyPatternToneLabel: 'Tone',
+  weeklyPatternContextLabel: 'Context',
+  weeklyPatternCaptureLabel: 'Capture',
+  weeklyPatternQuietWeekTitle: 'Quiet week',
+  weeklyPatternQuietWeekHint: 'No dreams landed in the last seven days.',
+  weeklyPatternStillFormingTitle: 'Still forming',
+  weeklyPatternStillFormingHint:
+    'One more detailed entry will make the week easier to read.',
+  weeklyPatternContextTitle: 'Context showed up',
+  weeklyPatternVoiceTitle: 'Voice leaning',
+  weeklyPatternThisWeekSuffix: 'this week',
+  weeklyPatternVsPreviousLabel: 'vs previous 7 days',
+  weeklyPatternVsPreviousFlat: 'Same as previous 7 days',
   homeDaysUnit: 'days',
   homeFilterAll: 'All',
   homeFilterActive: 'Current',
@@ -92,6 +114,10 @@ const DREAM_COPY_EN = {
   homeSearchMatchContext: 'Context',
   homeClearSearch: 'Clear search',
   homeRefineLabel: 'Refine timeline',
+  homeQuickFiltersLabel: 'Quick filters',
+  homeAllFilters: 'All filters',
+  homeMoreFilters: 'More filters',
+  homeLessFilters: 'Less filters',
   homeShowFilters: 'Filters',
   homeHideFilters: 'Hide filters',
   homeMoodFilterLabel: 'Mood',
@@ -132,14 +158,16 @@ const DREAM_COPY_EN = {
   timelineLoadingTitle: 'Loading timeline',
   timelineLoadingDescription: 'Refreshing local entries...',
   timelineErrorTitle: 'Could not load timeline',
-  timelineErrorDescription: 'Try again. Local storage may be temporarily unavailable.',
+  timelineErrorDescription:
+    'Try again. Local storage may be temporarily unavailable.',
   openDreamHint: 'Tap to open. Hold for quick actions.',
   swipeEdit: 'Edit',
   swipeDelete: 'Delete',
   swipeArchive: 'Archive',
   swipeUnarchive: 'Unarchive',
   emptyTitle: 'Your first dream is waiting',
-  emptyDescription: 'Write it before it fades — a fragment, a feeling, or a single image is enough.',
+  emptyDescription:
+    'Write it before it fades — a fragment, a feeling, or a single image is enough.',
   emptyActiveTitle: 'No active dreams',
   emptyActiveDescription:
     'All entries are archived right now. Switch filter or record a new dream.',
@@ -147,8 +175,7 @@ const DREAM_COPY_EN = {
   emptyArchivedDescription:
     'Archive older entries to keep the timeline focused.',
   archiveTitle: 'Archive',
-  archiveSubtitle:
-    'Browse past dreams month by month.',
+  archiveSubtitle: 'Browse past dreams month by month.',
   archiveSearchPlaceholder: 'Search current month',
   archiveSearchScopeHint: 'Search applies only to the current month.',
   archiveResetView: 'Reset view',
@@ -188,13 +215,17 @@ const DREAM_COPY_EN = {
   archiveRevisitReasonArchived: 'Older archived dream worth reopening',
   archiveRevisitReasonSignal: 'Still carries a detail worth keeping alive',
   archiveEmptyTitle: 'Archive is empty',
-  archiveEmptyDescription: 'Save a few dreams first, then the archive will start grouping them here.',
+  archiveEmptyDescription:
+    'Save a few dreams first, then the archive will start grouping them here.',
   archiveEmptyCurrentTitle: 'No open dreams',
-  archiveEmptyCurrentDescription: 'Everything in this month is already filed away or filtered out.',
+  archiveEmptyCurrentDescription:
+    'Everything in this month is already filed away or filtered out.',
   archiveEmptyArchivedTitle: 'Nothing filed away yet',
-  archiveEmptyArchivedDescription: 'Archive a few older dreams and they will start showing up here.',
+  archiveEmptyArchivedDescription:
+    'Archive a few older dreams and they will start showing up here.',
   archiveEmptyImportantTitle: 'No important dreams yet',
-  archiveEmptyImportantDescription: 'Mark a few dreams as important to keep them easy to revisit later.',
+  archiveEmptyImportantDescription:
+    'Mark a few dreams as important to keep them easy to revisit later.',
   archiveNoResultsTitle: 'Nothing matches this archive view',
   archiveNoResultsDescription:
     'Try another month, clear the day, or reset the current search and filters.',
@@ -202,6 +233,7 @@ const DREAM_COPY_EN = {
   archiveFilterActive: 'Open',
   archiveFilterArchived: 'Past',
   archiveFilterStarred: 'Important',
+  archiveTagsLabel: 'Symbols',
   untitled: 'Untitled dream',
   archivedTag: 'Archived',
   starredTag: 'Important',
@@ -236,8 +268,7 @@ const DREAM_COPY_EN = {
   detailActionRestore: 'Restore',
   detailActionDelete: 'Delete',
   detailSavedTitle: 'Dream captured',
-  detailSavedDescription:
-    'The raw note is safe. Refine it later if needed.',
+  detailSavedDescription: 'The raw note is safe. Refine it later if needed.',
   detailSavedPatternLabel: 'Strongest signal',
   detailSavedRelatedLabel: 'Related dreams',
   detailReflectionTitle: 'Revisit now',
@@ -246,7 +277,8 @@ const DREAM_COPY_EN = {
   detailReflectionSignalSuffix:
     '. Add one line about why that signal matters right now.',
   detailReflectionEmotionTitle: 'Catch the feeling',
-  detailReflectionEmotionWithMoodPrefix: 'The emotional tone still leans toward ',
+  detailReflectionEmotionWithMoodPrefix:
+    'The emotional tone still leans toward ',
   detailReflectionEmotionWithMoodSuffix:
     '. Write what stayed in your body after waking.',
   detailReflectionEmotionBody:
@@ -257,8 +289,7 @@ const DREAM_COPY_EN = {
     '. Open one nearby dream and note what repeats or shifts.',
   detailReflectionAnalysisTitle: 'Test the meaning',
   detailReflectionAnalysisPrefix: 'Your saved summary points to: ',
-  detailReflectionAnalysisSuffix:
-    ' Decide whether that still feels true.',
+  detailReflectionAnalysisSuffix: ' Decide whether that still feels true.',
   detailReflectionTranscriptTitle: 'Make the transcript usable',
   detailReflectionTranscriptBody:
     'One quick cleanup pass will make this voice memory easier to search and revisit later.',
@@ -292,7 +323,8 @@ const DREAM_COPY_EN = {
   detailTranscriptSummaryProcessing: 'Working',
   detailTranscriptSummaryError: 'Retry',
   detailGeneratedTranscriptTitle: 'Generated transcript',
-  detailGeneratedTranscriptEmpty: 'No transcript has been generated from this voice note yet.',
+  detailGeneratedTranscriptEmpty:
+    'No transcript has been generated from this voice note yet.',
   detailGeneratedTranscriptHint:
     'Transcription runs on device and keeps the original voice note untouched.',
   detailGeneratedTranscriptProcessing:
@@ -327,11 +359,14 @@ const DREAM_COPY_EN = {
   detailAnalysisSummaryLabel: 'Summary',
   detailAnalysisThemesLabel: 'Themes',
   detailAnalysisStateLabel: 'Analysis mode',
-  detailAnalysisStateLocalReady: 'Local analysis is on and ready for this dream.',
-  detailAnalysisStateDisabled: 'Analysis is off. Enable it in Settings when you want summaries and themes.',
+  detailAnalysisStateLocalReady:
+    'Local analysis is on and ready for this dream.',
+  detailAnalysisStateDisabled:
+    'Analysis is off. Enable it in Settings when you want summaries and themes.',
   detailAnalysisStateOpenAiPlanned:
     'OpenAI is selected in Settings, but network analysis is still a planned path in this release.',
-  detailAnalysisStateManual: 'This dream can generate a local summary from saved text, transcript, tags, and context.',
+  detailAnalysisStateManual:
+    'This dream can generate a local summary from saved text, transcript, tags, and context.',
   detailAnalysisProviderLabel: 'Provider',
   detailAnalysisUpdatedLabel: 'Updated',
   detailAnalysisStatusLabel: 'Status',
@@ -385,29 +420,34 @@ const DREAM_COPY_EN = {
   detailRelatedSharedLabel: 'Thread signals',
   detailRelatedRecurringLabel: 'Seen before',
   detailStateTitle: 'Sleep context',
-  detailStateEmpty: 'No wake-up emotions or pre-sleep context were saved for this dream.',
+  detailStateEmpty:
+    'No wake-up emotions or pre-sleep context were saved for this dream.',
   detailAudioDescription: 'An original voice note is attached to this dream.',
   detailAudioPathLabel: 'Local file',
   detailAudioPlay: 'Play voice note',
   detailAudioStop: 'Stop playback',
-  detailAudioPlaybackHint: 'Listen back to verify the original capture is still usable.',
+  detailAudioPlaybackHint:
+    'Listen back to verify the original capture is still usable.',
   detailAudioPlaybackErrorTitle: 'Playback error',
   detailAudioAttachedMeta: 'Attached',
-  detailAudioCloudOnlyHint: 'This voice note is stored in the cloud. Download it to play it back on this device.',
+  detailAudioCloudOnlyHint:
+    'This voice note is stored in the cloud. Download it to play it back on this device.',
   detailAudioDownload: 'Download voice note',
   detailAudioDownloading: 'Downloading…',
   detailAudioDownloadErrorTitle: 'Download failed',
   createTitle: 'Capture a dream',
-  createSubtitle:
-    'Capture the shape now. Sort the details later.',
+  createSubtitle: 'Capture the shape now. Sort the details later.',
   quickAddKicker: 'Quick add',
   quickAddWakeAction: 'Wake capture',
-  quickAddWakeHint: 'Open the compressed morning flow for a quick voice or text capture.',
+  quickAddWakeHint:
+    'Open the compressed morning flow for a quick voice or text capture.',
   quickAddVoiceAction: 'Voice note',
-  quickAddVoiceHint: 'Open the composer in voice-first mode and start recording fast.',
+  quickAddVoiceHint:
+    'Open the composer in voice-first mode and start recording fast.',
   quickAddTextAction: 'Write note',
   quickAddTextHint: 'Open the composer and type what is still there.',
-  quickAddContinueHint: 'Pick up the saved local draft exactly where you left it.',
+  quickAddContinueHint:
+    'Pick up the saved local draft exactly where you left it.',
   wakeEntryKicker: 'Wake flow',
   wakeEntryTitle: 'Before it slips away',
   wakeEntryDescription:
@@ -428,10 +468,12 @@ const DREAM_COPY_EN = {
   wakeCaptureDescription:
     'Start with the fastest thing that is still alive: a voice note, a few words, or both.',
   wakeCaptureAlternateTitle: 'Or record instead',
-  wakeCaptureVoiceHint: 'Use voice if speaking is faster than typing right now.',
+  wakeCaptureVoiceHint:
+    'Use voice if speaking is faster than typing right now.',
   wakeVoiceDescription: 'Start recording now or drop a few raw lines below.',
   wakeCoreTitle: 'Raw memory',
-  wakeCoreDescription: 'Keep only what is still vivid. Structure can come later.',
+  wakeCoreDescription:
+    'Keep only what is still vivid. Structure can come later.',
   wakeTextLabel: 'What is still here?',
   wakeTextPlaceholder: 'A place, a face, a feeling, a line...',
   wakeRefineTitle: 'Add later if it helps',
@@ -440,13 +482,12 @@ const DREAM_COPY_EN = {
   wakeRefineMetaAction: 'Title + date',
   wakeMetaTitle: 'Title and sleep date',
   wakeMetaDescription: 'Only add these now if they help anchor the memory.',
-  wakeReadyHint: 'A voice note, a few raw lines, and a waking feeling are enough to save.',
+  wakeReadyHint:
+    'A voice note, a few raw lines, and a waking feeling are enough to save.',
   createHeroTitle: 'Capture before it fades',
-  createHeroDescription:
-    'Start with voice or a few raw lines.',
+  createHeroDescription: 'Start with voice or a few raw lines.',
   recordEmptyTitle: 'Start with a quick capture',
-  recordEmptyDescription:
-    'Start with text or voice. Everything else can wait.',
+  recordEmptyDescription: 'Start with text or voice. Everything else can wait.',
   recordDraftRestoredTitle: 'Draft restored',
   recordDraftRestoredDescription:
     'Your unfinished capture is still here. Keep writing or save it when ready.',
@@ -454,17 +495,18 @@ const DREAM_COPY_EN = {
   recordLoadingTitle: 'Working on it',
   recordLoadingDescription: 'Please wait while the action is completing.',
   recordErrorTitle: 'Action failed',
-  recordErrorDescription: 'Try again or continue with text-only capture for now.',
+  recordErrorDescription:
+    'Try again or continue with text-only capture for now.',
   refineTitle: 'Refine later',
-  refineDescription: 'Mood, context, and tags can stay lightweight. Add them only if they help.',
+  refineDescription:
+    'Mood, context, and tags can stay lightweight. Add them only if they help.',
   refineReadyHint: 'A raw text or voice capture is enough to save.',
   refineMoodAction: 'Mood',
   refineContextAction: 'Before sleep',
   refineTagsAction: 'Tags',
   refineHideAction: 'Hide',
   editTitle: 'Edit dream',
-  editSubtitle:
-    'Refine the memory without losing the original entry.',
+  editSubtitle: 'Refine the memory without losing the original entry.',
   editHeroTitle: 'Polish the memory',
   editHeroDescription:
     'Update details while the dream is still meaningful, without losing the original entry.',
@@ -475,7 +517,8 @@ const DREAM_COPY_EN = {
   sleepDateLabel: 'Sleep date',
   sleepDatePlaceholder: 'YYYY-MM-DD',
   sleepDateInvalidTitle: 'Invalid sleep date',
-  sleepDateInvalidDescription: 'Use format YYYY-MM-DD and a real calendar date.',
+  sleepDateInvalidDescription:
+    'Use format YYYY-MM-DD and a real calendar date.',
   textLabel: 'What do you remember?',
   textPlaceholder: 'Write the dream while it is still fresh...',
   wordsUnit: 'words',
@@ -502,7 +545,8 @@ const DREAM_COPY_EN = {
   boolYes: 'Yes',
   boolNo: 'No',
   detailEmotionTitle: 'Emotional snapshot',
-  detailEmotionEmpty: 'No wake-up or pre-sleep emotions were saved for this dream.',
+  detailEmotionEmpty:
+    'No wake-up or pre-sleep emotions were saved for this dream.',
   detailWakeEmotionsLabel: 'After waking',
   detailPreSleepEmotionsLabel: 'Before sleep',
   detailContextTitle: 'Pre-sleep context',
@@ -588,9 +632,11 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeLastDreamMetaPrefix: 'Останнє відкриття',
   homeSectionLabel: 'Останні сни',
   homeOpenArchive: 'Архів',
-  homeRecentLimitHint: 'Головний екран тримає фокус на останніх записах. Для повної історії перемкнись на вкладку Архів.',
+  homeRecentLimitHint:
+    'Головний екран тримає фокус на останніх записах. Для повної історії перемкнись на вкладку Архів.',
   homeSpotlightTitle: 'У фокусі',
-  homeSpotlightSubtitle: 'Один повторюваний сигнал і одна річ, яку варто розчистити.',
+  homeSpotlightSubtitle:
+    'Один повторюваний сигнал і одна річ, яку варто розчистити.',
   homeSpotlightPatternLabel: 'Патерн',
   homeSpotlightWeeklyLabel: 'Цей тиждень',
   homeSpotlightAttentionLabel: 'Потребує уваги',
@@ -602,9 +648,12 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeSpotlightAttentionAudioPlural: 'голосових записів',
   homeSpotlightAttentionMoodSingle: '1 сон без настрою',
   homeSpotlightAttentionMoodPlural: 'снів без настрою',
-  homeSpotlightAttentionAudioHint: 'Транскрипт зробить їх легшими для повернення.',
-  homeSpotlightAttentionMoodHint: 'Швидкий настрій після пробудження зробить патерни яснішими.',
-  homeSpotlightAttentionClearHint: 'Зараз нічого очевидного не потребує cleanup.',
+  homeSpotlightAttentionAudioHint:
+    'Транскрипт зробить їх легшими для повернення.',
+  homeSpotlightAttentionMoodHint:
+    'Швидкий настрій після пробудження зробить патерни яснішими.',
+  homeSpotlightAttentionClearHint:
+    'Зараз нічого очевидного не потребує cleanup.',
   homeSpotlightRevisitLabel: 'Повернутись зараз',
   homeSpotlightRevisitAction: 'Відкрити сон',
   homeSpotlightRevisitActionThread: 'Відкрити нитку',
@@ -619,7 +668,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeSpotlightRevisitContextSignal: 'Сигнал варто назвати',
   homeSpotlightRevisitReasonThreadPrefix: 'Нитка з ',
   homeSpotlightRevisitReasonThreadSuffix: ' близькими снами',
-  homeSpotlightRevisitReasonAnalysis: 'Тут уже є збережена рефлексія, яку варто звірити знову',
+  homeSpotlightRevisitReasonAnalysis:
+    'Тут уже є збережена рефлексія, яку варто звірити знову',
   homeSpotlightRevisitReasonTranscript: 'Транскрипт уже готовий до доробки',
   homeSpotlightRevisitReasonTimePrefix: 'Цей сон повертається з ',
   homeSpotlightRevisitReasonTimeSuffix:
@@ -629,12 +679,30 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeSpotlightRevisitTimeQuarter: 'приблизно тримісячної давності',
   homeSpotlightRevisitTimeHalfYear: 'приблизно піврічної давності',
   homeSpotlightRevisitTimeYear: 'приблизно річної давності',
-  homeSpotlightRevisitReasonSignal: 'Тут усе ще є виразний сигнал, який варто назвати',
+  homeSpotlightRevisitReasonSignal:
+    'Тут усе ще є виразний сигнал, який варто назвати',
   homeSpotlightShowDetails: 'Більше деталей',
   homeSpotlightHideDetails: 'Менше деталей',
+  homeWeeklyPatternsTitle: 'Патерни тижня',
+  homeWeeklyPatternsSubtitle: 'Спокійний зріз останніх семи днів.',
   homeStreakLabel: 'Серія',
   homeTotalLabel: 'Всього',
   homeAverageLabel: 'Сер. слів',
+  weeklyPatternRhythmLabel: 'Ритм',
+  weeklyPatternSignalLabel: 'Свіжий сигнал',
+  weeklyPatternToneLabel: 'Тон',
+  weeklyPatternContextLabel: 'Контекст',
+  weeklyPatternCaptureLabel: 'Запис',
+  weeklyPatternQuietWeekTitle: 'Тихий тиждень',
+  weeklyPatternQuietWeekHint: 'За останні сім днів нових снів не було.',
+  weeklyPatternStillFormingTitle: 'Ще формується',
+  weeklyPatternStillFormingHint:
+    'Ще один детальніший запис зробить тиждень читабельнішим.',
+  weeklyPatternContextTitle: 'Контекст зʼявлявся',
+  weeklyPatternVoiceTitle: 'Тиждень схилявся до голосу',
+  weeklyPatternThisWeekSuffix: 'цього тижня',
+  weeklyPatternVsPreviousLabel: 'проти попередніх 7 днів',
+  weeklyPatternVsPreviousFlat: 'Так само, як у попередні 7 днів',
   homeDaysUnit: 'днів',
   homeFilterAll: 'Усі',
   homeFilterActive: 'Поточні',
@@ -659,6 +727,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeSearchMatchContext: 'Контекст',
   homeClearSearch: 'Очистити пошук',
   homeRefineLabel: 'Уточнення таймлайну',
+  homeQuickFiltersLabel: 'Швидкі фільтри',
+  homeAllFilters: 'Усі фільтри',
+  homeMoreFilters: 'Більше фільтрів',
+  homeLessFilters: 'Менше фільтрів',
   homeShowFilters: 'Фільтри',
   homeHideFilters: 'Сховати',
   homeMoodFilterLabel: 'Настрій',
@@ -707,14 +779,15 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   swipeArchive: 'Архів',
   swipeUnarchive: 'Розархівувати',
   emptyTitle: 'Перший сон уже чекає',
-  emptyDescription: 'Запиши до того, як він зникне — фрагмент, відчуття чи один образ — цього достатньо.',
+  emptyDescription:
+    'Запиши до того, як він зникне — фрагмент, відчуття чи один образ — цього достатньо.',
   emptyActiveTitle: 'Немає активних снів',
-  emptyActiveDescription: 'Усі записи в архіві. Зміни фільтр або створи новий сон.',
+  emptyActiveDescription:
+    'Усі записи в архіві. Зміни фільтр або створи новий сон.',
   emptyArchivedTitle: 'Архів порожній',
   emptyArchivedDescription: 'Архівуй старі записи, щоб сфокусувати таймлайн.',
   archiveTitle: 'Архів',
-  archiveSubtitle:
-    'Переглядай минулі сни по місяцях.',
+  archiveSubtitle: 'Переглядай минулі сни по місяцях.',
   archiveSearchPlaceholder: 'Пошук у поточному місяці',
   archiveSearchScopeHint: 'Пошук працює тільки в межах поточного місяця.',
   archiveResetView: 'Скинути вигляд',
@@ -742,25 +815,33 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   archiveRevisitAction: 'Відкрити деталі',
   archiveRevisitActionAnalysis: 'Звірити рефлексію',
   archiveRevisitActionTranscript: 'Доробити транскрипт',
-  archiveRevisitEmpty: 'У цьому зрізі архіву ще немає сильного приводу повернутись.',
+  archiveRevisitEmpty:
+    'У цьому зрізі архіву ще немає сильного приводу повернутись.',
   archiveRevisitContextImportant: 'Важливе',
   archiveRevisitContextAnalysis: 'Рефлексія готова',
   archiveRevisitContextTranscript: 'Транскрипт готовий',
   archiveRevisitContextArchived: 'В архіві',
   archiveRevisitContextSignal: 'Деталь варто втримати',
-  archiveRevisitReasonImportant: 'Позначено як важливе і варте ще одного погляду',
-  archiveRevisitReasonAnalysis: 'Тут уже є збережена рефлексія, до якої варто повернутись',
+  archiveRevisitReasonImportant:
+    'Позначено як важливе і варте ще одного погляду',
+  archiveRevisitReasonAnalysis:
+    'Тут уже є збережена рефлексія, до якої варто повернутись',
   archiveRevisitReasonTranscript: 'Транскрипт уже готовий до доробки',
-  archiveRevisitReasonArchived: 'Старіший архівний сон, який варто відкрити знову',
+  archiveRevisitReasonArchived:
+    'Старіший архівний сон, який варто відкрити знову',
   archiveRevisitReasonSignal: 'Тут усе ще є деталь, яку варто втримати живою',
   archiveEmptyTitle: 'Архів порожній',
-  archiveEmptyDescription: 'Спочатку збережи кілька снів, і вони почнуть групуватись тут.',
+  archiveEmptyDescription:
+    'Спочатку збережи кілька снів, і вони почнуть групуватись тут.',
   archiveEmptyCurrentTitle: 'Немає активних снів',
-  archiveEmptyCurrentDescription: 'Усе в цьому місяці вже в архіві або відфільтроване.',
+  archiveEmptyCurrentDescription:
+    'Усе в цьому місяці вже в архіві або відфільтроване.',
   archiveEmptyArchivedTitle: 'Поки немає архівних снів',
-  archiveEmptyArchivedDescription: 'Перемісти кілька старіших снів в архів, і вони зʼявляться тут.',
+  archiveEmptyArchivedDescription:
+    'Перемісти кілька старіших снів в архів, і вони зʼявляться тут.',
   archiveEmptyImportantTitle: 'Поки немає важливих снів',
-  archiveEmptyImportantDescription: 'Познач кілька снів як важливі, щоб до них було легше повертатись.',
+  archiveEmptyImportantDescription:
+    'Познач кілька снів як важливі, щоб до них було легше повертатись.',
   archiveNoResultsTitle: 'Нічого не знайдено в цьому вигляді архіву',
   archiveNoResultsDescription:
     'Спробуй інший місяць, очисть день або скинь поточний пошук і фільтри.',
@@ -768,6 +849,7 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   archiveFilterActive: 'Активні',
   archiveFilterArchived: 'Архівні',
   archiveFilterStarred: 'Важливі',
+  archiveTagsLabel: 'Символи',
   untitled: 'Сон без назви',
   archivedTag: 'Архів',
   starredTag: 'Важливе',
@@ -786,11 +868,13 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailUnarchive: 'З архіву',
   detailDelete: 'Видалити сон',
   detailDeleteTitle: 'Видалити цей сон?',
-  detailDeleteDescription: 'Запис буде видалено з локального сховища без можливості відновлення.',
+  detailDeleteDescription:
+    'Запис буде видалено з локального сховища без можливості відновлення.',
   detailDeleteCancel: 'Скасувати',
   detailDeleteConfirm: 'Видалити',
   detailMissingTitle: 'Сон не знайдено',
-  detailMissingDescription: 'Цей запис більше недоступний у локальному сховищі.',
+  detailMissingDescription:
+    'Цей запис більше недоступний у локальному сховищі.',
   detailMetaTitle: 'Коротко',
   detailCapturedLabel: 'Збережено',
   detailPreviewLabel: 'Фрагмент',
@@ -810,7 +894,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailReflectionSignalSuffix:
     '. Додай один рядок про те, чому цей сигнал важливий саме зараз.',
   detailReflectionEmotionTitle: 'Впіймай відчуття',
-  detailReflectionEmotionWithMoodPrefix: 'Емоційний тон цього сну все ще тягнеться до ',
+  detailReflectionEmotionWithMoodPrefix:
+    'Емоційний тон цього сну все ще тягнеться до ',
   detailReflectionEmotionWithMoodSuffix:
     '. Запиши, що залишилося в тілі після пробудження.',
   detailReflectionEmotionBody:
@@ -821,8 +906,7 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     '. Відкрий один близький сон і відміть, що повторюється або змінюється.',
   detailReflectionAnalysisTitle: 'Перевір зміст',
   detailReflectionAnalysisPrefix: 'Збережений summary підказує: ',
-  detailReflectionAnalysisSuffix:
-    ' Виріши, чи це все ще відчувається правдою.',
+  detailReflectionAnalysisSuffix: ' Виріши, чи це все ще відчувається правдою.',
   detailReflectionTranscriptTitle: 'Зроби транскрипт придатним',
   detailReflectionTranscriptBody:
     'Одного швидкого проходу вистачить, щоб цей голосовий спогад було легше шукати й відкривати пізніше.',
@@ -856,7 +940,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailTranscriptSummaryProcessing: 'У роботі',
   detailTranscriptSummaryError: 'Повтор',
   detailGeneratedTranscriptTitle: 'Згенерований транскрипт',
-  detailGeneratedTranscriptEmpty: 'Для цієї голосової нотатки ще не створено транскрипт.',
+  detailGeneratedTranscriptEmpty:
+    'Для цієї голосової нотатки ще не створено транскрипт.',
   detailGeneratedTranscriptHint:
     'Транскрипція виконується на пристрої й не змінює оригінальну голосову нотатку.',
   detailGeneratedTranscriptProcessing:
@@ -891,8 +976,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailAnalysisSummaryLabel: 'Summary',
   detailAnalysisThemesLabel: 'Themes',
   detailAnalysisStateLabel: 'Режим аналізу',
-  detailAnalysisStateLocalReady: 'Локальний аналіз увімкнений і готовий для цього сну.',
-  detailAnalysisStateDisabled: 'Аналіз вимкнений. Увімкни його в Settings, коли захочеш summary і themes.',
+  detailAnalysisStateLocalReady:
+    'Локальний аналіз увімкнений і готовий для цього сну.',
+  detailAnalysisStateDisabled:
+    'Аналіз вимкнений. Увімкни його в Settings, коли захочеш summary і themes.',
   detailAnalysisStateOpenAiPlanned:
     'У Settings обрано OpenAI, але мережевий аналіз у цьому релізі ще лишається запланованим шляхом.',
   detailAnalysisStateManual:
@@ -950,29 +1037,35 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailRelatedSharedLabel: 'Сигнали нитки',
   detailRelatedRecurringLabel: 'Вже траплялось',
   detailStateTitle: 'Контекст сну',
-  detailStateEmpty: 'Для цього сну не збережено емоцій після пробудження чи контексту перед сном.',
-  detailAudioDescription: 'До цього сну прикріплена оригінальна голосова нотатка.',
+  detailStateEmpty:
+    'Для цього сну не збережено емоцій після пробудження чи контексту перед сном.',
+  detailAudioDescription:
+    'До цього сну прикріплена оригінальна голосова нотатка.',
   detailAudioPathLabel: 'Локальний файл',
   detailAudioPlay: 'Відтворити голос',
   detailAudioStop: 'Зупинити відтворення',
-  detailAudioPlaybackHint: 'Прослухай запис, щоб перевірити, що початкове захоплення збереглося.',
+  detailAudioPlaybackHint:
+    'Прослухай запис, щоб перевірити, що початкове захоплення збереглося.',
   detailAudioPlaybackErrorTitle: 'Помилка відтворення',
   detailAudioAttachedMeta: 'Є запис',
-  detailAudioCloudOnlyHint: 'Ця голосова нотатка зберігається в хмарі. Завантаж її, щоб прослухати на цьому пристрої.',
+  detailAudioCloudOnlyHint:
+    'Ця голосова нотатка зберігається в хмарі. Завантаж її, щоб прослухати на цьому пристрої.',
   detailAudioDownload: 'Завантажити голосову нотатку',
   detailAudioDownloading: 'Завантаження…',
   detailAudioDownloadErrorTitle: 'Помилка завантаження',
   createTitle: 'Запис сну',
-  createSubtitle:
-    'Злови форму сну зараз. Деталі відсортуєш пізніше.',
+  createSubtitle: 'Злови форму сну зараз. Деталі відсортуєш пізніше.',
   quickAddKicker: 'Швидке додавання',
   quickAddWakeAction: 'Ранковий запис',
-  quickAddWakeHint: 'Відкрий стислий ранковий режим для швидкого голосового або текстового запису.',
+  quickAddWakeHint:
+    'Відкрий стислий ранковий режим для швидкого голосового або текстового запису.',
   quickAddVoiceAction: 'Голосова нотатка',
-  quickAddVoiceHint: 'Відкрий редактор у голосовому режимі й швидко почни запис.',
+  quickAddVoiceHint:
+    'Відкрий редактор у голосовому режимі й швидко почни запис.',
   quickAddTextAction: 'Текстова нотатка',
   quickAddTextHint: 'Відкрий редактор і зафіксуй те, що ще памʼятаєш.',
-  quickAddContinueHint: 'Продовж із локально збереженої чернетки з того місця, де зупинився.',
+  quickAddContinueHint:
+    'Продовж із локально збереженої чернетки з того місця, де зупинився.',
   wakeEntryKicker: 'Ранковий потік',
   wakeEntryTitle: 'Поки не вислизнуло',
   wakeEntryDescription:
@@ -984,7 +1077,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   wakeEntrySpeakAction: 'Говорити замість цього',
   wakeEntrySpeakHint: 'Почни з голосу, якщо це швидше, ніж друкувати.',
   wakeEntryDraftAction: 'Продовжити чернетку',
-  wakeEntryDraftHint: 'Повернись до незавершеного запису, який уже збережено локально.',
+  wakeEntryDraftHint:
+    'Повернись до незавершеного запису, який уже збережено локально.',
   wakeModeChip: 'Ранковий режим',
   wakeHeroTitle: 'Злови першу форму',
   wakeHeroDescription:
@@ -993,8 +1087,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   wakeCaptureDescription:
     'Почни з найшвидшого, що ще живе: голосова нотатка, кілька слів або обидва варіанти разом.',
   wakeCaptureAlternateTitle: 'Або запиши голосом',
-  wakeCaptureVoiceHint: 'Обери голос, якщо зараз говорити швидше, ніж друкувати.',
-  wakeVoiceDescription: 'Почни запис зараз або одразу впиши кілька сирих рядків нижче.',
+  wakeCaptureVoiceHint:
+    'Обери голос, якщо зараз говорити швидше, ніж друкувати.',
+  wakeVoiceDescription:
+    'Почни запис зараз або одразу впиши кілька сирих рядків нижче.',
   wakeCoreTitle: 'Сирий спогад',
   wakeCoreDescription: 'Залиши лише те, що ще живе. Структуру додаси пізніше.',
   wakeTextLabel: 'Що ще лишилося?',
@@ -1004,14 +1100,14 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Ранковий запис має лишатися легким. Назва, теги і контекст перед сном усе ще доступні пізніше.',
   wakeRefineMetaAction: 'Назва + дата',
   wakeMetaTitle: 'Назва і дата сну',
-  wakeMetaDescription: 'Додавай це зараз лише якщо воно справді допомагає заякорити спогад.',
-  wakeReadyHint: 'Голосу, кількох сирих рядків і відчуття після пробудження достатньо для збереження.',
+  wakeMetaDescription:
+    'Додавай це зараз лише якщо воно справді допомагає заякорити спогад.',
+  wakeReadyHint:
+    'Голосу, кількох сирих рядків і відчуття після пробудження достатньо для збереження.',
   createHeroTitle: 'Запиши, поки не зникло',
-  createHeroDescription:
-    'Почни з голосу або кількох сирих рядків.',
+  createHeroDescription: 'Почни з голосу або кількох сирих рядків.',
   recordEmptyTitle: 'Почни з короткого запису',
-  recordEmptyDescription:
-    'Почни з тексту або голосу. Усе інше може зачекати.',
+  recordEmptyDescription: 'Почни з тексту або голосу. Усе інше може зачекати.',
   recordDraftRestoredTitle: 'Чернетку відновлено',
   recordDraftRestoredDescription:
     'Незавершений запис збережено локально. Продовжуй редагування або збережи, коли будеш готовий.',
@@ -1021,7 +1117,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   recordErrorTitle: 'Дія не виконалась',
   recordErrorDescription: 'Спробуй ще раз або продовж запис текстом.',
   refineTitle: 'Уточниш пізніше',
-  refineDescription: 'Настрій, контекст і теги не обовʼязкові одразу. Додавай їх лише якщо вони справді допомагають.',
+  refineDescription:
+    'Настрій, контекст і теги не обовʼязкові одразу. Додавай їх лише якщо вони справді допомагають.',
   refineReadyHint: 'Щоб зберегти, достатньо сирого тексту або голосу.',
   refineMoodAction: 'Настрій',
   refineContextAction: 'Перед сном',
@@ -1037,7 +1134,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   titlePlaceholder: 'Політ над старими дахами',
   sleepDateLabel: 'Дата сну',
   sleepDateInvalidTitle: 'Некоректна дата сну',
-  sleepDateInvalidDescription: 'Використовуй формат YYYY-MM-DD і реальну календарну дату.',
+  sleepDateInvalidDescription:
+    'Використовуй формат YYYY-MM-DD і реальну календарну дату.',
   textLabel: 'Що ти памʼятаєш?',
   textPlaceholder: 'Запиши сон, поки він ще свіжий...',
   wordsUnit: 'слів',
@@ -1064,7 +1162,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   boolYes: 'Так',
   boolNo: 'Ні',
   detailEmotionTitle: 'Емоційний зріз',
-  detailEmotionEmpty: 'Для цього сну не збережено емоцій ні після пробудження, ні перед сном.',
+  detailEmotionEmpty:
+    'Для цього сну не збережено емоцій ні після пробудження, ні перед сном.',
   detailWakeEmotionsLabel: 'Після пробудження',
   detailPreSleepEmotionsLabel: 'Перед сном',
   detailContextTitle: 'Контекст перед сном',
@@ -1085,7 +1184,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   saveDream: 'Зберегти сон',
   updateDream: 'Оновити сон',
   saveErrorTitle: 'Немає що зберігати',
-  saveErrorDescription: 'Додай текст або голосову нотатку. Однієї назви недостатньо.',
+  saveErrorDescription:
+    'Додай текст або голосову нотатку. Однієї назви недостатньо.',
   saveSuccessTitle: 'Збережено',
   saveSuccessDescription: 'Сон збережено локально.',
   postSaveTitle: 'Запис збережено',
@@ -1216,7 +1316,10 @@ const DREAM_STRESS_LABELS_UK: typeof DREAM_STRESS_LABELS_EN = {
   3: 'Перевантаження',
 };
 
-const DREAM_INTENSITY_LEVELS_EN: Array<{ label: string; value: DreamIntensity }> = [
+const DREAM_INTENSITY_LEVELS_EN: Array<{
+  label: string;
+  value: DreamIntensity;
+}> = [
   { label: 'Faint', value: 1 },
   { label: 'Soft', value: 2 },
   { label: 'Moderate', value: 3 },
@@ -1250,7 +1353,10 @@ const DREAM_WAKE_EMOTIONS_UK: typeof DREAM_WAKE_EMOTIONS_EN = [
   { label: 'Дезорієнтація', value: 'disoriented' },
 ];
 
-const DREAM_PRE_SLEEP_EMOTIONS_EN: Array<{ label: string; value: PreSleepEmotion }> = [
+const DREAM_PRE_SLEEP_EMOTIONS_EN: Array<{
+  label: string;
+  value: PreSleepEmotion;
+}> = [
   { label: 'Peaceful', value: 'peaceful' },
   { label: 'Anxious', value: 'anxious' },
   { label: 'Restless', value: 'restless' },
@@ -1268,17 +1374,20 @@ const DREAM_PRE_SLEEP_EMOTIONS_UK: typeof DREAM_PRE_SLEEP_EMOTIONS_EN = [
   { label: 'Самотність', value: 'lonely' },
 ];
 
-const DREAM_WAKE_EMOTION_LABELS_EN: Record<WakeEmotion, string> = Object.fromEntries(
-  DREAM_WAKE_EMOTIONS_EN.map(option => [option.value, option.label]),
-) as Record<WakeEmotion, string>;
+const DREAM_WAKE_EMOTION_LABELS_EN: Record<WakeEmotion, string> =
+  Object.fromEntries(
+    DREAM_WAKE_EMOTIONS_EN.map(option => [option.value, option.label]),
+  ) as Record<WakeEmotion, string>;
 
-const DREAM_WAKE_EMOTION_LABELS_UK: typeof DREAM_WAKE_EMOTION_LABELS_EN = Object.fromEntries(
-  DREAM_WAKE_EMOTIONS_UK.map(option => [option.value, option.label]),
-) as Record<WakeEmotion, string>;
+const DREAM_WAKE_EMOTION_LABELS_UK: typeof DREAM_WAKE_EMOTION_LABELS_EN =
+  Object.fromEntries(
+    DREAM_WAKE_EMOTIONS_UK.map(option => [option.value, option.label]),
+  ) as Record<WakeEmotion, string>;
 
-const DREAM_PRE_SLEEP_EMOTION_LABELS_EN: Record<PreSleepEmotion, string> = Object.fromEntries(
-  DREAM_PRE_SLEEP_EMOTIONS_EN.map(option => [option.value, option.label]),
-) as Record<PreSleepEmotion, string>;
+const DREAM_PRE_SLEEP_EMOTION_LABELS_EN: Record<PreSleepEmotion, string> =
+  Object.fromEntries(
+    DREAM_PRE_SLEEP_EMOTIONS_EN.map(option => [option.value, option.label]),
+  ) as Record<PreSleepEmotion, string>;
 
 const DREAM_PRE_SLEEP_EMOTION_LABELS_UK: typeof DREAM_PRE_SLEEP_EMOTION_LABELS_EN =
   Object.fromEntries(
@@ -1300,7 +1409,9 @@ export function getDreamMoodLabels(locale: AppLocale) {
 }
 
 export function getDreamIntensityLevels(locale: AppLocale) {
-  return locale === 'uk' ? DREAM_INTENSITY_LEVELS_UK : DREAM_INTENSITY_LEVELS_EN;
+  return locale === 'uk'
+    ? DREAM_INTENSITY_LEVELS_UK
+    : DREAM_INTENSITY_LEVELS_EN;
 }
 
 export function getDreamStressLevels(locale: AppLocale) {
@@ -1316,11 +1427,15 @@ export function getDreamWakeEmotions(locale: AppLocale) {
 }
 
 export function getDreamWakeEmotionLabels(locale: AppLocale) {
-  return locale === 'uk' ? DREAM_WAKE_EMOTION_LABELS_UK : DREAM_WAKE_EMOTION_LABELS_EN;
+  return locale === 'uk'
+    ? DREAM_WAKE_EMOTION_LABELS_UK
+    : DREAM_WAKE_EMOTION_LABELS_EN;
 }
 
 export function getDreamPreSleepEmotions(locale: AppLocale) {
-  return locale === 'uk' ? DREAM_PRE_SLEEP_EMOTIONS_UK : DREAM_PRE_SLEEP_EMOTIONS_EN;
+  return locale === 'uk'
+    ? DREAM_PRE_SLEEP_EMOTIONS_UK
+    : DREAM_PRE_SLEEP_EMOTIONS_EN;
 }
 
 export function getDreamPreSleepEmotionLabels(locale: AppLocale) {

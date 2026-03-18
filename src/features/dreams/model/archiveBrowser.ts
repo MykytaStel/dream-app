@@ -1,7 +1,7 @@
 import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type AppLocale } from '../../../i18n/types';
 import { Dream, Mood } from './dream';
-import { getDreamDate } from './dreamAnalytics';
+import { getDreamDate, getMoodValence } from './dreamAnalytics';
 import {
   getDreamSearchMatchReasons,
   getDreamSearchScore,
@@ -34,7 +34,25 @@ export type ArchiveCalendarCell = {
   date: string | null;
   dayNumber: number | null;
   count: number;
+  dominantMood: Mood | null;
+  isToday: boolean;
 };
+
+// Aurora-derived mood dot colors — static, safe for off-screen rendering
+export const CALENDAR_MOOD_DOT_COLOR: Record<'positive' | 'neutral' | 'negative', string> = {
+  positive: '#63D9FF', // auroraStart — cyan
+  neutral: '#8D7CFF',  // auroraMid — purple
+  negative: '#C57EFF', // auroraEnd — magenta
+};
+
+export function getCalendarMoodDotColor(mood: Mood | null): string | null {
+  if (!mood) {
+    return null;
+  }
+
+  const valence = getMoodValence(mood);
+  return CALENDAR_MOOD_DOT_COLOR[valence];
+}
 
 export function getArchiveMoodLabel(
   mood: Dream['mood'] | undefined,
@@ -220,16 +238,45 @@ export function formatArchivePreview(dream: Dream, copy: DreamCopy) {
   return copy.noDetailsPreview;
 }
 
+function getDominantCalendarMood(moods: Mood[]): Mood | null {
+  if (!moods.length) {
+    return null;
+  }
+
+  const counts = new Map<Mood, number>();
+  moods.forEach(mood => counts.set(mood, (counts.get(mood) ?? 0) + 1));
+
+  let dominant: Mood | null = null;
+  let max = 0;
+
+  counts.forEach((count, mood) => {
+    if (count > max) {
+      max = count;
+      dominant = mood;
+    }
+  });
+
+  return dominant;
+}
+
 export function buildCalendarCells(monthKey: string, dreams: Dream[]) {
   const [year, month] = monthKey.split('-').map(Number);
   const firstDayOfMonth = new Date(year, month - 1, 1);
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstWeekday = (firstDayOfMonth.getDay() + 6) % 7;
-  const counts = new Map<string, number>();
+  const todayKey = toLocalDateKey(new Date());
+
+  const dayCounts = new Map<string, number>();
+  const dayMoods = new Map<string, Mood[]>();
 
   dreams.forEach(dream => {
     const dateKey = toLocalDateKey(getDreamDate(dream));
-    counts.set(dateKey, (counts.get(dateKey) ?? 0) + 1);
+    dayCounts.set(dateKey, (dayCounts.get(dateKey) ?? 0) + 1);
+    if (dream.mood) {
+      const existing = dayMoods.get(dateKey) ?? [];
+      existing.push(dream.mood);
+      dayMoods.set(dateKey, existing);
+    }
   });
 
   const cells: ArchiveCalendarCell[] = [];
@@ -240,6 +287,8 @@ export function buildCalendarCells(monthKey: string, dreams: Dream[]) {
       date: null,
       dayNumber: null,
       count: 0,
+      dominantMood: null,
+      isToday: false,
     });
   }
 
@@ -249,7 +298,9 @@ export function buildCalendarCells(monthKey: string, dreams: Dream[]) {
       key: dateKey,
       date: dateKey,
       dayNumber: day,
-      count: counts.get(dateKey) ?? 0,
+      count: dayCounts.get(dateKey) ?? 0,
+      dominantMood: getDominantCalendarMood(dayMoods.get(dateKey) ?? []),
+      isToday: dateKey === todayKey,
     });
   }
 
@@ -260,6 +311,8 @@ export function buildCalendarCells(monthKey: string, dreams: Dream[]) {
       date: null,
       dayNumber: null,
       count: 0,
+      dominantMood: null,
+      isToday: false,
     });
   }
 
@@ -418,6 +471,34 @@ export function getArchiveMatchReasonLabels(
   return getDreamSearchMatchReasons(dream, query)
     .slice(0, 3)
     .map(reason => labelMap[reason]);
+}
+
+export type ArchiveTagSignal = {
+  tag: string;
+  count: number;
+};
+
+function formatTagLabel(tag: string) {
+  return tag.replace(/-/g, ' ');
+}
+
+export function getTopArchiveTags(dreams: Dream[], limit = 8): ArchiveTagSignal[] {
+  const counts = new Map<string, number>();
+
+  dreams.forEach(dream => {
+    dream.tags.forEach(raw => {
+      const key = raw.trim().toLowerCase();
+      if (key) {
+        counts.set(key, (counts.get(key) ?? 0) + 1);
+      }
+    });
+  });
+
+  return Array.from(counts.entries())
+    .filter(([, count]) => count >= 2)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, limit)
+    .map(([key, count]) => ({ tag: formatTagLabel(key), count }));
 }
 
 export function applyArchiveStatusFilter(

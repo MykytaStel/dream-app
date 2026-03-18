@@ -2,7 +2,8 @@ import { AppLocale } from '../../i18n/types';
 
 const STATS_COPY_EN = {
   title: 'Memory',
-  subtitle: 'Signals, threads, and monthly shapes from your local dream archive.',
+  subtitle:
+    'Signals, threads, and monthly shapes from your local dream archive.',
   monthLabel: 'Current local snapshot',
   rangeLabel: 'Range',
   rangeAll: 'All time',
@@ -10,7 +11,7 @@ const STATS_COPY_EN = {
   range7Days: '7 days',
   memoryModeLabel: 'Section',
   memoryModeOverview: 'Overview',
-  memoryModeThreads: 'Threads',
+  memoryModeThreads: 'Recurring',
   memoryModeMonthly: 'Monthly',
   compareLabel: 'View',
   compareSnapshot: 'Snapshot',
@@ -29,7 +30,8 @@ const STATS_COPY_EN = {
   monthlyReportEmptyDescription:
     'Save a few dreams in one month and the first local report will start taking shape.',
   monthlyReportLoadingTitle: 'Building monthly report',
-  monthlyReportLoadingDescription: 'Refreshing the local archive for this month.',
+  monthlyReportLoadingDescription:
+    'Refreshing the local archive for this month.',
   monthlyReportMonthStripLabel: 'Months',
   monthlyReportSaveAction: 'Save for later',
   monthlyReportSavedAction: 'Saved',
@@ -38,11 +40,14 @@ const STATS_COPY_EN = {
   monthlyReportCoverTitle: 'This month felt like',
   monthlyReportCoverEmpty: 'Still settling into a recognizable shape.',
   monthlyReportHighlightsTitle: 'Month in moments',
-  monthlyReportHighlightsDescription: 'The strongest numbers worth keeping from this month.',
+  monthlyReportHighlightsDescription:
+    'The strongest numbers worth keeping from this month.',
   monthlyReportSignalsTitle: 'What kept returning',
-  monthlyReportSignalsDescription: 'Recurring pieces that gave this month its texture.',
+  monthlyReportSignalsDescription:
+    'Recurring pieces that gave this month its texture.',
   monthlyReportGentleTitle: 'What deepened the archive',
-  monthlyReportGentleDescription: 'Quiet structure that made this month easier to revisit later.',
+  monthlyReportGentleDescription:
+    'Quiet structure that made this month easier to revisit later.',
   monthlyReportEntriesLabel: 'Entries',
   monthlyReportWordsLabel: 'Words',
   monthlyReportVoiceLabel: 'Voice',
@@ -64,10 +69,45 @@ const STATS_COPY_EN = {
   monthlyReportNoSignal: 'Still forming',
   overviewActivityTitle: 'Recent activity',
   overviewActivityDescription: 'How often dreams were saved lately.',
+  nightmareFrequencyTitle: 'Nightmare frequency',
+  nightmareFrequencyDescription:
+    'A gentle read of how often nightmare-pattern dreams appear in this slice.',
+  nightmareFrequencyCountLabel: 'Nightmare-pattern entries',
+  nightmareFrequencyCountHint:
+    'Includes tagged nightmares and entries with stronger distress after waking.',
+  nightmareFrequencyCountEmptyHint:
+    'No nightmare-pattern entries in this range.',
+  nightmareFrequencyShareLabel: 'Share of this range',
+  nightmareFrequencyShareHintPrefix: 'About one in ',
+  nightmareFrequencyShareHintSuffix: ' dreams in this range.',
+  nightmareFrequencyShareEmptyHint: 'Nothing recurring here right now.',
+  nightmareFrequencyLatestLabel: 'Most recent',
+  nightmareFrequencyLatestHint: 'Latest nightmare-pattern entry in this range.',
+  nightmareFrequencyLatestEmptyValue: 'None',
+  nightmareFrequencyLatestEmptyHint:
+    'No nightmare-pattern entry landed in this range.',
+  weeklyPatternsTitle: 'Weekly patterns',
+  weeklyPatternsDescription:
+    'A calm read of what stood out in the last seven days.',
   overviewTopSignalLabel: 'Top signal',
   overviewTopSignalEmpty: 'Still forming',
   overviewNextStepLabel: 'Next step',
   overviewNextStepEmpty: 'Nothing urgent right now.',
+  weeklyPatternRhythmLabel: 'Rhythm',
+  weeklyPatternSignalLabel: 'Recent signal',
+  weeklyPatternToneLabel: 'Tone',
+  weeklyPatternContextLabel: 'Context',
+  weeklyPatternCaptureLabel: 'Capture',
+  weeklyPatternQuietWeekTitle: 'Quiet week',
+  weeklyPatternQuietWeekHint: 'No dreams landed in the last seven days.',
+  weeklyPatternStillFormingTitle: 'Still forming',
+  weeklyPatternStillFormingHint:
+    'One more detailed entry will make the week easier to read.',
+  weeklyPatternContextTitle: 'Context showed up',
+  weeklyPatternVoiceTitle: 'Voice leaning',
+  weeklyPatternThisWeekSuffix: 'this week',
+  weeklyPatternVsPreviousLabel: 'vs previous 7 days',
+  weeklyPatternVsPreviousFlat: 'Same as previous 7 days',
   fingerprintTitle: 'Dream fingerprint',
   fingerprintDescription:
     'A quick portrait of the signals that keep returning in this slice.',
@@ -87,13 +127,17 @@ const STATS_COPY_EN = {
   spotlightDescription: 'The fastest read on what stands out in this slice.',
   memoryNudgeLabel: 'Reopen now',
   memoryNudgeThemeReasonPrefix: 'Theme still pulling focus: ',
-  memoryNudgeThemeReasonSuffix: '. Open one dream and see what still feels true.',
+  memoryNudgeThemeReasonSuffix:
+    '. Open one dream and see what still feels true.',
   memoryNudgeWordReasonPrefix: 'This word keeps returning: ',
-  memoryNudgeWordReasonSuffix: '. Reopen one dream and check what changed around it.',
+  memoryNudgeWordReasonSuffix:
+    '. Reopen one dream and check what changed around it.',
   memoryNudgeSymbolReasonPrefix: 'This symbol keeps resurfacing: ',
-  memoryNudgeSymbolReasonSuffix: '. Open one dream and see what detail still holds.',
+  memoryNudgeSymbolReasonSuffix:
+    '. Open one dream and see what detail still holds.',
   memoryNudgeTimeReasonPrefix: 'This dream is resurfacing from ',
-  memoryNudgeTimeReasonSuffix: '. Reopen it and see what detail still holds now.',
+  memoryNudgeTimeReasonSuffix:
+    '. Reopen it and see what detail still holds now.',
   memoryNudgeTranscriptReason:
     'One voice note is still waiting to become usable text while the memory is fresh.',
   memoryNudgeThemeBadge: 'Theme',
@@ -110,7 +154,8 @@ const STATS_COPY_EN = {
   memoryNudgeActionTime: 'Reopen memory',
   memoryNudgeActionTranscript: 'Work on transcript',
   takeawaysTitle: 'Quick takeaways',
-  takeawaysDescription: 'Short reads you can scan without digging through the full archive.',
+  takeawaysDescription:
+    'Short reads you can scan without digging through the full archive.',
   coverageTitle: 'Ready to revisit',
   coverageDescription: 'What is already easy to search or revisit later.',
   coverageTranscriptsLabel: 'Searchable text',
@@ -157,25 +202,32 @@ const STATS_COPY_EN = {
   reviewShelfContinueEyebrow: 'Continue locally',
   reviewShelfSavedMonthEyebrow: 'Saved month',
   reviewShelfSavedThreadEyebrow: 'Saved thread',
-  workQueueTranscriptGenerateReason: 'This voice note is still waiting to become searchable text.',
-  workQueueTranscriptRetryReason: 'The last transcription attempt did not finish.',
-  workQueueTranscriptEditReason: 'Generated transcript is ready for a quick cleanup pass.',
+  workQueueTranscriptGenerateReason:
+    'This voice note is still waiting to become searchable text.',
+  workQueueTranscriptRetryReason:
+    'The last transcription attempt did not finish.',
+  workQueueTranscriptEditReason:
+    'Generated transcript is ready for a quick cleanup pass.',
   workQueueTranscriptActionGenerate: 'Transcribe audio',
   workQueueTranscriptActionRetry: 'Retry transcription',
   workQueueTranscriptActionEdit: 'Edit transcript',
-  workQueueAnalysisReason: 'This dream has enough material for a short local reflection.',
-  workQueueAnalysisRetryReason: 'Local analysis failed last time. Reopen and try again.',
+  workQueueAnalysisReason:
+    'This dream has enough material for a short local reflection.',
+  workQueueAnalysisRetryReason:
+    'Local analysis failed last time. Reopen and try again.',
   workQueueAnalysisBadge: 'Analysis',
   workQueueAnalysisActionGenerate: 'Generate analysis',
   workQueueAnalysisActionRetry: 'Regenerate analysis',
   voiceArchiveTitle: 'Voice archive',
-  voiceArchiveDescription: 'How much of the archive is still raw audio vs usable transcript.',
+  voiceArchiveDescription:
+    'How much of the archive is still raw audio vs usable transcript.',
   sleepSignalsTitle: 'Sleep and mood',
   sleepSignalsDescription:
     'Mood, pre-sleep context, and repeated emotions from the same selected period.',
-  patternsTitle: 'Patterns',
+  patternsTitle: 'Recurring signals',
   patternsDescription:
-    'Repeated tags, transcript symbols, and emotional signals that keep showing up.',
+    'Symbols, themes, and repeated phrases ranked by how often they return and where they keep showing up.',
+  patternsTrackedLabel: 'tracked',
   memoryThreadTitle: 'Current thread',
   memoryThreadDescription:
     'Stay on this screen and scan the dreams connected to the selected recurring signal.',
@@ -230,7 +282,8 @@ const STATS_COPY_EN = {
   milestoneInProgress: 'In progress',
   milestoneProgressLabel: 'Done / goal',
   milestoneFirstDreamTitle: 'First dream saved',
-  milestoneFirstDreamDescription: 'Capture the first dream to start building a usable archive.',
+  milestoneFirstDreamDescription:
+    'Capture the first dream to start building a usable archive.',
   milestoneThreeDayStreakTitle: 'Three days in a row',
   milestoneThreeDayStreakDescription:
     'Log dreams on three consecutive days to prove the habit is taking hold.',
@@ -241,7 +294,8 @@ const STATS_COPY_EN = {
   milestoneFirstVoiceDreamDescription:
     'Save one dream with audio to preserve the original memory before it fades.',
   weeklyGoalTitle: 'Weekly goal',
-  weeklyGoalDescription: 'Aim for three entries in the last seven days to keep the habit warm.',
+  weeklyGoalDescription:
+    'Aim for three entries in the last seven days to keep the habit warm.',
   weeklyGoalStatusDone: 'On track',
   weeklyGoalStatusPending: 'Keep going',
   weeklyGoalProgressLabel: 'Entries this week',
@@ -266,7 +320,8 @@ const STATS_COPY_EN = {
   moodBreakdown: 'Mood breakdown',
   moodBreakdownEmpty: 'Add mood after waking to unlock this breakdown.',
   sleepContextBreakdown: 'Pre-sleep factors',
-  sleepContextEmpty: 'Add pre-sleep context to compare stress, caffeine, and other signals here.',
+  sleepContextEmpty:
+    'Add pre-sleep context to compare stress, caffeine, and other signals here.',
   entriesWithContext: 'Entries with context',
   entriesWithoutMood: 'Entries without mood',
   entriesWithoutContext: 'Entries without context',
@@ -277,7 +332,8 @@ const STATS_COPY_EN = {
   importantEventsNoted: 'Important events noted',
   healthNotesNoted: 'Health notes',
   moodSignalTitle: 'Mood signals (experimental)',
-  moodSignalEmpty: 'Negative mood signals appear after you log mood together with pre-sleep context.',
+  moodSignalEmpty:
+    'Negative mood signals appear after you log mood together with pre-sleep context.',
   negativeMoodRate: 'Negative mood rate',
   negativeWithAlcohol: 'Negative after alcohol',
   negativeWithoutAlcohol: 'Negative without alcohol',
@@ -317,6 +373,9 @@ const STATS_COPY_EN = {
   threadDetailEntryFirst: 'First',
   threadDetailEntryLatest: 'Latest',
   threadDetailEntryOnly: 'Only match',
+  threadDetailMentionSingle: 'mention',
+  threadDetailMentionPlural: 'mentions',
+  threadDetailMentionPluralUkFew: 'mentions',
   patternDetailSourceTag: 'Tag',
   patternDetailSourceTitle: 'Title',
   patternDetailSourceText: 'Notes',
@@ -344,30 +403,39 @@ const STATS_COPY_EN = {
   calm: 'Calm',
   heavy: 'Heavy',
   milestoneFiftyDreamsTitle: '50 dreams saved',
-  milestoneFiftyDreamsDescription: 'Fifty entries in the archive. The patterns are deepening.',
+  milestoneFiftyDreamsDescription:
+    'Fifty entries in the archive. The patterns are deepening.',
   milestoneHundredDreamsTitle: '100 dreams saved',
-  milestoneHundredDreamsDescription: 'A hundred nights remembered. A real archive.',
+  milestoneHundredDreamsDescription:
+    'A hundred nights remembered. A real archive.',
   streakMilestoneThreeDaysTitle: 'Three days in a row',
   streakMilestoneThreeDaysSubtitle: 'The habit is forming. Keep it warm.',
   streakMilestoneSevenDaysTitle: 'Seven days of dreams',
-  streakMilestoneSevenDaysSubtitle: 'A full week. The archive is starting to remember.',
+  streakMilestoneSevenDaysSubtitle:
+    'A full week. The archive is starting to remember.',
   streakMilestoneFourteenDaysTitle: 'Two weeks',
-  streakMilestoneFourteenDaysSubtitle: 'Fourteen days. Something real is building here.',
+  streakMilestoneFourteenDaysSubtitle:
+    'Fourteen days. Something real is building here.',
   streakMilestoneThirtyDaysTitle: 'Thirty nights',
-  streakMilestoneThirtyDaysSubtitle: 'A full month of dreams. The patterns are becoming visible.',
+  streakMilestoneThirtyDaysSubtitle:
+    'A full month of dreams. The patterns are becoming visible.',
   emotionalTrendTitle: 'Emotional arc',
-  emotionalTrendDescription: 'How the mood of your dreams has shifted over time.',
-  emotionalTrendEmptyLabel: 'Add mood to a few dreams to see the arc take shape.',
+  emotionalTrendDescription:
+    'How the mood of your dreams has shifted over time.',
+  emotionalTrendEmptyLabel:
+    'Add mood to a few dreams to see the arc take shape.',
   emotionalTrendArcPositive: 'Mostly peaceful and bright across this period.',
-  emotionalTrendArcNeutral: 'A steady, balanced drift — not pulling hard in either direction.',
-  emotionalTrendArcNegative: 'A heavier stretch. Worth sitting with for a moment.',
+  emotionalTrendArcNeutral:
+    'A steady, balanced drift — not pulling hard in either direction.',
+  emotionalTrendArcNegative:
+    'A heavier stretch. Worth sitting with for a moment.',
   emotionalTrendArcMixed: 'A mixed arc — shifting between light and heavy.',
   patternGroupHighFrequencyLabel: 'Recurring',
 };
 
 const STATS_COPY_UK: typeof STATS_COPY_EN = {
   ...STATS_COPY_EN,
-  title: 'Пам\'ять',
+  title: "Пам'ять",
   subtitle: 'Сигнали, нитки й місячні форми з твого локального архіву снів.',
   monthLabel: 'Поточний локальний стан',
   rangeLabel: 'Період',
@@ -376,7 +444,7 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   range7Days: '7 днів',
   memoryModeLabel: 'Розділ',
   memoryModeOverview: 'Огляд',
-  memoryModeThreads: 'Нитки',
+  memoryModeThreads: 'Повтори',
   memoryModeMonthly: 'Місяць',
   compareLabel: 'Режим',
   compareSnapshot: 'Зріз',
@@ -404,11 +472,14 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   monthlyReportCoverTitle: 'Цей місяць відчувався як',
   monthlyReportCoverEmpty: 'Його форма ще не встигла проявитися.',
   monthlyReportHighlightsTitle: 'Місяць у моментах',
-  monthlyReportHighlightsDescription: 'Найсильніші числа, які варто зберегти з цього місяця.',
+  monthlyReportHighlightsDescription:
+    'Найсильніші числа, які варто зберегти з цього місяця.',
   monthlyReportSignalsTitle: 'Що поверталося',
-  monthlyReportSignalsDescription: 'Повторювані деталі, які дали цьому місяцю власну текстуру.',
+  monthlyReportSignalsDescription:
+    'Повторювані деталі, які дали цьому місяцю власну текстуру.',
   monthlyReportGentleTitle: 'Що поглибило архів',
-  monthlyReportGentleDescription: 'Тиха структура, яка зробила цей місяць легшим для повернення.',
+  monthlyReportGentleDescription:
+    'Тиха структура, яка зробила цей місяць легшим для повернення.',
   monthlyReportEntriesLabel: 'Записи',
   monthlyReportWordsLabel: 'Слова',
   monthlyReportVoiceLabel: 'Голос',
@@ -430,15 +501,52 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   monthlyReportNoSignal: 'Ще формується',
   overviewActivityTitle: 'Остання активність',
   overviewActivityDescription: 'Як часто останнім часом зберігалися сни.',
+  nightmareFrequencyTitle: 'Частота кошмарів',
+  nightmareFrequencyDescription:
+    'Мʼякий зріз того, як часто в цьому періоді зʼявляються сни з кошмарним патерном.',
+  nightmareFrequencyCountLabel: 'Записи з кошмарним патерном',
+  nightmareFrequencyCountHint:
+    'Сюди входять позначені кошмари та записи з виразним дистресом після пробудження.',
+  nightmareFrequencyCountEmptyHint:
+    'У цьому періоді немає записів з кошмарним патерном.',
+  nightmareFrequencyShareLabel: 'Частка цього періоду',
+  nightmareFrequencyShareHintPrefix: 'Приблизно один із ',
+  nightmareFrequencyShareHintSuffix: ' снів у цьому періоді.',
+  nightmareFrequencyShareEmptyHint: 'Зараз тут нічого не повторюється.',
+  nightmareFrequencyLatestLabel: 'Найсвіжіший',
+  nightmareFrequencyLatestHint:
+    'Останній запис з кошмарним патерном у цьому періоді.',
+  nightmareFrequencyLatestEmptyValue: 'Немає',
+  nightmareFrequencyLatestEmptyHint:
+    'У цьому періоді не було запису з кошмарним патерном.',
+  weeklyPatternsTitle: 'Патерни тижня',
+  weeklyPatternsDescription:
+    'Спокійний зріз того, що виділилося за останні сім днів.',
   overviewTopSignalLabel: 'Головний сигнал',
   overviewTopSignalEmpty: 'Ще формується',
   overviewNextStepLabel: 'Наступний крок',
   overviewNextStepEmpty: 'Нічого термінового зараз немає.',
+  weeklyPatternRhythmLabel: 'Ритм',
+  weeklyPatternSignalLabel: 'Свіжий сигнал',
+  weeklyPatternToneLabel: 'Тон',
+  weeklyPatternContextLabel: 'Контекст',
+  weeklyPatternCaptureLabel: 'Запис',
+  weeklyPatternQuietWeekTitle: 'Тихий тиждень',
+  weeklyPatternQuietWeekHint: 'За останні сім днів нових снів не було.',
+  weeklyPatternStillFormingTitle: 'Ще формується',
+  weeklyPatternStillFormingHint:
+    'Ще один детальніший запис зробить тиждень читабельнішим.',
+  weeklyPatternContextTitle: 'Контекст зʼявлявся',
+  weeklyPatternVoiceTitle: 'Тиждень схилявся до голосу',
+  weeklyPatternThisWeekSuffix: 'цього тижня',
+  weeklyPatternVsPreviousLabel: 'проти попередніх 7 днів',
+  weeklyPatternVsPreviousFlat: 'Так само, як у попередні 7 днів',
   fingerprintTitle: 'Відбиток снів',
   fingerprintDescription:
     'Швидкий портрет сигналів, які знову повертаються в цьому зрізі.',
   fingerprintLeadLabel: 'Головні ноти',
-  fingerprintEmpty: 'Збережи ще кілька змістовніших снів, щоб відбиток усталився.',
+  fingerprintEmpty:
+    'Збережи ще кілька змістовніших снів, щоб відбиток усталився.',
   fingerprintThemeLabel: 'Тема',
   fingerprintSymbolLabel: 'Символ',
   fingerprintWakeLabel: 'Після пробудження',
@@ -450,16 +558,21 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   snapshotTitle: 'Зріз архіву',
   snapshotDescription: 'Компактний зріз цієї частини архіву.',
   spotlightTitle: 'Фокус',
-  spotlightDescription: 'Найшвидший спосіб побачити, що тут найбільше виділяється.',
+  spotlightDescription:
+    'Найшвидший спосіб побачити, що тут найбільше виділяється.',
   memoryNudgeLabel: 'Відкрити зараз',
   memoryNudgeThemeReasonPrefix: 'Тема все ще тягне увагу: ',
-  memoryNudgeThemeReasonSuffix: '. Відкрий один сон і звір, що досі відчувається правдою.',
+  memoryNudgeThemeReasonSuffix:
+    '. Відкрий один сон і звір, що досі відчувається правдою.',
   memoryNudgeWordReasonPrefix: 'Це слово знову повертається: ',
-  memoryNudgeWordReasonSuffix: '. Відкрий один сон і подивись, що навколо нього змінилося.',
+  memoryNudgeWordReasonSuffix:
+    '. Відкрий один сон і подивись, що навколо нього змінилося.',
   memoryNudgeSymbolReasonPrefix: 'Цей символ знову виринає: ',
-  memoryNudgeSymbolReasonSuffix: '. Відкрий один сон і перевір, яка деталь досі тримається.',
+  memoryNudgeSymbolReasonSuffix:
+    '. Відкрий один сон і перевір, яка деталь досі тримається.',
   memoryNudgeTimeReasonPrefix: 'Цей сон знову виринає з ',
-  memoryNudgeTimeReasonSuffix: '. Відкрий його ще раз і подивись, яка деталь досі тримається.',
+  memoryNudgeTimeReasonSuffix:
+    '. Відкрий його ще раз і подивись, яка деталь досі тримається.',
   memoryNudgeTranscriptReason:
     'Одна голосова нотатка ще чекає, щоб стати придатним текстом, поки спогад свіжий.',
   memoryNudgeThemeBadge: 'Тема',
@@ -476,7 +589,8 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   memoryNudgeActionTime: 'Повернути спогад',
   memoryNudgeActionTranscript: 'Попрацювати з транскриптом',
   takeawaysTitle: 'Швидкі висновки',
-  takeawaysDescription: 'Короткі сигнали, які можна зчитати без довгого перегляду архіву.',
+  takeawaysDescription:
+    'Короткі сигнали, які можна зчитати без довгого перегляду архіву.',
   coverageTitle: 'Вже добре збережено',
   coverageDescription: 'Що тут уже легко знайти або переглянути пізніше.',
   coverageTranscriptsLabel: 'Є текст для пошуку',
@@ -495,7 +609,8 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   attentionContextHint: 'у снах бракує контексту перед сном',
   attentionAllSetHint: 'Тут зараз усе виглядає добре.',
   workQueueTitle: 'Продовжити локально',
-  workQueueDescription: 'У цьому зрізі вже є кілька конкретних наступних кроків.',
+  workQueueDescription:
+    'У цьому зрізі вже є кілька конкретних наступних кроків.',
   reviewShelfTitle: 'Полиця для ревʼю',
   reviewShelfDescription:
     'Одне місце, щоб повертатися до важливих снів, збережених місяців, ниток і наступних локальних кроків.',
@@ -523,14 +638,18 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   reviewShelfContinueEyebrow: 'Продовжити локально',
   reviewShelfSavedMonthEyebrow: 'Збережений місяць',
   reviewShelfSavedThreadEyebrow: 'Збережена нитка',
-  workQueueTranscriptGenerateReason: 'Ця голосова нотатка ще чекає, щоб стати текстом для пошуку.',
+  workQueueTranscriptGenerateReason:
+    'Ця голосова нотатка ще чекає, щоб стати текстом для пошуку.',
   workQueueTranscriptRetryReason: 'Остання спроба транскрипції не завершилась.',
-  workQueueTranscriptEditReason: 'Згенерований транскрипт уже готовий до швидкої доробки.',
+  workQueueTranscriptEditReason:
+    'Згенерований транскрипт уже готовий до швидкої доробки.',
   workQueueTranscriptActionGenerate: 'Транскрибувати аудіо',
   workQueueTranscriptActionRetry: 'Повторити транскрипцію',
   workQueueTranscriptActionEdit: 'Редагувати транскрипт',
-  workQueueAnalysisReason: 'У цьому сні вже достатньо матеріалу для короткої локальної рефлексії.',
-  workQueueAnalysisRetryReason: 'Локальний аналіз минулого разу не вдався. Відкрий і спробуй ще раз.',
+  workQueueAnalysisReason:
+    'У цьому сні вже достатньо матеріалу для короткої локальної рефлексії.',
+  workQueueAnalysisRetryReason:
+    'Локальний аналіз минулого разу не вдався. Відкрий і спробуй ще раз.',
   workQueueAnalysisBadge: 'Аналіз',
   workQueueAnalysisActionGenerate: 'Згенерувати аналіз',
   workQueueAnalysisActionRetry: 'Оновити аналіз',
@@ -540,9 +659,10 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   sleepSignalsTitle: 'Сон і настрій',
   sleepSignalsDescription:
     'Настрій, контекст перед сном і повторювані емоції в межах вибраного періоду.',
-  patternsTitle: 'Патерни',
+  patternsTitle: 'Повторювані сигнали',
   patternsDescription:
-    'Повторювані теги, символи з транскриптів і емоційні сигнали, які знову зʼявляються.',
+    'Символи, теми й повторювані фрази, відсортовані за тим, як часто вони повертаються і де саме зʼявляються.',
+  patternsTrackedLabel: 'відстежуються',
   memoryThreadTitle: 'Поточна нитка',
   memoryThreadDescription:
     'Залишайся на цьому екрані й переглядай сни, пов’язані з вибраним повторюваним сигналом.',
@@ -558,7 +678,8 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   recurringWordsDescription: 'У назвах, нотатках і транскриптах.',
   recurringThemesDescription: 'З тегів і мови транскриптів.',
   recurringSymbolsDescription: 'Лише з мови транскриптів.',
-  preSleepEmotionsDescription: 'Емоції, які ти найчастіше відмічаєш перед сном.',
+  preSleepEmotionsDescription:
+    'Емоції, які ти найчастіше відмічаєш перед сном.',
   progressOpenButton: 'Відкрити прогрес',
   progressBackButton: 'Назад',
   progressScreenTitle: 'Прогрес',
@@ -574,9 +695,9 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   milestonesToggleHide: 'Сховати майлстоуни',
   currentStreak: 'Поточний стрік',
   lastSevenDays: 'Останні 7 днів',
-  emptyTitle: 'Пам\'ять ще формується',
+  emptyTitle: "Пам'ять ще формується",
   emptyDescription:
-    'Спочатку збережи кілька снів. Пам\'ять почне автоматично пов\'язувати повторювані сигнали з локального архіву.',
+    "Спочатку збережи кілька снів. Пам'ять почне автоматично пов'язувати повторювані сигнали з локального архіву.",
   readinessTitle: 'Готовність аналітики',
   readinessDescription:
     'Що більше ти додаєш настрою, тегів і контексту перед сном, то кориснішими стають ці патерни.',
@@ -632,7 +753,8 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   emotionPatternsEmpty:
     'Додай емоції після пробудження і перед сном, щоб бачити, які відчуття повторюються.',
   moodBreakdown: 'Розподіл настрою',
-  moodBreakdownEmpty: 'Додай настрій після пробудження, щоб тут зʼявився розподіл.',
+  moodBreakdownEmpty:
+    'Додай настрій після пробудження, щоб тут зʼявився розподіл.',
   sleepContextBreakdown: 'Фактори перед сном',
   sleepContextEmpty:
     'Додай контекст перед сном, щоб тут порівнювати стрес, кофеїн та інші сигнали.',
@@ -687,6 +809,9 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   threadDetailEntryFirst: 'Початок',
   threadDetailEntryLatest: 'Останній',
   threadDetailEntryOnly: 'Єдиний збіг',
+  threadDetailMentionSingle: 'згадка',
+  threadDetailMentionPlural: 'згадок',
+  threadDetailMentionPluralUkFew: 'згадки',
   patternDetailSourceTag: 'Тег',
   patternDetailSourceTitle: 'Заголовок',
   patternDetailSourceText: 'Нотатки',
@@ -714,20 +839,27 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   calm: 'Спокійний',
   heavy: 'Важкий',
   milestoneFiftyDreamsTitle: '50 збережених снів',
-  milestoneFiftyDreamsDescription: 'Пʼятдесят записів в архіві. Патерни поглиблюються.',
+  milestoneFiftyDreamsDescription:
+    'Пʼятдесят записів в архіві. Патерни поглиблюються.',
   milestoneHundredDreamsTitle: '100 збережених снів',
-  milestoneHundredDreamsDescription: 'Сотня запамʼятованих ночей. Справжній архів.',
+  milestoneHundredDreamsDescription:
+    'Сотня запамʼятованих ночей. Справжній архів.',
   streakMilestoneThreeDaysTitle: 'Три дні поспіль',
-  streakMilestoneThreeDaysSubtitle: 'Звичка починає формуватися. Підтримуй тепло.',
+  streakMilestoneThreeDaysSubtitle:
+    'Звичка починає формуватися. Підтримуй тепло.',
   streakMilestoneSevenDaysTitle: 'Сім днів снів',
-  streakMilestoneSevenDaysSubtitle: 'Повний тиждень. Архів вже починає памʼятати.',
+  streakMilestoneSevenDaysSubtitle:
+    'Повний тиждень. Архів вже починає памʼятати.',
   streakMilestoneFourteenDaysTitle: 'Два тижні',
-  streakMilestoneFourteenDaysSubtitle: 'Чотирнадцять днів. Щось справжнє будується.',
+  streakMilestoneFourteenDaysSubtitle:
+    'Чотирнадцять днів. Щось справжнє будується.',
   streakMilestoneThirtyDaysTitle: 'Тридцять ночей',
-  streakMilestoneThirtyDaysSubtitle: 'Повний місяць снів. Патерни починають проявлятися.',
+  streakMilestoneThirtyDaysSubtitle:
+    'Повний місяць снів. Патерни починають проявлятися.',
   emotionalTrendTitle: 'Емоційна дуга',
   emotionalTrendDescription: 'Як настрій твоїх снів змінювався з часом.',
-  emotionalTrendEmptyLabel: 'Додай настрій до кількох снів, щоб дуга почала проявлятися.',
+  emotionalTrendEmptyLabel:
+    'Додай настрій до кількох снів, щоб дуга почала проявлятися.',
   emotionalTrendArcPositive: 'Переважно спокійний і світлий за цей період.',
   emotionalTrendArcNeutral: 'Рівний, збалансований рух — без різких перепадів.',
   emotionalTrendArcNegative: 'Важчий відрізок. Варто побути з ним трохи довше.',

@@ -54,6 +54,43 @@ function getRestoreActionState({
   };
 }
 
+export function BackupFlowGuideSection({
+  copy,
+  styles,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+}) {
+  return (
+    <Card style={styles.sectionCard}>
+      <SettingsSectionHeader
+        title={copy.backupFlowGuideTitle}
+        description={copy.backupFlowGuideDescription}
+      />
+      <View style={styles.settingControlBlock}>
+        <SettingsActionRow
+          title={copy.backupFlowBackupTitle}
+          meta={copy.backupFlowBackupMeta}
+          value={copy.backupFlowBackupValue}
+          variant="inline"
+        />
+        <SettingsActionRow
+          title={copy.backupFlowRestoreTitle}
+          meta={copy.backupFlowRestoreMeta}
+          value={copy.backupFlowRestoreValue}
+          variant="inline"
+        />
+        <SettingsActionRow
+          title={copy.backupFlowPdfTitle}
+          meta={copy.backupFlowPdfMeta}
+          value={copy.backupFlowPdfValue}
+          variant="inline"
+        />
+      </View>
+    </Card>
+  );
+}
+
 export function ExportSection({
   copy,
   styles,
@@ -141,6 +178,161 @@ export function ExportSection({
         </View>
       ) : null}
       <Text style={styles.privacyFootnote}>{copy.exportFootnote}</Text>
+    </Card>
+  );
+}
+
+function ExportArtifactSummary({
+  copy,
+  styles,
+  title,
+  description,
+  fileName,
+  actionTitle,
+  onAction,
+  secondaryActionTitle,
+  onSecondaryAction,
+  disabled,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+  title: string;
+  description: string;
+  fileName: string | null;
+  actionTitle: string;
+  onAction: () => void;
+  secondaryActionTitle?: string;
+  onSecondaryAction?: () => void;
+  disabled: boolean;
+}) {
+  if (!fileName) {
+    return null;
+  }
+
+  return (
+    <View style={styles.backupSuccessBlock}>
+      <Text style={styles.backupSuccessTitle}>{title}</Text>
+      <Text style={styles.backupSuccessText}>{description}</Text>
+      <View style={styles.exportSummaryMeta}>
+        <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
+        <Text style={styles.exportPathValue}>{fileName}</Text>
+      </View>
+      <View style={styles.buttonRow}>
+        <Button
+          title={actionTitle}
+          variant="ghost"
+          size="sm"
+          style={styles.buttonRowButton}
+          onPress={onAction}
+          disabled={disabled}
+        />
+        {secondaryActionTitle && onSecondaryAction ? (
+          <Button
+            title={secondaryActionTitle}
+            variant="ghost"
+            size="sm"
+            style={styles.buttonRowButton}
+            onPress={onSecondaryAction}
+            disabled={disabled}
+          />
+        ) : null}
+      </View>
+    </View>
+  );
+}
+
+export function BackupExportSection({
+  copy,
+  styles,
+  isExportingJson,
+  isBusy,
+  lastBackupName,
+  onExportJson,
+  onShareLastBackup,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+  isExportingJson: boolean;
+  isBusy: boolean;
+  lastBackupName: string | null;
+  onExportJson: () => void;
+  onShareLastBackup: () => void;
+}) {
+  return (
+    <Card style={styles.sectionCard}>
+      <SettingsSectionHeader
+        title={copy.backupExportTitle}
+        description={copy.backupExportDescription}
+      />
+      <Button
+        title={isExportingJson ? copy.exportButtonBusy : copy.exportButton}
+        variant="primary"
+        size="sm"
+        style={styles.buttonStackButton}
+        onPress={onExportJson}
+        disabled={isBusy}
+      />
+      <ExportArtifactSummary
+        copy={copy}
+        styles={styles}
+        title={copy.exportBackupReadyTitle}
+        description={copy.exportBackupReadyDescription}
+        fileName={lastBackupName}
+        actionTitle={copy.exportShareBackupButton}
+        onAction={onShareLastBackup}
+        disabled={isBusy}
+      />
+      <Text style={styles.privacyFootnote}>{copy.backupExportFootnote}</Text>
+    </Card>
+  );
+}
+
+export function PdfExportSection({
+  copy,
+  styles,
+  isExportingPdf,
+  isBusy,
+  lastPdfName,
+  onExportPdf,
+  onOpenLastPdf,
+  onShareLastPdf,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+  isExportingPdf: boolean;
+  isBusy: boolean;
+  lastPdfName: string | null;
+  onExportPdf: () => void;
+  onOpenLastPdf: () => void;
+  onShareLastPdf: () => void;
+}) {
+  return (
+    <Card style={styles.sectionCard}>
+      <SettingsSectionHeader
+        title={copy.pdfExportTitle}
+        description={copy.pdfExportDescription}
+      />
+      <Button
+        title={isExportingPdf ? copy.exportPdfButtonBusy : copy.exportPdfButton}
+        variant="ghost"
+        size="sm"
+        style={styles.buttonStackButton}
+        onPress={onExportPdf}
+        disabled={isBusy}
+      />
+      <ExportArtifactSummary
+        copy={copy}
+        styles={styles}
+        title={copy.exportPdfReadyTitle}
+        description={copy.exportPdfReadyDescription}
+        fileName={lastPdfName}
+        actionTitle={copy.exportOpenPdfButton}
+        onAction={onOpenLastPdf}
+        secondaryActionTitle={copy.exportSharePdfButton}
+        onSecondaryAction={onShareLastPdf}
+        disabled={isBusy}
+      />
+      <Text style={styles.privacyFootnote}>{copy.pdfExportFootnote}</Text>
     </Card>
   );
 }

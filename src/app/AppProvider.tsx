@@ -5,6 +5,10 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { syncDreamReminderState } from '../features/reminders/services/dreamReminderService';
 import { observability } from '../services/observability';
+import {
+  installGlobalErrorReporting,
+  reportError,
+} from '../services/observability/errorReporting';
 import { OBS_EVENTS } from '../services/observability/events';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { runStorageMigrations } from '../services/storage/migrations';
@@ -17,42 +21,19 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
     try {
       runStorageMigrations();
     } catch (error) {
-      observability.captureError(error, { event: 'storage_migration_failed' });
+      reportError(error, { event: 'storage_migration_failed' });
     }
 
     observability.trackEvent(OBS_EVENTS.AppOpened);
     syncDreamReminderState().catch(error => {
-      observability.captureError(error, {
+      reportError(error, {
         event: 'schedule_dream_reminder_on_launch',
       });
     });
   }, []);
 
   React.useEffect(() => {
-    type GlobalErrorHandler = (error: Error, isFatal?: boolean) => void;
-    type ErrorUtilsShape = {
-      getGlobalHandler?: () => GlobalErrorHandler;
-      setGlobalHandler?: (handler: GlobalErrorHandler) => void;
-    };
-    const maybeErrorUtils = (globalThis as { ErrorUtils?: ErrorUtilsShape })
-      .ErrorUtils;
-    const previous = maybeErrorUtils?.getGlobalHandler?.();
-
-    if (!maybeErrorUtils?.setGlobalHandler || !previous) {
-      return;
-    }
-
-    maybeErrorUtils.setGlobalHandler((error, isFatal) => {
-      observability.captureError(error, {
-        isFatal: Boolean(isFatal),
-        event: OBS_EVENTS.GlobalJsError,
-      });
-      previous(error, isFatal);
-    });
-
-    return () => {
-      maybeErrorUtils.setGlobalHandler?.(previous);
-    };
+    return installGlobalErrorReporting();
   }, []);
 
   return (

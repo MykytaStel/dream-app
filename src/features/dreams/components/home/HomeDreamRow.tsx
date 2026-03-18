@@ -7,9 +7,7 @@ import Animated, { FadeInDown } from 'react-native-reanimated';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Card } from '../../../../components/ui/Card';
 import { Text } from '../../../../components/ui/Text';
-import {
-  type DreamCopy,
-} from '../../../../constants/copy/dreams';
+import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { DREAM_PREVIEW_MAX_LENGTH } from '../../../../constants/limits/dreams';
 import { Theme } from '../../../../theme/theme';
 import { getDreamLayout } from '../../constants/layout';
@@ -22,6 +20,15 @@ import {
   type DreamSearchMatchReason,
 } from '../../model/homeTimeline';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
+
+type DreamSignalTone = 'accent' | 'primary' | 'danger' | 'muted';
+
+type DreamSignalChip = {
+  key: string;
+  label: string;
+  icon: string;
+  tone: DreamSignalTone;
+};
 
 function formatPreview(dream: Dream, copy: DreamCopy) {
   const text = dream.text?.trim();
@@ -77,18 +84,169 @@ function formatDateParts(dream: Dream) {
   };
 }
 
-function getDreamStateLabels(dream: Dream, copy: DreamCopy, starred: boolean, archived: boolean) {
+function buildSignalChips(
+  dream: Dream,
+  copy: DreamCopy,
+  starred: boolean,
+  archived: boolean,
+): DreamSignalChip[] {
+  const transcript = dream.transcript?.trim();
+  const hasAudio = Boolean(dream.audioUri?.trim());
+  const hasContext = Boolean(dream.sleepContext?.importantEvents?.trim());
+  const transcriptStatus = dream.transcriptStatus ?? (transcript ? 'ready' : 'idle');
+
   return [
-    starred ? copy.starredTag : null,
-    archived ? copy.archivedTag : null,
-    dream.transcriptSource === 'edited'
-      ? copy.editedTranscriptTag
-      : dream.transcript
-        ? copy.transcriptTag
-        : dream.audioUri
-          ? copy.audioTag
+    starred
+      ? {
+          key: 'important',
+          label: copy.starredTag,
+          icon: 'sparkles-outline',
+          tone: 'accent',
+        }
+      : null,
+    archived
+      ? {
+          key: 'archived',
+          label: copy.archivedTag,
+          icon: 'archive-outline',
+          tone: 'muted',
+        }
+      : null,
+    hasContext
+      ? {
+          key: 'context',
+          label: copy.homeSearchMatchContext,
+          icon: 'flash-outline',
+          tone: 'primary',
+        }
+      : null,
+    hasAudio
+      ? {
+          key: 'audio',
+          label: copy.audioTag,
+          icon: 'mic-outline',
+          tone: 'muted',
+        }
+      : null,
+    transcriptStatus === 'processing'
+      ? {
+          key: 'transcript-processing',
+          label: copy.detailTranscriptSummaryProcessing,
+          icon: 'sync-outline',
+          tone: 'primary',
+        }
+      : transcriptStatus === 'error'
+        ? {
+            key: 'transcript-error',
+            label: copy.detailTranscriptSummaryError,
+            icon: 'alert-circle-outline',
+            tone: 'danger',
+          }
+        : transcript
+          ? {
+              key: dream.transcriptSource === 'edited' ? 'transcript-edited' : 'transcript',
+              label:
+                dream.transcriptSource === 'edited'
+                  ? copy.editedTranscriptTag
+                  : copy.transcriptTag,
+              icon:
+                dream.transcriptSource === 'edited'
+                  ? 'create-outline'
+                  : 'chatbubble-ellipses-outline',
+              tone: dream.transcriptSource === 'edited' ? 'accent' : 'primary',
+            }
           : null,
-  ].filter((value): value is string => Boolean(value));
+  ].filter((value): value is DreamSignalChip => Boolean(value));
+}
+
+function getSignalTone(theme: Theme, tone: DreamSignalTone) {
+  switch (tone) {
+    case 'accent':
+      return {
+        backgroundColor: `${theme.colors.accent}14`,
+        borderColor: `${theme.colors.accent}44`,
+        color: theme.colors.accent,
+      };
+    case 'danger':
+      return {
+        backgroundColor: `${theme.colors.danger}14`,
+        borderColor: `${theme.colors.danger}44`,
+        color: theme.colors.danger,
+      };
+    case 'primary':
+      return {
+        backgroundColor: `${theme.colors.primary}14`,
+        borderColor: `${theme.colors.primary}44`,
+        color: theme.colors.primary,
+      };
+    case 'muted':
+    default:
+      return {
+        backgroundColor: `${theme.colors.textDim}10`,
+        borderColor: `${theme.colors.border}F2`,
+        color: theme.colors.textDim,
+      };
+  }
+}
+
+function getPreviewLabel(dream: Dream, copy: DreamCopy) {
+  const hasText = Boolean(dream.text?.trim());
+  const hasAudio = Boolean(dream.audioUri?.trim());
+  const hasTranscript = Boolean(dream.transcript?.trim());
+
+  if (dream.transcriptStatus === 'processing') {
+    return copy.detailTranscriptSummaryProcessing;
+  }
+
+  if (dream.transcriptStatus === 'error') {
+    return copy.detailTranscriptSummaryError;
+  }
+
+  if (hasText && hasAudio) {
+    return copy.homeTypeFilterMixed;
+  }
+
+  if (hasText) {
+    return copy.homeTypeFilterText;
+  }
+
+  if (hasTranscript) {
+    return dream.transcriptSource === 'edited' ? copy.editedTranscriptTag : copy.transcriptTag;
+  }
+
+  if (hasAudio) {
+    return copy.audioTag;
+  }
+
+  return copy.homeTypeFilterText;
+}
+
+function getPreviewIcon(dream: Dream): string {
+  const hasText = Boolean(dream.text?.trim());
+  const hasAudio = Boolean(dream.audioUri?.trim());
+  const hasTranscript = Boolean(dream.transcript?.trim());
+
+  if (dream.transcriptStatus === 'processing') {
+    return 'sync-outline';
+  }
+
+  if (dream.transcriptStatus === 'error') {
+    return 'alert-circle-outline';
+  }
+
+  if (hasText) {
+    return hasAudio ? 'duplicate-outline' : 'document-text-outline';
+  }
+
+  if (hasTranscript) {
+    return dream.transcriptSource === 'edited' ? 'create-outline' : 'chatbubble-ellipses-outline';
+  }
+
+  if (hasAudio) {
+    return 'mic-outline';
+  }
+
+  return 'document-text-outline';
 }
 
 function SwipeActionButton({
@@ -158,10 +316,15 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
   const dateParts = formatDateParts(dream);
   const archived = isDreamArchived(dream);
   const starred = isDreamStarred(dream);
-  const stateLabels = getDreamStateLabels(dream, copy, starred, archived).slice(0, 2);
   const visibleTags = dream.tags.slice(0, 2);
   const hiddenTagCount = Math.max(0, dream.tags.length - visibleTags.length);
   const accentColor = starred ? theme.colors.accent : moodColor(theme, dream.mood);
+  const signalChips = React.useMemo(
+    () => buildSignalChips(dream, copy, starred, archived),
+    [archived, copy, dream, starred],
+  );
+  const previewLabel = React.useMemo(() => getPreviewLabel(dream, copy), [copy, dream]);
+  const previewIcon = React.useMemo(() => getPreviewIcon(dream), [dream]);
   const matchReasonLabels = React.useMemo(() => {
     const labelMap: Record<DreamSearchMatchReason, string> = {
       title: copy.homeSearchMatchTitle,
@@ -262,102 +425,182 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
     ],
   );
 
-  const hasFooter = Boolean(stateLabels.length || visibleTags.length || hiddenTagCount);
+  const hasFooter = Boolean(visibleTags.length || hiddenTagCount);
   const entering = index < 8 ? FadeInDown.delay(index * 45).duration(300) : undefined;
 
   return (
     <Animated.View entering={entering}>
-    <ReanimatedSwipeable
-      containerStyle={styles.swipeableContainer}
-      overshootRight={false}
-      overshootLeft={false}
-      leftThreshold={layout.swipeThreshold}
-      rightThreshold={layout.swipeThreshold}
-      dragOffsetFromLeftEdge={layout.swipeDragOffset}
-      dragOffsetFromRightEdge={layout.swipeDragOffset}
-      friction={1.9}
-      renderLeftActions={renderLeftActions}
-      renderRightActions={renderRightActions}
-      onSwipeableWillOpen={() => closePreviousSwipe(dream.id)}
-      onSwipeableOpen={() => onSwipeOpened(dream.id)}
-      onSwipeableClose={() => onSwipeClosed(dream.id)}
-    >
-      <Pressable
-        style={({ pressed }) => [
-          styles.dreamPressable,
-          pressed ? styles.dreamPressablePressed : null,
-        ]}
-        onPress={() => {
-          closeActiveSwipe();
-          openDreamDetail(dream.id);
-        }}
-        onLongPress={() => openDreamQuickActions(dream)}
-        delayLongPress={220}
+      <ReanimatedSwipeable
+        containerStyle={styles.swipeableContainer}
+        overshootRight={false}
+        overshootLeft={false}
+        leftThreshold={layout.swipeThreshold}
+        rightThreshold={layout.swipeThreshold}
+        dragOffsetFromLeftEdge={layout.swipeDragOffset}
+        dragOffsetFromRightEdge={layout.swipeDragOffset}
+        friction={1.9}
+        renderLeftActions={renderLeftActions}
+        renderRightActions={renderRightActions}
+        onSwipeableWillOpen={() => closePreviousSwipe(dream.id)}
+        onSwipeableOpen={() => onSwipeOpened(dream.id)}
+        onSwipeableClose={() => onSwipeClosed(dream.id)}
       >
-        <Card style={[styles.dreamCard, dream.mood ? { backgroundColor: `${accentColor}0B` } : null, starred ? styles.dreamCardStarred : null]}>
-          <View style={styles.dreamHeaderRow}>
-            <View style={[styles.dateBadge, starred ? styles.dateBadgeFeatured : null]}>
-              <Text style={styles.weekday}>{dateParts.weekday}</Text>
-              <Text style={styles.dayNumber}>{String(dateParts.day)}</Text>
-              <Text style={styles.month}>{dateParts.month}</Text>
-            </View>
-            <View style={[styles.dreamHeaderCopy, { flex: 1 }]}>
-              <View style={styles.titleRow}>
-                <Text style={styles.title} numberOfLines={1}>
-                  {dream.title || copy.untitled}
-                </Text>
-                {!mood ? (
-                  <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
-                ) : null}
-                {(dream.lucidity ?? 0) >= 2 ? (
-                  <Text style={styles.lucidityGlyph}>✦</Text>
-                ) : null}
+        <Pressable
+          style={({ pressed }: { pressed: boolean }) => [
+            styles.dreamPressable,
+            pressed ? styles.dreamPressablePressed : null,
+          ]}
+          onPress={() => {
+            closeActiveSwipe();
+            openDreamDetail(dream.id);
+          }}
+          onLongPress={() => openDreamQuickActions(dream)}
+          delayLongPress={220}
+        >
+          <Card
+            style={[
+              styles.dreamCard,
+              styles.dreamCardVisual,
+              dream.mood ? { backgroundColor: `${accentColor}0B` } : null,
+              starred ? styles.dreamCardStarred : null,
+            ]}
+          >
+            <View
+              pointerEvents="none"
+              style={[styles.dreamCardGlowLarge, { backgroundColor: `${accentColor}1A` }]}
+            />
+            <View
+              pointerEvents="none"
+              style={[styles.dreamCardGlowSmall, { backgroundColor: `${accentColor}12` }]}
+            />
+            <View
+              pointerEvents="none"
+              style={[styles.dreamCardAccentBar, { backgroundColor: accentColor }]}
+            />
+
+            <View style={styles.dreamHeaderRow}>
+              <View
+                style={[
+                  styles.dateBadge,
+                  starred ? styles.dateBadgeFeatured : null,
+                  {
+                    backgroundColor: `${accentColor}14`,
+                    borderColor: `${accentColor}33`,
+                  },
+                ]}
+              >
+                <Text style={styles.weekday}>{dateParts.weekday}</Text>
+                <Text style={styles.dayNumber}>{String(dateParts.day)}</Text>
+                <Text style={styles.month}>{dateParts.month}</Text>
               </View>
-              {mood ? (
-                <View style={styles.moodPill}>
-                  <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
-                  <Text style={styles.moodPillText}>{mood}</Text>
+              <View style={[styles.dreamHeaderCopy, styles.dreamHeaderCopyExpanded]}>
+                <View style={styles.titleRow}>
+                  <Text style={styles.title} numberOfLines={1}>
+                    {dream.title || copy.untitled}
+                  </Text>
+                  {!mood ? (
+                    <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
+                  ) : null}
+                  {(dream.lucidity ?? 0) >= 2 ? (
+                    <Text style={styles.lucidityGlyph}>✦</Text>
+                  ) : null}
                 </View>
-              ) : null}
-            </View>
-          </View>
-
-          <View style={styles.previewPanel}>
-            <View style={[styles.previewAccent, { backgroundColor: accentColor }]} />
-            {dream.audioUri && !dream.text?.trim() ? (
-              <Ionicons name="mic-outline" size={12} color={theme.colors.textDim} style={styles.previewAudioIcon} />
-            ) : null}
-            <Text
-              style={[styles.preview, !dream.text?.trim() && dream.transcript ? styles.previewTranscript : null]}
-              numberOfLines={3}
-            >
-              {formatPreview(dream, copy)}
-            </Text>
-          </View>
-
-          {matchReasonLabels.length ? (
-            <View style={styles.matchReasonsRow}>
-              {matchReasonLabels.map(label => (
-                <View key={`${dream.id}-match-${label}`} style={styles.matchReasonPill}>
-                  <Text style={styles.matchReasonPillText}>{label}</Text>
-                </View>
-              ))}
-            </View>
-          ) : null}
-
-          {hasFooter ? (
-            <View style={styles.dreamFooterRow}>
-              {stateLabels.length ? (
-                <View style={styles.statePills}>
-                  {stateLabels.map(label => (
-                    <View key={label} style={styles.statePill}>
-                      <Text style={styles.statePillText}>{label}</Text>
+                <View style={styles.headerMetaRow}>
+                  {mood ? (
+                    <View
+                      style={[
+                        styles.moodPill,
+                        {
+                          backgroundColor: `${accentColor}12`,
+                          borderColor: `${accentColor}30`,
+                        },
+                      ]}
+                    >
+                      <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
+                      <Text style={styles.moodPillText}>{mood}</Text>
                     </View>
-                  ))}
+                  ) : null}
                 </View>
-              ) : null}
+              </View>
+            </View>
 
-              {visibleTags.length || hiddenTagCount ? (
+            {signalChips.length ? (
+              <View style={styles.signalRow}>
+                {signalChips.map(chip => {
+                  const tone = getSignalTone(theme, chip.tone);
+
+                  return (
+                    <View
+                      key={`${dream.id}-${chip.key}`}
+                      style={[
+                        styles.signalChip,
+                        {
+                          backgroundColor: tone.backgroundColor,
+                          borderColor: tone.borderColor,
+                        },
+                      ]}
+                    >
+                      <Ionicons name={chip.icon} size={12} color={tone.color} />
+                      <Text style={[styles.signalChipText, { color: tone.color }]}>
+                        {chip.label}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            ) : null}
+
+            <View
+              style={[
+                styles.previewPanel,
+                {
+                  backgroundColor: `${theme.colors.ink}33`,
+                  borderColor: `${accentColor}20`,
+                },
+              ]}
+            >
+              <View style={[styles.previewAccent, { backgroundColor: accentColor }]} />
+              <View style={styles.previewContent}>
+                <View style={styles.previewHeaderRow}>
+                  <View
+                    style={[
+                      styles.previewLabelPill,
+                      {
+                        backgroundColor: `${accentColor}16`,
+                        borderColor: `${accentColor}2E`,
+                      },
+                    ]}
+                  >
+                    <Ionicons name={previewIcon} size={12} color={accentColor} />
+                    <Text style={[styles.previewLabelText, { color: accentColor }]}>
+                      {previewLabel}
+                    </Text>
+                  </View>
+                </View>
+                <Text
+                  style={[
+                    styles.preview,
+                    !dream.text?.trim() && dream.transcript ? styles.previewTranscript : null,
+                  ]}
+                  numberOfLines={3}
+                >
+                  {formatPreview(dream, copy)}
+                </Text>
+              </View>
+            </View>
+
+            {matchReasonLabels.length ? (
+              <View style={styles.matchReasonsRow}>
+                {matchReasonLabels.map(label => (
+                  <View key={`${dream.id}-match-${label}`} style={styles.matchReasonPill}>
+                    <Text style={styles.matchReasonPillText}>{label}</Text>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+
+            {hasFooter ? (
+              <View style={styles.dreamFooterRow}>
                 <View style={styles.tags}>
                   {visibleTags.map(tag => (
                     <View key={tag} style={styles.tagPill}>
@@ -370,12 +613,11 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                     </View>
                   ) : null}
                 </View>
-              ) : null}
-            </View>
-          ) : null}
-        </Card>
-      </Pressable>
-    </ReanimatedSwipeable>
+              </View>
+            ) : null}
+          </Card>
+        </Pressable>
+      </ReanimatedSwipeable>
     </Animated.View>
   );
 });

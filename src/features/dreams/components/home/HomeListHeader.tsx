@@ -4,20 +4,23 @@ import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Card } from '../../../../components/ui/Card';
 import { FormField } from '../../../../components/ui/FormField';
+import { SegmentedControl } from '../../../../components/ui/SegmentedControl';
 import { SectionHeader } from '../../../../components/ui/SectionHeader';
 import { TagChip } from '../../../../components/ui/TagChip';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { type HomeSearchPreset } from '../../services/homeSearchPresetService';
 import {
+  type HomeSortOrder,
   type HomeTimelineFilters,
 } from '../../model/homeTimeline';
 import { type HomeRevisitCue } from '../../model/homeOverview';
 import { type PatternDetailKind } from '../../../../app/navigation/routes';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 import { Theme } from '../../../../theme/theme';
-import { type HomeFilterChip } from './homeTypes';
+import { type HomeFilterChip, type HomeOption } from './homeTypes';
 import { HomeSearchPresetChip } from './HomeSearchPresetChip';
+import { type WeeklyPatternCard } from '../../../stats/model/weeklyPatternCards';
 
 type HomeListHeaderProps = {
   copy: DreamCopy;
@@ -30,9 +33,6 @@ type HomeListHeaderProps = {
   lastViewedDreamTitle?: string | null;
   lastViewedDreamMeta?: string | null;
   onOpenLastDream?: (() => void) | null;
-  streak: number;
-  totalDreams: number;
-  averageWords: number;
   isSearchPending: boolean;
   isFilterMutationPending: boolean;
   hasSearchQuery: boolean;
@@ -40,12 +40,12 @@ type HomeListHeaderProps = {
   savedSearchPresets: HomeSearchPreset[];
   activeSearchPresetId: string | null;
   canSaveSearchPreset: boolean;
+  sortOptions: Array<HomeOption<HomeSortOrder>>;
   spotlightPattern: string;
   spotlightPatternKind: PatternDetailKind | null;
   spotlightCountLabel: string;
   revisitCue: HomeRevisitCue | null;
-  weeklyValue: string;
-  weeklyHint: string;
+  weeklyPatternCards: WeeklyPatternCard[];
   attentionValue: string;
   attentionHint: string;
   onOpenRevisitDream: (dreamId: string) => void;
@@ -56,7 +56,9 @@ type HomeListHeaderProps = {
   onSaveSearchPreset: () => void;
   onApplySearchPreset: (preset: HomeSearchPreset) => void;
   onDeleteSearchPreset: (preset: HomeSearchPreset) => void;
-  updateTimelineFilters: (updater: (current: HomeTimelineFilters) => HomeTimelineFilters) => void;
+  updateTimelineFilters: (
+    updater: (current: HomeTimelineFilters) => HomeTimelineFilters,
+  ) => void;
 };
 
 export const HomeListHeader = React.memo(function HomeListHeader({
@@ -70,9 +72,6 @@ export const HomeListHeader = React.memo(function HomeListHeader({
   lastViewedDreamTitle,
   lastViewedDreamMeta,
   onOpenLastDream,
-  streak,
-  totalDreams,
-  averageWords,
   isSearchPending,
   isFilterMutationPending,
   hasSearchQuery,
@@ -80,12 +79,12 @@ export const HomeListHeader = React.memo(function HomeListHeader({
   savedSearchPresets,
   activeSearchPresetId,
   canSaveSearchPreset,
+  sortOptions,
   spotlightPattern,
   spotlightPatternKind,
   spotlightCountLabel,
   revisitCue,
-  weeklyValue,
-  weeklyHint,
+  weeklyPatternCards,
   attentionValue,
   attentionHint,
   onOpenRevisitDream,
@@ -99,15 +98,16 @@ export const HomeListHeader = React.memo(function HomeListHeader({
   updateTimelineFilters,
 }: HomeListHeaderProps) {
   const t = useTheme<Theme>();
-  const [isSpotlightExpanded, setIsSpotlightExpanded] = React.useState(false);
-  const [isSearchDetailsExpanded, setIsSearchDetailsExpanded] = React.useState(false);
   const hasAttentionCue = attentionValue !== copy.homeSpotlightAttentionClear;
-  const showSpotlightCard = Boolean(spotlightPatternKind || revisitCue || hasAttentionCue);
+  const showSpotlightCard = Boolean(
+    spotlightPatternKind || revisitCue || hasAttentionCue,
+  );
   const showLastViewedShortcut =
     Boolean(lastViewedDreamTitle && onOpenLastDream) &&
     !showSpotlightCard &&
     !hasSearchQuery &&
-    !hasNonSearchRefinements;
+    !hasNonSearchRefinements &&
+    timelineFilters.sortOrder === 'newest';
   const orderedSearchPresets = React.useMemo(() => {
     if (!activeSearchPresetId) {
       return savedSearchPresets;
@@ -125,11 +125,17 @@ export const HomeListHeader = React.memo(function HomeListHeader({
       return b.createdAt - a.createdAt;
     });
   }, [activeSearchPresetId, savedSearchPresets]);
-  const forceSearchDetailsOpen = activeFilterChips.length > 0 || Boolean(activeSearchPresetId);
-  const showSearchDetails =
-    forceSearchDetailsOpen || isSearchDetailsExpanded || canSaveSearchPreset;
-  const canToggleSearchDetails =
-    !forceSearchDetailsOpen && Boolean(savedSearchPresets.length || canSaveSearchPreset);
+  const hasSavedSearchSection = Boolean(
+    savedSearchPresets.length || canSaveSearchPreset,
+  );
+  const sortControlOptions = React.useMemo(
+    () =>
+      sortOptions.map(option => ({ value: option.key, label: option.label })),
+    [sortOptions],
+  );
+  const tagsShortcutLabel = timelineFilters.tags.length
+    ? `${copy.homeTagFilterLabel} (${timelineFilters.tags.length})`
+    : copy.homeTagFilterLabel;
 
   return (
     <View style={styles.listHeaderContent}>
@@ -149,7 +155,9 @@ export const HomeListHeader = React.memo(function HomeListHeader({
             />
           </View>
           <View style={styles.heroShortcutCopy}>
-            <Text style={styles.heroShortcutLabel}>{copy.homeLastDreamLabel}</Text>
+            <Text style={styles.heroShortcutLabel}>
+              {copy.homeLastDreamLabel}
+            </Text>
             <Text style={styles.heroShortcutTitle} numberOfLines={1}>
               {lastViewedDreamTitle}
             </Text>
@@ -165,25 +173,12 @@ export const HomeListHeader = React.memo(function HomeListHeader({
       {showSpotlightCard ? (
         <Card style={styles.spotlightCard}>
           <View style={styles.spotlightHeader}>
-            <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
-            <Pressable
-              style={({ pressed }) => [
-                styles.spotlightToggleButton,
-                pressed ? styles.spotlightToggleButtonPressed : null,
-              ]}
-              onPress={() => setIsSpotlightExpanded(current => !current)}
-            >
-              <Text style={styles.spotlightToggleButtonText}>
-                {isSpotlightExpanded
-                  ? copy.homeSpotlightHideDetails
-                  : copy.homeSpotlightShowDetails}
+            <View style={styles.spotlightHeaderCopy}>
+              <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
+              <Text style={styles.spotlightHeaderHint}>
+                {copy.homeSpotlightSubtitle}
               </Text>
-              <Ionicons
-                name={isSpotlightExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}
-                size={14}
-                color={t.colors.textDim}
-              />
-            </Pressable>
+            </View>
           </View>
 
           {spotlightPatternKind ? (
@@ -195,21 +190,16 @@ export const HomeListHeader = React.memo(function HomeListHeader({
                   styles.spotlightTileFeatured,
                   pressed ? styles.spotlightTilePressed : null,
                 ]}
-                onPress={() => onOpenPatternDetail(spotlightPattern, spotlightPatternKind)}
+                onPress={() =>
+                  onOpenPatternDetail(spotlightPattern, spotlightPatternKind)
+                }
               >
-                <Text style={styles.spotlightLabel}>{copy.homeSpotlightPatternLabel}</Text>
+                <Text style={styles.spotlightLabel}>
+                  {copy.homeSpotlightPatternLabel}
+                </Text>
                 <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
                 <Text style={styles.spotlightHint}>{spotlightCountLabel}</Text>
               </Pressable>
-            </View>
-          ) : null}
-
-          {hasAttentionCue ? (
-            <View style={styles.spotlightMetaRow}>
-              <View style={styles.spotlightMetaChip}>
-                <Text style={styles.spotlightMetaLabel}>{copy.homeSpotlightAttentionLabel}</Text>
-                <Text style={styles.spotlightMetaValue}>{attentionValue}</Text>
-              </View>
             </View>
           ) : null}
 
@@ -223,20 +213,26 @@ export const HomeListHeader = React.memo(function HomeListHeader({
               onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
             >
               <View style={styles.spotlightCueHeader}>
-                <Text style={styles.spotlightLabel}>{copy.homeSpotlightRevisitLabel}</Text>
+                <Text style={styles.spotlightLabel}>
+                  {copy.homeSpotlightRevisitLabel}
+                </Text>
                 <View style={styles.spotlightCueBadge}>
                   <Ionicons
                     name={revisitCue.icon}
                     size={12}
                     color={t.colors.accent}
                   />
-                  <Text style={styles.spotlightCueBadgeText}>{revisitCue.contextLabel}</Text>
+                  <Text style={styles.spotlightCueBadgeText}>
+                    {revisitCue.contextLabel}
+                  </Text>
                 </View>
               </View>
               <Text style={styles.spotlightValue}>{revisitCue.title}</Text>
               <Text style={styles.spotlightHint}>{revisitCue.reason}</Text>
               <View style={styles.spotlightCueActionRow}>
-                <Text style={styles.spotlightActionHint}>{revisitCue.actionLabel}</Text>
+                <Text style={styles.spotlightActionHint}>
+                  {revisitCue.actionLabel}
+                </Text>
                 <Ionicons
                   name="arrow-forward-outline"
                   size={14}
@@ -246,41 +242,76 @@ export const HomeListHeader = React.memo(function HomeListHeader({
             </Pressable>
           ) : null}
 
-          {isSpotlightExpanded ? (
-            <>
-              <View style={styles.spotlightSecondaryRow}>
-                <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-                  <Text style={styles.spotlightLabel}>{copy.homeSpotlightWeeklyLabel}</Text>
-                  <Text style={styles.spotlightCompactValue}>{weeklyValue}</Text>
-                  <Text style={styles.spotlightHint}>{weeklyHint}</Text>
-                </View>
-
-                {hasAttentionCue ? (
-                  <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-                    <Text style={styles.spotlightLabel}>{copy.homeSpotlightAttentionLabel}</Text>
-                    <Text style={styles.spotlightCompactValue}>{attentionValue}</Text>
-                    <Text style={styles.spotlightHint}>{attentionHint}</Text>
-                  </View>
-                ) : null}
+          {hasAttentionCue ? (
+            <View style={styles.spotlightSupportRow}>
+              <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
+                <Text style={styles.spotlightLabel}>
+                  {copy.homeSpotlightAttentionLabel}
+                </Text>
+                <Text style={styles.spotlightCompactValue}>
+                  {attentionValue}
+                </Text>
+                <Text style={styles.spotlightHint}>{attentionHint}</Text>
               </View>
-
-              <View style={styles.statsRow}>
-                <View style={styles.statChip}>
-                  <Text style={styles.statLabel}>{copy.homeStreakLabel}</Text>
-                  <Text style={styles.statValue}>{`${streak} ${copy.homeDaysUnit}`}</Text>
-                </View>
-                <View style={styles.statChip}>
-                  <Text style={styles.statLabel}>{copy.homeTotalLabel}</Text>
-                  <Text style={styles.statValue}>{totalDreams}</Text>
-                </View>
-                <View style={styles.statChip}>
-                  <Text style={styles.statLabel}>{copy.homeAverageLabel}</Text>
-                  <Text style={styles.statValue}>{averageWords}</Text>
-                </View>
-              </View>
-            </>
+            </View>
           ) : null}
         </Card>
+      ) : null}
+
+      {weeklyPatternCards.length ? (
+        <View style={styles.weeklyPatternsSection}>
+          <View style={styles.weeklyPatternsHeader}>
+            <Text style={styles.sectionLabel}>
+              {copy.homeWeeklyPatternsTitle}
+            </Text>
+            <Text style={styles.weeklyPatternsSubtitle}>
+              {copy.homeWeeklyPatternsSubtitle}
+            </Text>
+          </View>
+
+          <View style={styles.weeklyPatternsRow}>
+            {weeklyPatternCards.map(card => {
+              const content = (
+                <>
+                  <Text style={styles.weeklyPatternLabel}>{card.label}</Text>
+                  <Text style={styles.weeklyPatternTitle}>{card.title}</Text>
+                  <Text style={styles.weeklyPatternHint}>{card.hint}</Text>
+                </>
+              );
+
+              if (card.signal && card.signalKind) {
+                const signal = card.signal;
+                const signalKind = card.signalKind;
+
+                return (
+                  <Pressable
+                    key={card.key}
+                    style={({ pressed }) => [
+                      styles.weeklyPatternCard,
+                      card.accent ? styles.weeklyPatternCardAccent : null,
+                      pressed ? styles.spotlightTilePressed : null,
+                    ]}
+                    onPress={() => onOpenPatternDetail(signal, signalKind)}
+                  >
+                    {content}
+                  </Pressable>
+                );
+              }
+
+              return (
+                <View
+                  key={card.key}
+                  style={[
+                    styles.weeklyPatternCard,
+                    card.accent ? styles.weeklyPatternCardAccent : null,
+                  ]}
+                >
+                  {content}
+                </View>
+              );
+            })}
+          </View>
+        </View>
       ) : null}
 
       <View style={styles.timelineHeaderRow}>
@@ -290,13 +321,28 @@ export const HomeListHeader = React.memo(function HomeListHeader({
         {hasSearchQuery || hasNonSearchRefinements ? (
           <View style={styles.timelineHeaderActions}>
             <View style={styles.timelineCountPill}>
-              <Text style={styles.timelineCountLabel}>{searchResultsLabel}</Text>
+              <Text style={styles.timelineCountLabel}>
+                {searchResultsLabel}
+              </Text>
             </View>
           </View>
         ) : null}
       </View>
 
       <Card style={styles.searchCard}>
+        <View style={styles.searchCardHeaderRow}>
+          <Text style={styles.searchPresetLabel}>{copy.homeSearchLabel}</Text>
+          {hasSearchQuery ? (
+            <Pressable
+              style={styles.inlineActionButton}
+              onPress={onClearSearch}
+            >
+              <Text style={styles.inlineActionButtonText}>
+                {copy.homeClearSearch}
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
         <View style={styles.searchBarRow}>
           <FormField
             placeholder={copy.homeSearchPlaceholder}
@@ -317,50 +363,22 @@ export const HomeListHeader = React.memo(function HomeListHeader({
             containerStyle={styles.searchFieldContainer}
             inputStyle={styles.searchFieldInput}
           />
-
-          <Pressable style={styles.inlineActionButton} onPress={onOpenFilterSheet}>
-            <Text style={styles.inlineActionButtonText}>{copy.homeShowFilters}</Text>
-          </Pressable>
         </View>
 
-        {hasSearchQuery ? (
-          <View style={styles.primaryActionsRow}>
-            <Pressable style={styles.inlineActionButton} onPress={onClearSearch}>
-              <Text style={styles.inlineActionButtonText}>{copy.homeClearSearch}</Text>
-            </Pressable>
-          </View>
-        ) : null}
-
-        {canToggleSearchDetails ? (
-          <View style={styles.searchDetailsToggleRow}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.searchDetailsToggleButton,
-                pressed ? styles.spotlightToggleButtonPressed : null,
-              ]}
-              onPress={() => setIsSearchDetailsExpanded(current => !current)}
-            >
-              <Text style={styles.inlineActionButtonText}>
-                {isSearchDetailsExpanded
-                  ? copy.homeSearchHideDetails
-                  : copy.homeSearchShowDetails}
-              </Text>
-              <Ionicons
-                name={isSearchDetailsExpanded ? 'chevron-up-outline' : 'chevron-down-outline'}
-                size={14}
-                color={t.colors.textDim}
-              />
-            </Pressable>
-          </View>
-        ) : null}
-
-        {showSearchDetails && (savedSearchPresets.length || canSaveSearchPreset) ? (
+        {hasSavedSearchSection ? (
           <>
             <View style={styles.searchPresetHeaderRow}>
-              <Text style={styles.searchPresetLabel}>{copy.homeSavedSearchesLabel}</Text>
+              <Text style={styles.searchPresetLabel}>
+                {copy.homeSavedSearchesLabel}
+              </Text>
               {canSaveSearchPreset ? (
-                <Pressable style={styles.searchPresetSaveButton} onPress={onSaveSearchPreset}>
-                  <Text style={styles.searchPresetSaveButtonText}>{copy.homeSaveSearchPreset}</Text>
+                <Pressable
+                  style={styles.searchPresetSaveButton}
+                  onPress={onSaveSearchPreset}
+                >
+                  <Text style={styles.searchPresetSaveButtonText}>
+                    {copy.homeSaveSearchPreset}
+                  </Text>
                 </Pressable>
               ) : null}
             </View>
@@ -384,16 +402,134 @@ export const HomeListHeader = React.memo(function HomeListHeader({
             ) : null}
           </>
         ) : null}
+      </Card>
+
+      <Card style={styles.controlCard}>
+        <View style={styles.controlSectionHeader}>
+          <Text style={styles.searchPresetLabel}>
+            {copy.homeQuickFiltersLabel}
+          </Text>
+          <Pressable
+            style={styles.inlineActionButton}
+            onPress={onOpenFilterSheet}
+          >
+            <Text style={styles.inlineActionButtonText}>
+              {copy.homeAllFilters}
+            </Text>
+          </Pressable>
+        </View>
+        <View style={styles.primaryActionsRow}>
+          <Pressable
+            style={[
+              styles.inlineActionButton,
+              timelineFilters.starredOnly
+                ? styles.inlineActionButtonActive
+                : null,
+            ]}
+            onPress={() =>
+              updateTimelineFilters(current => ({
+                ...current,
+                starredOnly: !current.starredOnly,
+              }))
+            }
+          >
+            <Text
+              style={[
+                styles.inlineActionButtonText,
+                timelineFilters.starredOnly
+                  ? styles.inlineActionButtonTextActive
+                  : null,
+              ]}
+            >
+              {copy.homeFilterStarred}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.inlineActionButton,
+              timelineFilters.entryType === 'audio'
+                ? styles.inlineActionButtonActive
+                : null,
+            ]}
+            onPress={() =>
+              updateTimelineFilters(current => ({
+                ...current,
+                entryType: current.entryType === 'audio' ? 'all' : 'audio',
+              }))
+            }
+          >
+            <Text
+              style={[
+                styles.inlineActionButtonText,
+                timelineFilters.entryType === 'audio'
+                  ? styles.inlineActionButtonTextActive
+                  : null,
+              ]}
+            >
+              {copy.homeTypeFilterAudio}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.inlineActionButton,
+              timelineFilters.tags.length
+                ? styles.inlineActionButtonActive
+                : null,
+            ]}
+            onPress={onOpenFilterSheet}
+          >
+            <Text
+              style={[
+                styles.inlineActionButtonText,
+                timelineFilters.tags.length
+                  ? styles.inlineActionButtonTextActive
+                  : null,
+              ]}
+            >
+              {tagsShortcutLabel}
+            </Text>
+          </Pressable>
+        </View>
+
+        <View style={styles.controlSectionDivider} />
+
+        <View style={styles.sortControlBlock}>
+          <Text style={styles.searchPresetLabel}>
+            {copy.homeSortFilterLabel}
+          </Text>
+        </View>
+        <SegmentedControl
+          options={sortControlOptions}
+          selectedValue={timelineFilters.sortOrder}
+          onChange={(value: HomeSortOrder) =>
+            updateTimelineFilters(current => ({
+              ...current,
+              sortOrder: value,
+            }))
+          }
+          columns={2}
+          minWidth={120}
+        />
 
         {activeFilterChips.length ? (
-          <View style={styles.activeFiltersRow}>
-            {activeFilterChips.map(chip => (
-              <TagChip key={chip.key} label={chip.label} />
-            ))}
-            <Pressable style={styles.clearFiltersButton} onPress={onClearFilters}>
-              <Text style={styles.clearFiltersButtonText}>{copy.homeClearFilters}</Text>
-            </Pressable>
-          </View>
+          <>
+            <View style={styles.controlSectionDivider} />
+            <View style={styles.activeFiltersRow}>
+              {activeFilterChips.map(chip => (
+                <TagChip key={chip.key} label={chip.label} />
+              ))}
+              <Pressable
+                style={styles.clearFiltersButton}
+                onPress={onClearFilters}
+              >
+                <Text style={styles.clearFiltersButtonText}>
+                  {copy.homeClearFilters}
+                </Text>
+              </Pressable>
+            </View>
+          </>
         ) : null}
       </Card>
 
@@ -422,17 +558,32 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           />
           <View style={styles.emptyActionsRow}>
             {hasSearchQuery ? (
-              <Pressable style={styles.inlineActionButton} onPress={onClearSearch}>
-                <Text style={styles.inlineActionButtonText}>{copy.homeClearSearch}</Text>
+              <Pressable
+                style={styles.inlineActionButton}
+                onPress={onClearSearch}
+              >
+                <Text style={styles.inlineActionButtonText}>
+                  {copy.homeClearSearch}
+                </Text>
               </Pressable>
             ) : null}
             {hasNonSearchRefinements ? (
-              <Pressable style={styles.inlineActionButton} onPress={onClearFilters}>
-                <Text style={styles.inlineActionButtonText}>{copy.homeClearFilters}</Text>
+              <Pressable
+                style={styles.inlineActionButton}
+                onPress={onClearFilters}
+              >
+                <Text style={styles.inlineActionButtonText}>
+                  {copy.homeClearFilters}
+                </Text>
               </Pressable>
             ) : null}
-            <Pressable style={styles.inlineActionButton} onPress={onOpenFilterSheet}>
-              <Text style={styles.inlineActionButtonText}>{copy.homeShowFilters}</Text>
+            <Pressable
+              style={styles.inlineActionButton}
+              onPress={onOpenFilterSheet}
+            >
+              <Text style={styles.inlineActionButtonText}>
+                {copy.homeAllFilters}
+              </Text>
             </Pressable>
           </View>
         </Card>

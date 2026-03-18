@@ -32,6 +32,8 @@ describe('statsMemoryNudge', () => {
         tagHits: 2,
         transcriptHits: 1,
         source: 'mixed',
+        firstSeenAt: new Date('2026-03-09T08:00:00Z').getTime(),
+        latestSeenAt: new Date('2026-03-10T08:00:00Z').getTime(),
       },
     ];
     const recurringWords: DreamWordSignal[] = [];

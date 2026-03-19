@@ -16,6 +16,14 @@ const WIDGET_COPY_EN = {
   streakSingle: '1 day streak',
   streakPrefix: '',
   streakSuffix: ' day streak',
+  pinPromptTitle: 'Catch dreams faster',
+  pinPromptSubtitleIos:
+    'Long-press your home screen, tap +, and search for Kaleidoscope to add the widget.',
+  pinPromptSubtitleAndroid:
+    'Add the Kaleidoscope widget to your home screen for one-tap dream capture.',
+  pinPromptAction: 'Add Widget',
+  pinPromptGotIt: 'Got it',
+  pinPromptDismiss: 'Maybe later',
 };
 
 const WIDGET_COPY_UK = {
@@ -34,6 +42,14 @@ const WIDGET_COPY_UK = {
   streakSingle: '1 день поспіль',
   streakPrefix: '',
   streakSuffix: ' днів поспіль',
+  pinPromptTitle: 'Ловіть сни швидше',
+  pinPromptSubtitleIos:
+    'Затримайте палець на домашньому екрані, натисніть + і знайдіть Kaleidoscope щоб додати віджет.',
+  pinPromptSubtitleAndroid:
+    'Додайте віджет Kaleidoscope на домашній екран для миттєвого запису снів.',
+  pinPromptAction: 'Додати віджет',
+  pinPromptGotIt: 'Зрозуміло',
+  pinPromptDismiss: 'Пізніше',
 };
 
 export type WidgetCopy = typeof WIDGET_COPY_EN;

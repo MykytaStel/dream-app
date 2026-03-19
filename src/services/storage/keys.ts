@@ -36,3 +36,5 @@ export const BIOMETRIC_LOCK_ENABLED_KEY = 'biometric-lock-enabled';
 export const ONBOARDING_SEEN_KEY = 'onboarding-seen';
 
 export const LAST_STREAK_CELEBRATED_KEY = 'last-streak-celebrated';
+
+export const WIDGET_PIN_PROMPT_SEEN_KEY = 'widget-pin-prompt-seen';

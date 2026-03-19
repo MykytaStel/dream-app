@@ -6,7 +6,8 @@ import {
   View,
 } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import { palette } from '../../../theme/tokens';
+import { useAppTheme } from '../../../theme/AppThemeProvider';
+import { Theme } from '../../../theme/theme';
 import { useAppLockGate } from '../hooks/useAppLockGate';
 
 type AppLockGateProps = {
@@ -25,6 +26,8 @@ export function AppLockGate({
   appName,
 }: AppLockGateProps) {
   const { locked, triggerAuth } = useAppLockGate(promptMessage);
+  const { theme } = useAppTheme();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   return (
     <>
@@ -41,7 +44,7 @@ export function AppLockGate({
               <Ionicons
                 name="lock-closed"
                 size={40}
-                color={palette.light.primaryAlt}
+                color={theme.colors.primaryAlt}
               />
             </View>
             <View style={styles.textBlock}>
@@ -60,7 +63,7 @@ export function AppLockGate({
             <Ionicons
               name="finger-print"
               size={18}
-              color={palette.light.primary}
+              color={theme.colors.primary}
             />
             <AppLockText style={styles.unlockLabel}>{unlockLabel}</AppLockText>
           </Pressable>
@@ -70,7 +73,8 @@ export function AppLockGate({
   );
 }
 
-// Minimal text component that avoids Restyle dependency outside ThemeProvider
+// This stays on plain React Native text so the lock gate does not depend on
+// Restyle primitives.
 function AppLockText({
   children,
   style,
@@ -83,65 +87,70 @@ function AppLockText({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: palette.light.bg,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 40,
-    gap: 48,
-  },
-  content: {
-    alignItems: 'center',
-    gap: 20,
-  },
-  iconWrap: {
-    width: 72,
-    height: 72,
-    borderRadius: 20,
-    backgroundColor: palette.light.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: palette.light.border,
-  },
-  textBlock: {
-    alignItems: 'center',
-    gap: 8,
-  },
   baseText: {
-    color: palette.light.text,
     fontWeight: '400',
   },
-  title: {
-    fontSize: 22,
-    fontWeight: '700',
-    letterSpacing: -0.3,
-    textAlign: 'center',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: palette.light.textDim,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-  unlockButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: palette.light.border,
-    backgroundColor: palette.light.surface,
-  },
-  unlockButtonPressed: {
-    opacity: 0.75,
-  },
-  unlockLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: palette.light.primary,
-  },
 });
+
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 40,
+      gap: 48,
+    },
+    content: {
+      alignItems: 'center',
+      gap: 20,
+    },
+    iconWrap: {
+      width: 72,
+      height: 72,
+      borderRadius: 20,
+      backgroundColor: theme.colors.surface,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+    },
+    textBlock: {
+      alignItems: 'center',
+      gap: 8,
+    },
+    title: {
+      fontSize: 22,
+      fontWeight: '700',
+      letterSpacing: -0.3,
+      textAlign: 'center',
+      color: theme.colors.text,
+    },
+    subtitle: {
+      fontSize: 14,
+      color: theme.colors.textDim,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    unlockButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingVertical: 12,
+      paddingHorizontal: 24,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
+    },
+    unlockButtonPressed: {
+      opacity: 0.75,
+    },
+    unlockLabel: {
+      fontSize: 15,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+  });
+}

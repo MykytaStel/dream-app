@@ -74,3 +74,14 @@ export function openMonthlyReport(
   navigationRef.navigate(ROOT_ROUTE_NAMES.MonthlyReport, params);
   return true;
 }
+
+export function openDreamPractice(
+  params?: RootStackParamList[typeof ROOT_ROUTE_NAMES.DreamPractice],
+) {
+  if (!navigationRef.isReady()) {
+    return false;
+  }
+
+  navigationRef.navigate(ROOT_ROUTE_NAMES.DreamPractice, params);
+  return true;
+}

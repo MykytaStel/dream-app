@@ -17,6 +17,7 @@ class MainApplication : Application(), ReactApplication {
           add(BackupFileIntentPackage())
           add(AudioRecorderPackage())
           add(AudioUploadPackage())
+          add(DreamWidgetPackage())
         },
     )
   }

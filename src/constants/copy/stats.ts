@@ -86,6 +86,37 @@ const STATS_COPY_EN = {
   nightmareFrequencyLatestEmptyValue: 'None',
   nightmareFrequencyLatestEmptyHint:
     'No nightmare-pattern entry landed in this range.',
+  lucidFrequencyTitle: 'Lucid frequency',
+  lucidFrequencyDescription:
+    'How often lucidity appears in this slice, plus the recent trail back through it.',
+  lucidFrequencyCountLabel: 'Lucid entries',
+  lucidFrequencyCountHint:
+    'Includes brief awareness, lucid dreams, and lucid entries with control.',
+  lucidFrequencyCountEmptyHint: 'No lucid entries in this range.',
+  lucidFrequencyShareLabel: 'Share of this range',
+  lucidFrequencyShareHintPrefix: 'About one in ',
+  lucidFrequencyShareHintSuffix: ' dreams in this range.',
+  lucidFrequencyShareEmptyHint: 'No lucid pattern in this range yet.',
+  lucidFrequencyLatestLabel: 'Most recent',
+  lucidFrequencyLatestHint: 'Latest lucid entry in this range.',
+  lucidFrequencyLatestEmptyValue: 'None',
+  lucidFrequencyLatestEmptyHint:
+    'No lucid entry landed in this range.',
+  lucidHistoryTitle: 'Recent lucid history',
+  lucidHistoryDescription:
+    'Open a lucid entry and revisit what kind of awareness showed up.',
+  lucidHistoryEmpty: 'No lucid entries in this slice yet.',
+  lucidAwareLabel: 'Aware dreams',
+  lucidControlledLabel: 'Controlled dreams',
+  lucidTopTechniqueLabel: 'Top technique',
+  lucidDreamSignsLabel: 'Top dream sign',
+  lucidTechniqueEmptyValue: 'None yet',
+  lucidDreamSignsEmptyValue: 'Still forming',
+  nightmareRecurringLabel: 'Recurring',
+  nightmareHighDistressLabel: 'High distress',
+  nightmareRescriptedLabel: 'Rewritten',
+  nightmareDerivedLabel: 'Derived signals',
+  nightmareDerivedHint: 'Supportive fallback from distress-heavy wake patterns.',
   weeklyPatternsTitle: 'Weekly patterns',
   weeklyPatternsDescription:
     'A calm read of what stood out in the last seven days.',
@@ -519,6 +550,39 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   nightmareFrequencyLatestEmptyValue: 'Немає',
   nightmareFrequencyLatestEmptyHint:
     'У цьому періоді не було запису з кошмарним патерном.',
+  lucidFrequencyTitle: 'Частота усвідомлених снів',
+  lucidFrequencyDescription:
+    'Як часто в цьому зрізі зʼявляється усвідомленість і який слід вона лишає в недавній історії.',
+  lucidFrequencyCountLabel: 'Усвідомлені записи',
+  lucidFrequencyCountHint:
+    'Сюди входить коротка ясність, усвідомлені сни та записи з відчуттям контролю.',
+  lucidFrequencyCountEmptyHint:
+    'У цьому періоді немає усвідомлених записів.',
+  lucidFrequencyShareLabel: 'Частка цього періоду',
+  lucidFrequencyShareHintPrefix: 'Приблизно один із ',
+  lucidFrequencyShareHintSuffix: ' снів у цьому періоді.',
+  lucidFrequencyShareEmptyHint:
+    'У цьому періоді усвідомленість ще не повторюється.',
+  lucidFrequencyLatestLabel: 'Найсвіжіший',
+  lucidFrequencyLatestHint: 'Останній усвідомлений запис у цьому періоді.',
+  lucidFrequencyLatestEmptyValue: 'Немає',
+  lucidFrequencyLatestEmptyHint:
+    'У цьому періоді не було усвідомленого запису.',
+  lucidHistoryTitle: 'Недавня історія усвідомленості',
+  lucidHistoryDescription:
+    'Відкрий усвідомлений запис і звір, який рівень ясності там зʼявився.',
+  lucidHistoryEmpty: 'У цьому зрізі ще немає усвідомлених записів.',
+  lucidAwareLabel: 'Усвідомлені',
+  lucidControlledLabel: 'З контролем',
+  lucidTopTechniqueLabel: 'Головна техніка',
+  lucidDreamSignsLabel: 'Головний dream sign',
+  lucidTechniqueEmptyValue: 'Ще немає',
+  lucidDreamSignsEmptyValue: 'Ще формується',
+  nightmareRecurringLabel: 'Повторювані',
+  nightmareHighDistressLabel: 'Високий дистрес',
+  nightmareRescriptedLabel: 'Переписані',
+  nightmareDerivedLabel: 'Похідні сигнали',
+  nightmareDerivedHint: 'Обережне fallback-визначення з дистресу після пробудження.',
   weeklyPatternsTitle: 'Патерни тижня',
   weeklyPatternsDescription:
     'Спокійний зріз того, що виділилося за останні сім днів.',

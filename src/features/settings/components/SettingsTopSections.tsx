@@ -7,10 +7,15 @@ import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { type AppLocale } from '../../../i18n/types';
-import { Theme } from '../../../theme/theme';
+import { Theme, type AppThemeId } from '../../../theme/theme';
 import { type BiometricAvailability } from '../../../services/security/biometricService';
-import { type DreamReminderSettings } from '../../reminders/services/dreamReminderService';
+import {
+  getDreamReminderNotificationContent,
+  type DreamReminderSettings,
+  type DreamReminderStyle,
+} from '../../reminders/services/dreamReminderService';
 import { SettingsActionRow } from './SettingsActionRow';
+import { SettingsSegmentedControl } from './SettingsSegmentedControl';
 import { type SettingsMetaItem } from './SettingsMetaGrid';
 import { SettingsSectionHeader } from './SettingsSectionHeader';
 import { createSettingsScreenStyles } from '../screens/SettingsScreen.styles';
@@ -104,6 +109,7 @@ export function ReminderSection({
   onOpenReminderTimePicker,
   onNativeTimePickerChange,
   onApplySuggestedTime,
+  onSelectReminderStyle,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
@@ -119,8 +125,27 @@ export function ReminderSection({
   onOpenReminderTimePicker: () => void;
   onNativeTimePickerChange: (event: any, date?: Date) => void;
   onApplySuggestedTime: () => void;
+  onSelectReminderStyle: (style: DreamReminderStyle) => void;
 }) {
   const t = useTheme<Theme>();
+  const reminderStyleOptions = React.useMemo(
+    () =>
+      [
+        {
+          value: 'balanced',
+          label: copy.reminderStyleBalancedLabel,
+        },
+        {
+          value: 'gentle',
+          label: copy.reminderStyleGentleLabel,
+        },
+        {
+          value: 'direct',
+          label: copy.reminderStyleDirectLabel,
+        },
+      ] satisfies Array<{ value: DreamReminderStyle; label: string }>,
+    [copy],
+  );
   const reminderSummaryMeta = !reminderSettings.enabled
     ? !permissionGranted
       ? `${copy.reminderPermissionLabel}: ${copy.reminderPermissionBlocked}.`
@@ -129,6 +154,22 @@ export function ReminderSection({
   const reminderSummaryValue = reminderSettings.enabled
     ? reminderTime
     : copy.reminderOffValue;
+  const reminderStyleLabel =
+    reminderSettings.style === 'gentle'
+      ? copy.reminderStyleGentleLabel
+      : reminderSettings.style === 'direct'
+        ? copy.reminderStyleDirectLabel
+        : copy.reminderStyleBalancedLabel;
+  const reminderStyleDescription =
+    reminderSettings.style === 'gentle'
+      ? copy.reminderStyleGentleDescription
+      : reminderSettings.style === 'direct'
+        ? copy.reminderStyleDirectDescription
+        : copy.reminderStyleBalancedDescription;
+  const reminderStylePreview = React.useMemo(
+    () => getDreamReminderNotificationContent(copy, reminderSettings.style),
+    [copy, reminderSettings.style],
+  );
 
   return (
     <Card style={styles.sectionCard}>
@@ -156,6 +197,34 @@ export function ReminderSection({
         disabled={isApplyingReminder}
         onPress={reminderSettings.enabled ? onOpenReminderTimePicker : undefined}
       />
+
+      <View style={styles.settingControlBlock}>
+        <SettingsSectionHeader
+          title={copy.reminderStyleTitle}
+          description={copy.reminderStyleDescription}
+        />
+        <SettingsSegmentedControl
+          options={reminderStyleOptions}
+          selectedValue={reminderSettings.style}
+          onChange={value => {
+            if (isApplyingReminder) {
+              return;
+            }
+            onSelectReminderStyle(value);
+          }}
+          columns={3}
+          minWidth={92}
+        />
+        <Text style={styles.reminderHint}>{reminderStyleDescription}</Text>
+        <Text style={styles.reminderHint}>{copy.reminderStylePreviewLabel}</Text>
+        <SettingsActionRow
+          title={reminderStylePreview.title}
+          meta={reminderStylePreview.body}
+          value={reminderStyleLabel}
+          disabled
+        />
+        <Text style={styles.themeFootnote}>{copy.reminderStyleFootnote}</Text>
+      </View>
 
       {reminderSettings.enabled ? (
         <>
@@ -189,6 +258,54 @@ export function ReminderSection({
           ) : null}
         </>
       ) : null}
+    </Card>
+  );
+}
+
+export function ThemeSection({
+  copy,
+  styles,
+  themeId,
+  onSelectTheme,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+  themeId: AppThemeId;
+  onSelectTheme: (themeId: AppThemeId) => void;
+}) {
+  const options = React.useMemo(
+    () =>
+      [
+        {
+          value: 'kaleidoscope',
+          label: copy.themeOptionKaleido,
+        },
+        {
+          value: 'ember',
+          label: copy.themeOptionEmber,
+        },
+        {
+          value: 'moss',
+          label: copy.themeOptionMoss,
+        },
+      ] satisfies Array<{ value: AppThemeId; label: string }>,
+    [copy],
+  );
+
+  return (
+    <Card style={styles.sectionCard}>
+      <SettingsSectionHeader
+        title={copy.themeTitle}
+        description={copy.themeDescription}
+      />
+      <SettingsSegmentedControl
+        options={options}
+        selectedValue={themeId}
+        onChange={onSelectTheme}
+        columns={3}
+        minWidth={92}
+      />
+      <Text style={styles.themeFootnote}>{copy.themeFootnote}</Text>
     </Card>
   );
 }

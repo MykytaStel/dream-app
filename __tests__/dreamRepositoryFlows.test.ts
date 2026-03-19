@@ -34,6 +34,10 @@ describe('dream repository flows', () => {
     kv.clearAll();
   });
 
+  async function flushDeferredPersistence() {
+    await new Promise<void>(resolve => setTimeout(() => resolve(), 0));
+  }
+
   test('create and edit use same sanitize/update rules', () => {
     saveDream({
       id: 'dream-1',
@@ -114,7 +118,7 @@ describe('dream repository flows', () => {
     });
   });
 
-  test('reconciles saved threads after archive mutations remove the last matching dream', () => {
+  test('reconciles saved threads after archive mutations remove the last matching dream', async () => {
     saveDream({
       id: 'bridge-1',
       createdAt: 1710000000000,
@@ -128,11 +132,12 @@ describe('dream repository flows', () => {
     expect(getSavedDreamThreads()).toHaveLength(1);
 
     deleteDream('bridge-1');
+    await flushDeferredPersistence();
 
     expect(getSavedDreamThreads()).toEqual([]);
   });
 
-  test('reconciles saved months after archive mutations remove the last dream from that month', () => {
+  test('reconciles saved months after archive mutations remove the last dream from that month', async () => {
     saveDream({
       id: 'march-only',
       createdAt: 1710000000000,
@@ -145,6 +150,7 @@ describe('dream repository flows', () => {
     expect(getSavedMonthlyReportMonths()).toHaveLength(1);
 
     deleteDream('march-only');
+    await flushDeferredPersistence();
 
     expect(getSavedMonthlyReportMonths()).toEqual([]);
   });
@@ -389,6 +395,7 @@ describe('dream repository flows', () => {
 
     expect(result).toMatchObject({
       id: 'remote-1',
+      lucidity: 2,
       syncStatus: 'synced',
       audioRemotePath: 'user-1/remote-1/audio.m4a',
       wakeEmotions: ['curious'],

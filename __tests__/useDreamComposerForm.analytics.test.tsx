@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactTestRenderer from 'react-test-renderer';
 import { useDreamComposerForm } from '../src/features/dreams/components/useDreamComposerForm';
+import { saveDream } from '../src/features/dreams/repository/dreamsRepository';
 import { trackDreamSaved } from '../src/services/observability/events';
 
 jest.mock('../src/features/dreams/repository/dreamsRepository', () => ({
@@ -106,6 +107,27 @@ describe('useDreamComposerForm analytics', () => {
         text: expect.anything(),
         transcript: expect.anything(),
         tags: expect.anything(),
+      }),
+    );
+  });
+
+  test('includes lucidity when saving a captured dream', () => {
+    ReactTestRenderer.act(() => {
+      renderer = ReactTestRenderer.create(<Harness />);
+    });
+
+    ReactTestRenderer.act(() => {
+      latestForm?.setText('I noticed the dream and stayed inside it.');
+      latestForm?.setLucidity(2);
+    });
+
+    ReactTestRenderer.act(() => {
+      latestForm?.onSave();
+    });
+
+    expect(saveDream).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lucidity: 2,
       }),
     );
   });

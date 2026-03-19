@@ -1,6 +1,7 @@
 import React from 'react';
 import { Alert } from 'react-native';
 import { type DreamCopy } from '../../../constants/copy/dreams';
+import { getPracticeCopy } from '../../../constants/copy/practice';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { type AppLocale } from '../../../i18n/types';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
@@ -30,6 +31,7 @@ import {
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
   type HomeEntryTypeFilter,
+  type HomeSpecialFilter,
   type HomeSortOrder,
   type HomeTimelineFilters,
   type HomeTranscriptFilter,
@@ -80,6 +82,7 @@ export function useHomeTimelineState({
   const [timelineFilters, setTimelineFilters] =
     React.useState<HomeTimelineFilters>(DEFAULT_HOME_TIMELINE_FILTERS);
   const [isFilterSheetOpen, setIsFilterSheetOpen] = React.useState(false);
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
 
   const homeFilters = React.useMemo<Array<HomeOption<HomeArchiveFilter>>>(
     () => [
@@ -112,6 +115,17 @@ export function useHomeTimelineState({
       copy.homeTypeFilterMixed,
       copy.homeTypeFilterText,
     ],
+  );
+  const specialFilters = React.useMemo<Array<HomeOption<HomeSpecialFilter>>>(
+    () => [
+      { key: 'all', label: copy.homeFilterAll },
+      { key: 'lucid', label: practiceCopy.filterLucid },
+      { key: 'nightmare', label: practiceCopy.filterNightmare },
+      { key: 'recurring-nightmare', label: practiceCopy.filterRecurringNightmare },
+      { key: 'control', label: practiceCopy.filterControl },
+      { key: 'high-distress', label: practiceCopy.filterHighDistress },
+    ],
+    [copy.homeFilterAll, practiceCopy],
   );
   const transcriptFilters = React.useMemo<
     Array<HomeOption<HomeTranscriptFilter>>
@@ -317,12 +331,14 @@ export function useHomeTimelineState({
         typeFilters,
         transcriptFilters,
         dateRangeFilters,
+        specialFilters,
       }),
     [
       copy,
       dateRangeFilters,
       homeFilters,
       moodLabels,
+      specialFilters,
       timelineFilters,
       transcriptFilters,
       typeFilters,
@@ -342,6 +358,7 @@ export function useHomeTimelineState({
       Number(timelineFilters.starredOnly) +
       Number(timelineFilters.mood !== DEFAULT_HOME_TIMELINE_FILTERS.mood) +
       Number(timelineFilters.tags.length > 0) +
+      Number(timelineFilters.special !== DEFAULT_HOME_TIMELINE_FILTERS.special) +
       Number(
         timelineFilters.entryType !== DEFAULT_HOME_TIMELINE_FILTERS.entryType,
       ) +
@@ -473,6 +490,7 @@ export function useHomeTimelineState({
           typeFilters,
           dateRangeFilters,
           homeFilters,
+          specialFilters,
         }),
         filters: timelineFilters,
       }),
@@ -483,9 +501,10 @@ export function useHomeTimelineState({
     copy,
     dateRangeFilters,
     homeFilters,
-    moodLabels,
-    setSavedSearchPresets,
-    timelineFilters,
+      moodLabels,
+      specialFilters,
+      setSavedSearchPresets,
+      timelineFilters,
     transcriptFilters,
     typeFilters,
   ]);
@@ -538,6 +557,7 @@ export function useHomeTimelineState({
     typeFilters,
     transcriptFilters,
     dateRangeFilters,
+    specialFilters,
     sortOptions,
     availableTags,
     activeDreams,

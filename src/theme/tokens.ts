@@ -1,7 +1,29 @@
 import { fontFamilies } from './fonts';
 
+export type ThemePalette = {
+  bg: string;
+  surface: string;
+  surfaceAlt: string;
+  surfaceElevated: string;
+  text: string;
+  textDim: string;
+  primary: string;
+  primaryAlt: string;
+  accent: string;
+  auroraStart: string;
+  auroraMid: string;
+  auroraEnd: string;
+  border: string;
+  danger: string;
+  success: string;
+  tabIcon: string;
+  glow: string;
+  ink: string;
+  switchTrackOff: string;
+};
+
 export const palette = {
-  light: {
+  kaleidoscope: {
     bg: '#141826',
     surface: '#181D2D',
     surfaceAlt: '#202638',
@@ -22,7 +44,48 @@ export const palette = {
     ink: '#0B1220',
     switchTrackOff: '#444B5A',
   },
-  dark: {}
+  ember: {
+    bg: '#1A1214',
+    surface: '#24181C',
+    surfaceAlt: '#2D1F24',
+    surfaceElevated: '#38272E',
+    text: '#FAF2F3',
+    textDim: '#C1A3A8',
+    primary: '#FF9A7A',
+    primaryAlt: '#FF6B8E',
+    accent: '#FFC27A',
+    auroraStart: '#FFC27A',
+    auroraMid: '#FF8C69',
+    auroraEnd: '#FF6B8E',
+    border: '#4A3139',
+    danger: '#FF8091',
+    success: '#7ED9B3',
+    tabIcon: '#B48893',
+    glow: '#FF9A7A',
+    ink: '#0E090A',
+    switchTrackOff: '#5A4348',
+  },
+  moss: {
+    bg: '#101A18',
+    surface: '#14211F',
+    surfaceAlt: '#1B2A27',
+    surfaceElevated: '#233530',
+    text: '#EEF8F4',
+    textDim: '#9EB9B0',
+    primary: '#7DE3C0',
+    primaryAlt: '#55C2D6',
+    accent: '#A8F08E',
+    auroraStart: '#7DE3C0',
+    auroraMid: '#55C2D6',
+    auroraEnd: '#A8F08E',
+    border: '#314641',
+    danger: '#F08C9D',
+    success: '#7DE3C0',
+    tabIcon: '#89A89F',
+    glow: '#7DE3C0',
+    ink: '#08110F',
+    switchTrackOff: '#41534E',
+  },
 } as const;
 
 export const radius = { sm: 10, md: 14, lg: 20, xl: 28, pill: 999 } as const;

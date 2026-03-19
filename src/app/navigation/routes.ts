@@ -22,6 +22,7 @@ export const ROOT_ROUTE_NAMES = {
   MonthlyReport: 'MonthlyReport',
   PatternDetail: 'PatternDetail',
   ReviewWorkspace: 'ReviewWorkspace',
+  DreamPractice: 'DreamPractice',
 } as const;
 
 type TabRouteLabelMap = Record<(typeof TAB_ROUTE_NAMES)[keyof typeof TAB_ROUTE_NAMES], string>;
@@ -49,6 +50,7 @@ export function getTabRouteLabels(locale: AppLocale) {
 export type TabRouteName = keyof typeof TAB_ROUTE_NAMES;
 export type PatternDetailKind = 'word' | 'theme' | 'symbol';
 export type DreamDetailFocusSection = 'reflection' | 'written' | 'transcript' | 'analysis';
+export type DreamPracticeFocus = 'lucid' | 'nightmares';
 
 export type TabParamList = {
   [TAB_ROUTE_NAMES.Home]: undefined;
@@ -95,4 +97,10 @@ export type RootStackParamList = {
     signal: string;
     kind: PatternDetailKind;
   };
+  [ROOT_ROUTE_NAMES.DreamPractice]:
+    | {
+        focus?: DreamPracticeFocus;
+        entrySource?: 'manual' | 'home' | 'stats' | 'detail' | 'onboarding' | 'reminder';
+      }
+    | undefined;
 };

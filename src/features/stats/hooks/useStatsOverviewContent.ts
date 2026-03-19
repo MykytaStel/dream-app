@@ -6,10 +6,14 @@ import { type DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import {
   getEntriesLastSevenDays,
   getDreamDate,
+  getDreamLucidityLevel,
+  getLucidDreamStats,
+  getLucidPracticeStats,
   getNightmareStats,
   getSleepContextStats,
   getTopPreSleepEmotionSignals,
   getTopWakeEmotionSignals,
+  isLucidDream,
 } from '../../dreams/model/dreamAnalytics';
 import {
   getRecurringReflectionSignals,
@@ -83,6 +87,36 @@ function formatNightmareLatestValue(
   });
 }
 
+function formatLucidCadence(
+  lucidCount: number,
+  totalDreams: number,
+  copy: StatsCopy,
+) {
+  if (!lucidCount || !totalDreams) {
+    return copy.lucidFrequencyShareEmptyHint;
+  }
+
+  const everyDreamCount = Math.max(1, Math.round(totalDreams / lucidCount));
+  return `${copy.lucidFrequencyShareHintPrefix}${everyDreamCount}${
+    copy.lucidFrequencyShareHintSuffix
+  }`;
+}
+
+function formatInsightLatestValue(
+  timestamp: number | undefined,
+  locale: AppLocale,
+  emptyValue: string,
+) {
+  if (typeof timestamp !== 'number') {
+    return emptyValue;
+  }
+
+  return new Date(timestamp).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
 export function useStatsOverviewContent(args: {
   locale: AppLocale;
   copy: StatsCopy;
@@ -96,6 +130,7 @@ export function useStatsOverviewContent(args: {
     kind: 'word' | 'theme' | 'symbol';
     savedAt: number;
   }>;
+  lucidityLabels: Record<0 | 1 | 2 | 3, string>;
   wakeEmotionLabels: Record<string, string>;
   moodLabels: Record<Mood, string>;
   preSleepEmotionLabels: Record<string, string>;
@@ -112,6 +147,7 @@ export function useStatsOverviewContent(args: {
     analysisSettings,
     savedMonths,
     savedThreadRecords,
+    lucidityLabels,
     wakeEmotionLabels,
     moodLabels,
     preSleepEmotionLabels,
@@ -157,6 +193,9 @@ export function useStatsOverviewContent(args: {
             nightmareCount: 0,
             taggedCount: 0,
             derivedCount: 0,
+            recurringCount: 0,
+            highDistressCount: 0,
+            rescriptedCount: 0,
             rate: undefined,
             latestNightmareDream: null,
           },
@@ -171,10 +210,51 @@ export function useStatsOverviewContent(args: {
             nightmareCount: 0,
             taggedCount: 0,
             derivedCount: 0,
+            recurringCount: 0,
+            highDistressCount: 0,
+            rescriptedCount: 0,
             rate: undefined,
             latestNightmareDream: null,
           },
     [isOverviewMode, previousScopedDreams],
+  );
+  const scopedLucidStats = React.useMemo(
+    () =>
+      isOverviewMode
+        ? getLucidDreamStats(scopedDreams)
+        : {
+            totalDreams: 0,
+            lucidCount: 0,
+            rate: undefined,
+            latestLucidDream: null,
+          },
+    [isOverviewMode, scopedDreams],
+  );
+  const previousScopedLucidStats = React.useMemo(
+    () =>
+      isOverviewMode
+        ? getLucidDreamStats(previousScopedDreams)
+        : {
+            totalDreams: 0,
+            lucidCount: 0,
+            rate: undefined,
+            latestLucidDream: null,
+          },
+    [isOverviewMode, previousScopedDreams],
+  );
+  const scopedLucidPracticeStats = React.useMemo(
+    () =>
+      isOverviewMode
+        ? getLucidPracticeStats(scopedDreams)
+        : {
+            totalDreams: 0,
+            lucidCount: 0,
+            awareCount: 0,
+            controlledCount: 0,
+            byTechnique: [],
+            topDreamSigns: [],
+          },
+    [isOverviewMode, scopedDreams],
   );
   const overallLastSevenDays = React.useMemo(
     () => (isOverviewMode ? getEntriesLastSevenDays(dreams) : 0),
@@ -291,6 +371,11 @@ export function useStatsOverviewContent(args: {
         previous: previousScopedDreams.length,
       },
       {
+        label: copy.lucidFrequencyCountLabel,
+        current: scopedLucidStats.lucidCount,
+        previous: previousScopedLucidStats.lucidCount,
+      },
+      {
         label: copy.nightmareFrequencyCountLabel,
         current: scopedNightmareStats.nightmareCount,
         previous: previousScopedNightmareStats.nightmareCount,
@@ -308,15 +393,88 @@ export function useStatsOverviewContent(args: {
     ],
     [
       copy,
+      previousScopedLucidStats.lucidCount,
       previousScopedNightmareStats.nightmareCount,
       previousScopedDreams.length,
       previousScopedSummary.totalWords,
       previousScopedSummary.transcribedDreams,
+      scopedLucidStats.lucidCount,
       scopedNightmareStats.nightmareCount,
       scopedDreams.length,
       scopedSummary.totalWords,
       scopedSummary.transcribedDreams,
     ],
+  );
+  const lucidMetrics = React.useMemo(
+    () => [
+      {
+        label: copy.lucidFrequencyCountLabel,
+        value: formatCoverageValue(scopedLucidStats.lucidCount, scopedLucidStats.totalDreams),
+        hint:
+          scopedLucidStats.lucidCount > 0
+            ? copy.lucidFrequencyCountHint
+            : copy.lucidFrequencyCountEmptyHint,
+      },
+      {
+        label: copy.lucidFrequencyShareLabel,
+        value: `${scopedLucidStats.rate ?? 0}%`,
+        hint: formatLucidCadence(
+          scopedLucidStats.lucidCount,
+          scopedLucidStats.totalDreams,
+          copy,
+        ),
+      },
+      {
+        label: copy.lucidFrequencyLatestLabel,
+        value: formatInsightLatestValue(
+          scopedLucidStats.latestLucidDream
+            ? getDreamDate(scopedLucidStats.latestLucidDream).getTime()
+            : undefined,
+          locale,
+          copy.lucidFrequencyLatestEmptyValue,
+        ),
+        hint: scopedLucidStats.latestLucidDream
+          ? copy.lucidFrequencyLatestHint
+          : copy.lucidFrequencyLatestEmptyHint,
+      },
+      {
+        label: copy.lucidAwareLabel,
+        value: String(scopedLucidPracticeStats.awareCount),
+        hint: copy.lucidFrequencyCountHint,
+      },
+      {
+        label: copy.lucidControlledLabel,
+        value: String(scopedLucidPracticeStats.controlledCount),
+        hint: copy.lucidFrequencyCountHint,
+      },
+      {
+        label: copy.lucidTopTechniqueLabel,
+        value:
+          scopedLucidPracticeStats.byTechnique[0]?.technique ??
+          copy.lucidTechniqueEmptyValue,
+        hint:
+          scopedLucidPracticeStats.byTechnique[0]?.count
+            ? formatDreamCountLabel(
+                scopedLucidPracticeStats.byTechnique[0].count,
+                locale,
+              )
+            : copy.lucidFrequencyCountEmptyHint,
+      },
+      {
+        label: copy.lucidDreamSignsLabel,
+        value:
+          scopedLucidPracticeStats.topDreamSigns[0]?.sign ??
+          copy.lucidDreamSignsEmptyValue,
+        hint:
+          scopedLucidPracticeStats.topDreamSigns[0]?.count
+            ? formatEntryCountLabel(
+                scopedLucidPracticeStats.topDreamSigns[0].count,
+                locale,
+              )
+            : copy.lucidFrequencyCountEmptyHint,
+      },
+    ],
+    [copy, locale, scopedLucidPracticeStats, scopedLucidStats],
   );
   const nightmareMetrics = React.useMemo(
     () => [
@@ -353,8 +511,63 @@ export function useStatsOverviewContent(args: {
           ? copy.nightmareFrequencyLatestHint
           : copy.nightmareFrequencyLatestEmptyHint,
       },
+      {
+        label: copy.nightmareRecurringLabel,
+        value: String(scopedNightmareStats.recurringCount),
+        hint: copy.nightmareFrequencyCountHint,
+      },
+      {
+        label: copy.nightmareHighDistressLabel,
+        value: String(scopedNightmareStats.highDistressCount),
+        hint: copy.nightmareFrequencyCountHint,
+      },
+      {
+        label: copy.nightmareRescriptedLabel,
+        value: String(scopedNightmareStats.rescriptedCount),
+        hint: copy.nightmareFrequencyCountHint,
+      },
+      {
+        label: copy.nightmareDerivedLabel,
+        value: String(scopedNightmareStats.derivedCount),
+        hint: copy.nightmareDerivedHint,
+      },
     ],
     [copy, locale, scopedNightmareStats],
+  );
+  const lucidHistoryItems = React.useMemo(
+    () =>
+      !isOverviewMode
+        ? []
+        : scopedDreams
+            .filter(isLucidDream)
+            .slice()
+            .sort((left, right) => {
+              const byDate = getDreamDate(right).getTime() - getDreamDate(left).getTime();
+              if (byDate !== 0) {
+                return byDate;
+              }
+
+              return right.createdAt - left.createdAt;
+            })
+            .slice(0, 5)
+            .map(dream => {
+              const level = getDreamLucidityLevel(dream) ?? 2;
+
+              return {
+                dreamId: dream.id,
+                title: dream.title?.trim() || copy.reviewWorkspaceDreamFallbackTitle,
+                meta: getDreamDate(dream).toLocaleDateString(
+                  locale === 'uk' ? 'uk-UA' : 'en-US',
+                  {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric',
+                  },
+                ),
+                levelLabel: lucidityLabels[level],
+              };
+            }),
+    [copy.reviewWorkspaceDreamFallbackTitle, isOverviewMode, locale, lucidityLabels, scopedDreams],
   );
   const coverageGap =
     [
@@ -671,9 +884,12 @@ export function useStatsOverviewContent(args: {
     fingerprintFacets,
     fingerprintLeadSignals,
     importantDreamItems,
+    lucidHistoryItems,
+    lucidMetrics,
     memoryNudge,
     milestoneSummaryHint,
     nightmareMetrics,
+    nightmareCount: scopedNightmareStats.nightmareCount,
     overallLastSevenDays,
     savedMonthItems,
     savedOverviewThreadItems,

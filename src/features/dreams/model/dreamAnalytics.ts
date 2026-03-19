@@ -142,17 +142,41 @@ export type EmotionSignal<T extends string = string> = {
 };
 
 export type NightmareClassification = 'tagged' | 'derived';
+export type LucidPracticeStats = {
+  totalDreams: number;
+  lucidCount: number;
+  awareCount: number;
+  controlledCount: number;
+  byTechnique: Array<{
+    technique: NonNullable<NonNullable<Dream['lucidPractice']>['technique']>;
+    count: number;
+  }>;
+  topDreamSigns: Array<{
+    sign: string;
+    count: number;
+  }>;
+};
+export type LucidDreamStats = {
+  totalDreams: number;
+  lucidCount: number;
+  rate?: number;
+  latestLucidDream: Dream | null;
+};
 
 export type NightmareStats = {
   totalDreams: number;
   nightmareCount: number;
   taggedCount: number;
   derivedCount: number;
+  recurringCount: number;
+  highDistressCount: number;
+  rescriptedCount: number;
   rate?: number;
   latestNightmareDream: Dream | null;
 };
 
 const NIGHTMARE_TAG = 'nightmare';
+const LUCID_TAGS = new Set(['lucid', 'lucid-dream']);
 const DISTRESS_WAKE_EMOTIONS = new Set<WakeEmotion>([
   'uneasy',
   'heavy',
@@ -191,9 +215,60 @@ function getDistressWakeEmotionCount(dream: Dream) {
   ).length;
 }
 
+export function getDreamLucidityLevel(dream: Pick<Dream, 'lucidity' | 'tags'>) {
+  if (typeof dream.lucidity === 'number' && Number.isFinite(dream.lucidity)) {
+    return Math.max(0, Math.min(3, Math.floor(dream.lucidity))) as 0 | 1 | 2 | 3;
+  }
+
+  if (dream.tags.some(tag => LUCID_TAGS.has(tag))) {
+    return 2 as const;
+  }
+
+  return undefined;
+}
+
+export function isLucidDream(dream: Pick<Dream, 'lucidity' | 'tags'>) {
+  return (getDreamLucidityLevel(dream) ?? 0) > 0;
+}
+
+export function isControlledLucidDream(
+  dream: Pick<Dream, 'lucidity' | 'tags' | 'lucidPractice'>,
+) {
+  const level = getDreamLucidityLevel(dream);
+  if ((level ?? 0) >= 3) {
+    return true;
+  }
+
+  return Boolean(dream.lucidPractice?.controlAreas?.length);
+}
+
+export function getNightmareDistressLevel(dream: Pick<Dream, 'nightmare'>) {
+  if (typeof dream.nightmare?.distress === 'number') {
+    return dream.nightmare.distress;
+  }
+
+  return undefined;
+}
+
+export function isHighDistressNightmare(dream: Pick<Dream, 'nightmare'>) {
+  return (getNightmareDistressLevel(dream) ?? 0) >= 4;
+}
+
+export function isRecurringNightmare(dream: Pick<Dream, 'nightmare'>) {
+  return Boolean(dream.nightmare?.recurring || dream.nightmare?.recurringKey?.trim());
+}
+
 export function getDreamNightmareClassification(
   dream: Dream,
 ): NightmareClassification | null {
+  if (dream.nightmare?.explicit === false) {
+    return null;
+  }
+
+  if (dream.nightmare?.explicit) {
+    return 'tagged';
+  }
+
   if (dream.tags.some(tag => tag === NIGHTMARE_TAG)) {
     return 'tagged';
   }
@@ -221,6 +296,9 @@ export function getNightmareStats(dreams: Dream[]): NightmareStats {
   let nightmareCount = 0;
   let taggedCount = 0;
   let derivedCount = 0;
+  let recurringCount = 0;
+  let highDistressCount = 0;
+  let rescriptedCount = 0;
   let latestNightmareDream: Dream | null = null;
 
   dreams.forEach(dream => {
@@ -230,6 +308,15 @@ export function getNightmareStats(dreams: Dream[]): NightmareStats {
     }
 
     nightmareCount += 1;
+    if (isRecurringNightmare(dream)) {
+      recurringCount += 1;
+    }
+    if (isHighDistressNightmare(dream)) {
+      highDistressCount += 1;
+    }
+    if (dream.nightmare?.rescriptStatus === 'drafted' || dream.nightmare?.rescriptStatus === 'rehearsed') {
+      rescriptedCount += 1;
+    }
 
     if (classification === 'tagged') {
       taggedCount += 1;
@@ -252,8 +339,93 @@ export function getNightmareStats(dreams: Dream[]): NightmareStats {
     nightmareCount,
     taggedCount,
     derivedCount,
+    recurringCount,
+    highDistressCount,
+    rescriptedCount,
     rate: dreams.length ? Math.round((nightmareCount / dreams.length) * 100) : undefined,
     latestNightmareDream,
+  };
+}
+
+export function getLucidDreamStats(dreams: Dream[]): LucidDreamStats {
+  let lucidCount = 0;
+  let latestLucidDream: Dream | null = null;
+
+  dreams.forEach(dream => {
+    if (!isLucidDream(dream)) {
+      return;
+    }
+
+    lucidCount += 1;
+
+    if (
+      !latestLucidDream ||
+      getDreamDate(dream).getTime() > getDreamDate(latestLucidDream).getTime() ||
+      (getDreamDate(dream).getTime() === getDreamDate(latestLucidDream).getTime() &&
+        dream.createdAt > latestLucidDream.createdAt)
+    ) {
+      latestLucidDream = dream;
+    }
+  });
+
+  return {
+    totalDreams: dreams.length,
+    lucidCount,
+    rate: dreams.length ? Math.round((lucidCount / dreams.length) * 100) : undefined,
+    latestLucidDream,
+  };
+}
+
+export function getLucidPracticeStats(dreams: Dream[]): LucidPracticeStats {
+  const techniqueCounts = new Map<
+    NonNullable<NonNullable<Dream['lucidPractice']>['technique']>,
+    number
+  >();
+  const dreamSignCounts = new Map<string, number>();
+  let awareCount = 0;
+  let controlledCount = 0;
+  let lucidCount = 0;
+
+  dreams.forEach(dream => {
+    if (!isLucidDream(dream)) {
+      return;
+    }
+
+    lucidCount += 1;
+    if ((getDreamLucidityLevel(dream) ?? 0) >= 2) {
+      awareCount += 1;
+    }
+    if (isControlledLucidDream(dream)) {
+      controlledCount += 1;
+    }
+
+    const technique = dream.lucidPractice?.technique;
+    if (technique) {
+      techniqueCounts.set(technique, (techniqueCounts.get(technique) ?? 0) + 1);
+    }
+
+    (dream.lucidPractice?.dreamSigns ?? []).forEach(sign => {
+      const normalized = sign.trim();
+      if (!normalized) {
+        return;
+      }
+
+      dreamSignCounts.set(normalized, (dreamSignCounts.get(normalized) ?? 0) + 1);
+    });
+  });
+
+  return {
+    totalDreams: dreams.length,
+    lucidCount,
+    awareCount,
+    controlledCount,
+    byTechnique: Array.from(techniqueCounts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .map(([technique, count]) => ({ technique, count })),
+    topDreamSigns: Array.from(dreamSignCounts.entries())
+      .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+      .slice(0, 6)
+      .map(([sign, count]) => ({ sign, count })),
   };
 }
 

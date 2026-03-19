@@ -17,6 +17,7 @@ import { openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigati
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
+import { getPracticeCopy } from '../../../constants/copy/practice';
 import { Dream } from '../model/dream';
 import { isWakeCaptureWindow } from '../model/homeOverview';
 import { createArchiveScreenStyles } from './ArchiveScreen.styles';
@@ -35,6 +36,7 @@ export default function ArchiveScreen() {
   const theme = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = React.useMemo(() => createArchiveScreenStyles(theme), [theme]);
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
@@ -127,6 +129,10 @@ export default function ArchiveScreen() {
               archiveFilters={browse.archiveFilters}
               filter={browse.filter}
               onSelectFilter={browse.selectFilter}
+              specialFiltersLabel={practiceCopy.archiveSpecialFiltersLabel}
+              specialFilters={browse.specialFilters}
+              specialFilter={browse.specialFilter}
+              onSelectSpecialFilter={browse.selectSpecialFilter}
               hasHardReset={browse.hasHardReset}
               onReset={browse.resetArchiveView}
               visibleEntriesLabel={browse.visibleEntriesLabel}
@@ -157,7 +163,7 @@ export default function ArchiveScreen() {
         ) : null}
       </View>
     ),
-    [browse, copy, navigation, styles],
+    [browse, copy, navigation, practiceCopy.archiveSpecialFiltersLabel, styles],
   );
 
   if (data.loading) {

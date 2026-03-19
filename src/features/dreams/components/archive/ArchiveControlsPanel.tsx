@@ -14,6 +14,7 @@ import {
   type ArchiveTagSignal,
   type ArchiveViewMode,
 } from '../../model/archiveBrowser';
+import { type HomeSpecialFilter } from '../../model/homeTimeline';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
 
 const archiveControlsLayoutTransition = LinearTransition.springify()
@@ -29,6 +30,10 @@ type ArchiveControlsPanelProps = {
   archiveFilters: ReadonlyArray<{ key: ArchiveFilter; label: string }>;
   filter: ArchiveFilter;
   onSelectFilter: (filter: ArchiveFilter) => void;
+  specialFiltersLabel: string;
+  specialFilters: ReadonlyArray<{ key: HomeSpecialFilter; label: string }>;
+  specialFilter: HomeSpecialFilter;
+  onSelectSpecialFilter: (filter: HomeSpecialFilter) => void;
   hasHardReset: boolean;
   onReset: () => void;
   visibleEntriesLabel: string;
@@ -51,6 +56,10 @@ export function ArchiveControlsPanel({
   archiveFilters,
   filter,
   onSelectFilter,
+  specialFiltersLabel,
+  specialFilters,
+  specialFilter,
+  onSelectSpecialFilter,
   hasHardReset,
   onReset,
   visibleEntriesLabel,
@@ -109,6 +118,30 @@ export function ArchiveControlsPanel({
               );
             })}
           </ScrollView>
+
+          <View style={styles.tagRailRow}>
+            <Text style={styles.tagRailLabel}>{specialFiltersLabel}</Text>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={styles.tagRail}
+            >
+              {specialFilters.map(option => {
+                const active = specialFilter === option.key;
+                return (
+                  <Pressable
+                    key={option.key}
+                    onPress={() => onSelectSpecialFilter(option.key)}
+                    style={[styles.tagChip, active ? styles.tagChipActive : null]}
+                  >
+                    <Text style={[styles.tagChipText, active ? styles.tagChipTextActive : null]}>
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
 
           {topMonthTags.length > 0 ? (
             <View style={styles.tagRailRow}>

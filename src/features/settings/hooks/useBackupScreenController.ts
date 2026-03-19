@@ -5,6 +5,7 @@ import { type AppLocale } from '../../../i18n/types';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import {
   exportDreamArchivePdf,
+  exportDreamReadableArchive,
   exportDreamDataSnapshot,
 } from '../services/dataExportService';
 import {
@@ -45,14 +46,26 @@ type UseBackupScreenControllerArgs = {
   copy: SettingsCopy;
 };
 
+function getReadableExportMimeType(format: 'markdown' | 'text') {
+  return format === 'markdown' ? 'text/markdown' : 'text/plain';
+}
+
 export function useBackupScreenController({
   locale,
   setLocale,
   copy,
 }: UseBackupScreenControllerArgs) {
   const [exportingFormat, setExportingFormat] =
-    React.useState<'json' | 'pdf' | null>(null);
+    React.useState<'json' | 'pdf' | 'markdown' | 'text' | null>(null);
   const [lastJsonExportArtifact, setLastJsonExportArtifact] =
+    React.useState<LocalDreamExportArtifact | null>(
+      null,
+    );
+  const [lastMarkdownExportArtifact, setLastMarkdownExportArtifact] =
+    React.useState<LocalDreamExportArtifact | null>(
+      null,
+    );
+  const [lastTextExportArtifact, setLastTextExportArtifact] =
     React.useState<LocalDreamExportArtifact | null>(
       null,
     );
@@ -113,6 +126,8 @@ export function useBackupScreenController({
     [copy, lastRestorePreview],
   );
   const lastBackupName = lastJsonExportArtifact?.fileName ?? null;
+  const lastMarkdownName = lastMarkdownExportArtifact?.fileName ?? null;
+  const lastTextName = lastTextExportArtifact?.fileName ?? null;
   const lastPdfName = lastPdfExportArtifact?.fileName ?? null;
 
   const refreshLocalExports = React.useCallback(async () => {
@@ -126,6 +141,12 @@ export function useBackupScreenController({
       setLocalExportFiles(files);
       setLastJsonExportArtifact(
         artifacts.find(artifact => artifact.format === 'json') ?? null,
+      );
+      setLastMarkdownExportArtifact(
+        artifacts.find(artifact => artifact.format === 'markdown') ?? null,
+      );
+      setLastTextExportArtifact(
+        artifacts.find(artifact => artifact.format === 'text') ?? null,
       );
       setLastPdfExportArtifact(
         artifacts.find(artifact => artifact.format === 'pdf') ?? null,
@@ -221,6 +242,38 @@ export function useBackupScreenController({
     }
   }, [cloudBackup, copy, refreshLocalExports]);
 
+  const onExportReadableData = React.useCallback(
+    async (format: 'markdown' | 'text') => {
+      setExportingFormat(format);
+
+      try {
+        const result = await exportDreamReadableArchive(format);
+        const artifact = {
+          fileName: result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
+          filePath: result.filePath,
+          modifiedAt: Date.now(),
+          format,
+        } satisfies LocalDreamExportArtifact;
+
+        if (format === 'markdown') {
+          setLastMarkdownExportArtifact(artifact);
+        } else {
+          setLastTextExportArtifact(artifact);
+        }
+
+        await refreshLocalExports();
+      } catch (error) {
+        Alert.alert(
+          copy.exportErrorTitle,
+          error instanceof Error ? error.message : String(error),
+        );
+      } finally {
+        setExportingFormat(null);
+      }
+    },
+    [copy.exportErrorTitle, refreshLocalExports],
+  );
+
   const onExportPdfData = React.useCallback(async () => {
     setExportingFormat('pdf');
 
@@ -267,6 +320,30 @@ export function useBackupScreenController({
     );
   }, [lastPdfExportArtifact]);
 
+  const onShareLastMarkdown = React.useCallback(async () => {
+    if (!lastMarkdownExportArtifact) {
+      return;
+    }
+
+    await shareLocalBackupFile(
+      lastMarkdownExportArtifact.filePath,
+      getReadableExportMimeType('markdown'),
+      lastMarkdownExportArtifact.fileName,
+    );
+  }, [lastMarkdownExportArtifact]);
+
+  const onShareLastText = React.useCallback(async () => {
+    if (!lastTextExportArtifact) {
+      return;
+    }
+
+    await shareLocalBackupFile(
+      lastTextExportArtifact.filePath,
+      getReadableExportMimeType('text'),
+      lastTextExportArtifact.fileName,
+    );
+  }, [lastTextExportArtifact]);
+
   const onOpenLastPdf = React.useCallback(async () => {
     if (!lastPdfExportArtifact) {
       return;
@@ -287,6 +364,50 @@ export function useBackupScreenController({
     copy.exportPdfOpenErrorDescription,
     copy.exportPdfOpenErrorTitle,
     lastPdfExportArtifact,
+  ]);
+
+  const onOpenLastMarkdown = React.useCallback(async () => {
+    if (!lastMarkdownExportArtifact) {
+      return;
+    }
+
+    try {
+      await openLocalBackupFile(
+        lastMarkdownExportArtifact.filePath,
+        getReadableExportMimeType('markdown'),
+      );
+    } catch {
+      Alert.alert(
+        copy.exportReadableOpenErrorTitle,
+        copy.exportReadableOpenErrorDescription,
+      );
+    }
+  }, [
+    copy.exportReadableOpenErrorDescription,
+    copy.exportReadableOpenErrorTitle,
+    lastMarkdownExportArtifact,
+  ]);
+
+  const onOpenLastText = React.useCallback(async () => {
+    if (!lastTextExportArtifact) {
+      return;
+    }
+
+    try {
+      await openLocalBackupFile(
+        lastTextExportArtifact.filePath,
+        getReadableExportMimeType('text'),
+      );
+    } catch {
+      Alert.alert(
+        copy.exportReadableOpenErrorTitle,
+        copy.exportReadableOpenErrorDescription,
+      );
+    }
+  }, [
+    copy.exportReadableOpenErrorDescription,
+    copy.exportReadableOpenErrorTitle,
+    lastTextExportArtifact,
   ]);
 
   const onSelectImportFile = React.useCallback((filePath: string) => {
@@ -357,14 +478,24 @@ export function useBackupScreenController({
   return {
     ...cloudBackup,
     isExportingJson: exportingFormat === 'json',
+    isExportingMarkdown: exportingFormat === 'markdown',
     isExportingPdf: exportingFormat === 'pdf',
+    isExportingText: exportingFormat === 'text',
     lastBackupName,
+    lastMarkdownName,
     lastPdfName,
+    lastTextName,
     onExportData,
+    onExportMarkdownData: () => onExportReadableData('markdown'),
     onExportPdfData,
+    onExportTextData: () => onExportReadableData('text'),
+    onOpenLastMarkdown,
     onOpenLastPdf,
+    onOpenLastText,
     onShareLastBackup,
+    onShareLastMarkdown,
     onShareLastPdf,
+    onShareLastText,
     localExportFiles,
     isLoadingLocalExports,
     selectedImportPreview,

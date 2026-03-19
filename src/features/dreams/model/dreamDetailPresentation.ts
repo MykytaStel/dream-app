@@ -2,7 +2,7 @@ import {
   getDreamCopy,
   getDreamMoodLabels,
 } from '../../../constants/copy/dreams';
-import { getMoodValence } from './dreamAnalytics';
+import { getDreamLucidityLevel, getMoodValence } from './dreamAnalytics';
 import { Theme } from '../../../theme/theme';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionService';
@@ -50,6 +50,9 @@ export type DreamDetailViewModel = {
   starred: boolean;
   relatedCount: number;
   moodLabel?: string;
+  lucidityLabel?: string;
+  hasLucidity: boolean;
+  showLucidityHeroChip: boolean;
   heroSubtitle: string;
   heroPreview: string | null;
   strongestSignal: string | null;
@@ -135,6 +138,19 @@ export function hasSleepContext(dream: Dream) {
 
 export function hasEmotionSnapshot(dream: Dream) {
   return Boolean(dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length);
+}
+
+function getLucidityLabel(level: 0 | 1 | 2 | 3, copy: DreamDetailCopy) {
+  switch (level) {
+    case 0:
+      return copy.lucidityNoneLabel;
+    case 1:
+      return copy.lucidityBriefLabel;
+    case 2:
+      return copy.lucidityAwareLabel;
+    case 3:
+      return copy.lucidityControlLabel;
+  }
 }
 
 export function createEmptyDetailSectionsState(): DreamDetailSectionsState {
@@ -272,6 +288,10 @@ export function getRelatedMatchesLabel(count: number, copy: DreamDetailCopy) {
 
 export function countSleepSignals(dream: Dream) {
   let count = 0;
+
+  if (typeof getDreamLucidityLevel(dream) === 'number') {
+    count += 1;
+  }
 
   count += dream.wakeEmotions?.length ?? 0;
   count += dream.sleepContext?.preSleepEmotions?.length ?? 0;
@@ -583,6 +603,11 @@ export function getDreamDetailViewModel({
   const archived = typeof dream.archivedAt === 'number';
   const starred = typeof dream.starredAt === 'number';
   const moodLabel = dream.mood ? moodLabels[dream.mood] : undefined;
+  const lucidityLevel = getDreamLucidityLevel(dream);
+  const lucidityLabel =
+    typeof lucidityLevel === 'number'
+      ? getLucidityLabel(lucidityLevel, copy)
+      : undefined;
   const hasContext = hasSleepContext(dream);
   const hasEmotions = hasEmotionSnapshot(dream);
   const transcriptStatus = dream.transcriptStatus ?? (dream.transcript ? 'ready' : 'idle');
@@ -688,6 +713,9 @@ export function getDreamDetailViewModel({
     starred,
     relatedCount: relatedDreams.length,
     moodLabel,
+    lucidityLabel,
+    hasLucidity: typeof lucidityLevel === 'number',
+    showLucidityHeroChip: (lucidityLevel ?? 0) > 0,
     heroSubtitle,
     heroPreview,
     strongestSignal,

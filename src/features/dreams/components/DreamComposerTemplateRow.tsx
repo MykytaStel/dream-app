@@ -64,12 +64,13 @@ export function DreamComposerTemplateRow({ copy, onApplyTemplate }: Props) {
             ]}
             onPress={() => onApplyTemplate(template)}
           >
-            <Ionicons
-              name={template.icon}
-              size={13}
-              color={theme.colors.textDim}
-              style={styles.chipIcon}
-            />
+            <View style={styles.chipIcon}>
+              <Ionicons
+                name={template.icon}
+                size={13}
+                color={theme.colors.textDim}
+              />
+            </View>
             <Text style={styles.chipLabel}>{template.label}</Text>
           </Pressable>
         ))}

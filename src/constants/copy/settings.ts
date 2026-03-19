@@ -21,6 +21,18 @@ const SETTINGS_COPY_EN = {
   reminderTimeHint: 'Tap to change.',
   reminderSmartSuggestionLabel: 'Based on your recording patterns',
   reminderSmartSuggestionApply: 'Set to',
+  reminderStyleTitle: 'Reminder style',
+  reminderStyleDescription:
+    'Changes the tone only. Timing and delivery stay the same.',
+  reminderStyleBalancedLabel: 'Steady',
+  reminderStyleBalancedDescription: 'Clear and neutral.',
+  reminderStyleGentleLabel: 'Gentle',
+  reminderStyleGentleDescription: 'Softer and more reflective.',
+  reminderStyleDirectLabel: 'Direct',
+  reminderStyleDirectDescription: 'Short and more immediate.',
+  reminderStylePreviewLabel: 'Notification preview',
+  reminderStyleFootnote:
+    'You can choose the tone now even if reminders are off.',
   reminderPreviewWakeAction: 'Preview wake flow',
   reminderPreviewWakeMeta:
     'Open the reminder entry screen without waiting for the next notification.',
@@ -38,10 +50,22 @@ const SETTINGS_COPY_EN = {
   reminderSaveErrorTitle: 'Reminder error',
   reminderNotificationTitle: 'Record your dream',
   reminderNotificationBody: 'Capture it while details are still fresh.',
+  reminderStyleGentleNotificationTitle: 'Keep the dream close',
+  reminderStyleGentleNotificationBody:
+    'A few calm words now can save the feeling before the day gets loud.',
+  reminderStyleDirectNotificationTitle: 'Write it down now',
+  reminderStyleDirectNotificationBody:
+    'Catch the key images before they slip.',
   languageTitle: 'Language',
   languageDescription: 'Choose your app language.',
   languageEnglish: 'EN',
   languageUkrainian: 'UA',
+  themeTitle: 'Appearance',
+  themeDescription: 'Choose the palette used across the app.',
+  themeFootnote: 'Kaleido keeps the current look stable as the default theme.',
+  themeOptionKaleido: 'Kaleido',
+  themeOptionEmber: 'Ember',
+  themeOptionMoss: 'Moss',
   privacyTitle: 'Privacy and storage',
   privacyDescription:
     'Dream data stays on your device by default. Cloud stays optional and does not block first capture.',
@@ -144,13 +168,13 @@ const SETTINGS_COPY_EN = {
     'In production this modal opens once after the archive reaches 3 saved dreams.',
   backupScreenTitle: 'Backup & sync',
   backupScreenSubtitle:
-    'Restore backups bring data back into the app. PDFs are for reading or sharing. Cloud backup stays optional.',
+    'Restore backups bring data back into the app. Markdown, text, and PDFs are for reading or moving elsewhere. Cloud backup stays optional.',
   backupSummaryDescription:
-    'Restore files, PDFs, and optional cloud backup live here.',
+    'Restore files, Markdown/text exports, PDFs, and optional cloud backup live here.',
   backupSummaryOpenTitle: 'Open backup workspace',
   backupLocalSectionTitle: 'Local files',
   backupLocalSectionDescription:
-    'Create a restore backup, restore from one, or export a readable PDF.',
+    'Create a restore backup, export readable Markdown or text, restore from backup, or export a PDF.',
   backupCloudSectionTitle: 'Cloud backup',
   backupCloudSectionDescription:
     'Optional sync for one archive across devices.',
@@ -169,6 +193,10 @@ const SETTINGS_COPY_EN = {
   backupFlowBackupMeta:
     'Creates a JSON restore file for this app. Use it later in Local restore or save it somewhere else.',
   backupFlowBackupValue: 'Restore file',
+  backupFlowPortableTitle: 'Markdown / text export',
+  backupFlowPortableMeta:
+    'Creates readable .md or .txt files with stable structure and dream metadata. They are not restore files.',
+  backupFlowPortableValue: 'Portable file',
   backupFlowPdfTitle: 'PDF export',
   backupFlowPdfMeta:
     'Creates a readable snapshot for reading or sharing. It is not a restore file.',
@@ -296,6 +324,11 @@ const SETTINGS_COPY_EN = {
     'Create a JSON backup file for restore on this or another device.',
   backupExportFootnote:
     'Backup exports are plain files. Anyone with the file can read or import it. This app does not encrypt the file.',
+  portableExportTitle: 'Markdown and text export',
+  portableExportDescription:
+    'Create a readable Markdown or plain-text file for portability. These files are not restore backups.',
+  portableExportFootnote:
+    'Markdown and text exports are plain files for reading, saving, or importing elsewhere. They stay separate from restore backups and PDFs.',
   pdfExportTitle: 'PDF export',
   pdfExportDescription:
     'Create a readable PDF for reference, printing, or sharing. It cannot be restored into the app.',
@@ -309,20 +342,37 @@ const SETTINGS_COPY_EN = {
     'Backup is for restore later. PDF is for reading or sharing.',
   exportButton: 'Create backup',
   exportButtonBusy: 'Creating backup...',
+  exportMarkdownButton: 'Create Markdown',
+  exportMarkdownButtonBusy: 'Creating Markdown...',
   exportPdfButton: 'Create PDF',
   exportPdfButtonBusy: 'Rendering PDF...',
+  exportTextButton: 'Create text',
+  exportTextButtonBusy: 'Creating text...',
+  exportOpenMarkdownButton: 'Open Markdown',
   exportOpenPdfButton: 'Open PDF',
+  exportOpenTextButton: 'Open text',
   exportShareBackupButton: 'Share backup',
+  exportShareMarkdownButton: 'Share Markdown',
   exportSharePdfButton: 'Share PDF',
+  exportShareTextButton: 'Share text',
   exportBackupReadyTitle: 'Backup ready',
   exportBackupReadyDescription:
     'Use it later in Local restore, or share it to save a copy elsewhere.',
+  exportMarkdownReadyTitle: 'Markdown export ready',
+  exportMarkdownReadyDescription:
+    'Open it to read now, or share it to keep a portable copy with stable structure.',
   exportPdfReadyTitle: 'PDF snapshot ready',
   exportPdfReadyDescription:
     'Open it now to read, or share it when you want to send it somewhere.',
+  exportTextReadyTitle: 'Text export ready',
+  exportTextReadyDescription:
+    'Open it to read now, or share it to save a plain-text copy anywhere.',
   exportPdfOpenErrorTitle: 'Could not open PDF',
   exportPdfOpenErrorDescription:
     'Open failed on this device. Use Share PDF instead.',
+  exportReadableOpenErrorTitle: 'Could not open export',
+  exportReadableOpenErrorDescription:
+    'Open failed on this device. Use Share instead.',
   exportErrorTitle: 'Export failed',
   exportPdfErrorTitle: 'PDF export failed',
   restoreTitle: 'Local restore',
@@ -495,6 +545,18 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   reminderTimeHint: 'Натисни, щоб змінити.',
   reminderSmartSuggestionLabel: 'На основі твоїх патернів запису',
   reminderSmartSuggestionApply: 'Встановити на',
+  reminderStyleTitle: 'Стиль нагадування',
+  reminderStyleDescription:
+    'Змінює лише тон. Час і доставка лишаються тими самими.',
+  reminderStyleBalancedLabel: 'Спокійний',
+  reminderStyleBalancedDescription: 'Чітко й нейтрально.',
+  reminderStyleGentleLabel: 'М’який',
+  reminderStyleGentleDescription: 'М’якше й більш рефлексивно.',
+  reminderStyleDirectLabel: 'Прямий',
+  reminderStyleDirectDescription: 'Коротко й більш терміново.',
+  reminderStylePreviewLabel: 'Попередній перегляд сповіщення',
+  reminderStyleFootnote:
+    'Можна вибрати тон заздалегідь, навіть якщо нагадування вимкнені.',
   reminderPreviewWakeAction: 'Переглянути ранковий режим',
   reminderPreviewWakeMeta:
     'Відкрий екран після нагадування без очікування наступного сповіщення.',
@@ -512,10 +574,23 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   reminderSaveErrorTitle: 'Помилка нагадування',
   reminderNotificationTitle: 'Запиши свій сон',
   reminderNotificationBody: 'Зафіксуй його, поки деталі ще свіжі.',
+  reminderStyleGentleNotificationTitle: 'Втримай сон поруч',
+  reminderStyleGentleNotificationBody:
+    'Кілька спокійних слів зараз допоможуть зберегти відчуття, поки день не розігнався.',
+  reminderStyleDirectNotificationTitle: 'Запиши це зараз',
+  reminderStyleDirectNotificationBody:
+    'Схопи головні образи, поки вони не вислизнули.',
   languageTitle: 'Мова',
   languageDescription: 'Обери мову застосунку.',
   languageEnglish: 'EN',
   languageUkrainian: 'UA',
+  themeTitle: 'Оформлення',
+  themeDescription: 'Обери палітру, яка використовується в усьому застосунку.',
+  themeFootnote:
+    'Kaleido зберігає поточний вигляд застосунку як тему за замовчуванням.',
+  themeOptionKaleido: 'Kaleido',
+  themeOptionEmber: 'Ember',
+  themeOptionMoss: 'Moss',
   privacyTitle: 'Приватність і зберігання',
   privacyDescription:
     'Дані про сни лишаються на пристрої за замовчуванням. Хмара лишається опційною і не блокує перший запис.',
@@ -618,13 +693,13 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'У production цей modal відкривається один раз після 3 збережених снів.',
   backupScreenTitle: 'Backup і sync',
   backupScreenSubtitle:
-    'Restore-backup повертає дані в застосунок. PDF потрібен для читання або поширення. Хмарний backup лишається опційним.',
+    'Restore-backup повертає дані в застосунок. Markdown, text і PDF потрібні для читання або перенесення деінде. Хмарний backup лишається опційним.',
   backupSummaryDescription:
-    'Тут живуть restore-файли, PDF і опційний хмарний backup.',
+    'Тут живуть restore-файли, Markdown/text-експорт, PDF і опційний хмарний backup.',
   backupSummaryOpenTitle: 'Відкрити простір backup',
   backupLocalSectionTitle: 'Локальні файли',
   backupLocalSectionDescription:
-    'Створи restore-backup, відновися з нього або експортуй читабельний PDF.',
+    'Створи restore-backup, читабельний Markdown або text-експорт, відновися з backup або експортуй PDF.',
   backupCloudSectionTitle: 'Хмарний backup',
   backupCloudSectionDescription:
     'Опційний sync одного архіву між пристроями.',
@@ -643,6 +718,10 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupFlowBackupMeta:
     'Створює JSON-файл для відновлення в цьому застосунку. Його можна використати пізніше в Локальному відновленні або зберегти деінде.',
   backupFlowBackupValue: 'Файл для restore',
+  backupFlowPortableTitle: 'Markdown / text export',
+  backupFlowPortableMeta:
+    'Створює читабельні .md або .txt файли зі стабільною структурою і метаданими снів. Це не restore-файли.',
+  backupFlowPortableValue: 'Portable file',
   backupFlowPdfTitle: 'Експорт PDF',
   backupFlowPdfMeta:
     'Створює читабельний знімок для читання або поширення. Це не файл для відновлення.',
@@ -770,6 +849,11 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Створи JSON-файл backup для відновлення на цьому або іншому пристрої.',
   backupExportFootnote:
     'Backup-експорт це звичайний файл. Будь-хто з доступом до файла може його прочитати або імпортувати. Застосунок не шифрує цей файл.',
+  portableExportTitle: 'Markdown і text-експорт',
+  portableExportDescription:
+    'Створи читабельний файл Markdown або plain text для portability. Це не restore-backup.',
+  portableExportFootnote:
+    'Markdown і text-експорт це звичайні файли для читання, збереження або імпорту деінде. Вони окремі від restore-backup і PDF.',
   pdfExportTitle: 'Експорт PDF',
   pdfExportDescription:
     'Створи читабельний PDF для довідки, друку або поширення. Його не можна відновити назад у застосунок.',
@@ -783,20 +867,37 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Backup потрібен для відновлення пізніше. PDF підходить для читання або поширення.',
   exportButton: 'Створити backup',
   exportButtonBusy: 'Створення backup...',
+  exportMarkdownButton: 'Створити Markdown',
+  exportMarkdownButtonBusy: 'Створення Markdown...',
   exportPdfButton: 'Створити PDF',
   exportPdfButtonBusy: 'Створення PDF...',
+  exportTextButton: 'Створити text',
+  exportTextButtonBusy: 'Створення text...',
+  exportOpenMarkdownButton: 'Відкрити Markdown',
   exportOpenPdfButton: 'Відкрити PDF',
+  exportOpenTextButton: 'Відкрити text',
   exportShareBackupButton: 'Поширити backup',
+  exportShareMarkdownButton: 'Поширити Markdown',
   exportSharePdfButton: 'Поширити PDF',
+  exportShareTextButton: 'Поширити text',
   exportBackupReadyTitle: 'Backup готовий',
   exportBackupReadyDescription:
     'Пізніше його можна використати в Локальному відновленні або поширити й зберегти деінде.',
+  exportMarkdownReadyTitle: 'Markdown-експорт готовий',
+  exportMarkdownReadyDescription:
+    'Відкрий його зараз для читання або пошир, щоб зберегти portable-копію зі стабільною структурою.',
   exportPdfReadyTitle: 'PDF-знімок готовий',
   exportPdfReadyDescription:
     'Відкрий його зараз для читання або пошир, коли захочеш кудись надіслати.',
+  exportTextReadyTitle: 'Text-експорт готовий',
+  exportTextReadyDescription:
+    'Відкрий його зараз для читання або пошир, щоб зберегти plain-text копію будь-де.',
   exportPdfOpenErrorTitle: 'Не вдалося відкрити PDF',
   exportPdfOpenErrorDescription:
     'На цьому пристрої файл не відкрився. Скористайся Поширити PDF.',
+  exportReadableOpenErrorTitle: 'Не вдалося відкрити експорт',
+  exportReadableOpenErrorDescription:
+    'На цьому пристрої файл не відкрився. Скористайся Поширити.',
   exportErrorTitle: 'Помилка експорту',
   exportPdfErrorTitle: 'Помилка PDF-експорту',
   restoreTitle: 'Локальне відновлення',

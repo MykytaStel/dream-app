@@ -1,6 +1,7 @@
 import React from 'react';
 import { getStoredLocale, saveLocale } from './localeStore';
 import { AppLocale } from './types';
+import { scheduleDreamWidgetSync } from '../features/widgets/services/dreamWidgetSyncService';
 
 type I18nContextValue = {
   locale: AppLocale;
@@ -21,6 +22,7 @@ export const I18nProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
       }
       localeRef.current = nextLocale;
       saveLocale(nextLocale);
+      scheduleDreamWidgetSync({ locale: nextLocale });
       startTransition(() => {
         setLocaleState(nextLocale);
       });

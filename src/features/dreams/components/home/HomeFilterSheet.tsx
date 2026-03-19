@@ -5,11 +5,14 @@ import { FormField } from '../../../../components/ui/FormField';
 import { SectionHeader } from '../../../../components/ui/SectionHeader';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
+import { getPracticeCopy } from '../../../../constants/copy/practice';
+import { useI18n } from '../../../../i18n/I18nProvider';
 import {
   DEFAULT_HOME_TIMELINE_FILTERS,
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
   type HomeEntryTypeFilter,
+  type HomeSpecialFilter,
   type HomeTimelineFilters,
   type HomeTranscriptFilter,
 } from '../../model/homeTimeline';
@@ -23,6 +26,7 @@ type HomeFilterSheetProps = {
   timelineFilters: HomeTimelineFilters;
   homeFilters: Array<HomeOption<HomeArchiveFilter>>;
   moodFilters: Array<HomeOption<HomeTimelineFilters['mood']>>;
+  specialFilters: Array<HomeOption<HomeSpecialFilter>>;
   typeFilters: Array<HomeOption<HomeEntryTypeFilter>>;
   transcriptFilters: Array<HomeOption<HomeTranscriptFilter>>;
   availableTags: string[];
@@ -81,6 +85,7 @@ export function HomeFilterSheet({
   timelineFilters,
   homeFilters,
   moodFilters,
+  specialFilters,
   typeFilters,
   transcriptFilters,
   availableTags,
@@ -88,6 +93,8 @@ export function HomeFilterSheet({
   onClose,
   updateTimelineFilters,
 }: HomeFilterSheetProps) {
+  const { locale } = useI18n();
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const [tagQuery, setTagQuery] = React.useState('');
   const [showAllTags, setShowAllTags] = React.useState(false);
   const hasAdvancedFilters =
@@ -191,6 +198,19 @@ export function HomeFilterSheet({
               }
             />
 
+            <FilterGroup
+              label={practiceCopy.archiveSpecialFiltersLabel}
+              options={specialFilters}
+              value={timelineFilters.special}
+              styles={styles}
+              onSelect={value =>
+                updateTimelineFilters(current => ({
+                  ...current,
+                  special: value,
+                }))
+              }
+            />
+
             {availableTags.length > 0 ? (
               <View style={styles.filterGroup}>
                 <Text style={styles.filterGroupLabel}>{copy.homeTagFilterLabel}</Text>
@@ -284,7 +304,7 @@ export function HomeFilterSheet({
             <Pressable
               style={({ pressed }) => [
                 styles.searchDetailsToggleButton,
-                pressed ? styles.spotlightToggleButtonPressed : null,
+                pressed ? styles.spotlightTilePressed : null,
               ]}
               onPress={() => setShowAdvancedFilters(current => !current)}
             >

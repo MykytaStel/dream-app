@@ -18,6 +18,7 @@ import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import {
   BackupFlowGuideSection,
   BackupExportSection,
+  PortableExportSection,
   PdfExportSection,
   RestoreSection,
 } from '../components/SettingsAdvancedSections';
@@ -58,7 +59,12 @@ export default function BackupScreen() {
         copy={copy}
         styles={styles}
         isExportingJson={controller.isExportingJson}
-        isBusy={controller.isExportingJson || controller.isExportingPdf}
+        isBusy={
+          controller.isExportingJson ||
+          controller.isExportingMarkdown ||
+          controller.isExportingText ||
+          controller.isExportingPdf
+        }
         lastBackupName={controller.lastBackupName}
         onExportJson={() =>
           controller.onExportData().catch(e =>
@@ -68,6 +74,50 @@ export default function BackupScreen() {
         onShareLastBackup={() =>
           controller.onShareLastBackup().catch(e =>
             logActionError('BackupScreen.onShareLastBackup', e),
+          )
+        }
+      />
+      <PortableExportSection
+        copy={copy}
+        styles={styles}
+        isExportingMarkdown={controller.isExportingMarkdown}
+        isExportingText={controller.isExportingText}
+        isBusy={
+          controller.isExportingJson ||
+          controller.isExportingMarkdown ||
+          controller.isExportingText ||
+          controller.isExportingPdf
+        }
+        lastMarkdownName={controller.lastMarkdownName}
+        lastTextName={controller.lastTextName}
+        onExportMarkdown={() =>
+          controller.onExportMarkdownData().catch(e =>
+            logActionError('BackupScreen.onExportMarkdownData', e),
+          )
+        }
+        onExportText={() =>
+          controller.onExportTextData().catch(e =>
+            logActionError('BackupScreen.onExportTextData', e),
+          )
+        }
+        onOpenLastMarkdown={() =>
+          controller.onOpenLastMarkdown().catch(e =>
+            logActionError('BackupScreen.onOpenLastMarkdown', e),
+          )
+        }
+        onOpenLastText={() =>
+          controller.onOpenLastText().catch(e =>
+            logActionError('BackupScreen.onOpenLastText', e),
+          )
+        }
+        onShareLastMarkdown={() =>
+          controller.onShareLastMarkdown().catch(e =>
+            logActionError('BackupScreen.onShareLastMarkdown', e),
+          )
+        }
+        onShareLastText={() =>
+          controller.onShareLastText().catch(e =>
+            logActionError('BackupScreen.onShareLastText', e),
           )
         }
       />
@@ -100,7 +150,12 @@ export default function BackupScreen() {
         copy={copy}
         styles={styles}
         isExportingPdf={controller.isExportingPdf}
-        isBusy={controller.isExportingJson || controller.isExportingPdf}
+        isBusy={
+          controller.isExportingJson ||
+          controller.isExportingMarkdown ||
+          controller.isExportingText ||
+          controller.isExportingPdf
+        }
         lastPdfName={controller.lastPdfName}
         onExportPdf={() =>
           controller.onExportPdfData().catch(e =>

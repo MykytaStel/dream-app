@@ -176,4 +176,28 @@ describe('dreamDetailPresentation', () => {
 
     expect(viewModel.transcriptSyncHint).toBe(copy.detailTranscriptSyncLocal);
   });
+
+  test('surfaces lucid state from legacy lucid tags in detail presentation', () => {
+    const dream: Dream = {
+      id: 'dream-lucid-tag',
+      createdAt: Date.UTC(2026, 2, 11, 8, 0),
+      sleepDate: '2026-03-11',
+      title: 'Library staircase',
+      text: 'I realized I was dreaming while climbing a staircase.',
+      tags: ['lucid'],
+    };
+
+    const viewModel = getDreamDetailViewModel({
+      dream,
+      copy,
+      moodLabels,
+      analysisSettings,
+      relatedDreams: [],
+      isTranscribingAudio: false,
+    });
+
+    expect(viewModel.lucidityLabel).toBe(copy.lucidityAwareLabel);
+    expect(viewModel.hasLucidity).toBe(true);
+    expect(viewModel.showLucidityHeroChip).toBe(true);
+  });
 });

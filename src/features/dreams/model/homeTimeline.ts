@@ -1,4 +1,11 @@
 import { Dream, Mood } from './dream';
+import {
+  isControlledLucidDream,
+  isHighDistressNightmare,
+  isLucidDream,
+  isNightmareDream,
+  isRecurringNightmare,
+} from './dreamAnalytics';
 import { resolveDreamSleepDate } from './dreamRules';
 
 export type HomeArchiveFilter = 'all' | 'active' | 'archived';
@@ -10,6 +17,13 @@ export type HomeTranscriptFilter =
   | 'edited-transcript';
 export type HomeSortOrder = 'newest' | 'oldest';
 export type HomeDateRangeFilter = 'all' | '7d' | '30d' | '90d';
+export type HomeSpecialFilter =
+  | 'all'
+  | 'lucid'
+  | 'nightmare'
+  | 'recurring-nightmare'
+  | 'control'
+  | 'high-distress';
 export type DreamSearchMatchReason = 'title' | 'notes' | 'transcript' | 'tag' | 'context';
 
 export type HomeTimelineFilters = {
@@ -18,6 +32,7 @@ export type HomeTimelineFilters = {
   searchQuery: string;
   mood: 'all' | Mood;
   tags: string[];
+  special: HomeSpecialFilter;
   entryType: HomeEntryTypeFilter;
   transcript: HomeTranscriptFilter;
   dateRange: HomeDateRangeFilter;
@@ -30,6 +45,7 @@ export const DEFAULT_HOME_TIMELINE_FILTERS: HomeTimelineFilters = {
   searchQuery: '',
   mood: 'all',
   tags: [],
+  special: 'all',
   entryType: 'all',
   transcript: 'all',
   dateRange: 'all',
@@ -55,6 +71,14 @@ export function normalizeHomeTimelineFilters(
         ? filters.mood
         : 'all',
     tags: uniqueTags,
+    special:
+      filters.special === 'lucid' ||
+      filters.special === 'nightmare' ||
+      filters.special === 'recurring-nightmare' ||
+      filters.special === 'control' ||
+      filters.special === 'high-distress'
+        ? filters.special
+        : 'all',
     entryType:
       filters.entryType === 'text' ||
       filters.entryType === 'audio' ||
@@ -75,6 +99,24 @@ export function normalizeHomeTimelineFilters(
         : 'all',
     sortOrder: filters.sortOrder === 'oldest' ? 'oldest' : 'newest',
   };
+}
+
+export function matchesDreamSpecialFilter(dream: Dream, filter: HomeSpecialFilter) {
+  switch (filter) {
+    case 'lucid':
+      return isLucidDream(dream);
+    case 'nightmare':
+      return isNightmareDream(dream);
+    case 'recurring-nightmare':
+      return isRecurringNightmare(dream);
+    case 'control':
+      return isControlledLucidDream(dream);
+    case 'high-distress':
+      return isHighDistressNightmare(dream);
+    case 'all':
+    default:
+      return true;
+  }
 }
 
 export function getHomeTimelineFiltersSignature(filters: HomeTimelineFilters) {
@@ -349,6 +391,10 @@ export function applyHomeTimelineFilters(
       return false;
     }
 
+    if (!matchesDreamSpecialFilter(dream, filters.special)) {
+      return false;
+    }
+
     if (filters.entryType !== 'all' && getDreamEntryType(dream) !== filters.entryType) {
       return false;
     }
@@ -393,6 +439,7 @@ export function hasActiveTimelineFilters(filters: HomeTimelineFilters) {
     filters.starredOnly ||
     filters.mood !== 'all' ||
     filters.tags.length > 0 ||
+    filters.special !== 'all' ||
     filters.entryType !== 'all' ||
     filters.transcript !== 'all' ||
     filters.dateRange !== 'all'

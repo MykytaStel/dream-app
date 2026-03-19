@@ -35,6 +35,7 @@ import {
   PrivacySection,
   ReminderSection,
   SettingsHeroSection,
+  ThemeSection,
 } from '../components/SettingsTopSections';
 
 export default function SettingsScreen() {
@@ -78,11 +79,12 @@ export default function SettingsScreen() {
           enabled: true,
           hour: suggestedReminderTime.hour,
           minute: suggestedReminderTime.minute,
+          style: controller.reminderSettings.style,
         },
         locale,
       ),
     };
-  }, [locale, suggestedReminderTime]);
+  }, [controller.reminderSettings.style, locale, suggestedReminderTime]);
 
   const onApplySuggestedTime = React.useCallback(() => {
     if (!suggestedReminderTime) {
@@ -120,6 +122,13 @@ export default function SettingsScreen() {
         styles={styles}
       />
 
+      <ThemeSection
+        copy={copy}
+        styles={styles}
+        themeId={controller.themeId}
+        onSelectTheme={controller.onSelectTheme}
+      />
+
       <ReminderSection
         copy={copy}
         styles={styles}
@@ -139,6 +148,11 @@ export default function SettingsScreen() {
         onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
         onNativeTimePickerChange={controller.onNativeTimePickerChange}
         onApplySuggestedTime={onApplySuggestedTime}
+        onSelectReminderStyle={style =>
+          controller.onSelectReminderStyle(style).catch(e =>
+            logActionError('SettingsScreen.onSelectReminderStyle', e),
+          )
+        }
       />
 
       <BackupSummarySection

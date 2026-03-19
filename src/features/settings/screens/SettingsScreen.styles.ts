@@ -52,6 +52,11 @@ export function createSettingsScreenStyles(theme: Theme) {
     sectionCard: {
       gap: 8,
     },
+    themeFootnote: {
+      color: theme.colors.textDim,
+      lineHeight: 17,
+      fontSize: 11,
+    },
     reminderHint: {
       color: theme.colors.textDim,
       lineHeight: 17,

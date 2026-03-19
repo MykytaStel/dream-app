@@ -3,7 +3,13 @@ import { Alert, Platform } from 'react-native';
 import {
   Dream,
   DreamIntensity,
+  LucidControlArea,
+  LucidPracticeTechnique,
+  LucidStabilizationAction,
   Mood,
+  NightmareAftereffect,
+  NightmareGroundingAction,
+  NightmareRescriptStatus,
   PreSleepEmotion,
   SleepContext,
   StressLevel,
@@ -16,6 +22,7 @@ import {
   normalizeTags,
   validateDreamForSave,
 } from '../model/dreamRules';
+import { getDreamLucidityLevel } from '../model/dreamAnalytics';
 import { saveDream } from '../repository/dreamsRepository';
 import { logActionError } from '../../../app/errorReporting';
 import {
@@ -60,6 +67,48 @@ export function toggleSelection<T extends string>(values: T[], nextValue: T) {
     : [...values, nextValue];
 }
 
+function hasLucidPracticeValues(input: {
+  lucidTechnique?: LucidPracticeTechnique;
+  dreamSigns?: string[];
+  lucidTrigger?: string;
+  controlAreas?: LucidControlArea[];
+  stabilizationActions?: LucidStabilizationAction[];
+  recallScore?: 1 | 2 | 3 | 4 | 5;
+}) {
+  return (
+    Boolean(input.lucidTechnique) ||
+    Boolean(input.dreamSigns?.length) ||
+    Boolean(input.lucidTrigger?.trim()) ||
+    Boolean(input.controlAreas?.length) ||
+    Boolean(input.stabilizationActions?.length) ||
+    typeof input.recallScore === 'number'
+  );
+}
+
+function hasNightmareValues(input: {
+  nightmareExplicit?: boolean;
+  nightmareDistress?: 1 | 2 | 3 | 4 | 5;
+  nightmareRecurring?: boolean;
+  nightmareRecurringKey?: string;
+  nightmareWokeFromDream?: boolean;
+  nightmareAftereffects?: NightmareAftereffect[];
+  nightmareGroundingUsed?: NightmareGroundingAction[];
+  nightmareRewrittenEnding?: string;
+  nightmareRescriptStatus?: NightmareRescriptStatus;
+}) {
+  return (
+    typeof input.nightmareExplicit === 'boolean' ||
+    typeof input.nightmareDistress === 'number' ||
+    typeof input.nightmareRecurring === 'boolean' ||
+    Boolean(input.nightmareRecurringKey?.trim()) ||
+    typeof input.nightmareWokeFromDream === 'boolean' ||
+    Boolean(input.nightmareAftereffects?.length) ||
+    Boolean(input.nightmareGroundingUsed?.length) ||
+    Boolean(input.nightmareRewrittenEnding?.trim()) ||
+    Boolean(input.nightmareRescriptStatus)
+  );
+}
+
 export function formatLocalAssetName(path?: string) {
   if (!path) {
     return undefined;
@@ -89,10 +138,17 @@ export function useDreamComposerForm({
   const initialDraft = React.useMemo(() => (mode === 'create' ? getDreamDraft() : null), [mode]);
   const isWakeMode = mode === 'create' && entryMode === 'wake';
   const isEdit = mode === 'edit';
+  const initialLucidity =
+    initialDream
+      ? getDreamLucidityLevel(initialDream)
+      : initialDraft
+        ? getDreamLucidityLevel(initialDraft)
+        : undefined;
   const initialHasMoodDetails =
     Boolean(initialDream?.mood ?? initialDraft?.mood) ||
     Boolean(initialDream?.dreamIntensity ?? initialDraft?.dreamIntensity) ||
-    Boolean(initialDream?.wakeEmotions?.length ?? initialDraft?.wakeEmotions?.length);
+    Boolean(initialDream?.wakeEmotions?.length ?? initialDraft?.wakeEmotions?.length) ||
+    typeof initialLucidity === 'number';
   const initialHasContextDetails = hasSleepContextValues({
     stressLevel: initialDream?.sleepContext?.stressLevel ?? initialDraft?.stressLevel,
     preSleepEmotions:
@@ -105,6 +161,32 @@ export function useDreamComposerForm({
     healthNotes: initialDream?.sleepContext?.healthNotes ?? initialDraft?.healthNotes,
   });
   const initialHasTags = Boolean(initialDream?.tags?.length ?? initialDraft?.tags?.length);
+  const initialHasLucidPractice = hasLucidPracticeValues({
+    lucidTechnique: initialDream?.lucidPractice?.technique ?? initialDraft?.lucidTechnique,
+    dreamSigns: initialDream?.lucidPractice?.dreamSigns ?? initialDraft?.dreamSigns,
+    lucidTrigger: initialDream?.lucidPractice?.trigger ?? initialDraft?.lucidTrigger,
+    controlAreas: initialDream?.lucidPractice?.controlAreas ?? initialDraft?.controlAreas,
+    stabilizationActions:
+      initialDream?.lucidPractice?.stabilizationActions ?? initialDraft?.stabilizationActions,
+    recallScore: initialDream?.lucidPractice?.recallScore ?? initialDraft?.recallScore,
+  });
+  const initialHasNightmare = hasNightmareValues({
+    nightmareExplicit: initialDream?.nightmare?.explicit ?? initialDraft?.nightmareExplicit,
+    nightmareDistress: initialDream?.nightmare?.distress ?? initialDraft?.nightmareDistress,
+    nightmareRecurring: initialDream?.nightmare?.recurring ?? initialDraft?.nightmareRecurring,
+    nightmareRecurringKey:
+      initialDream?.nightmare?.recurringKey ?? initialDraft?.nightmareRecurringKey,
+    nightmareWokeFromDream:
+      initialDream?.nightmare?.wokeFromDream ?? initialDraft?.nightmareWokeFromDream,
+    nightmareAftereffects:
+      initialDream?.nightmare?.aftereffects ?? initialDraft?.nightmareAftereffects,
+    nightmareGroundingUsed:
+      initialDream?.nightmare?.groundingUsed ?? initialDraft?.nightmareGroundingUsed,
+    nightmareRewrittenEnding:
+      initialDream?.nightmare?.rewrittenEnding ?? initialDraft?.nightmareRewrittenEnding,
+    nightmareRescriptStatus:
+      initialDream?.nightmare?.rescriptStatus ?? initialDraft?.nightmareRescriptStatus,
+  });
 
   const [title, setTitle] = React.useState(initialDream?.title ?? initialDraft?.title ?? '');
   const [text, setText] = React.useState(initialDream?.text ?? initialDraft?.text ?? '');
@@ -121,6 +203,7 @@ export function useDreamComposerForm({
   const [dreamIntensity, setDreamIntensity] = React.useState<DreamIntensity | undefined>(
     initialDream?.dreamIntensity ?? initialDraft?.dreamIntensity,
   );
+  const [lucidity, setLucidity] = React.useState<Dream['lucidity']>(initialLucidity);
   const [wakeEmotions, setWakeEmotions] = React.useState<WakeEmotion[]>(
     initialDream?.wakeEmotions ?? initialDraft?.wakeEmotions ?? [],
   );
@@ -148,6 +231,55 @@ export function useDreamComposerForm({
   const [tags, setTags] = React.useState<string[]>(
     normalizeTags(initialDream?.tags ?? initialDraft?.tags ?? []),
   );
+  const [lucidTechnique, setLucidTechnique] = React.useState<LucidPracticeTechnique | undefined>(
+    initialDream?.lucidPractice?.technique ?? initialDraft?.lucidTechnique,
+  );
+  const [dreamSignsInput, setDreamSignsInput] = React.useState(
+    (initialDream?.lucidPractice?.dreamSigns ?? initialDraft?.dreamSigns ?? []).join(', '),
+  );
+  const [lucidTrigger, setLucidTrigger] = React.useState(
+    initialDream?.lucidPractice?.trigger ?? initialDraft?.lucidTrigger ?? '',
+  );
+  const [controlAreas, setControlAreas] = React.useState<LucidControlArea[]>(
+    initialDream?.lucidPractice?.controlAreas ?? initialDraft?.controlAreas ?? [],
+  );
+  const [stabilizationActions, setStabilizationActions] = React.useState<
+    LucidStabilizationAction[]
+  >(
+    initialDream?.lucidPractice?.stabilizationActions ??
+      initialDraft?.stabilizationActions ??
+      [],
+  );
+  const [recallScore, setRecallScore] = React.useState<1 | 2 | 3 | 4 | 5 | undefined>(
+    initialDream?.lucidPractice?.recallScore ?? initialDraft?.recallScore,
+  );
+  const [nightmareExplicit, setNightmareExplicit] = React.useState<boolean | undefined>(
+    initialDream?.nightmare?.explicit ?? initialDraft?.nightmareExplicit,
+  );
+  const [nightmareDistress, setNightmareDistress] = React.useState<
+    1 | 2 | 3 | 4 | 5 | undefined
+  >(initialDream?.nightmare?.distress ?? initialDraft?.nightmareDistress);
+  const [nightmareRecurring, setNightmareRecurring] = React.useState<boolean | undefined>(
+    initialDream?.nightmare?.recurring ?? initialDraft?.nightmareRecurring,
+  );
+  const [nightmareRecurringKey, setNightmareRecurringKey] = React.useState(
+    initialDream?.nightmare?.recurringKey ?? initialDraft?.nightmareRecurringKey ?? '',
+  );
+  const [nightmareWokeFromDream, setNightmareWokeFromDream] = React.useState<
+    boolean | undefined
+  >(initialDream?.nightmare?.wokeFromDream ?? initialDraft?.nightmareWokeFromDream);
+  const [nightmareAftereffects, setNightmareAftereffects] = React.useState<
+    NightmareAftereffect[]
+  >(initialDream?.nightmare?.aftereffects ?? initialDraft?.nightmareAftereffects ?? []);
+  const [nightmareGroundingUsed, setNightmareGroundingUsed] = React.useState<
+    NightmareGroundingAction[]
+  >(initialDream?.nightmare?.groundingUsed ?? initialDraft?.nightmareGroundingUsed ?? []);
+  const [nightmareRewrittenEnding, setNightmareRewrittenEnding] = React.useState(
+    initialDream?.nightmare?.rewrittenEnding ?? initialDraft?.nightmareRewrittenEnding ?? '',
+  );
+  const [nightmareRescriptStatus, setNightmareRescriptStatus] = React.useState<
+    NightmareRescriptStatus | undefined
+  >(initialDream?.nightmare?.rescriptStatus ?? initialDraft?.nightmareRescriptStatus);
   const [tagInput, setTagInput] = React.useState('');
   const [isBusy, setIsBusy] = React.useState(false);
   const [hasTriedSave, setHasTriedSave] = React.useState(false);
@@ -159,6 +291,12 @@ export function useDreamComposerForm({
     mode === 'edit' || initialHasContextDetails,
   );
   const [showTagsSection, setShowTagsSection] = React.useState(mode === 'edit' || initialHasTags);
+  const [showLucidPracticeSection, setShowLucidPracticeSection] = React.useState(
+    mode === 'edit' || initialHasLucidPractice,
+  );
+  const [showNightmareSection, setShowNightmareSection] = React.useState(
+    mode === 'edit' || initialHasNightmare,
+  );
   const [showMetaSection, setShowMetaSection] = React.useState(mode === 'edit' || !isWakeMode);
   const lastAutoStartKey = React.useRef<number | undefined>(undefined);
 
@@ -181,8 +319,40 @@ export function useDreamComposerForm({
     importantEvents,
     healthNotes,
   });
+  const dreamSigns = React.useMemo(
+    () =>
+      Array.from(
+        new Set(
+          dreamSignsInput
+            .split(',')
+            .map(value => value.trim())
+            .filter(Boolean),
+        ),
+      ),
+    [dreamSignsInput],
+  );
   const hasMoodSelections = Boolean(mood) || Boolean(dreamIntensity) || wakeEmotions.length > 0;
+  const hasLuciditySelection = typeof lucidity === 'number';
   const hasTagSelections = tags.length > 0;
+  const hasLucidPracticeSelections = hasLucidPracticeValues({
+    lucidTechnique,
+    dreamSigns,
+    lucidTrigger,
+    controlAreas,
+    stabilizationActions,
+    recallScore,
+  });
+  const hasNightmareSelections = hasNightmareValues({
+    nightmareExplicit,
+    nightmareDistress,
+    nightmareRecurring,
+    nightmareRecurringKey,
+    nightmareWokeFromDream,
+    nightmareAftereffects,
+    nightmareGroundingUsed,
+    nightmareRewrittenEnding,
+    nightmareRescriptStatus,
+  });
   const todayDate = React.useMemo(() => getTodayDate(), []);
   const hasEditedMeta = Boolean(title.trim()) || sleepDate !== todayDate;
   const showMoodCard = isWakeMode || showMoodSection;
@@ -191,7 +361,10 @@ export function useDreamComposerForm({
     !hasDreamContent({ text, audioUri }) &&
     !hasTagSelections &&
     !hasMoodSelections &&
-    !hasContextSelections;
+    !hasLuciditySelection &&
+    !hasContextSelections &&
+    !hasLucidPracticeSelections &&
+    !hasNightmareSelections;
   const saveDisabled = isBusy || recording || validationError !== null;
   const textWordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
 
@@ -209,6 +382,7 @@ export function useDreamComposerForm({
         entryMode,
         mood,
         dreamIntensity,
+        lucidity,
         wakeEmotions,
         stressLevel,
         preSleepEmotions,
@@ -218,6 +392,21 @@ export function useDreamComposerForm({
         importantEvents,
         healthNotes,
         tags,
+        lucidTechnique,
+        dreamSigns,
+        lucidTrigger,
+        controlAreas,
+        stabilizationActions,
+        recallScore,
+        nightmareExplicit,
+        nightmareDistress,
+        nightmareRecurring,
+        nightmareRecurringKey,
+        nightmareWokeFromDream,
+        nightmareAftereffects,
+        nightmareGroundingUsed,
+        nightmareRewrittenEnding,
+        nightmareRescriptStatus,
       });
     }, 400);
 
@@ -227,14 +416,31 @@ export function useDreamComposerForm({
     audioUri,
     caffeineLate,
     dreamIntensity,
+    dreamSigns,
+    dreamSignsInput,
     entryMode,
     healthNotes,
     importantEvents,
+    controlAreas,
+    lucidity,
+    lucidTechnique,
+    lucidTrigger,
     medications,
     mode,
     mood,
+    nightmareAftereffects,
+    nightmareDistress,
+    nightmareExplicit,
+    nightmareGroundingUsed,
+    nightmareRecurring,
+    nightmareRecurringKey,
+    nightmareRewrittenEnding,
+    nightmareRescriptStatus,
+    nightmareWokeFromDream,
     preSleepEmotions,
+    recallScore,
     sleepDate,
+    stabilizationActions,
     stressLevel,
     tags,
     text,
@@ -369,6 +575,7 @@ export function useDreamComposerForm({
     setAudioUri(undefined);
     setMood(undefined);
     setDreamIntensity(undefined);
+    setLucidity(undefined);
     setWakeEmotions([]);
     setStressLevel(undefined);
     setPreSleepEmotions([]);
@@ -378,6 +585,21 @@ export function useDreamComposerForm({
     setImportantEvents('');
     setHealthNotes('');
     setTags([]);
+    setLucidTechnique(undefined);
+    setDreamSignsInput('');
+    setLucidTrigger('');
+    setControlAreas([]);
+    setStabilizationActions([]);
+    setRecallScore(undefined);
+    setNightmareExplicit(undefined);
+    setNightmareDistress(undefined);
+    setNightmareRecurring(undefined);
+    setNightmareRecurringKey('');
+    setNightmareWokeFromDream(undefined);
+    setNightmareAftereffects([]);
+    setNightmareGroundingUsed([]);
+    setNightmareRewrittenEnding('');
+    setNightmareRescriptStatus(undefined);
     setTagInput('');
     setRecording(false);
     if (recordingIntervalRef.current) {
@@ -395,6 +617,8 @@ export function useDreamComposerForm({
     setShowMoodSection(isWakeMode);
     setShowContextSection(false);
     setShowTagsSection(false);
+    setShowLucidPracticeSection(false);
+    setShowNightmareSection(false);
     setShowMetaSection(!isWakeMode);
   }
 
@@ -450,8 +674,51 @@ export function useDreamComposerForm({
         tags: normalizeTags(tags),
         mood,
         dreamIntensity,
+        lucidity,
         wakeEmotions: wakeEmotions.length ? wakeEmotions : undefined,
         sleepContext: hasSleepContextValues(sleepContext) ? sleepContext : undefined,
+        lucidPractice: hasLucidPracticeValues({
+          lucidTechnique,
+          dreamSigns,
+          lucidTrigger,
+          controlAreas,
+          stabilizationActions,
+          recallScore,
+        })
+          ? {
+              technique: lucidTechnique,
+              dreamSigns: dreamSigns.length ? dreamSigns : undefined,
+              trigger: lucidTrigger.trim() || undefined,
+              controlAreas: controlAreas.length ? controlAreas : undefined,
+              stabilizationActions: stabilizationActions.length
+                ? stabilizationActions
+                : undefined,
+              recallScore,
+            }
+          : undefined,
+        nightmare: hasNightmareValues({
+          nightmareExplicit,
+          nightmareDistress,
+          nightmareRecurring,
+          nightmareRecurringKey,
+          nightmareWokeFromDream,
+          nightmareAftereffects,
+          nightmareGroundingUsed,
+          nightmareRewrittenEnding,
+          nightmareRescriptStatus,
+        })
+          ? {
+              explicit: nightmareExplicit,
+              distress: nightmareDistress,
+              recurring: nightmareRecurring,
+              recurringKey: nightmareRecurringKey.trim() || undefined,
+              wokeFromDream: nightmareWokeFromDream,
+              aftereffects: nightmareAftereffects.length ? nightmareAftereffects : undefined,
+              groundingUsed: nightmareGroundingUsed.length ? nightmareGroundingUsed : undefined,
+              rewrittenEnding: nightmareRewrittenEnding.trim() || undefined,
+              rescriptStatus: nightmareRescriptStatus,
+            }
+          : undefined,
       };
 
       saveDream(dream);
@@ -501,6 +768,8 @@ export function useDreamComposerForm({
     setMood,
     dreamIntensity,
     setDreamIntensity,
+    lucidity,
+    setLucidity,
     wakeEmotions,
     setWakeEmotions,
     stressLevel,
@@ -519,6 +788,36 @@ export function useDreamComposerForm({
     setHealthNotes,
     tags,
     setTags,
+    lucidTechnique,
+    setLucidTechnique,
+    dreamSignsInput,
+    setDreamSignsInput,
+    lucidTrigger,
+    setLucidTrigger,
+    controlAreas,
+    setControlAreas,
+    stabilizationActions,
+    setStabilizationActions,
+    recallScore,
+    setRecallScore,
+    nightmareExplicit,
+    setNightmareExplicit,
+    nightmareDistress,
+    setNightmareDistress,
+    nightmareRecurring,
+    setNightmareRecurring,
+    nightmareRecurringKey,
+    setNightmareRecurringKey,
+    nightmareWokeFromDream,
+    setNightmareWokeFromDream,
+    nightmareAftereffects,
+    setNightmareAftereffects,
+    nightmareGroundingUsed,
+    setNightmareGroundingUsed,
+    nightmareRewrittenEnding,
+    setNightmareRewrittenEnding,
+    nightmareRescriptStatus,
+    setNightmareRescriptStatus,
     tagInput,
     setTagInput,
     isBusy,
@@ -531,6 +830,10 @@ export function useDreamComposerForm({
     setShowContextSection,
     showTagsSection,
     setShowTagsSection,
+    showLucidPracticeSection,
+    setShowLucidPracticeSection,
+    showNightmareSection,
+    setShowNightmareSection,
     showMetaSection,
     setShowMetaSection,
     validationError,
@@ -538,7 +841,9 @@ export function useDreamComposerForm({
     hasMissingContent,
     hasRestoredDraft,
     hasContextSelections,
-    hasMoodSelections,
+    hasMoodSelections: hasMoodSelections || hasLuciditySelection,
+    hasLucidPracticeSelections,
+    hasNightmareSelections,
     hasTagSelections,
     hasEditedMeta,
     showMoodCard,
@@ -554,5 +859,13 @@ export function useDreamComposerForm({
       setWakeEmotions(current => toggleSelection(current, value)),
     togglePreSleepEmotion: (value: PreSleepEmotion) =>
       setPreSleepEmotions(current => toggleSelection(current, value)),
+    toggleControlArea: (value: LucidControlArea) =>
+      setControlAreas(current => toggleSelection(current, value)),
+    toggleStabilizationAction: (value: LucidStabilizationAction) =>
+      setStabilizationActions(current => toggleSelection(current, value)),
+    toggleNightmareAftereffect: (value: NightmareAftereffect) =>
+      setNightmareAftereffects(current => toggleSelection(current, value)),
+    toggleNightmareGrounding: (value: NightmareGroundingAction) =>
+      setNightmareGroundingUsed(current => toggleSelection(current, value)),
   };
 }

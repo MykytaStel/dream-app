@@ -27,6 +27,12 @@ export type DreamWidgetAction = {
   url: string;
 };
 
+export type DreamWidgetLastDream = {
+  id: string;
+  title: string;
+  date: string;
+};
+
 export type DreamWidgetSnapshot = {
   version: 1;
   generatedAt: number;
@@ -38,6 +44,7 @@ export type DreamWidgetSnapshot = {
   meta: string;
   primaryAction: DreamWidgetAction;
   secondaryAction: DreamWidgetAction;
+  lastDream: DreamWidgetLastDream | null;
 };
 
 type BuildDreamWidgetSnapshotArgs = {
@@ -70,6 +77,15 @@ export function buildDreamWidgetSnapshot({
   const widgetCopy = getWidgetCopy(locale);
   const revisitCue = getHomeRevisitCue(dreams, dreamCopy, now);
 
+  const latestDream = dreams[0] ?? null;
+  const lastDream: DreamWidgetLastDream | null = latestDream
+    ? {
+        id: latestDream.id,
+        title: latestDream.title?.trim() ?? '',
+        date: latestDream.sleepDate,
+      }
+    : null;
+
   if (draftSnapshot) {
     return {
       version: 1,
@@ -88,6 +104,7 @@ export function buildDreamWidgetSnapshot({
         label: dreamCopy.quickAddWakeAction,
         url: getDreamWidgetCaptureUrl(),
       },
+      lastDream,
     };
   }
 
@@ -109,6 +126,7 @@ export function buildDreamWidgetSnapshot({
         label: dreamCopy.quickAddWakeAction,
         url: getDreamWidgetCaptureUrl(),
       },
+      lastDream,
     };
   }
 
@@ -130,6 +148,7 @@ export function buildDreamWidgetSnapshot({
         label: widgetCopy.memoryAction,
         url: getDreamWidgetMemoryUrl(),
       },
+      lastDream: null,
     };
   }
 
@@ -175,5 +194,6 @@ export function buildDreamWidgetSnapshot({
       label: widgetCopy.memoryAction,
       url: getDreamWidgetMemoryUrl(),
     },
+    lastDream,
   };
 }

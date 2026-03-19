@@ -1,4 +1,5 @@
 import React from 'react';
+import { Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp, useRoute } from '@react-navigation/native';
@@ -20,6 +21,7 @@ import {
 } from '../../stats/services/streakMilestoneService';
 import { StreakMilestoneToast } from '../../stats/components/StreakMilestoneToast';
 import { getStatsCopy } from '../../../constants/copy/stats';
+import { getWidgetCopy } from '../../../constants/copy/widgets';
 import { useI18n } from '../../../i18n/I18nProvider';
 import {
   trackCaptureStarted,
@@ -29,6 +31,13 @@ import {
   getDreamDraft,
   getDreamDraftSnapshot,
 } from '../services/dreamDraftService';
+import { WidgetPinToast } from '../../widgets/components/WidgetPinToast';
+import {
+  hasWidgetPinPromptBeenSeen,
+  markWidgetPinPromptSeen,
+  isPinNativelySupported,
+  requestPinWidget,
+} from '../../widgets/services/dreamWidgetPinService';
 
 function getPostSaveFocusSection(dream: Dream): DreamDetailFocusSection {
   if (dream.audioUri?.trim() && !dream.text?.trim()) {
@@ -47,6 +56,7 @@ export default function NewDreamScreen() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { locale } = useI18n();
   const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
+  const widgetCopy = React.useMemo(() => getWidgetCopy(locale), [locale]);
   const entryMode = route.params?.entryMode ?? 'default';
   const shouldAutoStartRecording =
     route.params?.entryMode === 'voice' && route.params?.autoStartRecording === true;
@@ -58,6 +68,8 @@ export default function NewDreamScreen() {
     [entryMode, route.params?.launchKey, route.params?.source, shouldAutoStartRecording],
   );
   const [streakToast, setStreakToast] = React.useState<StreakMilestoneToastData | null>(null);
+  const [showWidgetPinToast, setShowWidgetPinToast] = React.useState(false);
+  const [canPinNatively, setCanPinNatively] = React.useState(false);
   const [pendingSavedDream, setPendingSavedDream] = React.useState<{
     dreamId: string;
     focusSection: DreamDetailFocusSection;
@@ -87,6 +99,19 @@ export default function NewDreamScreen() {
     });
     setPendingSavedDream(null);
   }, [navigation, pendingSavedDream, streakToast]);
+
+  const handleWidgetPinAction = React.useCallback(async () => {
+    if (Platform.OS === 'android') {
+      await requestPinWidget();
+    }
+    markWidgetPinPromptSeen();
+    setShowWidgetPinToast(false);
+  }, []);
+
+  const handleWidgetPinDismiss = React.useCallback(() => {
+    markWidgetPinPromptSeen();
+    setShowWidgetPinToast(false);
+  }, []);
 
   React.useEffect(() => {
     const source = route.params?.source ?? 'manual';
@@ -122,7 +147,7 @@ export default function NewDreamScreen() {
             focusSection: getPostSaveFocusSection(dream),
           });
 
-          // Check streak milestones (fire-and-forget, non-blocking)
+          // Check streak milestones and widget pin prompt (fire-and-forget, non-blocking)
           try {
             const allDreams = listDreamListItems();
             const streak = getCurrentStreak(allDreams);
@@ -131,6 +156,19 @@ export default function NewDreamScreen() {
             if (toast) {
               saveLastStreakCelebrated(streak);
               setStreakToast(toast);
+            }
+
+            // Show widget pin prompt after first dream, if not seen before
+            if (allDreams.length === 1 && !hasWidgetPinPromptBeenSeen()) {
+              isPinNativelySupported()
+                .then(supported => {
+                  setCanPinNatively(supported);
+                  setShowWidgetPinToast(true);
+                })
+                .catch(() => {
+                  setCanPinNatively(false);
+                  setShowWidgetPinToast(true);
+                });
             }
           } catch {
             // Non-critical: ignore errors
@@ -143,6 +181,23 @@ export default function NewDreamScreen() {
           title={streakToast.title}
           subtitle={streakToast.subtitle}
           onDismiss={() => setStreakToast(null)}
+        />
+      ) : null}
+      {showWidgetPinToast && !streakToast ? (
+        <WidgetPinToast
+          canPinNatively={canPinNatively}
+          title={widgetCopy.pinPromptTitle}
+          subtitle={
+            Platform.OS === 'ios'
+              ? widgetCopy.pinPromptSubtitleIos
+              : widgetCopy.pinPromptSubtitleAndroid
+          }
+          actionLabel={
+            Platform.OS === 'ios' ? widgetCopy.pinPromptGotIt : widgetCopy.pinPromptAction
+          }
+          dismissLabel={widgetCopy.pinPromptDismiss}
+          onAddWidget={handleWidgetPinAction}
+          onDismiss={handleWidgetPinDismiss}
         />
       ) : null}
     </>

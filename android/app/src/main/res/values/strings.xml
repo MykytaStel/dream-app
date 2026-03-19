@@ -7,4 +7,7 @@
     <string name="dream_widget_fallback_meta">Private on device</string>
     <string name="dream_widget_fallback_primary_action">Wake capture</string>
     <string name="dream_widget_fallback_secondary_action">Memory</string>
+    <string name="dream_last_dream_widget_label">Last Dream</string>
+    <string name="dream_last_dream_widget_untitled">Untitled</string>
+    <string name="dream_last_dream_widget_empty_title">No dreams yet</string>
 </resources>

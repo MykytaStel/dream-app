@@ -1,14 +1,12 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeModules } from 'react-native';
 import { DreamWidgetSnapshot } from '../model/dreamWidget';
 
 type DreamWidgetNativeModule = {
   updateSnapshot(snapshotJson: string): Promise<void>;
 };
 
-const dreamWidgetNativeModule =
-  Platform.OS === 'android'
-    ? (NativeModules as { DreamWidget?: DreamWidgetNativeModule }).DreamWidget
-    : undefined;
+const dreamWidgetNativeModule = (NativeModules as { DreamWidget?: DreamWidgetNativeModule })
+  .DreamWidget;
 
 export async function publishDreamWidgetSnapshot(snapshot: DreamWidgetSnapshot) {
   if (!dreamWidgetNativeModule?.updateSnapshot) {

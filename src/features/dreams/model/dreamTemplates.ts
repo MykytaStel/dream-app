@@ -1,10 +1,11 @@
-import { Mood, WakeEmotion } from './dream';
+import { Dream, Mood, WakeEmotion } from './dream';
 
 export type DreamTemplate = {
   id: string;
   icon: string;
   tags: string[];
   mood?: Mood;
+  lucidity?: Dream['lucidity'];
   wakeEmotions?: WakeEmotion[];
   opensMoodSection: boolean;
 };
@@ -16,6 +17,7 @@ export const DREAM_TEMPLATE_DEFINITIONS: DreamTemplate[] = [
     icon: 'eye-outline',
     tags: ['lucid'],
     mood: 'positive',
+    lucidity: 2,
     wakeEmotions: ['curious', 'inspired'],
     opensMoodSection: true,
   },

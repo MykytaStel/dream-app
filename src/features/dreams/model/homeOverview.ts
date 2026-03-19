@@ -7,6 +7,7 @@ import {
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
   type HomeEntryTypeFilter,
+  type HomeSpecialFilter,
   type HomeTimelineFilters,
   type HomeTranscriptFilter,
 } from './homeTimeline';
@@ -72,6 +73,7 @@ type BuildSearchPresetLabelArgs = {
   typeFilters: Array<HomeOption<HomeEntryTypeFilter>>;
   dateRangeFilters: Array<HomeOption<HomeDateRangeFilter>>;
   homeFilters: Array<HomeOption<HomeArchiveFilter>>;
+  specialFilters: Array<HomeOption<HomeSpecialFilter>>;
 };
 
 export function buildSearchPresetLabel({
@@ -82,6 +84,7 @@ export function buildSearchPresetLabel({
   typeFilters,
   dateRangeFilters,
   homeFilters,
+  specialFilters,
 }: BuildSearchPresetLabelArgs) {
   const searchLabel = filters.searchQuery.trim();
   if (searchLabel) {
@@ -115,6 +118,13 @@ export function buildSearchPresetLabel({
     );
   }
 
+  if (filters.special !== 'all') {
+    return (
+      specialFilters.find(filter => filter.key === filters.special)?.label ??
+      copy.homeSearchPresetFallback
+    );
+  }
+
   if (filters.dateRange !== 'all') {
     return (
       dateRangeFilters.find(filter => filter.key === filters.dateRange)?.label ??
@@ -140,6 +150,7 @@ type BuildActiveFilterChipsArgs = {
   typeFilters: Array<HomeOption<HomeEntryTypeFilter>>;
   transcriptFilters: Array<HomeOption<HomeTranscriptFilter>>;
   dateRangeFilters: Array<HomeOption<HomeDateRangeFilter>>;
+  specialFilters: Array<HomeOption<HomeSpecialFilter>>;
 };
 
 export function buildActiveFilterChips({
@@ -150,6 +161,7 @@ export function buildActiveFilterChips({
   typeFilters,
   transcriptFilters,
   dateRangeFilters,
+  specialFilters,
 }: BuildActiveFilterChipsArgs): HomeFilterChip[] {
   const chips: HomeFilterChip[] = [];
 
@@ -200,6 +212,15 @@ export function buildActiveFilterChips({
       label: tag,
     });
   });
+
+  if (filters.special !== 'all') {
+    chips.push({
+      key: `special:${filters.special}`,
+      label:
+        specialFilters.find(filter => filter.key === filters.special)?.label ??
+        filters.special,
+    });
+  }
 
   if (filters.dateRange !== 'all') {
     chips.push({

@@ -82,6 +82,7 @@ describe('storage migrations', () => {
       enabled: true,
       hour: 8,
       minute: 45,
+      style: 'balanced',
     });
     expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
   });

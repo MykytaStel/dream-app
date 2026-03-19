@@ -2,6 +2,7 @@ export {
   BackupFlowGuideSection,
   BackupExportSection,
   ExportSection,
+  PortableExportSection,
   PdfExportSection,
   RestoreSection,
 } from './SettingsBackupSections';

@@ -24,6 +24,7 @@ import {
   getDreamReminderSettings,
   requestReminderPermission,
   type DreamReminderSettings,
+  type DreamReminderStyle,
 } from '../../reminders/services/dreamReminderService';
 import {
   clearSeedDreams,
@@ -48,6 +49,8 @@ import {
 } from '../model/settingsPresentation';
 import { useCloudBackupController } from './useCloudBackupController';
 import { trackReminderToggled } from '../../../services/observability/events';
+import { useAppTheme } from '../../../theme/AppThemeProvider';
+import { type AppThemeId } from '../../../theme/theme';
 
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 
@@ -62,6 +65,7 @@ export function useSettingsScreenController({
   setLocale,
   copy,
 }: UseSettingsScreenControllerArgs) {
+  const { themeId, setThemeId } = useAppTheme();
   const [reminderSettings, setReminderSettings] =
     React.useState<DreamReminderSettings>(() => getDreamReminderSettings());
   const [permissionGranted, setPermissionGranted] =
@@ -221,6 +225,16 @@ export function useSettingsScreenController({
     [reminderSettings, updateReminderSettings],
   );
 
+  const onSelectReminderStyle = React.useCallback(
+    async (style: DreamReminderStyle) => {
+      await updateReminderSettings({
+        ...reminderSettings,
+        style,
+      });
+    },
+    [reminderSettings, updateReminderSettings],
+  );
+
   const onNativeTimePickerChange = React.useCallback(
     (event: DateTimePickerEvent, selectedDate?: Date) => {
       if (event.type !== 'set' || !selectedDate) {
@@ -273,6 +287,13 @@ export function useSettingsScreenController({
       }
     },
     [copy.reminderSaveErrorTitle, reminderSettings, setLocale],
+  );
+
+  const onSelectTheme = React.useCallback(
+    (nextThemeId: AppThemeId) => {
+      setThemeId(nextThemeId);
+    },
+    [setThemeId],
   );
 
   const onDeleteTranscriptionModel = React.useCallback(async () => {
@@ -412,6 +433,8 @@ export function useSettingsScreenController({
   return {
     APP_VERSION_LABEL,
     footerMeta,
+    themeId,
+    onSelectTheme,
     biometricAvailability,
     biometricLockEnabled,
     isApplyingBiometricLock,
@@ -425,6 +448,7 @@ export function useSettingsScreenController({
     onOpenReminderTimePicker,
     onNativeTimePickerChange,
     onSelectReminderTime: onSelectTime,
+    onSelectReminderStyle,
     getReminderDate: () => getReminderDate(reminderSettings),
     pickerLocale: getPickerLocale(locale),
     onSelectLocale,

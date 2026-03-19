@@ -8,6 +8,14 @@ export const OBS_EVENTS = {
   DraftResumed: 'draft_resumed',
   DreamSaved: 'dream_saved',
   ReminderToggled: 'reminder_toggled',
+  PracticeHubOpened: 'practice_hub_opened',
+  LucidPracticeStarted: 'lucid_practice_started',
+  RealityCheckCompleted: 'reality_check_completed',
+  WbtbAlarmUsed: 'wbtb_alarm_used',
+  NightmareRescriptingStarted: 'nightmare_rescripting_started',
+  NightmareRescriptingCompleted: 'nightmare_rescripting_completed',
+  GroundingOpened: 'grounding_opened',
+  DreamSignSaved: 'dream_sign_saved',
   SearchUsed: 'search_used',
   FiltersApplied: 'filters_applied',
   BackupExportStarted: 'backup_export_started',
@@ -84,6 +92,56 @@ export function trackDreamSaved(input: {
 export function trackReminderToggled(input: { enabled: boolean }) {
   trackEvent(OBS_EVENTS.ReminderToggled, {
     enabled: input.enabled,
+  });
+}
+
+export function trackPracticeHubOpened(input: { focus: 'lucid' | 'nightmares'; source?: string }) {
+  trackEvent(OBS_EVENTS.PracticeHubOpened, {
+    focus: input.focus,
+    source: input.source,
+  });
+}
+
+export function trackLucidPracticeStarted(input: { source?: string }) {
+  trackEvent(OBS_EVENTS.LucidPracticeStarted, {
+    source: input.source,
+  });
+}
+
+export function trackRealityCheckCompleted(input: { source?: string }) {
+  trackEvent(OBS_EVENTS.RealityCheckCompleted, {
+    source: input.source,
+  });
+}
+
+export function trackWbtbAlarmUsed(input: { source?: string }) {
+  trackEvent(OBS_EVENTS.WbtbAlarmUsed, {
+    source: input.source,
+  });
+}
+
+export function trackNightmareRescriptingStarted(input: { source?: string }) {
+  trackEvent(OBS_EVENTS.NightmareRescriptingStarted, {
+    source: input.source,
+  });
+}
+
+export function trackNightmareRescriptingCompleted(input: { source?: string }) {
+  trackEvent(OBS_EVENTS.NightmareRescriptingCompleted, {
+    source: input.source,
+  });
+}
+
+export function trackGroundingOpened(input: { source?: string }) {
+  trackEvent(OBS_EVENTS.GroundingOpened, {
+    source: input.source,
+  });
+}
+
+export function trackDreamSignSaved(input: { count: number; source?: string }) {
+  trackEvent(OBS_EVENTS.DreamSignSaved, {
+    count: input.count,
+    source: input.source,
   });
 }
 

@@ -19,14 +19,21 @@ import { getSettingsCopy } from '../../../constants/copy/settings';
 const REMINDER_CHANNEL_ID = 'dream-reminders';
 const REMINDER_NOTIFICATION_ID = 'dream-record-reminder';
 const REMINDER_TARGET_RECORD = 'record';
+export const DREAM_REMINDER_STYLE_OPTIONS = [
+  'balanced',
+  'gentle',
+  'direct',
+] as const;
 export const REMINDER_ERROR_CODES = {
   permissionDenied: 'permission-denied',
 } as const;
 
+export type DreamReminderStyle = (typeof DREAM_REMINDER_STYLE_OPTIONS)[number];
 export type DreamReminderSettings = {
   enabled: boolean;
   hour: number;
   minute: number;
+  style: DreamReminderStyle;
 };
 
 export const REMINDER_TIME_OPTIONS: Array<{ label: string; hour: number; minute: number }> = [
@@ -41,7 +48,14 @@ export const DEFAULT_REMINDER_SETTINGS: DreamReminderSettings = {
   enabled: false,
   hour: 7,
   minute: 30,
+  style: 'balanced',
 };
+
+function normalizeReminderStyle(value: unknown): DreamReminderStyle {
+  return DREAM_REMINDER_STYLE_OPTIONS.includes(value as DreamReminderStyle)
+    ? (value as DreamReminderStyle)
+    : DEFAULT_REMINDER_SETTINGS.style;
+}
 
 function normalizeReminderSettings(
   settings: Partial<DreamReminderSettings> | DreamReminderSettings,
@@ -57,6 +71,7 @@ function normalizeReminderSettings(
     enabled: Boolean(settings.enabled),
     hour: Math.min(Math.max(rawHour, 0), 23),
     minute: Math.min(Math.max(rawMinute, 0), 59),
+    style: normalizeReminderStyle(settings.style),
   };
 }
 
@@ -120,6 +135,30 @@ export async function getDreamReminderPermissionGranted() {
   return isAuthorized(settings.authorizationStatus);
 }
 
+export function getDreamReminderNotificationContent(
+  copy: ReturnType<typeof getSettingsCopy>,
+  style: DreamReminderStyle,
+) {
+  switch (style) {
+    case 'gentle':
+      return {
+        title: copy.reminderStyleGentleNotificationTitle,
+        body: copy.reminderStyleGentleNotificationBody,
+      };
+    case 'direct':
+      return {
+        title: copy.reminderStyleDirectNotificationTitle,
+        body: copy.reminderStyleDirectNotificationBody,
+      };
+    case 'balanced':
+    default:
+      return {
+        title: copy.reminderNotificationTitle,
+        body: copy.reminderNotificationBody,
+      };
+  }
+}
+
 async function cancelDreamReminder() {
   await notifee.cancelNotification(REMINDER_NOTIFICATION_ID);
 }
@@ -127,6 +166,10 @@ async function cancelDreamReminder() {
 async function scheduleAuthorizedDreamReminder(settings: DreamReminderSettings) {
   await ensureReminderChannel();
   const copy = getSettingsCopy(getStoredLocale());
+  const notificationContent = getDreamReminderNotificationContent(
+    copy,
+    settings.style,
+  );
 
   const trigger: TimestampTrigger = {
     type: TriggerType.TIMESTAMP,
@@ -137,10 +180,11 @@ async function scheduleAuthorizedDreamReminder(settings: DreamReminderSettings) 
   await notifee.createTriggerNotification(
     {
       id: REMINDER_NOTIFICATION_ID,
-      title: copy.reminderNotificationTitle,
-      body: copy.reminderNotificationBody,
+      title: notificationContent.title,
+      body: notificationContent.body,
       data: {
         target: REMINDER_TARGET_RECORD,
+        style: settings.style,
       },
       android: {
         channelId: REMINDER_CHANNEL_ID,

@@ -1,4 +1,5 @@
 import RNFS from 'react-native-fs';
+import { decode as decodeBase64 } from 'base-64';
 import {
   createDreamAudioStoragePath,
   createDreamSyncBundle,
@@ -98,7 +99,7 @@ function getAudioMimeType(filename: string) {
 }
 
 function decodeBase64ToUint8Array(input: string): Uint8Array {
-  const binary = atob(input);
+  const binary = decodeBase64(input);
   const bytes = new Uint8Array(binary.length);
   for (let i = 0; i < binary.length; i++) {
     bytes[i] = binary.charCodeAt(i);

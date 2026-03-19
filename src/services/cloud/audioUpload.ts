@@ -1,5 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
+import { decode as decodeBase64 } from 'base-64';
 import { getSupabaseRestConfig } from '../api/supabase/restConfig';
 import { getSupabaseClient } from '../api/supabase/client';
 import { DREAM_AUDIO_BUCKET } from '../api/contracts/dreamSync';
@@ -16,6 +17,17 @@ type NativeAudioUploadModule = {
 
 const NativeAudioUpload: NativeAudioUploadModule | undefined =
   (NativeModules as any).AudioUpload;
+
+function decodeBase64ToUint8Array(input: string): Uint8Array {
+  const binary = decodeBase64(input);
+  const bytes = new Uint8Array(binary.length);
+
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
+}
 
 export async function uploadDreamAudio(
   remotePath: string,
@@ -49,7 +61,7 @@ export async function uploadDreamAudio(
   }
 
   const base64 = await RNFS.readFile(localPath, 'base64');
-  const binary = Buffer.from(base64, 'base64');
+  const binary = decodeBase64ToUint8Array(base64);
 
   const { error } = await client.storage
     .from(DREAM_AUDIO_BUCKET)
@@ -62,4 +74,3 @@ export async function uploadDreamAudio(
     throw error;
   }
 }
-

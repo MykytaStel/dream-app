@@ -75,6 +75,12 @@ export function BackupFlowGuideSection({
           variant="inline"
         />
         <SettingsActionRow
+          title={copy.backupFlowPortableTitle}
+          meta={copy.backupFlowPortableMeta}
+          value={copy.backupFlowPortableValue}
+          variant="inline"
+        />
+        <SettingsActionRow
           title={copy.backupFlowRestoreTitle}
           meta={copy.backupFlowRestoreMeta}
           value={copy.backupFlowRestoreValue}
@@ -283,6 +289,88 @@ export function BackupExportSection({
         disabled={isBusy}
       />
       <Text style={styles.privacyFootnote}>{copy.backupExportFootnote}</Text>
+    </Card>
+  );
+}
+
+export function PortableExportSection({
+  copy,
+  styles,
+  isExportingMarkdown,
+  isExportingText,
+  isBusy,
+  lastMarkdownName,
+  lastTextName,
+  onExportMarkdown,
+  onExportText,
+  onOpenLastMarkdown,
+  onOpenLastText,
+  onShareLastMarkdown,
+  onShareLastText,
+}: {
+  copy: SettingsCopy;
+  styles: SettingsStyles;
+  isExportingMarkdown: boolean;
+  isExportingText: boolean;
+  isBusy: boolean;
+  lastMarkdownName: string | null;
+  lastTextName: string | null;
+  onExportMarkdown: () => void;
+  onExportText: () => void;
+  onOpenLastMarkdown: () => void;
+  onOpenLastText: () => void;
+  onShareLastMarkdown: () => void;
+  onShareLastText: () => void;
+}) {
+  return (
+    <Card style={styles.sectionCard}>
+      <SettingsSectionHeader
+        title={copy.portableExportTitle}
+        description={copy.portableExportDescription}
+      />
+      <View style={styles.buttonRow}>
+        <Button
+          title={isExportingMarkdown ? copy.exportMarkdownButtonBusy : copy.exportMarkdownButton}
+          variant="primary"
+          size="sm"
+          style={styles.buttonRowButton}
+          onPress={onExportMarkdown}
+          disabled={isBusy}
+        />
+        <Button
+          title={isExportingText ? copy.exportTextButtonBusy : copy.exportTextButton}
+          variant="ghost"
+          size="sm"
+          style={styles.buttonRowButton}
+          onPress={onExportText}
+          disabled={isBusy}
+        />
+      </View>
+      <ExportArtifactSummary
+        copy={copy}
+        styles={styles}
+        title={copy.exportMarkdownReadyTitle}
+        description={copy.exportMarkdownReadyDescription}
+        fileName={lastMarkdownName}
+        actionTitle={copy.exportOpenMarkdownButton}
+        onAction={onOpenLastMarkdown}
+        secondaryActionTitle={copy.exportShareMarkdownButton}
+        onSecondaryAction={onShareLastMarkdown}
+        disabled={isBusy}
+      />
+      <ExportArtifactSummary
+        copy={copy}
+        styles={styles}
+        title={copy.exportTextReadyTitle}
+        description={copy.exportTextReadyDescription}
+        fileName={lastTextName}
+        actionTitle={copy.exportOpenTextButton}
+        onAction={onOpenLastText}
+        secondaryActionTitle={copy.exportShareTextButton}
+        onSecondaryAction={onShareLastText}
+        disabled={isBusy}
+      />
+      <Text style={styles.privacyFootnote}>{copy.portableExportFootnote}</Text>
     </Card>
   );
 }

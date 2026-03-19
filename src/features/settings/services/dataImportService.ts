@@ -23,6 +23,10 @@ import {
 } from '../../dreams/services/dreamDraftService';
 import { applyDreamReminderSettings } from '../../reminders/services/dreamReminderService';
 import {
+  applyDreamPracticeReminderSettings,
+  type DreamPracticeReminderSettings,
+} from '../../reminders/services/dreamPracticeReminderService';
+import {
   DREAM_EXPORT_VERSION,
   getExportDirectoryPath,
   type DreamBackup,
@@ -41,7 +45,7 @@ export type LocalDreamExportFile = {
 };
 
 export type LocalDreamExportArtifact = LocalDreamExportFile & {
-  format: 'json' | 'pdf';
+  format: 'json' | 'pdf' | 'markdown' | 'text';
 };
 
 export type DreamImportMode = 'replace' | 'merge';
@@ -134,6 +138,15 @@ function parseDreamExport(value: unknown): DreamExportV1 {
     throw new Error('Backup is missing analysis settings.');
   }
 
+  const practiceReminderSettings = value.practiceReminderSettings;
+  if (
+    practiceReminderSettings !== undefined &&
+    practiceReminderSettings !== null &&
+    !isRecordShape(practiceReminderSettings)
+  ) {
+    throw new Error('Backup practice reminder settings block is invalid.');
+  }
+
   const draft = value.draft;
   if (draft !== null && draft !== undefined && !isRecordShape(draft)) {
     throw new Error('Backup draft block is invalid.');
@@ -223,6 +236,31 @@ function parseDreamExport(value: unknown): DreamExportV1 {
     draft: (draft as DreamDraft | null | undefined) ?? null,
     reminderSettings:
       value.reminderSettings as DreamExportV1['reminderSettings'],
+    practiceReminderSettings:
+      (value.practiceReminderSettings as DreamPracticeReminderSettings | undefined) ??
+      ({
+        morning_capture: {
+          enabled: false,
+          hour: 8,
+          minute: 30,
+        },
+        reality_checks: {
+          enabled: false,
+          startHour: 10,
+          endHour: 20,
+          intervalHours: 3,
+        },
+        evening_intention: {
+          enabled: false,
+          hour: 21,
+          minute: 30,
+        },
+        wbtb: {
+          enabled: false,
+          hour: 4,
+          minute: 30,
+        },
+      } satisfies DreamPracticeReminderSettings),
     analysisSettings:
       value.analysisSettings as DreamExportV1['analysisSettings'],
     reviewState,
@@ -366,7 +404,12 @@ export async function listLocalDreamExportArtifacts(): Promise<LocalDreamExportA
       }
 
       const normalizedName = entry.name.toLowerCase();
-      return normalizedName.endsWith('.json') || normalizedName.endsWith('.pdf');
+      return (
+        normalizedName.endsWith('.json') ||
+        normalizedName.endsWith('.pdf') ||
+        normalizedName.endsWith('.md') ||
+        normalizedName.endsWith('.txt')
+      );
     })
     .map(entry => ({
       fileName: entry.name,
@@ -374,7 +417,11 @@ export async function listLocalDreamExportArtifacts(): Promise<LocalDreamExportA
       modifiedAt: entry.mtime instanceof Date ? entry.mtime.getTime() : 0,
       format: entry.name.toLowerCase().endsWith('.pdf')
         ? ('pdf' as const)
-        : ('json' as const),
+        : entry.name.toLowerCase().endsWith('.md')
+          ? ('markdown' as const)
+          : entry.name.toLowerCase().endsWith('.txt')
+            ? ('text' as const)
+            : ('json' as const),
     }))
     .sort((left, right) => right.modifiedAt - left.modifiedAt);
 }
@@ -443,6 +490,7 @@ export async function restoreDreamImportFromFile(
     saveLocale(payload.locale);
     saveDreamAnalysisSettings(payload.analysisSettings);
     await applyDreamReminderSettings(payload.reminderSettings);
+    await applyDreamPracticeReminderSettings(payload.practiceReminderSettings);
   } else if (!getDreamDraft() && payload.draft) {
     saveDreamDraft(payload.draft);
   }

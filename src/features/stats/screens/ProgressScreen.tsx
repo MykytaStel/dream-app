@@ -49,10 +49,30 @@ function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof g
         title: copy.milestoneThreeDayStreakTitle,
         description: copy.milestoneThreeDayStreakDescription,
       };
+    case 'seven-day-streak':
+      return {
+        title: copy.streakMilestoneSevenDaysTitle,
+        description: copy.streakMilestoneSevenDaysSubtitle,
+      };
+    case 'thirty-day-streak':
+      return {
+        title: copy.streakMilestoneThirtyDaysTitle,
+        description: copy.streakMilestoneThirtyDaysSubtitle,
+      };
     case 'ten-dreams':
       return {
         title: copy.milestoneTenDreamsTitle,
         description: copy.milestoneTenDreamsDescription,
+      };
+    case 'fifty-dreams':
+      return {
+        title: copy.milestoneFiftyDreamsTitle,
+        description: copy.milestoneFiftyDreamsDescription,
+      };
+    case 'hundred-dreams':
+      return {
+        title: copy.milestoneHundredDreamsTitle,
+        description: copy.milestoneHundredDreamsDescription,
       };
     case 'first-voice-dream':
       return {

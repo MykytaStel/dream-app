@@ -1,7 +1,12 @@
 import React from 'react';
-import { DarkTheme, NavigationContainer } from '@react-navigation/native';
+import {
+  DarkTheme,
+  DefaultTheme,
+  NavigationContainer,
+} from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import notifee from '@notifee/react-native';
+import { useTheme } from '@shopify/restyle';
 import DreamDetailScreen from '../../features/dreams/screens/DreamDetailScreen';
 import EditDreamScreen from '../../features/dreams/screens/EditDreamScreen';
 import WakeEntryScreen from '../../features/dreams/screens/WakeEntryScreen';
@@ -12,6 +17,7 @@ import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceS
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
 import OnboardingScreen from '../../features/onboarding/screens/OnboardingScreen';
+import DreamPracticeScreen from '../../features/practice/screens/DreamPracticeScreen';
 import { hasSeenOnboarding } from '../../features/onboarding/services/onboardingService';
 import SyncDiagnosticsPreviewScreen from '../../features/settings/screens/SyncDiagnosticsPreviewScreen';
 import {
@@ -19,24 +25,57 @@ import {
   isReminderInitialNotificationTarget,
   isReminderNotificationPress,
 } from '../../features/reminders/services/dreamReminderService';
+import {
+  getPracticeFocusFromNotification,
+  isPracticeInitialNotificationTarget,
+  isPracticeNotificationPress,
+} from '../../features/reminders/services/dreamPracticeReminderService';
+import { useAppTheme } from '../../theme/AppThemeProvider';
+import { Theme } from '../../theme/theme';
+import { appLinking } from './linking';
 import Tabs from './tabs';
-import { useTheme } from '@shopify/restyle';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from './routes';
-import { navigationRef, openWakeEntry } from './navigationRef';
+import { navigationRef, openDreamPractice, openWakeEntry } from './navigationRef';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator() {
-  const t = useTheme<any>();
+  const t = useTheme<Theme>();
+  const { appearance } = useAppTheme();
   const initialRouteName = React.useMemo(
     () => (hasSeenOnboarding() ? ROOT_ROUTE_NAMES.Tabs : ROOT_ROUTE_NAMES.Onboarding),
     [],
   );
+  const navigationTheme = React.useMemo(() => {
+    const baseTheme = appearance === 'dark' ? DarkTheme : DefaultTheme;
+
+    return {
+      ...baseTheme,
+      dark: appearance === 'dark',
+      colors: {
+        ...baseTheme.colors,
+        primary: t.colors.primary,
+        background: t.colors.background,
+        card: t.colors.surface,
+        text: t.colors.text,
+        border: t.colors.border,
+        notification: t.colors.accent,
+      },
+    };
+  }, [appearance, t]);
 
   React.useEffect(() => {
     const unsubscribe = notifee.onForegroundEvent(({ type, detail }) => {
       if (isReminderNotificationPress(type, detail)) {
         openWakeEntry({ source: 'reminder' });
+        return;
+      }
+
+      if (isPracticeNotificationPress(type, detail)) {
+        openDreamPractice({
+          focus: getPracticeFocusFromNotification(detail),
+          entrySource: 'reminder',
+        });
       }
     });
 
@@ -48,27 +87,51 @@ export default function RootNavigator() {
 
     async function openFromNotification() {
       const initialNotification = await notifee.getInitialNotification();
-      const shouldOpen = consumePendingWakeOpenFromReminder() ||
+      const shouldOpenWake = consumePendingWakeOpenFromReminder() ||
         isReminderInitialNotificationTarget(initialNotification);
+      const shouldOpenPractice = isPracticeInitialNotificationTarget(initialNotification);
 
-      if (!shouldOpen || cancelled) {
+      if (cancelled) {
         return;
       }
 
-      const retryOpen = (attempt = 0) => {
-        if (cancelled) {
-          return;
-        }
+      if (shouldOpenWake) {
+        const retryOpenWake = (attempt = 0) => {
+          if (cancelled) {
+            return;
+          }
 
-        const opened = openWakeEntry({ source: 'reminder' });
-        if (opened || attempt >= 8) {
-          return;
-        }
+          const opened = openWakeEntry({ source: 'reminder' });
+          if (opened || attempt >= 8) {
+            return;
+          }
 
-        setTimeout(() => retryOpen(attempt + 1), 150);
-      };
+          setTimeout(() => retryOpenWake(attempt + 1), 150);
+        };
 
-      retryOpen();
+        retryOpenWake();
+        return;
+      }
+
+      if (shouldOpenPractice) {
+        const retryOpenPractice = (attempt = 0) => {
+          if (cancelled) {
+            return;
+          }
+
+          const opened = openDreamPractice({
+            focus: getPracticeFocusFromNotification(initialNotification),
+            entrySource: 'reminder',
+          });
+          if (opened || attempt >= 8) {
+            return;
+          }
+
+          setTimeout(() => retryOpenPractice(attempt + 1), 150);
+        };
+
+        retryOpenPractice();
+      }
     }
 
     openFromNotification();
@@ -80,26 +143,25 @@ export default function RootNavigator() {
 
   return (
     <NavigationContainer
+      linking={appLinking}
       ref={navigationRef}
-      theme={{
-        ...DarkTheme,
-        dark: true,
-        colors: {
-          ...DarkTheme.colors,
-          primary: t.colors.primary,
-          background: t.colors.background,
-          card: t.colors.surface,
-          text: t.colors.text,
-          border: t.colors.border,
-          notification: t.colors.accent,
-        },
-      }}
+      theme={navigationTheme}
     >
       <Stack.Navigator
         initialRouteName={initialRouteName}
         screenOptions={{
           headerShown: false,
           headerBackButtonDisplayMode: 'minimal',
+          headerStyle: {
+            backgroundColor: t.colors.surface,
+          },
+          headerShadowVisible: false,
+          headerTintColor: t.colors.text,
+          headerTitleStyle: {
+            color: t.colors.text,
+          },
+          statusBarStyle: appearance === 'dark' ? 'light' : 'dark',
+          statusBarBackgroundColor: t.colors.background,
         }}
       >
         <Stack.Screen name={ROOT_ROUTE_NAMES.Onboarding} component={OnboardingScreen} />
@@ -174,6 +236,14 @@ export default function RootNavigator() {
           options={{
             headerShown: true,
             title: 'Pattern detail',
+          }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.DreamPractice}
+          component={DreamPracticeScreen}
+          options={{
+            headerShown: true,
+            title: 'Dream practice',
           }}
         />
       </Stack.Navigator>

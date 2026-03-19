@@ -1,3 +1,10 @@
 <resources>
     <string name="app_name">DreamApp</string>
+    <string name="dream_widget_label">Dream widget</string>
+    <string name="dream_widget_brand">Kaleidoscope</string>
+    <string name="dream_widget_fallback_title">Wake capture</string>
+    <string name="dream_widget_fallback_subtitle">Start with a fragment, feeling, or image before it fades.</string>
+    <string name="dream_widget_fallback_meta">Private on device</string>
+    <string name="dream_widget_fallback_primary_action">Wake capture</string>
+    <string name="dream_widget_fallback_secondary_action">Memory</string>
 </resources>

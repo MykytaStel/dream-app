@@ -7,6 +7,8 @@ import type {
   WakeEmotion,
   DreamTranscriptSource,
   DreamTranscriptStatus,
+  LucidPractice,
+  NightmareSupport,
 } from '../../../features/dreams/model/dream';
 import type {
   DreamAnalysisProvider,
@@ -32,6 +34,8 @@ export type DreamEntryRow = {
   transcript_updated_at: string | null;
   mood: Mood | null;
   lucidity: Dream['lucidity'] | null;
+  lucid_practice?: LucidPractice | null;
+  nightmare?: NightmareSupport | null;
   archived_at: string | null;
   starred_at: string | null;
   analysis_provider: DreamAnalysisProvider | null;
@@ -145,6 +149,8 @@ export function createDreamEntryRow(dream: Dream, userId: string): DreamEntryRow
     transcript_updated_at: dream.transcriptUpdatedAt ? toIsoString(dream.transcriptUpdatedAt) : null,
     mood: dream.mood ?? null,
     lucidity: dream.lucidity ?? null,
+    lucid_practice: dream.lucidPractice ?? null,
+    nightmare: dream.nightmare ?? null,
     archived_at: dream.archivedAt ? toIsoString(dream.archivedAt) : null,
     starred_at: dream.starredAt ? toIsoString(dream.starredAt) : null,
     analysis_provider: dream.analysis?.provider ?? null,
@@ -219,6 +225,8 @@ export function hydrateDreamFromSyncBundle(bundle: DreamSyncBundle): Dream {
       .sort((a, b) => a.position - b.position)
       .map(item => item.tag),
     mood: row.mood ?? undefined,
+    lucidPractice: row.lucid_practice ?? undefined,
+    nightmare: row.nightmare ?? undefined,
     wakeEmotions: bundle.wakeEmotions
       .slice()
       .sort((a, b) => a.position - b.position)

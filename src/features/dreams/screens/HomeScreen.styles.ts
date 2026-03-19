@@ -18,6 +18,9 @@ export function createHomeScreenStyles(theme: Theme) {
     listHeaderContent: {
       gap: theme.spacing.xs,
     },
+    homeModuleStack: {
+      gap: theme.spacing.xs,
+    },
     emptyCard: {
       gap: 10,
     },
@@ -429,7 +432,7 @@ export function createHomeScreenStyles(theme: Theme) {
     timelineHeaderActions: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 0,
+      gap: 8,
     },
     timelineCountPill: {
       ...createControlPill(theme, {
@@ -882,6 +885,59 @@ export function createHomeScreenStyles(theme: Theme) {
     },
     filterSheetScroll: {
       maxHeight: 460,
+    },
+    homeCustomizeOrderList: {
+      gap: 8,
+    },
+    homeCustomizeOrderRow: {
+      ...createSoftTile(theme, {
+        tone: 'surface',
+        radius: 14,
+        paddingVertical: 8,
+        paddingHorizontal: 10,
+      }),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    homeCustomizeOrderRowHidden: {
+      opacity: 0.68,
+    },
+    homeCustomizeOrderCopy: {
+      flex: 1,
+      gap: 2,
+    },
+    homeCustomizeOrderTitle: {
+      color: theme.colors.text,
+      fontSize: 13,
+      lineHeight: 17,
+      fontWeight: '700',
+    },
+    homeCustomizeOrderMeta: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+      lineHeight: 15,
+    },
+    homeCustomizeOrderActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    homeCustomizeOrderButton: {
+      ...createControlPill(theme, {
+        tone: 'surface',
+        paddingVertical: 7,
+        paddingHorizontal: 9,
+      }),
+      minWidth: 34,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    homeCustomizeOrderButtonDisabled: {
+      opacity: 0.45,
+    },
+    homeCustomizeOrderButtonPressed: {
+      opacity: 0.88,
     },
     filterAdvancedMeta: {
       color: theme.colors.textDim,

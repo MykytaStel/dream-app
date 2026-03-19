@@ -42,7 +42,13 @@ export function StatsOverviewSections({
   activityBars,
   emotionalTrendSeries,
   emotionalTrendInsight,
+  lucidMetrics,
+  lucidHistoryItems,
   nightmareMetrics,
+  lucidProgressTitle,
+  lucidProgressDescription,
+  nightmareRecoveryTitle,
+  nightmareRecoveryDescription,
   weeklyPatternCards,
   summaryTiles,
   coverageItems,
@@ -51,6 +57,7 @@ export function StatsOverviewSections({
   importantDreamItems,
   savedSetItems,
   onOpenReviewWorkspace,
+  onOpenLucidDream,
   onOpenPatternDetail,
 }: {
   copy: StatsCopy;
@@ -76,11 +83,26 @@ export function StatsOverviewSections({
   activityBars: ReadonlyArray<{ key: string; label: string; count: number }>;
   emotionalTrendSeries: ReadonlyArray<EmotionalTrendEntry>;
   emotionalTrendInsight: string;
+  lucidMetrics: ReadonlyArray<{
+    label: string;
+    value: string;
+    hint: string;
+  }>;
+  lucidHistoryItems: ReadonlyArray<{
+    dreamId: string;
+    title: string;
+    meta: string;
+    levelLabel: string;
+  }>;
   nightmareMetrics: ReadonlyArray<{
     label: string;
     value: string;
     hint: string;
   }>;
+  lucidProgressTitle: string;
+  lucidProgressDescription: string;
+  nightmareRecoveryTitle: string;
+  nightmareRecoveryDescription: string;
   weeklyPatternCards: ReadonlyArray<WeeklyPatternCard>;
   summaryTiles: ReadonlyArray<{ label: string; value: number }>;
   coverageItems: ReadonlyArray<{
@@ -112,6 +134,7 @@ export function StatsOverviewSections({
     eyebrow: string;
   }>;
   onOpenReviewWorkspace: () => void;
+  onOpenLucidDream: (dreamId: string) => void;
   onOpenPatternDetail: (signal: string, kind: 'word' | 'theme') => void;
 }) {
   const t = useTheme<Theme>();
@@ -166,8 +189,61 @@ export function StatsOverviewSections({
         <Card style={styles.sectionCard}>
           <View style={styles.detailsSubsection}>
             <SectionHeader
-              title={copy.nightmareFrequencyTitle}
-              subtitle={copy.nightmareFrequencyDescription}
+              title={lucidProgressTitle}
+              subtitle={lucidProgressDescription}
+            />
+            <View style={styles.metricGrid}>
+              {lucidMetrics.map(metric => (
+                <View key={metric.label} style={styles.metricTile}>
+                  <Text style={styles.metricLabel}>{metric.label}</Text>
+                  <Text style={styles.metricValue}>{metric.value}</Text>
+                  <Text style={styles.detailsListHint}>{metric.hint}</Text>
+                </View>
+              ))}
+            </View>
+
+            <View style={styles.detailsSubsection}>
+              <SectionHeader
+                title={copy.lucidHistoryTitle}
+                subtitle={copy.lucidHistoryDescription}
+              />
+              {lucidHistoryItems.length ? (
+                <View style={styles.detailsList}>
+                  {lucidHistoryItems.map(item => (
+                    <Pressable
+                      key={item.dreamId}
+                      style={({ pressed }) => [
+                        styles.detailsListRow,
+                        pressed ? styles.insightCardPressed : null,
+                      ]}
+                      onPress={() => onOpenLucidDream(item.dreamId)}
+                    >
+                      <View style={styles.detailsListHeader}>
+                        <View style={styles.detailsListCopy}>
+                          <Text style={styles.reviewShelfCompactTitle}>{item.title}</Text>
+                          <Text style={styles.reviewShelfCompactMeta}>{item.meta}</Text>
+                        </View>
+                        <View style={styles.detailsListValueChip}>
+                          <Text style={styles.detailsListValue}>{item.levelLabel}</Text>
+                        </View>
+                      </View>
+                    </Pressable>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.detailsListHint}>{copy.lucidHistoryEmpty}</Text>
+              )}
+            </View>
+          </View>
+        </Card>
+      </Animated.View>
+
+      <Animated.View layout={statsLayoutTransition}>
+        <Card style={styles.sectionCard}>
+          <View style={styles.detailsSubsection}>
+            <SectionHeader
+              title={nightmareRecoveryTitle}
+              subtitle={nightmareRecoveryDescription}
             />
             <View style={styles.metricGrid}>
               {nightmareMetrics.map(metric => (

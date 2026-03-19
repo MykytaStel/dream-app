@@ -15,6 +15,10 @@ import {
   type HomeTimelineFilters,
 } from '../../model/homeTimeline';
 import { type HomeRevisitCue } from '../../model/homeOverview';
+import {
+  type HomeLayoutPreferences,
+  type HomeLayoutSection,
+} from '../../model/homeLayout';
 import { type PatternDetailKind } from '../../../../app/navigation/routes';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 import { Theme } from '../../../../theme/theme';
@@ -48,9 +52,19 @@ type HomeListHeaderProps = {
   weeklyPatternCards: WeeklyPatternCard[];
   attentionValue: string;
   attentionHint: string;
+  practiceShortcutTitle?: string;
+  practiceShortcutHint?: string;
+  nightmareShortcutTitle?: string;
+  nightmareShortcutHint?: string;
+  lucidQuickFilterLabel?: string;
+  nightmareQuickFilterLabel?: string;
+  homeLayoutPreferences: HomeLayoutPreferences;
+  onOpenPractice?: (() => void) | null;
+  onOpenNightmarePractice?: (() => void) | null;
   onOpenRevisitDream: (dreamId: string) => void;
   onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
   onOpenFilterSheet: () => void;
+  onOpenHomeCustomizationSheet: () => void;
   onClearFilters: () => void;
   onClearSearch: () => void;
   onSaveSearchPreset: () => void;
@@ -87,9 +101,19 @@ export const HomeListHeader = React.memo(function HomeListHeader({
   weeklyPatternCards,
   attentionValue,
   attentionHint,
+  practiceShortcutTitle,
+  practiceShortcutHint,
+  nightmareShortcutTitle,
+  nightmareShortcutHint,
+  lucidQuickFilterLabel,
+  nightmareQuickFilterLabel,
+  homeLayoutPreferences,
+  onOpenPractice,
+  onOpenNightmarePractice,
   onOpenRevisitDream,
   onOpenPatternDetail,
   onOpenFilterSheet,
+  onOpenHomeCustomizationSheet,
   onClearFilters,
   onClearSearch,
   onSaveSearchPreset,
@@ -136,11 +160,13 @@ export const HomeListHeader = React.memo(function HomeListHeader({
   const tagsShortcutLabel = timelineFilters.tags.length
     ? `${copy.homeTagFilterLabel} (${timelineFilters.tags.length})`
     : copy.homeTagFilterLabel;
+  const shortcutSection = React.useMemo(() => {
+    const shortcuts: React.ReactNode[] = [];
 
-  return (
-    <View style={styles.listHeaderContent}>
-      {showLastViewedShortcut ? (
+    if (showLastViewedShortcut) {
+      shortcuts.push(
         <Pressable
+          key="last-viewed"
           onPress={onOpenLastDream}
           style={({ pressed }) => [
             styles.heroShortcutButton,
@@ -167,166 +193,361 @@ export const HomeListHeader = React.memo(function HomeListHeader({
               </Text>
             ) : null}
           </View>
-        </Pressable>
-      ) : null}
+        </Pressable>,
+      );
+    }
 
-      {showSpotlightCard ? (
-        <Card style={styles.spotlightCard}>
-          <View style={styles.spotlightHeader}>
-            <View style={styles.spotlightHeaderCopy}>
-              <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
-              <Text style={styles.spotlightHeaderHint}>
-                {copy.homeSpotlightSubtitle}
-              </Text>
-            </View>
+    if (practiceShortcutTitle && onOpenPractice) {
+      shortcuts.push(
+        <Pressable
+          key="practice"
+          onPress={onOpenPractice}
+          style={({ pressed }) => [
+            styles.heroShortcutButton,
+            pressed ? styles.heroShortcutButtonPressed : null,
+          ]}
+        >
+          <View style={styles.heroShortcutIconWrap}>
+            <Ionicons
+              name="sparkles-outline"
+              size={15}
+              color={t.colors.primary}
+            />
           </View>
+          <View style={styles.heroShortcutCopy}>
+            <Text style={styles.heroShortcutLabel}>
+              {practiceShortcutTitle}
+            </Text>
+            {practiceShortcutHint ? (
+              <Text style={styles.heroShortcutMeta} numberOfLines={2}>
+                {practiceShortcutHint}
+              </Text>
+            ) : null}
+          </View>
+        </Pressable>,
+      );
+    }
 
-          {spotlightPatternKind ? (
-            <View style={styles.spotlightLeadRow}>
-              <Pressable
-                style={({ pressed }) => [
-                  styles.spotlightTile,
-                  styles.spotlightTileLead,
-                  styles.spotlightTileFeatured,
-                  pressed ? styles.spotlightTilePressed : null,
-                ]}
-                onPress={() =>
-                  onOpenPatternDetail(spotlightPattern, spotlightPatternKind)
-                }
-              >
-                <Text style={styles.spotlightLabel}>
-                  {copy.homeSpotlightPatternLabel}
-                </Text>
-                <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
-                <Text style={styles.spotlightHint}>{spotlightCountLabel}</Text>
-              </Pressable>
-            </View>
-          ) : null}
+    if (nightmareShortcutTitle && onOpenNightmarePractice) {
+      shortcuts.push(
+        <Pressable
+          key="nightmare-practice"
+          onPress={onOpenNightmarePractice}
+          style={({ pressed }) => [
+            styles.heroShortcutButton,
+            pressed ? styles.heroShortcutButtonPressed : null,
+          ]}
+        >
+          <View style={styles.heroShortcutIconWrap}>
+            <Ionicons
+              name="water-outline"
+              size={15}
+              color={t.colors.primary}
+            />
+          </View>
+          <View style={styles.heroShortcutCopy}>
+            <Text style={styles.heroShortcutLabel}>
+              {nightmareShortcutTitle}
+            </Text>
+            {nightmareShortcutHint ? (
+              <Text style={styles.heroShortcutMeta} numberOfLines={2}>
+                {nightmareShortcutHint}
+              </Text>
+            ) : null}
+          </View>
+        </Pressable>,
+      );
+    }
 
-          {revisitCue ? (
+    if (!shortcuts.length) {
+      return null;
+    }
+
+    return <View style={styles.homeModuleStack}>{shortcuts}</View>;
+  }, [
+    copy.homeLastDreamLabel,
+    lastViewedDreamMeta,
+    lastViewedDreamTitle,
+    nightmareShortcutHint,
+    nightmareShortcutTitle,
+    onOpenLastDream,
+    onOpenNightmarePractice,
+    onOpenPractice,
+    practiceShortcutHint,
+    practiceShortcutTitle,
+    showLastViewedShortcut,
+    styles.heroShortcutButton,
+    styles.heroShortcutButtonPressed,
+    styles.heroShortcutCopy,
+    styles.heroShortcutIconWrap,
+    styles.heroShortcutLabel,
+    styles.heroShortcutMeta,
+    styles.heroShortcutTitle,
+    styles.homeModuleStack,
+    t.colors.primary,
+  ]);
+  const spotlightSection = React.useMemo(() => {
+    if (!showSpotlightCard) {
+      return null;
+    }
+
+    return (
+      <Card style={styles.spotlightCard}>
+        <View style={styles.spotlightHeader}>
+          <View style={styles.spotlightHeaderCopy}>
+            <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
+            <Text style={styles.spotlightHeaderHint}>
+              {copy.homeSpotlightSubtitle}
+            </Text>
+          </View>
+        </View>
+
+        {spotlightPatternKind ? (
+          <View style={styles.spotlightLeadRow}>
             <Pressable
               style={({ pressed }) => [
                 styles.spotlightTile,
                 styles.spotlightTileLead,
+                styles.spotlightTileFeatured,
                 pressed ? styles.spotlightTilePressed : null,
               ]}
-              onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
+              onPress={() =>
+                onOpenPatternDetail(spotlightPattern, spotlightPatternKind)
+              }
             >
-              <View style={styles.spotlightCueHeader}>
-                <Text style={styles.spotlightLabel}>
-                  {copy.homeSpotlightRevisitLabel}
-                </Text>
-                <View style={styles.spotlightCueBadge}>
-                  <Ionicons
-                    name={revisitCue.icon}
-                    size={12}
-                    color={t.colors.accent}
-                  />
-                  <Text style={styles.spotlightCueBadgeText}>
-                    {revisitCue.contextLabel}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.spotlightValue}>{revisitCue.title}</Text>
-              <Text style={styles.spotlightHint}>{revisitCue.reason}</Text>
-              <View style={styles.spotlightCueActionRow}>
-                <Text style={styles.spotlightActionHint}>
-                  {revisitCue.actionLabel}
-                </Text>
+              <Text style={styles.spotlightLabel}>
+                {copy.homeSpotlightPatternLabel}
+              </Text>
+              <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
+              <Text style={styles.spotlightHint}>{spotlightCountLabel}</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {revisitCue ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.spotlightTile,
+              styles.spotlightTileLead,
+              pressed ? styles.spotlightTilePressed : null,
+            ]}
+            onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
+          >
+            <View style={styles.spotlightCueHeader}>
+              <Text style={styles.spotlightLabel}>
+                {copy.homeSpotlightRevisitLabel}
+              </Text>
+              <View style={styles.spotlightCueBadge}>
                 <Ionicons
-                  name="arrow-forward-outline"
-                  size={14}
+                  name={revisitCue.icon}
+                  size={12}
                   color={t.colors.accent}
                 />
-              </View>
-            </Pressable>
-          ) : null}
-
-          {hasAttentionCue ? (
-            <View style={styles.spotlightSupportRow}>
-              <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-                <Text style={styles.spotlightLabel}>
-                  {copy.homeSpotlightAttentionLabel}
+                <Text style={styles.spotlightCueBadgeText}>
+                  {revisitCue.contextLabel}
                 </Text>
-                <Text style={styles.spotlightCompactValue}>
-                  {attentionValue}
-                </Text>
-                <Text style={styles.spotlightHint}>{attentionHint}</Text>
               </View>
             </View>
-          ) : null}
-        </Card>
-      ) : null}
+            <Text style={styles.spotlightValue}>{revisitCue.title}</Text>
+            <Text style={styles.spotlightHint}>{revisitCue.reason}</Text>
+            <View style={styles.spotlightCueActionRow}>
+              <Text style={styles.spotlightActionHint}>
+                {revisitCue.actionLabel}
+              </Text>
+              <Ionicons
+                name="arrow-forward-outline"
+                size={14}
+                color={t.colors.accent}
+              />
+            </View>
+          </Pressable>
+        ) : null}
 
-      {weeklyPatternCards.length ? (
-        <View style={styles.weeklyPatternsSection}>
-          <View style={styles.weeklyPatternsHeader}>
-            <Text style={styles.sectionLabel}>
-              {copy.homeWeeklyPatternsTitle}
-            </Text>
-            <Text style={styles.weeklyPatternsSubtitle}>
-              {copy.homeWeeklyPatternsSubtitle}
-            </Text>
+        {hasAttentionCue ? (
+          <View style={styles.spotlightSupportRow}>
+            <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
+              <Text style={styles.spotlightLabel}>
+                {copy.homeSpotlightAttentionLabel}
+              </Text>
+              <Text style={styles.spotlightCompactValue}>{attentionValue}</Text>
+              <Text style={styles.spotlightHint}>{attentionHint}</Text>
+            </View>
           </View>
+        ) : null}
+      </Card>
+    );
+  }, [
+    attentionHint,
+    attentionValue,
+    copy.homeSpotlightAttentionLabel,
+    copy.homeSpotlightPatternLabel,
+    copy.homeSpotlightRevisitLabel,
+    copy.homeSpotlightSubtitle,
+    copy.homeSpotlightTitle,
+    hasAttentionCue,
+    onOpenPatternDetail,
+    onOpenRevisitDream,
+    revisitCue,
+    showSpotlightCard,
+    spotlightCountLabel,
+    spotlightPattern,
+    spotlightPatternKind,
+    styles.sectionLabel,
+    styles.spotlightActionHint,
+    styles.spotlightCard,
+    styles.spotlightCompactTile,
+    styles.spotlightCompactValue,
+    styles.spotlightCueActionRow,
+    styles.spotlightCueBadge,
+    styles.spotlightCueBadgeText,
+    styles.spotlightCueHeader,
+    styles.spotlightHeader,
+    styles.spotlightHeaderCopy,
+    styles.spotlightHeaderHint,
+    styles.spotlightHint,
+    styles.spotlightLabel,
+    styles.spotlightLeadRow,
+    styles.spotlightSupportRow,
+    styles.spotlightTile,
+    styles.spotlightTileFeatured,
+    styles.spotlightTileLead,
+    styles.spotlightTilePressed,
+    styles.spotlightValue,
+    t.colors.accent,
+  ]);
+  const weeklyPatternsSection = React.useMemo(() => {
+    if (!weeklyPatternCards.length) {
+      return null;
+    }
 
-          <View style={styles.weeklyPatternsRow}>
-            {weeklyPatternCards.map(card => {
-              const content = (
-                <>
-                  <Text style={styles.weeklyPatternLabel}>{card.label}</Text>
-                  <Text style={styles.weeklyPatternTitle}>{card.title}</Text>
-                  <Text style={styles.weeklyPatternHint}>{card.hint}</Text>
-                </>
-              );
+    return (
+      <View style={styles.weeklyPatternsSection}>
+        <View style={styles.weeklyPatternsHeader}>
+          <Text style={styles.sectionLabel}>{copy.homeWeeklyPatternsTitle}</Text>
+          <Text style={styles.weeklyPatternsSubtitle}>
+            {copy.homeWeeklyPatternsSubtitle}
+          </Text>
+        </View>
 
-              if (card.signal && card.signalKind) {
-                const signal = card.signal;
-                const signalKind = card.signalKind;
+        <View style={styles.weeklyPatternsRow}>
+          {weeklyPatternCards.map(card => {
+            const content = (
+              <>
+                <Text style={styles.weeklyPatternLabel}>{card.label}</Text>
+                <Text style={styles.weeklyPatternTitle}>{card.title}</Text>
+                <Text style={styles.weeklyPatternHint}>{card.hint}</Text>
+              </>
+            );
 
-                return (
-                  <Pressable
-                    key={card.key}
-                    style={({ pressed }) => [
-                      styles.weeklyPatternCard,
-                      card.accent ? styles.weeklyPatternCardAccent : null,
-                      pressed ? styles.spotlightTilePressed : null,
-                    ]}
-                    onPress={() => onOpenPatternDetail(signal, signalKind)}
-                  >
-                    {content}
-                  </Pressable>
-                );
-              }
+            if (card.signal && card.signalKind) {
+              const signal = card.signal;
+              const signalKind = card.signalKind;
 
               return (
-                <View
+                <Pressable
                   key={card.key}
-                  style={[
+                  style={({ pressed }) => [
                     styles.weeklyPatternCard,
                     card.accent ? styles.weeklyPatternCardAccent : null,
+                    pressed ? styles.spotlightTilePressed : null,
                   ]}
+                  onPress={() => onOpenPatternDetail(signal, signalKind)}
                 >
                   {content}
-                </View>
+                </Pressable>
               );
-            })}
-          </View>
+            }
+
+            return (
+              <View
+                key={card.key}
+                style={[
+                  styles.weeklyPatternCard,
+                  card.accent ? styles.weeklyPatternCardAccent : null,
+                ]}
+              >
+                {content}
+              </View>
+            );
+          })}
         </View>
-      ) : null}
+      </View>
+    );
+  }, [
+    copy.homeWeeklyPatternsSubtitle,
+    copy.homeWeeklyPatternsTitle,
+    onOpenPatternDetail,
+    styles.sectionLabel,
+    styles.spotlightTilePressed,
+    styles.weeklyPatternCard,
+    styles.weeklyPatternCardAccent,
+    styles.weeklyPatternHint,
+    styles.weeklyPatternLabel,
+    styles.weeklyPatternTitle,
+    styles.weeklyPatternsHeader,
+    styles.weeklyPatternsRow,
+    styles.weeklyPatternsSection,
+    styles.weeklyPatternsSubtitle,
+    weeklyPatternCards,
+  ]);
+  const orderedTopSections = React.useMemo(
+    () =>
+      homeLayoutPreferences.sectionOrder.reduce<
+        Array<{ key: HomeLayoutSection; node: React.ReactNode }>
+      >((sections, section) => {
+        if (homeLayoutPreferences.hiddenSections.includes(section)) {
+          return sections;
+        }
+
+        const node =
+          section === 'shortcuts'
+            ? shortcutSection
+            : section === 'spotlight'
+            ? spotlightSection
+            : weeklyPatternsSection;
+
+        if (node) {
+          sections.push({ key: section, node });
+        }
+
+        return sections;
+      }, []),
+    [
+      homeLayoutPreferences.hiddenSections,
+      homeLayoutPreferences.sectionOrder,
+      shortcutSection,
+      spotlightSection,
+      weeklyPatternsSection,
+    ],
+  );
+
+  return (
+    <View style={styles.listHeaderContent}>
+      {orderedTopSections.map(section => (
+        <React.Fragment key={section.key}>{section.node}</React.Fragment>
+      ))}
 
       <View style={styles.timelineHeaderRow}>
         <View style={styles.timelineHeaderCopy}>
           <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
         </View>
-        {hasSearchQuery || hasNonSearchRefinements ? (
-          <View style={styles.timelineHeaderActions}>
+        <View style={styles.timelineHeaderActions}>
+          <Pressable
+            style={styles.inlineActionButton}
+            onPress={onOpenHomeCustomizationSheet}
+          >
+            <Text style={styles.inlineActionButtonText}>
+              {copy.homeCustomizeAction}
+            </Text>
+          </Pressable>
+          {hasSearchQuery || hasNonSearchRefinements ? (
             <View style={styles.timelineCountPill}>
               <Text style={styles.timelineCountLabel}>
                 {searchResultsLabel}
               </Text>
             </View>
-          </View>
-        ) : null}
+          ) : null}
+        </View>
       </View>
 
       <Card style={styles.searchCard}>
@@ -419,6 +640,58 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           </Pressable>
         </View>
         <View style={styles.primaryActionsRow}>
+          <Pressable
+            style={[
+              styles.inlineActionButton,
+              timelineFilters.special === 'lucid'
+                ? styles.inlineActionButtonActive
+                : null,
+            ]}
+            onPress={() =>
+              updateTimelineFilters(current => ({
+                ...current,
+                special: current.special === 'lucid' ? 'all' : 'lucid',
+              }))
+            }
+          >
+            <Text
+              style={[
+                styles.inlineActionButtonText,
+                timelineFilters.special === 'lucid'
+                  ? styles.inlineActionButtonTextActive
+                  : null,
+              ]}
+            >
+              {lucidQuickFilterLabel ?? 'Lucid'}
+            </Text>
+          </Pressable>
+
+          <Pressable
+            style={[
+              styles.inlineActionButton,
+              timelineFilters.special === 'nightmare'
+                ? styles.inlineActionButtonActive
+                : null,
+            ]}
+            onPress={() =>
+              updateTimelineFilters(current => ({
+                ...current,
+                special: current.special === 'nightmare' ? 'all' : 'nightmare',
+              }))
+            }
+          >
+            <Text
+              style={[
+                styles.inlineActionButtonText,
+                timelineFilters.special === 'nightmare'
+                  ? styles.inlineActionButtonTextActive
+                  : null,
+              ]}
+            >
+              {nightmareQuickFilterLabel ?? 'Nightmare'}
+            </Text>
+          </Pressable>
+
           <Pressable
             style={[
               styles.inlineActionButton,

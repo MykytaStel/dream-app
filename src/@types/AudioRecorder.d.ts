@@ -1,6 +1,6 @@
-declare module 'react-native' {
-  import type { NativeModulesStatic } from 'react-native';
+import 'react-native';
 
+declare module 'react-native' {
   interface AudioRecorderNativeModule {
     startRecording(): Promise<string>;
     stopRecording(): Promise<string | null>;
@@ -24,4 +24,3 @@ declare module 'react-native' {
     AudioUpload?: AudioUploadNativeModule;
   }
 }
-

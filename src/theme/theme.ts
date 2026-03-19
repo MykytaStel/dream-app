@@ -1,30 +1,67 @@
 import { createTheme } from '@shopify/restyle';
-import { palette, spacing, radius, typography } from './tokens';
+import { palette, radius, spacing, typography, type ThemePalette } from './tokens';
 
-export const theme = createTheme({
-  colors: {
-    background: palette.light.bg,
-    surface: palette.light.surface,
-    surfaceAlt: palette.light.surfaceAlt,
-    surfaceElevated: palette.light.surfaceElevated,
-    text: palette.light.text,
-    textDim: palette.light.textDim,
-    primary: palette.light.primary,
-    primaryAlt: palette.light.primaryAlt,
-    accent: palette.light.accent,
-    auroraStart: palette.light.auroraStart,
-    auroraMid: palette.light.auroraMid,
-    auroraEnd: palette.light.auroraEnd,
-    border: palette.light.border,
-    danger: palette.light.danger,
-    success: palette.light.success,
-    tabIcon: palette.light.tabIcon,
-    glow: palette.light.glow,
-    ink: palette.light.ink,
-    switchTrackOff: palette.light.switchTrackOff,
-  },
+export const APP_THEME_IDS = ['kaleidoscope', 'ember', 'moss'] as const;
+
+export type AppThemeId = (typeof APP_THEME_IDS)[number];
+export type AppThemeAppearance = 'dark' | 'light';
+
+const sharedTheme = {
   spacing,
   borderRadii: radius,
   textVariants: typography as any,
-});
+} as const;
+
+function createAppTheme(colors: ThemePalette) {
+  return createTheme({
+    colors: {
+      background: colors.bg,
+      surface: colors.surface,
+      surfaceAlt: colors.surfaceAlt,
+      surfaceElevated: colors.surfaceElevated,
+      text: colors.text,
+      textDim: colors.textDim,
+      primary: colors.primary,
+      primaryAlt: colors.primaryAlt,
+      accent: colors.accent,
+      auroraStart: colors.auroraStart,
+      auroraMid: colors.auroraMid,
+      auroraEnd: colors.auroraEnd,
+      border: colors.border,
+      danger: colors.danger,
+      success: colors.success,
+      tabIcon: colors.tabIcon,
+      glow: colors.glow,
+      ink: colors.ink,
+      switchTrackOff: colors.switchTrackOff,
+    },
+    ...sharedTheme,
+  });
+}
+
+export const DEFAULT_THEME_ID: AppThemeId = 'kaleidoscope';
+
+export const themes = {
+  kaleidoscope: createAppTheme(palette.kaleidoscope),
+  ember: createAppTheme(palette.ember),
+  moss: createAppTheme(palette.moss),
+} as const;
+
+export const appThemeMetadata: Record<
+  AppThemeId,
+  {
+    appearance: AppThemeAppearance;
+  }
+> = {
+  kaleidoscope: { appearance: 'dark' },
+  ember: { appearance: 'dark' },
+  moss: { appearance: 'dark' },
+};
+
+export const theme = themes[DEFAULT_THEME_ID];
+
+export function isAppThemeId(value: unknown): value is AppThemeId {
+  return typeof value === 'string' && APP_THEME_IDS.includes(value as AppThemeId);
+}
+
 export type Theme = typeof theme;

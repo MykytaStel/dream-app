@@ -10,6 +10,9 @@ jest.mock('../src/app/navigation/RootNavigator', () => 'RootNavigator');
 jest.mock('../src/app/AppProvider', () => ({
   AppProviders: ({ children }: { children: React.ReactNode }) => children,
 }));
+jest.mock('../src/features/security/components/AppLockGate', () => ({
+  AppLockGate: ({ children }: { children: React.ReactNode }) => children,
+}));
 
 test('renders correctly', async () => {
   await ReactTestRenderer.act(() => {

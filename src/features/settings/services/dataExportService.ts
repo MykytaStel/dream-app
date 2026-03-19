@@ -14,10 +14,23 @@ import {
   DreamReminderSettings,
   getDreamReminderSettings,
 } from '../../reminders/services/dreamReminderService';
+import {
+  DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS,
+  getDreamPracticeReminderSettings,
+  type DreamPracticeReminderSettings,
+} from '../../reminders/services/dreamPracticeReminderService';
 import { getDerivedReviewStateSnapshot } from '../../stats/services/reviewShelfStateService';
 import { buildDreamArchivePdfHtml } from './dreamArchivePdf';
+import {
+  buildDreamReadableExportDocument,
+  type DreamReadableExportFormat,
+} from './dreamArchiveReadable';
+export {
+  buildDreamReadableExportDocument,
+  type DreamReadableExportFormat,
+} from './dreamArchiveReadable';
 
-export const DREAM_EXPORT_VERSION = 7;
+export const DREAM_EXPORT_VERSION = 8;
 const DREAM_EXPORT_DIRECTORY = 'exports';
 const PDF_OUTPUT_DIRECTORY = 'Documents';
 
@@ -46,6 +59,7 @@ export type DreamExportV1 = {
   dreams: DreamBackup[];
   draft: DreamDraft | null;
   reminderSettings: DreamReminderSettings;
+  practiceReminderSettings: DreamPracticeReminderSettings;
   analysisSettings: DreamAnalysisSettings;
   reviewState: {
     updatedAt: number;
@@ -68,6 +82,7 @@ function buildCurrentDreamExportSnapshot() {
     dreams: listDreams(),
     draft: getDreamDraft(),
     reminderSettings: getDreamReminderSettings(),
+    practiceReminderSettings: getDreamPracticeReminderSettings(),
     analysisSettings: getDreamAnalysisSettings(),
     reviewState: {
       updatedAt: reviewState.updatedAt,
@@ -94,6 +109,7 @@ export function buildDreamExportSnapshot(input: {
   dreams: Dream[];
   draft: DreamDraft | null;
   reminderSettings: DreamReminderSettings;
+  practiceReminderSettings?: DreamPracticeReminderSettings;
   analysisSettings: DreamAnalysisSettings;
   reviewState: DreamExportV1['reviewState'];
   storageSchemaVersion?: number;
@@ -121,6 +137,8 @@ export function buildDreamExportSnapshot(input: {
     dreams: backupDreams,
     draft: input.draft,
     reminderSettings: input.reminderSettings,
+    practiceReminderSettings:
+      input.practiceReminderSettings ?? DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS,
     analysisSettings: input.analysisSettings,
     reviewState: input.reviewState,
   };
@@ -134,6 +152,15 @@ export function createDreamExportFileName(exportedAt: string) {
 export function createDreamPdfExportFileName(exportedAt: string) {
   const compactTimestamp = exportedAt.replace(/[:.]/g, '-');
   return `kaleidoskop-archive-${compactTimestamp}.pdf`;
+}
+
+export function createDreamReadableExportFileName(
+  exportedAt: string,
+  format: DreamReadableExportFormat,
+) {
+  const compactTimestamp = exportedAt.replace(/[:.]/g, '-');
+  const extension = format === 'markdown' ? 'md' : 'txt';
+  return `kaleidoskop-dreams-${compactTimestamp}.${extension}`;
 }
 
 function getExportDirectoryPath() {
@@ -195,5 +222,23 @@ export async function exportDreamArchivePdf() {
   return {
     filePath: targetFilePath,
     payload,
+  };
+}
+
+export async function exportDreamReadableArchive(format: DreamReadableExportFormat) {
+  const payload = buildCurrentDreamExportSnapshot();
+  const directoryPath = getExportDirectoryPath();
+  const fileName = createDreamReadableExportFileName(payload.exportedAt, format);
+  const filePath = `${directoryPath}/${fileName}`;
+  const document = buildDreamReadableExportDocument(payload, format);
+
+  await RNFS.mkdir(directoryPath);
+  await RNFS.writeFile(filePath, document, 'utf8');
+
+  return {
+    filePath,
+    payload,
+    document,
+    format,
   };
 }

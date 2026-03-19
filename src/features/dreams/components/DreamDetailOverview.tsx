@@ -142,6 +142,11 @@ export function DreamDetailOverview({
               <Text style={styles.statusChipLabel}>{viewModel.moodLabel}</Text>
             </View>
           ) : null}
+          {viewModel.showLucidityHeroChip && viewModel.lucidityLabel ? (
+            <View style={styles.heroMetaChip}>
+              <Text style={styles.heroMetaChipLabel}>{viewModel.lucidityLabel}</Text>
+            </View>
+          ) : null}
           {viewModel.starred ? (
             <Text style={styles.heroMetaText}>{copy.starredTag}</Text>
           ) : null}

@@ -1,5 +1,7 @@
 import { Dream } from '../src/features/dreams/model/dream';
 import {
+  getDreamLucidityLevel,
+  getLucidDreamStats,
   getDreamNightmareClassification,
   getNightmareStats,
   getTopPreSleepEmotionSignals,
@@ -90,5 +92,52 @@ describe('dream analytics emotion signals', () => {
     expect(getNightmareStats(dreams).latestNightmareDream?.id).toBe(
       'strong-distress',
     );
+  });
+
+  test('derives lucidity from explicit level or legacy lucid tags', () => {
+    expect(
+      getDreamLucidityLevel({
+        tags: [],
+        lucidity: 3,
+      }),
+    ).toBe(3);
+
+    expect(
+      getDreamLucidityLevel({
+        tags: ['lucid'],
+      }),
+    ).toBe(2);
+  });
+
+  test('builds lucid dream stats from explicit and tagged entries', () => {
+    const dreams: Dream[] = [
+      {
+        id: 'lucid-explicit',
+        createdAt: 1,
+        sleepDate: '2026-03-01',
+        tags: [],
+        lucidity: 1,
+      },
+      {
+        id: 'lucid-tagged',
+        createdAt: 2,
+        sleepDate: '2026-03-03',
+        tags: ['lucid-dream'],
+      },
+      {
+        id: 'not-lucid',
+        createdAt: 3,
+        sleepDate: '2026-03-04',
+        tags: [],
+        lucidity: 0,
+      },
+    ];
+
+    expect(getLucidDreamStats(dreams)).toMatchObject({
+      totalDreams: 3,
+      lucidCount: 2,
+      rate: 67,
+    });
+    expect(getLucidDreamStats(dreams).latestLucidDream?.id).toBe('lucid-tagged');
   });
 });

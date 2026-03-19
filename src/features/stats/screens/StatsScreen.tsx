@@ -4,9 +4,12 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { Card } from '../../../components/ui/Card';
+import { Button } from '../../../components/ui/Button';
+import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
+import { getPracticeCopy } from '../../../constants/copy/practice';
 import {
   ROOT_ROUTE_NAMES,
   type PatternDetailKind,
@@ -31,6 +34,7 @@ export default function StatsScreen() {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
@@ -145,6 +149,29 @@ export default function StatsScreen() {
         coverageGap={controller.coverageGap}
       />
 
+      <Card style={styles.sectionCard}>
+        <SectionHeader
+          title={practiceCopy.title}
+          subtitle={practiceCopy.subtitle}
+        />
+        <Button
+          title={
+            controller.nightmareCount === 0
+              ? practiceCopy.openLucid
+              : practiceCopy.openNightmares
+          }
+          onPress={() =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+              focus:
+                controller.nightmareCount === 0
+                  ? 'lucid'
+                  : 'nightmares',
+              entrySource: 'stats',
+            })
+          }
+        />
+      </Card>
+
       {shouldShowScopedEmptyState ? (
         <ScreenStateCard
           variant="empty"
@@ -172,7 +199,13 @@ export default function StatsScreen() {
               activityBars={controller.activityBars}
               emotionalTrendSeries={controller.emotionalTrendSeries}
               emotionalTrendInsight={controller.emotionalTrendInsight}
+              lucidMetrics={controller.lucidMetrics}
+              lucidHistoryItems={controller.lucidHistoryItems}
               nightmareMetrics={controller.nightmareMetrics}
+              lucidProgressTitle={practiceCopy.statsLucidProgressTitle}
+              lucidProgressDescription={practiceCopy.statsLucidProgressDescription}
+              nightmareRecoveryTitle={practiceCopy.statsNightmareRecoveryTitle}
+              nightmareRecoveryDescription={practiceCopy.statsNightmareRecoveryDescription}
               weeklyPatternCards={controller.weeklyPatternCards}
               summaryTiles={controller.summaryTiles}
               coverageItems={controller.coverageItems}
@@ -182,6 +215,9 @@ export default function StatsScreen() {
               savedSetItems={controller.savedSetItems}
               onOpenReviewWorkspace={() =>
                 navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
+              }
+              onOpenLucidDream={dreamId =>
+                navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId })
               }
               onOpenPatternDetail={openPatternDetail}
             />

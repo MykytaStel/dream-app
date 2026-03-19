@@ -21,6 +21,26 @@ const DREAM_COPY_EN = {
   homeLastDreamLabel: 'Return to last dream',
   homeLastDreamMetaPrefix: 'Last open',
   homeSectionLabel: 'Recent dreams',
+  homeCustomizeAction: 'Customize',
+  homeCustomizeTitle: 'Customize Home',
+  homeCustomizeDone: 'Done',
+  homeCustomizeReset: 'Reset',
+  homeCustomizePresetLabel: 'Emphasis',
+  homeCustomizePresetHint:
+    'Choose a calmer or more insight-heavy Home without changing anything outside this screen.',
+  homeCustomizePresetBalanced: 'Balanced',
+  homeCustomizePresetCalm: 'Calm',
+  homeCustomizePresetInsight: 'Insight',
+  homeCustomizeSectionsLabel: 'Visible sections',
+  homeCustomizeSectionsHint:
+    'Show or hide the modules above your recent dreams.',
+  homeCustomizeOrderLabel: 'Section order',
+  homeCustomizeOrderHint: 'Move the modules you want to notice first.',
+  homeCustomizeSectionShortcuts: 'Shortcuts',
+  homeCustomizeSectionSpotlight: 'In focus',
+  homeCustomizeSectionWeeklyPatterns: 'Weekly patterns',
+  homeCustomizeVisibleLabel: 'Visible',
+  homeCustomizeHiddenLabel: 'Hidden',
   homeOpenArchive: 'Archive',
   homeRecentLimitHint:
     'Home stays focused on the latest dreams. Switch to the Archive tab for the full history.',
@@ -419,9 +439,10 @@ const DREAM_COPY_EN = {
   detailRelatedMatchPlural: 'matches',
   detailRelatedSharedLabel: 'Thread signals',
   detailRelatedRecurringLabel: 'Seen before',
-  detailStateTitle: 'Sleep context',
+  detailStateTitle: 'Dream state',
   detailStateEmpty:
-    'No wake-up emotions or pre-sleep context were saved for this dream.',
+    'No lucid state, wake-up emotions, or pre-sleep context were saved for this dream.',
+  detailLucidityLabel: 'Lucid state',
   detailAudioDescription: 'An original voice note is attached to this dream.',
   detailAudioPathLabel: 'Local file',
   detailAudioPlay: 'Play voice note',
@@ -526,6 +547,12 @@ const DREAM_COPY_EN = {
   moodDescription: 'What tone did the dream leave behind?',
   moodIntensityLabel: 'Vividness',
   moodIntensityHint: 'How vivid or intense was this dream?',
+  lucidityLabel: 'Lucidity',
+  lucidityHint: 'Did you realize you were dreaming, even for a moment?',
+  lucidityNoneLabel: 'Not lucid',
+  lucidityBriefLabel: 'Briefly aware',
+  lucidityAwareLabel: 'Lucid',
+  lucidityControlLabel: 'Lucid + in control',
   wakeEmotionsTitle: 'Emotions after waking',
   wakeEmotionsDescription:
     'Quick signals from the first minute after waking, before the dream starts to flatten out.',
@@ -631,6 +658,26 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeLastDreamLabel: 'Повернутись до останнього сну',
   homeLastDreamMetaPrefix: 'Останнє відкриття',
   homeSectionLabel: 'Останні сни',
+  homeCustomizeAction: 'Налаштувати',
+  homeCustomizeTitle: 'Налаштувати Home',
+  homeCustomizeDone: 'Готово',
+  homeCustomizeReset: 'Скинути',
+  homeCustomizePresetLabel: 'Акцент',
+  homeCustomizePresetHint:
+    'Оберіть спокійніший або більш аналітичний Home, не змінюючи інші екрани.',
+  homeCustomizePresetBalanced: 'Баланс',
+  homeCustomizePresetCalm: 'Спокій',
+  homeCustomizePresetInsight: 'Інсайти',
+  homeCustomizeSectionsLabel: 'Видимі секції',
+  homeCustomizeSectionsHint:
+    'Покажіть або сховайте модулі над останніми снами.',
+  homeCustomizeOrderLabel: 'Порядок секцій',
+  homeCustomizeOrderHint: 'Підніміть вище те, що хочете помічати першим.',
+  homeCustomizeSectionShortcuts: 'Швидкі дії',
+  homeCustomizeSectionSpotlight: 'У фокусі',
+  homeCustomizeSectionWeeklyPatterns: 'Тижневі патерни',
+  homeCustomizeVisibleLabel: 'Видимо',
+  homeCustomizeHiddenLabel: 'Сховано',
   homeOpenArchive: 'Архів',
   homeRecentLimitHint:
     'Головний екран тримає фокус на останніх записах. Для повної історії перемкнись на вкладку Архів.',
@@ -1036,9 +1083,10 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailRelatedMatchPlural: 'збіги',
   detailRelatedSharedLabel: 'Сигнали нитки',
   detailRelatedRecurringLabel: 'Вже траплялось',
-  detailStateTitle: 'Контекст сну',
+  detailStateTitle: 'Стан сну',
   detailStateEmpty:
-    'Для цього сну не збережено емоцій після пробудження чи контексту перед сном.',
+    'Для цього сну не збережено усвідомленість, емоції після пробудження чи контекст перед сном.',
+  detailLucidityLabel: 'Усвідомленість',
   detailAudioDescription:
     'До цього сну прикріплена оригінальна голосова нотатка.',
   detailAudioPathLabel: 'Локальний файл',
@@ -1143,6 +1191,12 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   moodDescription: 'Який тон залишив сон?',
   moodIntensityLabel: 'Яскравість',
   moodIntensityHint: 'Наскільки яскравим або насиченим був цей сон?',
+  lucidityLabel: 'Усвідомленість',
+  lucidityHint: 'Чи зрозумів(-ла) ти, що це сон, хоча б на мить?',
+  lucidityNoneLabel: 'Неусвідомлений',
+  lucidityBriefLabel: 'Коротка ясність',
+  lucidityAwareLabel: 'Усвідомлений',
+  lucidityControlLabel: 'Усвідомлений + контроль',
   wakeEmotionsTitle: 'Емоції після пробудження',
   wakeEmotionsDescription:
     'Швидкі сигнали з першої хвилини після пробудження, поки сон ще не встиг згладитися.',
@@ -1335,6 +1389,20 @@ const DREAM_INTENSITY_LEVELS_UK: typeof DREAM_INTENSITY_LEVELS_EN = [
   { label: 'Інтенсивно', value: 5 },
 ];
 
+const DREAM_LUCIDITY_LEVELS_EN = [
+  { label: DREAM_COPY_EN.lucidityNoneLabel, value: 0 as const },
+  { label: DREAM_COPY_EN.lucidityBriefLabel, value: 1 as const },
+  { label: DREAM_COPY_EN.lucidityAwareLabel, value: 2 as const },
+  { label: DREAM_COPY_EN.lucidityControlLabel, value: 3 as const },
+];
+
+const DREAM_LUCIDITY_LEVELS_UK: typeof DREAM_LUCIDITY_LEVELS_EN = [
+  { label: DREAM_COPY_UK.lucidityNoneLabel, value: 0 as const },
+  { label: DREAM_COPY_UK.lucidityBriefLabel, value: 1 as const },
+  { label: DREAM_COPY_UK.lucidityAwareLabel, value: 2 as const },
+  { label: DREAM_COPY_UK.lucidityControlLabel, value: 3 as const },
+];
+
 const DREAM_WAKE_EMOTIONS_EN: Array<{ label: string; value: WakeEmotion }> = [
   { label: 'Calm', value: 'calm' },
   { label: 'Uneasy', value: 'uneasy' },
@@ -1394,6 +1462,14 @@ const DREAM_PRE_SLEEP_EMOTION_LABELS_UK: typeof DREAM_PRE_SLEEP_EMOTION_LABELS_E
     DREAM_PRE_SLEEP_EMOTIONS_UK.map(option => [option.value, option.label]),
   ) as Record<PreSleepEmotion, string>;
 
+const DREAM_LUCIDITY_LABELS_EN: Record<0 | 1 | 2 | 3, string> = Object.fromEntries(
+  DREAM_LUCIDITY_LEVELS_EN.map(option => [option.value, option.label]),
+) as Record<0 | 1 | 2 | 3, string>;
+
+const DREAM_LUCIDITY_LABELS_UK: typeof DREAM_LUCIDITY_LABELS_EN = Object.fromEntries(
+  DREAM_LUCIDITY_LEVELS_UK.map(option => [option.value, option.label]),
+) as Record<0 | 1 | 2 | 3, string>;
+
 export type DreamCopy = typeof DREAM_COPY_EN;
 
 export function getDreamCopy(locale: AppLocale): DreamCopy {
@@ -1412,6 +1488,18 @@ export function getDreamIntensityLevels(locale: AppLocale) {
   return locale === 'uk'
     ? DREAM_INTENSITY_LEVELS_UK
     : DREAM_INTENSITY_LEVELS_EN;
+}
+
+export function getDreamLucidityLevels(locale: AppLocale) {
+  return locale === 'uk'
+    ? DREAM_LUCIDITY_LEVELS_UK
+    : DREAM_LUCIDITY_LEVELS_EN;
+}
+
+export function getDreamLucidityLabels(locale: AppLocale) {
+  return locale === 'uk'
+    ? DREAM_LUCIDITY_LABELS_UK
+    : DREAM_LUCIDITY_LABELS_EN;
 }
 
 export function getDreamStressLevels(locale: AppLocale) {
@@ -1446,6 +1534,8 @@ export function getDreamPreSleepEmotionLabels(locale: AppLocale) {
 
 export const DREAM_COPY = DREAM_COPY_EN;
 export const DREAM_INTENSITY_LEVELS = DREAM_INTENSITY_LEVELS_EN;
+export const DREAM_LUCIDITY_LEVELS = DREAM_LUCIDITY_LEVELS_EN;
+export const DREAM_LUCIDITY_LABELS = DREAM_LUCIDITY_LABELS_EN;
 export const DREAM_MOODS = DREAM_MOODS_EN;
 export const DREAM_MOOD_LABELS = DREAM_MOOD_LABELS_EN;
 export const DREAM_STRESS_LEVELS = DREAM_STRESS_LEVELS_EN;

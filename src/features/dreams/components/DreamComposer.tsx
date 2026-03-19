@@ -11,11 +11,21 @@ import { logActionError } from '../../../app/errorReporting';
 import {
   getDreamCopy,
   getDreamIntensityLevels,
+  getDreamLucidityLevels,
   getDreamMoods,
   getDreamPreSleepEmotions,
   getDreamStressLevels,
   getDreamWakeEmotions,
 } from '../../../constants/copy/dreams';
+import {
+  getLucidControlAreaLabels,
+  getLucidStabilizationLabels,
+  getLucidTechniqueLabels,
+  getNightmareAftereffectLabels,
+  getNightmareGroundingLabels,
+  getNightmareRescriptStatusLabels,
+  getPracticeCopy,
+} from '../../../constants/copy/practice';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { createNewDreamScreenStyles } from '../screens/NewDreamScreen.styles';
@@ -30,7 +40,9 @@ import {
 } from './DreamComposerBasicSections';
 import {
   DreamComposerContextCard,
+  DreamComposerLucidPracticeCard,
   DreamComposerMoodCard,
+  DreamComposerNightmareCard,
   DreamComposerTagsCard,
 } from './DreamComposerDetailSections';
 import { DreamComposerProps } from './DreamComposer.types';
@@ -54,6 +66,7 @@ export function DreamComposer({
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moods = React.useMemo(() => getDreamMoods(locale), [locale]);
   const intensityOptions = React.useMemo(() => getDreamIntensityLevels(locale), [locale]);
+  const lucidityOptions = React.useMemo(() => getDreamLucidityLevels(locale), [locale]);
   const stressLevels = React.useMemo(() => getDreamStressLevels(locale), [locale]);
   const wakeEmotionOptions = React.useMemo(() => getDreamWakeEmotions(locale), [locale]);
   const preSleepEmotionOptions = React.useMemo(
@@ -61,6 +74,25 @@ export function DreamComposer({
     [locale],
   );
   const styles = React.useMemo(() => createNewDreamScreenStyles(theme), [theme]);
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
+  const lucidTechniqueLabels = React.useMemo(() => getLucidTechniqueLabels(locale), [locale]);
+  const lucidControlLabels = React.useMemo(() => getLucidControlAreaLabels(locale), [locale]);
+  const lucidStabilizationLabels = React.useMemo(
+    () => getLucidStabilizationLabels(locale),
+    [locale],
+  );
+  const nightmareAftereffectLabels = React.useMemo(
+    () => getNightmareAftereffectLabels(locale),
+    [locale],
+  );
+  const nightmareGroundingLabels = React.useMemo(
+    () => getNightmareGroundingLabels(locale),
+    [locale],
+  );
+  const nightmareRescriptLabels = React.useMemo(
+    () => getNightmareRescriptStatusLabels(locale),
+    [locale],
+  );
 
   const form = useDreamComposerForm({
     mode,
@@ -103,12 +135,50 @@ export function DreamComposer({
       if (template.wakeEmotions && template.wakeEmotions.length > 0) {
         form.setWakeEmotions(template.wakeEmotions);
       }
+      if (template.lucidity !== undefined) {
+        form.setLucidity(template.lucidity);
+      }
       if (template.opensMoodSection) {
         form.setShowMoodSection(true);
       }
       form.setShowTagsSection(true);
     },
     [form],
+  );
+  const lucidTechniqueOptions = React.useMemo(
+    () => Object.entries(lucidTechniqueLabels).map(([value, label]) => ({ value, label })),
+    [lucidTechniqueLabels],
+  );
+  const lucidControlOptions = React.useMemo(
+    () => Object.entries(lucidControlLabels).map(([value, label]) => ({ value, label })),
+    [lucidControlLabels],
+  );
+  const lucidStabilizationOptions = React.useMemo(
+    () => Object.entries(lucidStabilizationLabels).map(([value, label]) => ({ value, label })),
+    [lucidStabilizationLabels],
+  );
+  const nightmareAftereffectOptions = React.useMemo(
+    () => Object.entries(nightmareAftereffectLabels).map(([value, label]) => ({ value, label })),
+    [nightmareAftereffectLabels],
+  );
+  const nightmareGroundingOptions = React.useMemo(
+    () => Object.entries(nightmareGroundingLabels).map(([value, label]) => ({ value, label })),
+    [nightmareGroundingLabels],
+  );
+  const nightmareRescriptOptions = React.useMemo(
+    () => Object.entries(nightmareRescriptLabels).map(([value, label]) => ({ value, label })),
+    [nightmareRescriptLabels],
+  );
+  const recallOptions = React.useMemo(
+    () => [1, 2, 3, 4, 5].map(value => ({ value: value as 1 | 2 | 3 | 4 | 5, label: String(value) })),
+    [],
+  );
+  const yesNoOptions = React.useMemo(
+    () => [
+      { value: false, label: copy.boolNo },
+      { value: true, label: copy.boolYes },
+    ],
+    [copy.boolNo, copy.boolYes],
   );
 
   const refineActions = React.useMemo(() => [
@@ -141,7 +211,19 @@ export function DreamComposer({
       active: form.showTagsSection,
       onPress: () => form.setShowTagsSection(current => !current),
     },
-  ], [copy, form]);
+    {
+      key: 'lucid',
+      label: form.showLucidPracticeSection ? copy.refineHideAction : practiceCopy.openLucid,
+      active: form.showLucidPracticeSection,
+      onPress: () => form.setShowLucidPracticeSection(current => !current),
+    },
+    {
+      key: 'nightmare',
+      label: form.showNightmareSection ? copy.refineHideAction : practiceCopy.openNightmares,
+      active: form.showNightmareSection,
+      onPress: () => form.setShowNightmareSection(current => !current),
+    },
+  ], [copy, form, practiceCopy]);
 
   const voiceCard = (
     <DreamComposerVoiceCard
@@ -336,6 +418,11 @@ export function DreamComposer({
           onToggleDreamIntensity={value =>
             form.setDreamIntensity(current => (current === value ? undefined : value))
           }
+          lucidityOptions={lucidityOptions}
+          lucidity={form.lucidity}
+          onToggleLucidity={value =>
+            form.setLucidity(current => (current === value ? undefined : value))
+          }
           wakeEmotionOptions={wakeEmotionOptions}
           wakeEmotions={form.wakeEmotions}
           onToggleWakeEmotion={form.toggleWakeEmotion}
@@ -368,6 +455,93 @@ export function DreamComposer({
           onChangeImportantEvents={form.setImportantEvents}
           healthNotes={form.healthNotes}
           onChangeHealthNotes={form.setHealthNotes}
+        />
+      ) : null}
+
+      {form.showLucidPracticeSection ? (
+        <DreamComposerLucidPracticeCard
+          styles={styles}
+          title={practiceCopy.openLucid}
+          subtitle={practiceCopy.lucidHeroDescription}
+          dreamSignsLabel={practiceCopy.lucidDreamSignsLabel}
+          dreamSignsPlaceholder={practiceCopy.lucidDreamSignsPlaceholder}
+          triggerLabel={practiceCopy.lucidTriggerLabel}
+          triggerPlaceholder={practiceCopy.lucidTriggerPlaceholder}
+          techniqueLabel={practiceCopy.lucidStatsTopTechnique}
+          recallLabel={practiceCopy.lucidRecallLabel}
+          controlLabel={practiceCopy.filterControl}
+          stabilizationLabel={practiceCopy.lucidStabilizationLabel}
+          dreamSignsInput={form.dreamSignsInput}
+          onChangeDreamSignsInput={form.setDreamSignsInput}
+          trigger={form.lucidTrigger}
+          onChangeTrigger={form.setLucidTrigger}
+          technique={form.lucidTechnique}
+          onToggleTechnique={value =>
+            form.setLucidTechnique(current => (current === value ? undefined : value))
+          }
+          recallScore={form.recallScore}
+          onToggleRecallScore={value =>
+            form.setRecallScore(current => (current === value ? undefined : value))
+          }
+          controlAreas={form.controlAreas}
+          onToggleControlArea={form.toggleControlArea}
+          stabilizationActions={form.stabilizationActions}
+          onToggleStabilizationAction={form.toggleStabilizationAction}
+          techniqueOptions={lucidTechniqueOptions as any}
+          recallOptions={recallOptions}
+          controlOptions={lucidControlOptions as any}
+          stabilizationOptions={lucidStabilizationOptions as any}
+        />
+      ) : null}
+
+      {form.showNightmareSection ? (
+        <DreamComposerNightmareCard
+          styles={styles}
+          title={practiceCopy.openNightmares}
+          subtitle={practiceCopy.nightmareHeroDescription}
+          explicitLabel={practiceCopy.filterNightmare}
+          distressLabel={practiceCopy.filterHighDistress}
+          recurringLabel={practiceCopy.filterRecurringNightmare}
+          recurringPlaceholder={practiceCopy.nightmareRecurringPlaceholder}
+          wokeLabel={practiceCopy.nightmareWokeLabel}
+          aftereffectsLabel={practiceCopy.nightmareAftereffectsLabel}
+          groundingLabel={practiceCopy.nightmareGroundingLabel}
+          rewriteLabel={practiceCopy.quickNightmareRewrite}
+          rewritePlaceholder={practiceCopy.nightmareRewritePrompt}
+          rewriteStatusLabel={practiceCopy.nightmareRewriteStatusLabel}
+          explicit={form.nightmareExplicit}
+          onToggleExplicit={value =>
+            form.setNightmareExplicit(current => (current === value ? undefined : value))
+          }
+          distress={form.nightmareDistress}
+          onToggleDistress={value =>
+            form.setNightmareDistress(current => (current === value ? undefined : value))
+          }
+          recurring={form.nightmareRecurring}
+          onToggleRecurring={value =>
+            form.setNightmareRecurring(current => (current === value ? undefined : value))
+          }
+          recurringKey={form.nightmareRecurringKey}
+          onChangeRecurringKey={form.setNightmareRecurringKey}
+          wokeFromDream={form.nightmareWokeFromDream}
+          onToggleWokeFromDream={value =>
+            form.setNightmareWokeFromDream(current => (current === value ? undefined : value))
+          }
+          aftereffects={form.nightmareAftereffects}
+          onToggleAftereffect={form.toggleNightmareAftereffect}
+          groundingUsed={form.nightmareGroundingUsed}
+          onToggleGroundingUsed={form.toggleNightmareGrounding}
+          rewrittenEnding={form.nightmareRewrittenEnding}
+          onChangeRewrittenEnding={form.setNightmareRewrittenEnding}
+          rescriptStatus={form.nightmareRescriptStatus}
+          onToggleRescriptStatus={value =>
+            form.setNightmareRescriptStatus(current => (current === value ? undefined : value))
+          }
+          distressOptions={recallOptions}
+          aftereffectOptions={nightmareAftereffectOptions as any}
+          groundingOptions={nightmareGroundingOptions as any}
+          rewriteStatusOptions={nightmareRescriptOptions as any}
+          yesNoOptions={yesNoOptions}
         />
       ) : null}
 

@@ -9,7 +9,10 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { Text } from '../../../components/ui/Text';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
-import { type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import {
   openBackupScreen,
   openNewDreamTab,
@@ -17,6 +20,7 @@ import {
 } from '../../../app/navigation/navigationRef';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
+import { getPracticeCopy } from '../../../constants/copy/practice';
 import { ScreenStateCard } from '../components/ScreenStateCard';
 import {
   getDreamCopy,
@@ -24,6 +28,7 @@ import {
 } from '../../../constants/copy/dreams';
 import { getDreamLayout } from '../constants/layout';
 import { HomeDreamRow } from '../components/home/HomeDreamRow';
+import { HomeCustomizationSheet } from '../components/home/HomeCustomizationSheet';
 import { HomeFilterSheet } from '../components/home/HomeFilterSheet';
 import { HomeHero } from '../components/home/HomeHero';
 import { HomeListHeader } from '../components/home/HomeListHeader';
@@ -32,6 +37,7 @@ import { getDreamDraftResumeDescription } from '../model/dreamDraftPresentation'
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 import { createHomeScreenStyles } from './HomeScreen.styles';
 import { useHomeScreenData } from '../hooks/useHomeScreenData';
+import { useHomeLayoutPreferences } from '../hooks/useHomeLayoutPreferences';
 import { useHomeSwipeActions } from '../hooks/useHomeSwipeActions';
 import { useHomeTimelineState } from '../hooks/useHomeTimelineState';
 import { type Dream } from '../model/dream';
@@ -72,8 +78,12 @@ export default function HomeScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = React.useMemo(() => createHomeScreenStyles(theme), [theme]);
+  const [isHomeCustomizationOpen, setIsHomeCustomizationOpen] =
+    React.useState(false);
+  const homeLayout = useHomeLayoutPreferences();
   const listContentStyle = React.useMemo(
     () => [
       styles.listContent,
@@ -287,8 +297,32 @@ export default function HomeScreen() {
           attentionValue={timeline.attentionValue}
           attentionHint={timeline.attentionHint}
           onOpenRevisitDream={openDreamDetail}
+          practiceShortcutTitle={
+            practiceCopy.homeLucidCtaTitle
+          }
+          practiceShortcutHint={
+            practiceCopy.homeLucidCtaHint
+          }
+          nightmareShortcutTitle={practiceCopy.homeNightmareCtaTitle}
+          nightmareShortcutHint={practiceCopy.homeNightmareCtaHint}
+          lucidQuickFilterLabel={practiceCopy.filterLucid}
+          nightmareQuickFilterLabel={practiceCopy.filterNightmare}
+          homeLayoutPreferences={homeLayout.preferences}
+          onOpenPractice={() =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+              focus: 'lucid',
+              entrySource: 'home',
+            })
+          }
+          onOpenNightmarePractice={() =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+              focus: 'nightmares',
+              entrySource: 'home',
+            })
+          }
           onOpenPatternDetail={openPatternDetail}
           onOpenFilterSheet={() => timeline.setIsFilterSheetOpen(true)}
+          onOpenHomeCustomizationSheet={() => setIsHomeCustomizationOpen(true)}
           onClearFilters={timeline.clearTimelineFilters}
           onClearSearch={timeline.clearTimelineSearch}
           onSaveSearchPreset={timeline.saveCurrentSearchPreset}
@@ -304,12 +338,25 @@ export default function HomeScreen() {
           timelineFilters={timeline.timelineFilters}
           homeFilters={timeline.homeFilters}
           moodFilters={timeline.moodFilters}
+          specialFilters={timeline.specialFilters}
           typeFilters={timeline.typeFilters}
           transcriptFilters={timeline.transcriptFilters}
           availableTags={timeline.availableTags}
           dateRangeFilters={timeline.dateRangeFilters}
           onClose={() => timeline.setIsFilterSheetOpen(false)}
           updateTimelineFilters={timeline.updateTimelineFilters}
+        />
+
+        <HomeCustomizationSheet
+          visible={isHomeCustomizationOpen}
+          copy={copy}
+          styles={styles}
+          preferences={homeLayout.preferences}
+          onClose={() => setIsHomeCustomizationOpen(false)}
+          onApplyPreset={homeLayout.applyPreset}
+          onToggleSectionVisibility={homeLayout.toggleSectionVisibility}
+          onReorderSection={homeLayout.reorderSection}
+          onReset={homeLayout.resetToDefault}
         />
 
         <BackupOnboardingModal
@@ -324,6 +371,8 @@ export default function HomeScreen() {
       closeBackupOnboarding,
       copy,
       dreams.length,
+      homeLayout,
+      isHomeCustomizationOpen,
       isBackupOnboardingVisible,
       openDreamDetail,
       openBackupFromOnboarding,
@@ -331,6 +380,8 @@ export default function HomeScreen() {
       heroPrompt,
       insets.top,
       lastViewedDream,
+      navigation,
+      practiceCopy,
       styles,
       theme.spacing.sm,
       timeline,

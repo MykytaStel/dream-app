@@ -28,6 +28,7 @@ type ReminderSettingsRecord = {
   enabled: boolean;
   hour: number;
   minute: number;
+  style: 'balanced' | 'gentle' | 'direct';
 };
 
 type LegacySavedMonthRecord = {
@@ -45,6 +46,7 @@ const DEFAULT_REMINDER_SETTINGS: ReminderSettingsRecord = {
   enabled: false,
   hour: 7,
   minute: 30,
+  style: 'balanced',
 };
 
 function clampHour(value: unknown) {
@@ -341,6 +343,10 @@ function migrateReminderSettingsToV2() {
       enabled: Boolean(parsed.enabled),
       hour: parsedTime ? parsedTime.hour : clampHour(parsed.hour),
       minute: parsedTime ? parsedTime.minute : clampMinute(parsed.minute),
+      style:
+        parsed.style === 'gentle' || parsed.style === 'direct'
+          ? parsed.style
+          : 'balanced',
     };
 
     kv.set(REMINDER_SETTINGS_KEY, JSON.stringify(migrated));
@@ -389,6 +395,10 @@ function migrateDreamsToV8() {
 }
 
 function migrateDreamsToV10() {
+  migrateDreamsFromLegacyShape();
+}
+
+function migrateDreamsToV12() {
   migrateDreamsFromLegacyShape();
 }
 
@@ -586,6 +596,11 @@ export function runStorageMigrations() {
   if (nextVersion < 11) {
     // No-op: adds LAST_STREAK_CELEBRATED_KEY (missing = 0, correct default)
     nextVersion = 11;
+  }
+
+  if (nextVersion < 12) {
+    migrateDreamsToV12();
+    nextVersion = 12;
   }
 
   kv.set(STORAGE_SCHEMA_VERSION_KEY, nextVersion);

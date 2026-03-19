@@ -21,6 +21,7 @@ import {
   validateDreamForSave,
 } from '../model/dreamRules';
 import { reconcileDerivedReviewState } from '../../stats/services/reviewShelfStateService';
+import { scheduleDreamWidgetSync } from '../../widgets/services/dreamWidgetSyncService';
 
 const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 let dreamCache: Dream[] | null = null;
@@ -168,6 +169,7 @@ function persistDreams(dreams: Dream[]) {
   persistDreamsMeta(normalized);
   dreamCache = normalized;
   dreamCacheRaw = raw;
+  scheduleDreamWidgetSync({ dreams: normalized });
   // Defer shelf reconciliation — not needed synchronously and can be expensive with many dreams
   setTimeout(() => reconcileDerivedReviewState(normalized), 0);
 }

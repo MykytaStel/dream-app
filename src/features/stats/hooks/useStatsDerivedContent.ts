@@ -27,6 +27,7 @@ type UseStatsDerivedContentArgs = {
     kind: 'word' | 'theme' | 'symbol';
     savedAt: number;
   }>;
+  lucidityLabels: Record<0 | 1 | 2 | 3, string>;
   wakeEmotionLabels: Record<string, string>;
   moodLabels: Record<string, string>;
   preSleepEmotionLabels: Record<string, string>;
@@ -46,6 +47,7 @@ export function useStatsDerivedContent({
   analysisSettings,
   savedMonths,
   savedThreadRecords,
+  lucidityLabels,
   wakeEmotionLabels,
   moodLabels,
   preSleepEmotionLabels,
@@ -60,6 +62,7 @@ export function useStatsDerivedContent({
     analysisSettings,
     savedMonths,
     savedThreadRecords,
+    lucidityLabels,
     wakeEmotionLabels,
     moodLabels,
     preSleepEmotionLabels,

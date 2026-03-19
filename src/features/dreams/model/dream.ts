@@ -20,6 +20,43 @@ export type StressLevel = 0 | 1 | 2 | 3;
 export type DreamTranscriptStatus = 'idle' | 'processing' | 'ready' | 'error';
 export type DreamTranscriptSource = 'generated' | 'edited';
 export type DreamSyncStatus = 'local' | 'syncing' | 'synced' | 'error';
+export type LucidPracticeTechnique =
+  | 'mild'
+  | 'wbtb'
+  | 'ssild'
+  | 'reality_check'
+  | 'intention';
+export type LucidControlArea =
+  | 'scene'
+  | 'movement'
+  | 'characters'
+  | 'body'
+  | 'emotion'
+  | 'waking';
+export type LucidStabilizationAction =
+  | 'hands'
+  | 'breathing'
+  | 'spinning'
+  | 'touch'
+  | 'voice'
+  | 'anchor';
+export type LucidRecallScore = 1 | 2 | 3 | 4 | 5;
+export type NightmareDistressLevel = 1 | 2 | 3 | 4 | 5;
+export type NightmareAftereffect =
+  | 'panic'
+  | 'sweating'
+  | 'racing-heart'
+  | 'fear-to-sleep'
+  | 'disoriented'
+  | 'sadness';
+export type NightmareGroundingAction =
+  | 'light'
+  | 'breathing'
+  | 'water'
+  | 'journal'
+  | 'body-check'
+  | 'safe-sound';
+export type NightmareRescriptStatus = 'none' | 'drafted' | 'rehearsed';
 export type WakeEmotion =
   | 'calm'
   | 'uneasy'
@@ -43,6 +80,27 @@ export type SleepContext = {
   medications?: string;
   importantEvents?: string;
   healthNotes?: string;
+};
+
+export type LucidPractice = {
+  technique?: LucidPracticeTechnique;
+  dreamSigns?: string[];
+  trigger?: string;
+  controlAreas?: LucidControlArea[];
+  stabilizationActions?: LucidStabilizationAction[];
+  recallScore?: LucidRecallScore;
+};
+
+export type NightmareSupport = {
+  explicit?: boolean;
+  distress?: NightmareDistressLevel;
+  recurring?: boolean;
+  recurringKey?: string;
+  wokeFromDream?: boolean;
+  aftereffects?: NightmareAftereffect[];
+  groundingUsed?: NightmareGroundingAction[];
+  rewrittenEnding?: string;
+  rescriptStatus?: NightmareRescriptStatus;
 };
 
 export type Dream = {
@@ -70,5 +128,7 @@ export type Dream = {
   wakeEmotions?: WakeEmotion[];
   sleepContext?: SleepContext;
   lucidity?: 0 | 1 | 2 | 3;
+  lucidPractice?: LucidPractice;
+  nightmare?: NightmareSupport;
   // later: embedding: number[];
 };

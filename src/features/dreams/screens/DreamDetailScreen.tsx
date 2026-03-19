@@ -14,6 +14,15 @@ import {
   getDreamStressLabels,
   getDreamWakeEmotionLabels,
 } from '../../../constants/copy/dreams';
+import {
+  getLucidControlAreaLabels,
+  getLucidStabilizationLabels,
+  getLucidTechniqueLabels,
+  getNightmareAftereffectLabels,
+  getNightmareGroundingLabels,
+  getNightmareRescriptStatusLabels,
+  getPracticeCopy,
+} from '../../../constants/copy/practice';
 import { buildDreamCardData, buildDreamShareText } from '../model/dreamCardPresentation';
 import {
   ROOT_ROUTE_NAMES,
@@ -45,6 +54,25 @@ export default function DreamDetailScreen() {
     [locale],
   );
   const styles = React.useMemo(() => createDreamDetailScreenStyles(theme), [theme]);
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
+  const lucidTechniqueLabels = React.useMemo(() => getLucidTechniqueLabels(locale), [locale]);
+  const lucidControlLabels = React.useMemo(() => getLucidControlAreaLabels(locale), [locale]);
+  const lucidStabilizationLabels = React.useMemo(
+    () => getLucidStabilizationLabels(locale),
+    [locale],
+  );
+  const nightmareAftereffectLabels = React.useMemo(
+    () => getNightmareAftereffectLabels(locale),
+    [locale],
+  );
+  const nightmareGroundingLabels = React.useMemo(
+    () => getNightmareGroundingLabels(locale),
+    [locale],
+  );
+  const nightmareRescriptLabels = React.useMemo(
+    () => getNightmareRescriptStatusLabels(locale),
+    [locale],
+  );
   const handleAcknowledgeSaved = React.useCallback(() => {
     navigation.setParams({
       justSaved: false,
@@ -176,6 +204,13 @@ export default function DreamDetailScreen() {
         stressLabels={stressLabels}
         wakeEmotionLabels={wakeEmotionLabels}
         preSleepEmotionLabels={preSleepEmotionLabels}
+        practiceCopy={practiceCopy}
+        lucidTechniqueLabels={lucidTechniqueLabels}
+        lucidControlLabels={lucidControlLabels}
+        lucidStabilizationLabels={lucidStabilizationLabels}
+        nightmareAftereffectLabels={nightmareAftereffectLabels}
+        nightmareGroundingLabels={nightmareGroundingLabels}
+        nightmareRescriptLabels={nightmareRescriptLabels}
         setTranscriptDraft={controller.setTranscriptDraft}
         onToggleSection={controller.toggleSection}
         onToggleStateSections={controller.toggleStateSections}
@@ -195,6 +230,12 @@ export default function DreamDetailScreen() {
         }
         onOpenRelatedDream={handleOpenRelatedDream}
         onOpenSettingsForAnalysis={handleOpenSettingsForAnalysis}
+        onOpenDreamPractice={focus =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+            focus,
+            entrySource: 'detail',
+          })
+        }
       />
     </ScreenContainer>
   );

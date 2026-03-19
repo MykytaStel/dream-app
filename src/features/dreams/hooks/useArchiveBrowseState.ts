@@ -25,6 +25,11 @@ import {
 } from '../model/archiveBrowser';
 import { getDreamDate } from '../model/dreamAnalytics';
 import {
+  matchesDreamSpecialFilter,
+  type HomeSpecialFilter,
+} from '../model/homeTimeline';
+import { getPracticeCopy } from '../../../constants/copy/practice';
+import {
   trackFiltersApplied,
   trackSearchUsed,
 } from '../../../services/observability/events';
@@ -46,7 +51,9 @@ export function useArchiveBrowseState({
   onBrowseMutate,
 }: UseArchiveBrowseStateArgs) {
   const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
+  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const [filter, setFilter] = React.useState<ArchiveFilter>(DEFAULT_ARCHIVE_FILTER);
+  const [specialFilter, setSpecialFilter] = React.useState<HomeSpecialFilter>('all');
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | null>(null);
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
@@ -109,10 +116,17 @@ export function useArchiveBrowseState({
         : monthDreams,
     [monthDreams, tagFilter],
   );
+  const specialFilteredMonthDreams = React.useMemo(
+    () =>
+      specialFilter === 'all'
+        ? tagFilteredMonthDreams
+        : tagFilteredMonthDreams.filter(dream => matchesDreamSpecialFilter(dream, specialFilter)),
+    [specialFilter, tagFilteredMonthDreams],
+  );
 
   const searchedMonthDreams = React.useMemo(
-    () => searchArchiveMonthDreams(tagFilteredMonthDreams, deferredSearchQuery),
-    [deferredSearchQuery, tagFilteredMonthDreams],
+    () => searchArchiveMonthDreams(specialFilteredMonthDreams, deferredSearchQuery),
+    [deferredSearchQuery, specialFilteredMonthDreams],
   );
 
   const visibleDreams = React.useMemo(
@@ -182,6 +196,17 @@ export function useArchiveBrowseState({
     ],
     [copy],
   );
+  const specialFilters = React.useMemo(
+    () => [
+      { key: 'all' as const, label: copy.homeFilterAll },
+      { key: 'lucid' as const, label: practiceCopy.filterLucid },
+      { key: 'nightmare' as const, label: practiceCopy.filterNightmare },
+      { key: 'recurring-nightmare' as const, label: practiceCopy.filterRecurringNightmare },
+      { key: 'control' as const, label: practiceCopy.filterControl },
+      { key: 'high-distress' as const, label: practiceCopy.filterHighDistress },
+    ],
+    [copy.homeFilterAll, practiceCopy],
+  );
 
   const hasScopedDreams = statusScopedDreams.length > 0;
   const hasVisibleDreams = visibleDreams.length > 0;
@@ -191,16 +216,22 @@ export function useArchiveBrowseState({
     hasScopedDreams,
     hasVisibleDreams,
   );
-  const hasResettableView = Boolean(searchQuery.trim()) || Boolean(selectedDate) || Boolean(tagFilter);
-  const hasHardReset = Boolean(searchQuery.trim()) || Boolean(tagFilter);
+  const hasResettableView =
+    Boolean(searchQuery.trim()) ||
+    Boolean(selectedDate) ||
+    Boolean(tagFilter) ||
+    specialFilter !== 'all';
+  const hasHardReset =
+    Boolean(searchQuery.trim()) || Boolean(tagFilter) || specialFilter !== 'all';
   const visibleEntriesLabel = formatArchiveEntryCount(visibleDreams.length, locale);
   const filterCount =
     Number(filter !== DEFAULT_ARCHIVE_FILTER) +
     Number(Boolean(selectedDate)) +
-    Number(Boolean(tagFilter));
+    Number(Boolean(tagFilter)) +
+    Number(specialFilter !== 'all');
   const filterSignature = React.useMemo(
-    () => JSON.stringify({ filter, selectedDate, tagFilter }),
-    [filter, selectedDate, tagFilter],
+    () => JSON.stringify({ filter, selectedDate, tagFilter, specialFilter }),
+    [filter, selectedDate, specialFilter, tagFilter],
   );
   const lastTrackedSearchQueryRef = React.useRef('');
   const lastTrackedFilterSignatureRef = React.useRef(filterSignature);
@@ -274,6 +305,7 @@ export function useArchiveBrowseState({
 
   const resetArchiveView = React.useCallback(() => {
     setFilter(DEFAULT_ARCHIVE_FILTER);
+    setSpecialFilter('all');
     setSearchQuery('');
     setSelectedDate(null);
     setTagFilter(null);
@@ -283,6 +315,7 @@ export function useArchiveBrowseState({
   const selectFilter = React.useCallback(
     (nextFilter: ArchiveFilter) => {
       setFilter(nextFilter);
+      setSpecialFilter('all');
       setSelectedDate(null);
       setTagFilter(null);
       onBrowseMutate?.();
@@ -293,6 +326,13 @@ export function useArchiveBrowseState({
   const selectTagFilter = React.useCallback(
     (tag: string | null) => {
       setTagFilter(current => (current === tag ? null : tag));
+      onBrowseMutate?.();
+    },
+    [onBrowseMutate],
+  );
+  const selectSpecialFilter = React.useCallback(
+    (value: HomeSpecialFilter) => {
+      setSpecialFilter(current => (current === value ? 'all' : value));
       onBrowseMutate?.();
     },
     [onBrowseMutate],
@@ -320,10 +360,12 @@ export function useArchiveBrowseState({
     viewMode,
     setViewMode,
     tagFilter,
+    specialFilter,
     topMonthTags,
     deferredSearchQuery,
     isSearchPending,
     archiveFilters,
+    specialFilters,
     browseModes,
     weekdayLabels,
     availableMonthKeys,
@@ -344,6 +386,7 @@ export function useArchiveBrowseState({
     resetArchiveView,
     selectFilter,
     selectTagFilter,
+    selectSpecialFilter,
     clearSelectedDate,
     selectCalendarDate,
   };

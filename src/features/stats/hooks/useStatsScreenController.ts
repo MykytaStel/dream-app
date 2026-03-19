@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   type DreamCopy,
+  getDreamLucidityLabels,
   getDreamPreSleepEmotionLabels,
   getDreamMoodLabels,
   getDreamWakeEmotionLabels,
@@ -42,6 +43,7 @@ export function useStatsScreenController({
     [locale],
   );
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
+  const lucidityLabels = React.useMemo(() => getDreamLucidityLabels(locale), [locale]);
   const wakeEmotionLabels = React.useMemo(
     () => getDreamWakeEmotionLabels(locale),
     [locale],
@@ -81,6 +83,7 @@ export function useStatsScreenController({
     analysisSettings,
     savedMonths,
     savedThreadRecords,
+    lucidityLabels,
     wakeEmotionLabels,
     moodLabels,
     preSleepEmotionLabels,
@@ -128,9 +131,12 @@ export function useStatsScreenController({
     importantDreamItems,
     latestMonthlyReport,
     latestMonthlyReportTitle,
+    lucidHistoryItems,
+    lucidMetrics,
     memoryNudge,
     milestoneSummaryHint,
     nightmareMetrics,
+    nightmareCount,
     monthlyReportPreviewSignals,
     overallLastSevenDays,
     patternGroups,
@@ -177,6 +183,7 @@ export function useStatsScreenController({
     memoryNudge,
     coverageGap,
     nightmareMetrics,
+    nightmareCount,
     latestMonthlyReport,
     latestMonthlyReportTitle,
     monthlyReportPreviewSignals,
@@ -190,6 +197,8 @@ export function useStatsScreenController({
     attentionItems,
     workQueueItems,
     importantDreamItems,
+    lucidHistoryItems,
+    lucidMetrics,
     savedSetItems,
     savedMonthItems,
     savedThreadItems,

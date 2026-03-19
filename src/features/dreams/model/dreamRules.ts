@@ -1,5 +1,13 @@
 import {
   Dream,
+  LucidControlArea,
+  LucidPractice,
+  LucidPracticeTechnique,
+  LucidStabilizationAction,
+  NightmareAftereffect,
+  NightmareGroundingAction,
+  NightmareSupport,
+  NightmareRescriptStatus,
   DreamSyncStatus,
   DreamTranscriptSource,
   DreamTranscriptStatus,
@@ -30,6 +38,50 @@ const PRE_SLEEP_EMOTION_VALUES: PreSleepEmotion[] = [
   'hopeful',
   'drained',
   'lonely',
+];
+const LUCID_PRACTICE_TECHNIQUE_VALUES: LucidPracticeTechnique[] = [
+  'mild',
+  'wbtb',
+  'ssild',
+  'reality_check',
+  'intention',
+];
+const LUCID_CONTROL_AREA_VALUES: LucidControlArea[] = [
+  'scene',
+  'movement',
+  'characters',
+  'body',
+  'emotion',
+  'waking',
+];
+const LUCID_STABILIZATION_ACTION_VALUES: LucidStabilizationAction[] = [
+  'hands',
+  'breathing',
+  'spinning',
+  'touch',
+  'voice',
+  'anchor',
+];
+const NIGHTMARE_AFTEREFFECT_VALUES: NightmareAftereffect[] = [
+  'panic',
+  'sweating',
+  'racing-heart',
+  'fear-to-sleep',
+  'disoriented',
+  'sadness',
+];
+const NIGHTMARE_GROUNDING_ACTION_VALUES: NightmareGroundingAction[] = [
+  'light',
+  'breathing',
+  'water',
+  'journal',
+  'body-check',
+  'safe-sound',
+];
+const NIGHTMARE_RESCRIPT_STATUS_VALUES: NightmareRescriptStatus[] = [
+  'none',
+  'drafted',
+  'rehearsed',
 ];
 const STALE_TRANSCRIPT_PROCESSING_MS = 1000 * 60 * 15;
 export const DREAM_SAVE_VALIDATION = {
@@ -80,6 +132,30 @@ function normalizeEmotionSelection<T extends string>(values: unknown, allowedVal
       values.filter((value): value is T => typeof value === 'string' && allowed.has(value as T)),
     ),
   );
+
+  return normalized.length ? normalized : undefined;
+}
+
+function normalizeSelection<T extends string>(value: unknown, allowedValues: readonly T[]) {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  return allowedValues.includes(value as T) ? (value as T) : undefined;
+}
+
+function normalizeFreeformList(values: unknown) {
+  if (!Array.isArray(values)) {
+    return undefined;
+  }
+
+  const normalized = Array.from(
+    new Set(
+      values
+        .map(value => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : ''))
+        .filter(Boolean),
+    ),
+  ).slice(0, 12);
 
   return normalized.length ? normalized : undefined;
 }
@@ -294,6 +370,82 @@ function normalizeSleepContext(context?: SleepContext): SleepContext | undefined
   return hasValues ? normalized : undefined;
 }
 
+function normalizeLucidity(value: Dream['lucidity']) {
+  if (typeof value !== 'number' || !Number.isFinite(value)) {
+    return undefined;
+  }
+
+  return Math.max(0, Math.min(3, Math.floor(value))) as 0 | 1 | 2 | 3;
+}
+
+function normalizeLucidPractice(value?: LucidPractice) {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized: LucidPractice = {
+    technique: normalizeSelection(value.technique, LUCID_PRACTICE_TECHNIQUE_VALUES),
+    dreamSigns: normalizeFreeformList(value.dreamSigns),
+    trigger: normalizeOptionalText(value.trigger),
+    controlAreas: normalizeEmotionSelection(value.controlAreas, LUCID_CONTROL_AREA_VALUES),
+    stabilizationActions: normalizeEmotionSelection(
+      value.stabilizationActions,
+      LUCID_STABILIZATION_ACTION_VALUES,
+    ),
+    recallScore:
+      typeof value.recallScore === 'number' && Number.isFinite(value.recallScore)
+        ? (Math.max(1, Math.min(5, Math.floor(value.recallScore))) as 1 | 2 | 3 | 4 | 5)
+        : undefined,
+  };
+
+  const hasValues =
+    Boolean(normalized.technique) ||
+    Boolean(normalized.dreamSigns?.length) ||
+    Boolean(normalized.trigger) ||
+    Boolean(normalized.controlAreas?.length) ||
+    Boolean(normalized.stabilizationActions?.length) ||
+    typeof normalized.recallScore === 'number';
+
+  return hasValues ? normalized : undefined;
+}
+
+function normalizeNightmareSupport(value?: NightmareSupport) {
+  if (!value) {
+    return undefined;
+  }
+
+  const normalized: NightmareSupport = {
+    explicit: typeof value.explicit === 'boolean' ? value.explicit : undefined,
+    distress:
+      typeof value.distress === 'number' && Number.isFinite(value.distress)
+        ? (Math.max(1, Math.min(5, Math.floor(value.distress))) as 1 | 2 | 3 | 4 | 5)
+        : undefined,
+    recurring: typeof value.recurring === 'boolean' ? value.recurring : undefined,
+    recurringKey: normalizeOptionalText(value.recurringKey)?.toLowerCase(),
+    wokeFromDream: typeof value.wokeFromDream === 'boolean' ? value.wokeFromDream : undefined,
+    aftereffects: normalizeEmotionSelection(value.aftereffects, NIGHTMARE_AFTEREFFECT_VALUES),
+    groundingUsed: normalizeEmotionSelection(
+      value.groundingUsed,
+      NIGHTMARE_GROUNDING_ACTION_VALUES,
+    ),
+    rewrittenEnding: normalizeOptionalText(value.rewrittenEnding),
+    rescriptStatus: normalizeSelection(value.rescriptStatus, NIGHTMARE_RESCRIPT_STATUS_VALUES),
+  };
+
+  const hasValues =
+    typeof normalized.explicit === 'boolean' ||
+    typeof normalized.distress === 'number' ||
+    typeof normalized.recurring === 'boolean' ||
+    Boolean(normalized.recurringKey) ||
+    typeof normalized.wokeFromDream === 'boolean' ||
+    Boolean(normalized.aftereffects?.length) ||
+    Boolean(normalized.groundingUsed?.length) ||
+    Boolean(normalized.rewrittenEnding) ||
+    Boolean(normalized.rescriptStatus);
+
+  return hasValues ? normalized : undefined;
+}
+
 export function resolveDreamSleepDate(rawSleepDate: string | undefined, createdAt: number) {
   const cleanDate = rawSleepDate?.trim();
   if (cleanDate && isValidSleepDate(cleanDate)) {
@@ -344,8 +496,11 @@ export function sanitizeDream(input: Dream): Dream {
     syncError: syncFields.syncError,
     analysis: normalizeAnalysisFields(input),
     tags: normalizeTags(input.tags ?? []),
+    lucidity: normalizeLucidity(input.lucidity),
     wakeEmotions: normalizeEmotionSelection(input.wakeEmotions, WAKE_EMOTION_VALUES),
     sleepContext: normalizeSleepContext(input.sleepContext),
+    lucidPractice: normalizeLucidPractice(input.lucidPractice),
+    nightmare: normalizeNightmareSupport(input.nightmare),
   };
 }
 

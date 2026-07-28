@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <shortcut
+        android:shortcutId="capture"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_capture_short"
+        android:shortcutLongLabel="@string/shortcut_capture_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="dreamapp://capture"
+            android:targetPackage="com.dreamapp"
+            android:targetClass="com.dreamapp.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="draft"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_draft_short"
+        android:shortcutLongLabel="@string/shortcut_draft_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="dreamapp://draft"
+            android:targetPackage="com.dreamapp"
+            android:targetClass="com.dreamapp.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+    <shortcut
+        android:shortcutId="memory"
+        android:enabled="true"
+        android:icon="@mipmap/ic_launcher"
+        android:shortcutShortLabel="@string/shortcut_memory_short"
+        android:shortcutLongLabel="@string/shortcut_memory_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:data="dreamapp://memory"
+            android:targetPackage="com.dreamapp"
+            android:targetClass="com.dreamapp.MainActivity" />
+        <categories android:name="android.shortcut.conversation" />
+    </shortcut>
+
+</shortcuts>

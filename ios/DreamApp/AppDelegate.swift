@@ -51,6 +51,25 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       restorationHandler: restorationHandler
     )
   }
+
+  func application(
+    _ application: UIApplication,
+    performActionFor shortcutItem: UIApplicationShortcutItem,
+    completionHandler: @escaping (Bool) -> Void
+  ) {
+    let urlMap: [String: String] = [
+      "com.dreamapp.capture": "dreamapp://capture",
+      "com.dreamapp.draft":   "dreamapp://draft",
+      "com.dreamapp.memory":  "dreamapp://memory",
+    ]
+    guard let urlString = urlMap[shortcutItem.type],
+          let url = URL(string: urlString) else {
+      completionHandler(false)
+      return
+    }
+    RCTLinkingManager.application(application, open: url, options: [:])
+    completionHandler(true)
+  }
 }
 
 class ReactNativeDelegate: RCTDefaultReactNativeFactoryDelegate {

@@ -173,6 +173,14 @@ jest.mock('react-native-html-to-pdf', () => ({
   })),
 }));
 
+jest.mock('react-native-haptic-feedback', () => ({
+  __esModule: true,
+  default: {
+    trigger: jest.fn(),
+  },
+  trigger: jest.fn(),
+}));
+
 jest.mock('react-native-vector-icons/Ionicons', () => 'Ionicons');
 
 jest.mock('react-native/src/private/animated/NativeAnimatedHelper');

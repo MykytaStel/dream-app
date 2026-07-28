@@ -77,17 +77,28 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		1AA6977B2F6C596300029D4C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+		8898E5E0B96D4171A681DAED /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
-				Info.plist,
+				"Info.plist",
 			);
 			target = 1AA697642F6C596100029D4C /* DreamWidgetExtensionExtension */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		1AA6976A2F6C596100029D4C /* DreamWidgetExtension */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (1AA6977B2F6C596300029D4C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = DreamWidgetExtension; sourceTree = "<group>"; };
+		1AA6976A2F6C596100029D4C /* DreamWidgetExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				8898E5E0B96D4171A681DAED /* PBXFileSystemSynchronizedBuildFileExceptionSet */,
+			);
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = DreamWidgetExtension;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -235,8 +246,6 @@
 				1AA6976A2F6C596100029D4C /* DreamWidgetExtension */,
 			);
 			name = DreamWidgetExtensionExtension;
-			packageProductDependencies = (
-			);
 			productName = DreamWidgetExtensionExtension;
 			productReference = 1AA697652F6C596100029D4C /* DreamWidgetExtensionExtension.appex */;
 			productType = "com.apple.product-type.app-extension";
@@ -328,13 +337,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DreamApp/Pods-DreamApp-frameworks-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Embed Pods Frameworks";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DreamApp/Pods-DreamApp-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -371,13 +376,9 @@
 			inputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DreamApp/Pods-DreamApp-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			inputPaths = (
-			);
 			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
 				"${PODS_ROOT}/Target Support Files/Pods-DreamApp/Pods-DreamApp-resources-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
@@ -496,7 +497,6 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DreamWidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DreamWidgetExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
@@ -544,7 +544,6 @@
 				DEVELOPMENT_TEAM = "";
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = DreamWidgetExtension/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = DreamWidgetExtension;
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";

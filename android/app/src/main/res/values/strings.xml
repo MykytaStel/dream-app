@@ -10,4 +10,10 @@
     <string name="dream_last_dream_widget_label">Last Dream</string>
     <string name="dream_last_dream_widget_untitled">Untitled</string>
     <string name="dream_last_dream_widget_empty_title">No dreams yet</string>
+    <string name="shortcut_capture_short">Capture</string>
+    <string name="shortcut_capture_long">Capture Dream</string>
+    <string name="shortcut_draft_short">New Draft</string>
+    <string name="shortcut_draft_long">New Dream Draft</string>
+    <string name="shortcut_memory_short">My Dreams</string>
+    <string name="shortcut_memory_long">My Dream Journal</string>
 </resources>

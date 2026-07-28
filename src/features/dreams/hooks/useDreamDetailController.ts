@@ -23,6 +23,7 @@ import {
   type DreamDetailSectionsState,
 } from '../model/dreamDetailPresentation';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
+import { hapticImpactMedium, hapticImpactLight } from '../../../services/haptics/hapticService';
 import {
   archiveDream,
   clearDreamAnalysis,
@@ -230,6 +231,7 @@ export function useDreamDetailController({
       return;
     }
 
+    hapticImpactLight();
     const nextDream =
       typeof dream.archivedAt === 'number' ? unarchiveDream(dreamId) : archiveDream(dreamId);
 
@@ -243,6 +245,7 @@ export function useDreamDetailController({
       return;
     }
 
+    hapticImpactMedium();
     const nextDream =
       typeof dream.starredAt === 'number' ? unstarDream(dreamId) : starDream(dreamId);
     setDream(nextDream);

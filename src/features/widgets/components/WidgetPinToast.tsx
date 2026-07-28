@@ -1,7 +1,7 @@
 import React from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, { FadeIn, SlideInDown, SlideOutDown } from 'react-native-reanimated';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';

@@ -78,5 +78,32 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>UIApplicationShortcutItems</key>
+	<array>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.dreamapp.capture</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>Capture Dream</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>moon.zzz.fill</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.dreamapp.draft</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>New Draft</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>square.and.pencil</string>
+		</dict>
+		<dict>
+			<key>UIApplicationShortcutItemType</key>
+			<string>com.dreamapp.memory</string>
+			<key>UIApplicationShortcutItemTitle</key>
+			<string>My Dreams</string>
+			<key>UIApplicationShortcutItemIconSymbolName</key>
+			<string>book.closed.fill</string>
+		</dict>
+	</array>
 </dict>
 </plist>

@@ -42,6 +42,7 @@ import {
   DreamComposerMode,
 } from './DreamComposer.types';
 import { trackDreamSaved } from '../../../services/observability/events';
+import { hapticSave, hapticImpactMedium } from '../../../services/haptics/hapticService';
 
 export function getTodayDate() {
   const now = new Date();
@@ -454,6 +455,7 @@ export function useDreamComposerForm({
 
     try {
       if (!recording) {
+        hapticImpactMedium();
         await startRecording();
         setRecording(true);
         setRecordingDuration(0);
@@ -463,6 +465,7 @@ export function useDreamComposerForm({
         return;
       }
 
+      hapticImpactMedium();
       if (recordingIntervalRef.current) {
         clearInterval(recordingIntervalRef.current);
         recordingIntervalRef.current = null;
@@ -722,6 +725,7 @@ export function useDreamComposerForm({
       };
 
       saveDream(dream);
+      hapticSave();
       trackDreamSaved({
         mode: isEdit ? 'edit' : 'create',
         entryMode,

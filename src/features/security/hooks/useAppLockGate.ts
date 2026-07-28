@@ -4,6 +4,7 @@ import {
   authenticateWithBiometrics,
   getBiometricLockEnabled,
 } from '../../../services/security/biometricService';
+import { hapticUnlock } from '../../../services/haptics/hapticService';
 
 export function useAppLockGate(promptMessage: string) {
   const [locked, setLocked] = React.useState(() => getBiometricLockEnabled());
@@ -20,6 +21,7 @@ export function useAppLockGate(promptMessage: string) {
     try {
       const success = await authenticateWithBiometrics(promptMessage);
       if (success) {
+        hapticUnlock();
         setLocked(false);
       }
       return success;

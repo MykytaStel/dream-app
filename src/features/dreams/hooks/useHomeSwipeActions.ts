@@ -18,6 +18,7 @@ import {
   unstarDream,
 } from '../repository/dreamsRepository';
 import { type HomeRefreshMode } from './useHomeScreenData';
+import { hapticImpactMedium, hapticImpactLight } from '../../../services/haptics/hapticService';
 
 type UseHomeSwipeActionsArgs = {
   copy: DreamCopy;
@@ -109,6 +110,7 @@ export function useHomeSwipeActions({
 
   const toggleArchiveFromList = React.useCallback(
     (dream: Dream) => {
+      hapticImpactLight();
       if (isDreamArchived(dream)) {
         unarchiveDream(dream.id);
       } else {
@@ -122,6 +124,7 @@ export function useHomeSwipeActions({
 
   const toggleStarFromList = React.useCallback(
     (dream: Dream) => {
+      hapticImpactMedium();
       if (isDreamStarred(dream)) {
         unstarDream(dream.id);
       } else {

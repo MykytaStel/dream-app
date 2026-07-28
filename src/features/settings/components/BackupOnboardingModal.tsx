@@ -110,7 +110,7 @@ function createStyles(theme: Theme, bottomInset: number) {
       justifyContent: 'flex-end',
     },
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: 'rgba(6, 10, 26, 0.58)',
     },
     sheetWrap: {

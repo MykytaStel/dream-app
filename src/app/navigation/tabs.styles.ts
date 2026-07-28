@@ -211,7 +211,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       justifyContent: 'flex-end',
     },
     quickAddBackdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: 'rgba(6, 9, 16, 0.6)',
     },
     quickAddSheet: {

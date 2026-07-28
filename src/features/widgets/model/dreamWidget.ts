@@ -4,6 +4,7 @@ import { AppLocale } from '../../../i18n/types';
 import { Dream } from '../../dreams/model/dream';
 import { getCurrentStreak, getEntriesLastSevenDays } from '../../dreams/model/dreamAnalytics';
 import { getHomeRevisitCue } from '../../dreams/model/homeOverview';
+import { resolveDreamSleepDate } from '../../dreams/model/dreamRules';
 import {
   getDreamWidgetCaptureUrl,
   getDreamWidgetDraftUrl,
@@ -82,7 +83,7 @@ export function buildDreamWidgetSnapshot({
     ? {
         id: latestDream.id,
         title: latestDream.title?.trim() ?? '',
-        date: latestDream.sleepDate,
+        date: resolveDreamSleepDate(latestDream.sleepDate, latestDream.createdAt),
       }
     : null;
 

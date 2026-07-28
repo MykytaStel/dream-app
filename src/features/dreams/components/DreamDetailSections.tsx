@@ -27,11 +27,6 @@ import { play, stop } from '../services/audioService';
 
 const detailLayoutTransition = LinearTransition.duration(160);
 
-function getAudioFileLabel(audioUri: string) {
-  const filename = audioUri.split('/').filter(Boolean).pop();
-  return filename ? decodeURIComponent(filename) : audioUri;
-}
-
 function formatPlaybackTime(ms: number): string {
   const totalSec = Math.floor(ms / 1000);
   const m = Math.floor(totalSec / 60);
@@ -240,10 +235,6 @@ export function DreamDetailSections({
 }: DreamDetailSectionsProps) {
   const theme = useTheme<Theme>();
   const rawCaptureText = dream.text?.trim();
-  const audioFileLabel = React.useMemo(
-    () => (dream.audioUri ? getAudioFileLabel(dream.audioUri) : null),
-    [dream.audioUri],
-  );
   const relatedSignalSummaries = React.useMemo(
     () => getRelatedSignalSummaries(relatedDreams, 5),
     [relatedDreams],

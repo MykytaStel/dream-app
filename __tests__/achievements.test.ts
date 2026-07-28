@@ -29,7 +29,11 @@ describe('achievements', () => {
     expect(getDreamAchievements(dreams)).toEqual([
       { id: 'first-dream', current: 4, target: 1, unlocked: true },
       { id: 'three-day-streak', current: 3, target: 3, unlocked: true },
+      { id: 'seven-day-streak', current: 3, target: 7, unlocked: false },
+      { id: 'thirty-day-streak', current: 3, target: 30, unlocked: false },
       { id: 'ten-dreams', current: 4, target: 10, unlocked: false },
+      { id: 'fifty-dreams', current: 4, target: 50, unlocked: false },
+      { id: 'hundred-dreams', current: 4, target: 100, unlocked: false },
       { id: 'first-voice-dream', current: 1, target: 1, unlocked: true },
     ]);
   });

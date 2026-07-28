@@ -4461,8 +4461,8 @@ __metadata:
     react-native-gesture-handler: 2.30.0
     react-native-haptic-feedback: ^2.3.4
     react-native-html-to-pdf: 1.3.0
-    react-native-mmkv: 4.3.2
-    react-native-nitro-modules: 0.36.3
+    react-native-mmkv: 4.1.2
+    react-native-nitro-modules: 0.34.1
     react-native-reanimated: 4.5.3
     react-native-safe-area-context: 5.8.0
     react-native-screens: 4.24.0
@@ -8187,24 +8187,24 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-mmkv@npm:4.3.2":
-  version: 4.3.2
-  resolution: "react-native-mmkv@npm:4.3.2"
+"react-native-mmkv@npm:4.1.2":
+  version: 4.1.2
+  resolution: "react-native-mmkv@npm:4.1.2"
   peerDependencies:
     react: "*"
     react-native: "*"
     react-native-nitro-modules: "*"
-  checksum: d77e4547a4564149cbc18b9b1502c73e65b8a8994df636b82e4b2d232adce2d2f3d8a85d75041087a1c2c77166a45a16463bb6500405d33847e933a81281cb77
+  checksum: 7e3f774c1bd2f3a608980342ee3d89a3f58b00f9b713cf873205b2aa15ae0e0805f96804a7ed53410cb2a2e797677b64c838db7c9647469e768f2f3acbb2f821
   languageName: node
   linkType: hard
 
-"react-native-nitro-modules@npm:0.36.3":
-  version: 0.36.3
-  resolution: "react-native-nitro-modules@npm:0.36.3"
+"react-native-nitro-modules@npm:0.34.1":
+  version: 0.34.1
+  resolution: "react-native-nitro-modules@npm:0.34.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 341d571aea253dd8637eafc958252ecd1ebf3d96632d8abe6b509b1666a1f69e413504e1597fa65774ad3a7f72062a8d857b5f811b01720122b0c5d1ec241ac2
+  checksum: 939ce43663e5c28a83d2aa6b8f3fe83ee1da7518cba3c91b53137f6e6c0176065dd65f7f8090b12b3dde56083d3a9632a02b6313a6cd8165bedcb61d777a9f58
   languageName: node
   linkType: hard
 

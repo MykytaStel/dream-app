@@ -36,7 +36,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - MMKVCore (2.4.0)
+  - MMKVCore (2.2.4)
   - NitroAudioRecorderPlayer (4.5.0):
     - boost
     - DoubleConversion
@@ -67,14 +67,14 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroMmkv (4.3.2):
+  - NitroMmkv (4.1.2):
     - boost
     - DoubleConversion
     - fast_float
     - fmt
     - glog
     - hermes-engine
-    - MMKVCore (= 2.4.0)
+    - MMKVCore (= 2.2.4)
     - NitroModules
     - RCT-Folly
     - RCT-Folly/Fabric
@@ -98,7 +98,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - NitroModules (0.36.3):
+  - NitroModules (0.34.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3411,10 +3411,10 @@ SPEC CHECKSUMS:
   glog: 5683914934d5b6e4240e497e0f4a3b42d1854183
   hermes-engine: 080d0335ec91c5a0e1ab0a7fdeca635a6c07c738
   HtmlToPdf: 6a9c28f54ec810d1d120a698a9b3c83e2bdb1672
-  MMKVCore: 3d16ce9f7d411e135020915fde98a056859a1efa
+  MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
   NitroAudioRecorderPlayer: 14d00c47187b918b9fca03e73e47152d2dc9352c
-  NitroMmkv: 975be1948fd74280e6febcda06671d7bf604a4cd
-  NitroModules: 56e5a1760aa0d6d2b5d90854205e8278e54c4968
+  NitroMmkv: 0be91455465952f2b943f753b9ee7df028d89e5c
+  NitroModules: 0bd3b05de25fc3877046217760d3e83368cdbf5c
   RCT-Folly: 846fda9475e61ec7bcbf8a3fe81edfcaeb090669
   RCTDeprecation: 3b915a7b166f7d04eaeb4ae30aaf24236a016551
   RCTRequired: fcfec6ba532cfe4e53c49e0a4061b5eff87f8c64

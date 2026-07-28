@@ -6,7 +6,10 @@ buildscript {
         targetSdkVersion = 36
         ndkVersion = "27.1.12297006"
         kotlinVersion = "2.1.20"
-        REACT_NATIVE_NODE_MODULES_DIR = file("../node_modules/react-native")
+        // Must be a String, not a File: reanimated casts this property with
+        // `as String?` and throws on a File. worklets and the Groovy-based
+        // libraries accept either, so String is the value that satisfies all of them.
+        REACT_NATIVE_NODE_MODULES_DIR = file("../node_modules/react-native").absolutePath
     }
     repositories {
         google()

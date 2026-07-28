@@ -90,6 +90,7 @@ decision.
 | `react-native-html-to-pdf` | 1.3.0, unmaintained for years. Same risk. |
 | `@react-native-async-storage/async-storage` | Pinned at `^2.2.0`. Version 3.x was tried and did not build; the cause has not been diagnosed yet. |
 | `add` | `^2.0.6` is not a real dependency — it landed from a mistyped `yarn add add`. Scheduled for removal. |
+| `react-native-mmkv` / `react-native-nitro-modules` | Both pinned below the latest release. `react-native-audio-recorder-player@4.5.0` — the newest published version — ships nitrogen-generated Kotlin built against `react-native-nitro-modules@^0.29.2`, and calls `updateNative`, which no longer exists in nitro 0.36.x. Upgrading nitro breaks the Android build at `:react-native-audio-recorder-player:compileDebugKotlin`. Since mmkv 4.3.2 is itself generated against nitro 0.35.9, mmkv and nitro cannot move until audio-recorder-player is rebuilt against modern nitro, or is replaced. All three declare `react-native-nitro-modules: "*"` as a peer, so no tool warns about this. |
 
 ## Upgrade policy
 

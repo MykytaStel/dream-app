@@ -106,8 +106,12 @@ Measured 2026-07-28. These numbers move in one direction.
 | Metric | Value | Goal |
 |---|---|---|
 | Modules in `src/` | 244 | — |
-| Test files | 46 | rises with rule 12 |
-| Tests | 195 | — |
+| Test files | 47 | rises with rule 12 |
+| Tests | 200 | — |
+| Coverage — statements | 35.49% | ratchets up |
+| Coverage — branches | 33.01% | ratchets up |
+| Coverage — functions | 30.49% | ratchets up |
+| Coverage — lines | 35.95% | ratchets up |
 | `any` | 12 | 0 |
 | `@ts-ignore` / `@ts-expect-error` | 0 | stays 0 |
 | `TODO` / `FIXME` | 0 | stays 0 |
@@ -116,6 +120,16 @@ Measured 2026-07-28. These numbers move in one direction.
 | Lint warnings | 23 | 0, then gate on |
 | Files over 400 lines | 45 | falls |
 | Files over 600 lines | 21 | 0 |
+
+Coverage is measured across all of `src/`, not only the files the suites happen to
+import. The distinction matters: reported against imported files alone the number reads
+around 67%, and against the whole codebase it is 35%. The lower number is the one worth
+moving, because untested files are exactly what a coverage figure should reveal.
+
+The largest gaps in pure logic, where rule 12 applies most directly:
+`features/dreams/model/archiveBrowser.ts` (17%),
+`features/stats/model/statsScreenModel.ts` (34%),
+`features/dreams/model/dreamAnalytics.ts` (42%).
 
 Oversized files are not being split in one pass — a diff that large would hide
 regressions from concurrent upgrade work. Rule 1 applies to new code and to any file

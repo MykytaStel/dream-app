@@ -10,7 +10,8 @@
     "start": "react-native start",
     "test": "jest",
     "test:ci": "jest --ci --watchAll=false",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test:coverage": "jest --coverage --ci --watchAll=false"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",

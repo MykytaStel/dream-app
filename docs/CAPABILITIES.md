@@ -109,7 +109,7 @@ All cloud features are optional. The app is fully usable without an account.
 | Capability | Status | Where |
 |---|---|---|
 | Three themes: kaleidoscope, ember, moss | `works` | `theme/theme.ts` (`APP_THEME_IDS`) |
-| Dark and light appearance per theme | `works` | `theme/theme.ts` (`AppThemeAppearance`) |
+| Light appearance | `planned` | `AppThemeAppearance` allows `'light'`, but all three themes are registered as `'dark'` and no light palette exists |
 | Theme preferences | `works` | `theme/themePreferences.ts` |
 | Locale support | `works` | `i18n/` |
 | Reminder scheduling preferences | `works` | `features/reminders/services/` |

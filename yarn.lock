@@ -3080,13 +3080,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"add@npm:^2.0.6":
-  version: 2.0.6
-  resolution: "add@npm:2.0.6"
-  checksum: e2d23d40494565dfed4acd65e478570c444db5ac6c053551ed429c39ea0f2c99d83df63e7befec936df601827d2254d06a2fb6f7dcfd2022e810b25eab818b8c
-  languageName: node
-  linkType: hard
-
 "agent-base@npm:^7.1.0, agent-base@npm:^7.1.2":
   version: 7.1.4
   resolution: "agent-base@npm:7.1.4"
@@ -4251,7 +4244,6 @@ __metadata:
     "@types/jest": ^29.5.13
     "@types/react": 19.2.14
     "@types/react-test-renderer": ^19.1.0
-    add: ^2.0.6
     eslint: ^8.19.0
     eslint-plugin-ft-flow: ^3.0.11
     jest: ^29.6.3

@@ -1,44 +1,67 @@
 # Kaleidoscope of Dreams
 
-## Documentation Index
+A dream journal that captures an entry before it fades, keeps it on the device, and
+surfaces what keeps coming back.
 
-- `CLAUDE.md` — master project context
-- `docs/SKILLS.md` — AI collaboration rules
-- `docs/PRODUCT.md` — product strategy
-- `docs/ARCHITECTURE.md` — technical architecture
-- `docs/DESIGN.md` — design direction
-- `docs/MVP-ROADMAP.md` — phased roadmap
-- `docs/FEATURE-BACKLOG.md` — prioritized features
-- `docs/MONETIZATION.md` — monetization strategy
-- `docs/GO-TO-MARKET.md` — launch strategy
-- `docs/ANALYTICS.md` — analytics planning
-- `docs/TECH-STACK.md` — stack recommendations
+> A private dream archive that gets smarter without leaving your phone.
 
-## Suggested Repo Layout
+React Native, TypeScript, local-first, with optional cloud sync.
 
-```txt
-project-root/
-  CLAUDE.md
-  README.md
-  docs/
-    README.md
-    SKILLS.md
-    PRODUCT.md
-    ARCHITECTURE.md
-    DESIGN.md
-    MVP-ROADMAP.md
-    FEATURE-BACKLOG.md
-    MONETIZATION.md
-    GO-TO-MARKET.md
-    ANALYTICS.md
-    TECH-STACK.md
-  src/
-  package.json
+## Requirements
+
+- Node `>=20`
+- Yarn `3.6.4` (via Corepack)
+- Xcode with CocoaPods, for iOS
+- Android SDK, for Android
+
+## Getting started
+
+```bash
+yarn install
 ```
 
-## How to Add These Files
+Start the Metro bundler:
 
-1. Put `CLAUDE.md` in the project root.
-2. Put all other markdown files inside `docs/`.
-3. Commit them as the base product and architecture documentation.
-4. Reference them when planning features, reviewing code, and talking to AI tools.
+```bash
+yarn start
+```
+
+Run on a device or simulator:
+
+```bash
+yarn ios
+```
+
+```bash
+yarn android
+```
+
+## Checks
+
+All three must pass before a merge.
+
+```bash
+yarn typecheck
+```
+
+```bash
+yarn test
+```
+
+```bash
+yarn lint
+```
+
+## Documentation
+
+| Document | What it covers |
+|---|---|
+| [PRODUCT.md](docs/PRODUCT.md) | what the product is, who it is for, the privacy model |
+| [ROADMAP.md](docs/ROADMAP.md) | horizons H0–H3, exit criteria, what is out of scope |
+| [CAPABILITIES.md](docs/CAPABILITIES.md) | what the app does today, checked against the code |
+| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | layering, sync, widget contract, native modules |
+| [TECH-STACK.md](docs/TECH-STACK.md) | dependencies with versions, deliberate omissions, known debt |
+| [DESIGN.md](docs/DESIGN.md) | principles, theme tokens, copy tone, motion |
+| [CODE-STANDARDS.md](docs/CODE-STANDARDS.md) | rules for size, types, tests and CI gates |
+
+Start with `PRODUCT.md` for intent and `CAPABILITIES.md` for the current state.

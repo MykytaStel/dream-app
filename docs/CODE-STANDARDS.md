@@ -51,9 +51,10 @@ mechanism does not.
 A comment restating the code goes stale and adds nothing. A comment explaining a
 non-obvious constraint saves the next reader an hour.
 
-**11. No `console.*`.**
-Use `src/services/observability/`. Console calls do not reach a crash reporter, cannot
-be filtered by level, and ship to production unnoticed.
+**11. No `console.*` outside `src/services/observability/`.**
+Use the observability layer. Console calls do not reach a crash reporter, cannot be
+filtered by level, and ship to production unnoticed. The console provider itself is the
+one place allowed to call it, because printing is what it is for.
 
 ## Tests
 
@@ -110,7 +111,7 @@ Measured 2026-07-28. These numbers move in one direction.
 | `any` | 12 | 0 |
 | `@ts-ignore` / `@ts-expect-error` | 0 | stays 0 |
 | `TODO` / `FIXME` | 0 | stays 0 |
-| `console.*` | 5 | 0 |
+| `console.*` outside observability | 0 | stays 0 |
 | Lint errors | 0 | stays 0 |
 | Lint warnings | 23 | 0, then gate on |
 | Files over 400 lines | 45 | falls |

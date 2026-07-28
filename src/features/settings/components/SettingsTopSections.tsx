@@ -6,7 +6,9 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import DateTimePicker, {
+  type DateTimePickerEvent,
+} from '@react-native-community/datetimepicker';
 import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
@@ -130,7 +132,10 @@ export function ReminderSection({
   getReminderDate: () => Date;
   onToggleReminder: () => void;
   onOpenReminderTimePicker: () => void;
-  onNativeTimePickerChange: (event: any, date?: Date) => void;
+  onNativeTimePickerChange: (
+    event: DateTimePickerEvent,
+    date?: Date,
+  ) => void;
   onApplySuggestedTime: () => void;
   onSelectReminderStyle: (style: DreamReminderStyle) => void;
 }) {

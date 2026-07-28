@@ -10,6 +10,22 @@ import { ensureRecordAudioPermission } from './audioPermissions';
 
 const arp = AudioRecorderPlayer;
 
+export type AudioPermissionCode =
+  | 'android-audio-permission-denied'
+  | 'android-audio-permission-unavailable';
+
+// Carries the reason on the error itself so callers can pick the right message
+// without parsing text. Callers read `.code`, which stays a plain string field.
+export class AudioPermissionError extends Error {
+  readonly code: AudioPermissionCode;
+
+  constructor(message: string, code: AudioPermissionCode) {
+    super(message);
+    this.name = 'AudioPermissionError';
+    this.code = code;
+  }
+}
+
 type NativeAudioRecorderModule = {
   startRecording(): Promise<string>;
   stopRecording(): Promise<string | null>;
@@ -18,8 +34,10 @@ type NativeAudioRecorderModule = {
   cleanupOrphanedAudioFiles(maxAgeDays: number): Promise<number>;
 };
 
+// NativeModules is an untyped bag; assert only the one entry we know about.
+// This goes away once the module becomes a TurboModule and codegen types it.
 const NativeAudioRecorder: NativeAudioRecorderModule | undefined = (
-  NativeModules as any
+  NativeModules as { AudioRecorder?: NativeAudioRecorderModule }
 ).AudioRecorder;
 
 function normalizeUriForStorage(value: string | null | undefined): string {
@@ -48,13 +66,12 @@ export async function startRecording(): Promise<string> {
   if (Platform.OS === 'android' && NativeAudioRecorder) {
     const permission = await ensureRecordAudioPermission();
     if (permission !== 'granted') {
-      const reason =
+      throw new AudioPermissionError(
+        'Audio recording permission is required.',
         permission === 'denied'
           ? 'android-audio-permission-denied'
-          : 'android-audio-permission-unavailable';
-      const error = new Error('Audio recording permission is required.');
-      (error as any).code = reason;
-      throw error;
+          : 'android-audio-permission-unavailable',
+      );
     }
 
     const uri = await NativeAudioRecorder.startRecording();

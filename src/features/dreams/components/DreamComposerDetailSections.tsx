@@ -291,7 +291,7 @@ export function DreamComposerContextCard({
   );
 }
 
-type ChoiceOption<T extends string | number | boolean> = {
+export type ChoiceOption<T extends string | number | boolean> = {
   label: string;
   value: T;
 };

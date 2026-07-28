@@ -11,6 +11,7 @@ import {
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
+import { type InsightRange } from '../model/statsScreenModel';
 import { Theme } from '../../../theme/theme';
 import {
   type MemoryMode,
@@ -38,9 +39,9 @@ export function StatsHeroSection({
   selectedMemoryMode: MemoryMode;
   onSelectMemoryMode: (value: MemoryMode) => void;
   memoryModeOptions: ReadonlyArray<SegmentedControlOption<MemoryMode>>;
-  selectedRange: string;
-  onSelectRange: (value: any) => void;
-  rangeOptions: ReadonlyArray<{ key: string; label: string }>;
+  selectedRange: InsightRange;
+  onSelectRange: (value: InsightRange) => void;
+  rangeOptions: ReadonlyArray<{ key: InsightRange; label: string }>;
   topSignal: { label: string; hint: string; onPress?: () => void } | null;
   memoryNudge: {
     dreamId: string;

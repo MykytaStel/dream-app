@@ -15,7 +15,7 @@ export type AppThemeAppearance = 'dark' | 'light';
 const sharedTheme = {
   spacing,
   borderRadii: radius,
-  textVariants: typography as any,
+  textVariants: typography,
 } as const;
 
 function createAppTheme(colors: ThemePalette) {

@@ -44,6 +44,7 @@ import {
   DreamComposerMoodCard,
   DreamComposerNightmareCard,
   DreamComposerTagsCard,
+  type ChoiceOption,
 } from './DreamComposerDetailSections';
 import { DreamComposerProps } from './DreamComposer.types';
 import {
@@ -53,6 +54,17 @@ import {
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 import { DreamComposerTemplateRow } from './DreamComposerTemplateRow';
 import { type DreamTemplate } from '../model/dreamTemplates';
+
+// Object.entries widens keys to string, which loses the union the option props
+// require. The record's own key type is the accurate one, so it is restored here
+// once instead of being cast away at every call site.
+function toChoiceOptions<K extends string>(
+  labels: Record<K, string>,
+): Array<ChoiceOption<K>> {
+  return (Object.entries(labels) as Array<[K, string]>).map(
+    ([value, label]) => ({ value, label }),
+  );
+}
 
 export function DreamComposer({
   mode,
@@ -169,51 +181,27 @@ export function DreamComposer({
     [form],
   );
   const lucidTechniqueOptions = React.useMemo(
-    () =>
-      Object.entries(lucidTechniqueLabels).map(([value, label]) => ({
-        value,
-        label,
-      })),
+    () => toChoiceOptions(lucidTechniqueLabels),
     [lucidTechniqueLabels],
   );
   const lucidControlOptions = React.useMemo(
-    () =>
-      Object.entries(lucidControlLabels).map(([value, label]) => ({
-        value,
-        label,
-      })),
+    () => toChoiceOptions(lucidControlLabels),
     [lucidControlLabels],
   );
   const lucidStabilizationOptions = React.useMemo(
-    () =>
-      Object.entries(lucidStabilizationLabels).map(([value, label]) => ({
-        value,
-        label,
-      })),
+    () => toChoiceOptions(lucidStabilizationLabels),
     [lucidStabilizationLabels],
   );
   const nightmareAftereffectOptions = React.useMemo(
-    () =>
-      Object.entries(nightmareAftereffectLabels).map(([value, label]) => ({
-        value,
-        label,
-      })),
+    () => toChoiceOptions(nightmareAftereffectLabels),
     [nightmareAftereffectLabels],
   );
   const nightmareGroundingOptions = React.useMemo(
-    () =>
-      Object.entries(nightmareGroundingLabels).map(([value, label]) => ({
-        value,
-        label,
-      })),
+    () => toChoiceOptions(nightmareGroundingLabels),
     [nightmareGroundingLabels],
   );
   const nightmareRescriptOptions = React.useMemo(
-    () =>
-      Object.entries(nightmareRescriptLabels).map(([value, label]) => ({
-        value,
-        label,
-      })),
+    () => toChoiceOptions(nightmareRescriptLabels),
     [nightmareRescriptLabels],
   );
   const recallOptions = React.useMemo(
@@ -563,10 +551,10 @@ export function DreamComposer({
           onToggleControlArea={form.toggleControlArea}
           stabilizationActions={form.stabilizationActions}
           onToggleStabilizationAction={form.toggleStabilizationAction}
-          techniqueOptions={lucidTechniqueOptions as any}
+          techniqueOptions={lucidTechniqueOptions}
           recallOptions={recallOptions}
-          controlOptions={lucidControlOptions as any}
-          stabilizationOptions={lucidStabilizationOptions as any}
+          controlOptions={lucidControlOptions}
+          stabilizationOptions={lucidStabilizationOptions}
         />
       ) : null}
 
@@ -624,9 +612,9 @@ export function DreamComposer({
             )
           }
           distressOptions={recallOptions}
-          aftereffectOptions={nightmareAftereffectOptions as any}
-          groundingOptions={nightmareGroundingOptions as any}
-          rewriteStatusOptions={nightmareRescriptOptions as any}
+          aftereffectOptions={nightmareAftereffectOptions}
+          groundingOptions={nightmareGroundingOptions}
+          rewriteStatusOptions={nightmareRescriptOptions}
           yesNoOptions={yesNoOptions}
         />
       ) : null}

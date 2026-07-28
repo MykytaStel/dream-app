@@ -23,7 +23,9 @@ type HomeScreenDataState = {
   dreams: Dream[];
   draft: DreamDraft | null;
   savedSearchPresets: HomeSearchPreset[];
-  setSavedSearchPresets: React.Dispatch<React.SetStateAction<HomeSearchPreset[]>>;
+  setSavedSearchPresets: React.Dispatch<
+    React.SetStateAction<HomeSearchPreset[]>
+  >;
   lastViewedDream: DreamListItem | Dream | null;
   detailsReady: boolean;
   loading: boolean;
@@ -41,10 +43,16 @@ type IdleSchedulerShape = {
 export function useHomeScreenData(): HomeScreenDataState {
   const hydrationRequestRef = React.useRef(0);
   const [dreams, setDreams] = React.useState<Dream[]>([]);
-  const [dreamListItems, setDreamListItems] = React.useState<DreamListItem[]>([]);
+  const [dreamListItems, setDreamListItems] = React.useState<DreamListItem[]>(
+    [],
+  );
   const [draft, setDraft] = React.useState<DreamDraft | null>(null);
-  const [savedSearchPresets, setSavedSearchPresets] = React.useState<HomeSearchPreset[]>([]);
-  const [lastViewedDream, setLastViewedDream] = React.useState<DreamListItem | Dream | null>(null);
+  const [savedSearchPresets, setSavedSearchPresets] = React.useState<
+    HomeSearchPreset[]
+  >([]);
+  const [lastViewedDream, setLastViewedDream] = React.useState<
+    DreamListItem | Dream | null
+  >(null);
   const [detailsReady, setDetailsReady] = React.useState(false);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
@@ -58,8 +66,11 @@ export function useHomeScreenData(): HomeScreenDataState {
         const fullDreams = listDreams();
         const nextLastViewedDreamRecord = getLastViewedDream();
         const nextLastViewedDream =
-          isLastViewedDreamFresh(nextLastViewedDreamRecord) && nextLastViewedDreamRecord
-            ? fullDreams.find(dream => dream.id === nextLastViewedDreamRecord.dreamId) ?? null
+          isLastViewedDreamFresh(nextLastViewedDreamRecord) &&
+          nextLastViewedDreamRecord
+            ? (fullDreams.find(
+                dream => dream.id === nextLastViewedDreamRecord.dreamId,
+              ) ?? null)
             : null;
 
         React.startTransition(() => {
@@ -92,50 +103,60 @@ export function useHomeScreenData(): HomeScreenDataState {
     setTimeout(runHydration, 0);
   }, []);
 
-  const refreshDreams = React.useCallback((mode: HomeRefreshMode = 'initial') => {
-    const startedAt = Date.now();
-    if (mode === 'initial') {
-      setLoading(true);
-    }
-
-    if (mode === 'refresh') {
-      setRefreshing(true);
-    }
-
-    setLoadError(null);
-
-    try {
-      hydrationRequestRef.current += 1;
-      const nextDreamListItems = listDreamListItems();
-      const nextDraft = getDreamDraft();
-      const nextSavedSearchPresets = getHomeSearchPresets();
-      const nextLastViewedDreamRecord = getLastViewedDream();
-      const nextLastViewedDream =
-        isLastViewedDreamFresh(nextLastViewedDreamRecord) && nextLastViewedDreamRecord
-          ? nextDreamListItems.find(dream => dream.id === nextLastViewedDreamRecord.dreamId) ?? null
-          : null;
-      setDreamListItems(nextDreamListItems);
-      setDraft(nextDraft);
-      setSavedSearchPresets(nextSavedSearchPresets);
-      setLastViewedDream(nextLastViewedDream);
-      if (mode !== 'silent') {
-        setDreams([]);
-        setDetailsReady(false);
-      }
-      trackLocalSurfaceLoad('home_refresh', startedAt, nextDreamListItems.length);
-      hydrateDreamDetails();
-    } catch (error) {
-      setLoadError(String(error));
-    } finally {
+  const refreshDreams = React.useCallback(
+    (mode: HomeRefreshMode = 'initial') => {
+      const startedAt = Date.now();
       if (mode === 'initial') {
-        setLoading(false);
+        setLoading(true);
       }
 
       if (mode === 'refresh') {
-        setRefreshing(false);
+        setRefreshing(true);
       }
-    }
-  }, [hydrateDreamDetails]);
+
+      setLoadError(null);
+
+      try {
+        hydrationRequestRef.current += 1;
+        const nextDreamListItems = listDreamListItems();
+        const nextDraft = getDreamDraft();
+        const nextSavedSearchPresets = getHomeSearchPresets();
+        const nextLastViewedDreamRecord = getLastViewedDream();
+        const nextLastViewedDream =
+          isLastViewedDreamFresh(nextLastViewedDreamRecord) &&
+          nextLastViewedDreamRecord
+            ? (nextDreamListItems.find(
+                dream => dream.id === nextLastViewedDreamRecord.dreamId,
+              ) ?? null)
+            : null;
+        setDreamListItems(nextDreamListItems);
+        setDraft(nextDraft);
+        setSavedSearchPresets(nextSavedSearchPresets);
+        setLastViewedDream(nextLastViewedDream);
+        if (mode !== 'silent') {
+          setDreams([]);
+          setDetailsReady(false);
+        }
+        trackLocalSurfaceLoad(
+          'home_refresh',
+          startedAt,
+          nextDreamListItems.length,
+        );
+        hydrateDreamDetails();
+      } catch (error) {
+        setLoadError(String(error));
+      } finally {
+        if (mode === 'initial') {
+          setLoading(false);
+        }
+
+        if (mode === 'refresh') {
+          setRefreshing(false);
+        }
+      }
+    },
+    [hydrateDreamDetails],
+  );
 
   React.useEffect(() => {
     const scheduler = globalThis as typeof globalThis & IdleSchedulerShape;
@@ -153,7 +174,10 @@ export function useHomeScreenData(): HomeScreenDataState {
     }
 
     return () => {
-      if (idleHandle !== null && typeof scheduler.cancelIdleCallback === 'function') {
+      if (
+        idleHandle !== null &&
+        typeof scheduler.cancelIdleCallback === 'function'
+      ) {
         scheduler.cancelIdleCallback(idleHandle);
       }
 

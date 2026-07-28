@@ -37,9 +37,18 @@ export default function WakeEntryScreen() {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const navigation =
-    useNavigation<NativeStackNavigationProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.WakeEntry>>();
-  const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.WakeEntry>>();
-  const [draftSnapshot, setDraftSnapshot] = React.useState<DreamDraftSnapshot | null>(null);
+    useNavigation<
+      NativeStackNavigationProp<
+        RootStackParamList,
+        typeof ROOT_ROUTE_NAMES.WakeEntry
+      >
+    >();
+  const route =
+    useRoute<
+      RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.WakeEntry>
+    >();
+  const [draftSnapshot, setDraftSnapshot] =
+    React.useState<DreamDraftSnapshot | null>(null);
   const draftSummary = React.useMemo(
     () => getDreamDraftSummaryLabels(draftSnapshot, copy),
     [copy, draftSnapshot],
@@ -133,7 +142,9 @@ export default function WakeEntryScreen() {
                 accessibilityHint={draftHint}
                 accessibilityLabel={copy.wakeEntryDraftAction}
                 accessibilityRole="button"
-                onPress={() => draftSnapshot && handoffToComposer(draftSnapshot.resumeMode)}
+                onPress={() =>
+                  draftSnapshot && handoffToComposer(draftSnapshot.resumeMode)
+                }
                 style={({ pressed }) => [
                   styles.primaryActionCard,
                   pressed ? styles.primaryActionCardPressed : null,
@@ -141,19 +152,31 @@ export default function WakeEntryScreen() {
               >
                 <View style={styles.primaryActionHeader}>
                   <View style={styles.primaryActionIconWrap}>
-                    <Ionicons name={draftPrimaryIcon} size={20} color={t.colors.ink} />
+                    <Ionicons
+                      name={draftPrimaryIcon}
+                      size={20}
+                      color={t.colors.ink}
+                    />
                   </View>
                   <View style={styles.primaryActionCopy}>
-                    <Text style={styles.primaryActionTitle}>{copy.wakeEntryDraftAction}</Text>
+                    <Text style={styles.primaryActionTitle}>
+                      {copy.wakeEntryDraftAction}
+                    </Text>
                     <Text style={styles.primaryActionHint}>{draftHint}</Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={t.colors.ink} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={t.colors.ink}
+                  />
                 </View>
                 {draftSummary.length ? (
                   <View style={styles.primaryActionMetaRow}>
                     {draftSummary.map(label => (
                       <View key={label} style={styles.primaryActionMetaChip}>
-                        <Text style={styles.primaryActionMetaLabel}>{label}</Text>
+                        <Text style={styles.primaryActionMetaLabel}>
+                          {label}
+                        </Text>
                       </View>
                     ))}
                   </View>
@@ -172,17 +195,31 @@ export default function WakeEntryScreen() {
               >
                 <View style={styles.primaryActionHeader}>
                   <View style={styles.primaryActionIconWrap}>
-                    <Ionicons name="mic-outline" size={20} color={t.colors.ink} />
+                    <Ionicons
+                      name="mic-outline"
+                      size={20}
+                      color={t.colors.ink}
+                    />
                   </View>
                   <View style={styles.primaryActionCopy}>
-                    <Text style={styles.primaryActionTitle}>{copy.wakeEntrySpeakAction}</Text>
-                    <Text style={styles.primaryActionHint}>{copy.wakeEntrySpeakHint}</Text>
+                    <Text style={styles.primaryActionTitle}>
+                      {copy.wakeEntrySpeakAction}
+                    </Text>
+                    <Text style={styles.primaryActionHint}>
+                      {copy.wakeEntrySpeakHint}
+                    </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={20} color={t.colors.ink} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={20}
+                    color={t.colors.ink}
+                  />
                 </View>
                 <View style={styles.primaryActionMetaRow}>
                   <View style={styles.primaryActionMetaChip}>
-                    <Text style={styles.primaryActionMetaLabel}>{copy.quickAddVoiceAction}</Text>
+                    <Text style={styles.primaryActionMetaLabel}>
+                      {copy.quickAddVoiceAction}
+                    </Text>
                   </View>
                 </View>
               </Pressable>
@@ -198,13 +235,25 @@ export default function WakeEntryScreen() {
                 ]}
               >
                 <View style={styles.actionCardIconWrap}>
-                  <Ionicons name="mic-outline" size={18} color={t.colors.primary} />
+                  <Ionicons
+                    name="mic-outline"
+                    size={18}
+                    color={t.colors.primary}
+                  />
                 </View>
                 <View style={styles.actionCardCopy}>
-                  <Text style={styles.actionCardTitle}>{copy.wakeEntrySpeakAction}</Text>
-                  <Text style={styles.actionCardHint}>{copy.wakeEntrySpeakHint}</Text>
+                  <Text style={styles.actionCardTitle}>
+                    {copy.wakeEntrySpeakAction}
+                  </Text>
+                  <Text style={styles.actionCardHint}>
+                    {copy.wakeEntrySpeakHint}
+                  </Text>
                 </View>
-                <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+                <Ionicons
+                  name="chevron-forward"
+                  size={18}
+                  color={t.colors.textDim}
+                />
               </Pressable>
               {hasDraft ? (
                 <Pressable
@@ -216,13 +265,25 @@ export default function WakeEntryScreen() {
                   ]}
                 >
                   <View style={styles.actionCardIconWrap}>
-                    <Ionicons name="create-outline" size={18} color={t.colors.primary} />
+                    <Ionicons
+                      name="create-outline"
+                      size={18}
+                      color={t.colors.primary}
+                    />
                   </View>
                   <View style={styles.actionCardCopy}>
-                    <Text style={styles.actionCardTitle}>{copy.wakeEntryWriteAction}</Text>
-                    <Text style={styles.actionCardHint}>{copy.wakeEntryOrbHint}</Text>
+                    <Text style={styles.actionCardTitle}>
+                      {copy.wakeEntryWriteAction}
+                    </Text>
+                    <Text style={styles.actionCardHint}>
+                      {copy.wakeEntryOrbHint}
+                    </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={18}
+                    color={t.colors.textDim}
+                  />
                 </Pressable>
               ) : null}
               {!hasDraft ? (
@@ -235,13 +296,25 @@ export default function WakeEntryScreen() {
                   ]}
                 >
                   <View style={styles.actionCardIconWrap}>
-                    <Ionicons name="create-outline" size={18} color={t.colors.primary} />
+                    <Ionicons
+                      name="create-outline"
+                      size={18}
+                      color={t.colors.primary}
+                    />
                   </View>
                   <View style={styles.actionCardCopy}>
-                    <Text style={styles.actionCardTitle}>{copy.wakeEntryWriteAction}</Text>
-                    <Text style={styles.actionCardHint}>{copy.wakeEntryOrbHint}</Text>
+                    <Text style={styles.actionCardTitle}>
+                      {copy.wakeEntryWriteAction}
+                    </Text>
+                    <Text style={styles.actionCardHint}>
+                      {copy.wakeEntryOrbHint}
+                    </Text>
                   </View>
-                  <Ionicons name="chevron-forward" size={18} color={t.colors.textDim} />
+                  <Ionicons
+                    name="chevron-forward"
+                    size={18}
+                    color={t.colors.textDim}
+                  />
                 </Pressable>
               ) : null}
             </View>

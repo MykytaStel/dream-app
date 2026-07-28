@@ -2,7 +2,10 @@ import React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+} from 'react-native-reanimated';
 import { Card } from '../../../../components/ui/Card';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
@@ -58,7 +61,10 @@ export function ArchiveMonthPanel({
   const theme = useTheme<Theme>();
 
   return (
-    <Animated.View entering={FadeInDown.delay(40).duration(260)} layout={archiveMonthLayoutTransition}>
+    <Animated.View
+      entering={FadeInDown.delay(40).duration(260)}
+      layout={archiveMonthLayoutTransition}
+    >
       <Card style={styles.toolbarCard}>
         <View pointerEvents="none" style={styles.toolbarGlowLarge} />
         <View pointerEvents="none" style={styles.toolbarGlowSmall} />
@@ -66,7 +72,10 @@ export function ArchiveMonthPanel({
         <View style={styles.monthToolbar}>
           <View style={styles.monthPagerSlot}>
             <Pressable
-              style={[styles.monthPagerButton, !canGoOlder ? styles.monthPagerButtonDisabled : null]}
+              style={[
+                styles.monthPagerButton,
+                !canGoOlder ? styles.monthPagerButtonDisabled : null,
+              ]}
               disabled={!canGoOlder}
               onPress={() => onMoveMonth('older')}
               accessibilityRole="button"
@@ -85,12 +94,17 @@ export function ArchiveMonthPanel({
             layout={archiveMonthLayoutTransition}
             style={styles.monthLabelBlock}
           >
-            <Text style={styles.monthLabel}>{getMonthLabel(selectedMonthKey, localeKey)}</Text>
+            <Text style={styles.monthLabel}>
+              {getMonthLabel(selectedMonthKey, localeKey)}
+            </Text>
             <Text style={styles.monthMetaText}>{monthMetaText}</Text>
           </Animated.View>
           <View style={styles.monthPagerSlot}>
             <Pressable
-              style={[styles.monthPagerButton, !canGoNewer ? styles.monthPagerButtonDisabled : null]}
+              style={[
+                styles.monthPagerButton,
+                !canGoNewer ? styles.monthPagerButtonDisabled : null,
+              ]}
               disabled={!canGoNewer}
               onPress={() => onMoveMonth('newer')}
               accessibilityRole="button"
@@ -122,7 +136,10 @@ export function ArchiveMonthPanel({
                 return (
                   <Pressable
                     key={monthKey}
-                    style={[styles.quickJumpChip, active ? styles.quickJumpChipActive : null]}
+                    style={[
+                      styles.quickJumpChip,
+                      active ? styles.quickJumpChipActive : null,
+                    ]}
                     onPress={() => onSelectMonth(monthKey)}
                   >
                     <Text
@@ -149,7 +166,9 @@ export function ArchiveMonthPanel({
             </View>
 
             <Pressable style={styles.clearDateChip} onPress={onClearDate}>
-              <Text style={styles.clearDateChipText}>{copy.archiveAllDates}</Text>
+              <Text style={styles.clearDateChipText}>
+                {copy.archiveAllDates}
+              </Text>
             </Pressable>
           </View>
         ) : null}
@@ -168,11 +187,16 @@ export function ArchiveMonthPanel({
 
           <View style={styles.calendarRows}>
             {calendarRows.map((row, rowIndex) => (
-              <View key={`calendar-row-${rowIndex}`} style={styles.calendarWeekRow}>
+              <View
+                key={`calendar-row-${rowIndex}`}
+                style={styles.calendarWeekRow}
+              >
                 {row.map(cell => {
                   const isSelected = cell.date === selectedDate;
                   const isInteractive = Boolean(cell.date && cell.count > 0);
-                  const moodDotColor = getCalendarMoodDotColor(cell.dominantMood);
+                  const moodDotColor = getCalendarMoodDotColor(
+                    cell.dominantMood,
+                  );
 
                   return (
                     <Pressable
@@ -192,7 +216,9 @@ export function ArchiveMonthPanel({
                           <Text
                             style={[
                               styles.calendarCellDay,
-                              isSelected ? styles.calendarCellDaySelected : null,
+                              isSelected
+                                ? styles.calendarCellDaySelected
+                                : null,
                               cell.count === 0 && !cell.isToday
                                 ? styles.calendarCellDayMuted
                                 : null,
@@ -204,11 +230,20 @@ export function ArchiveMonthPanel({
                             <View
                               style={[
                                 styles.calendarMoodDot,
-                                { backgroundColor: isSelected ? theme.colors.primary : moodDotColor },
+                                {
+                                  backgroundColor: isSelected
+                                    ? theme.colors.primary
+                                    : moodDotColor,
+                                },
                               ]}
                             />
                           ) : cell.count > 0 ? (
-                            <View style={[styles.calendarMoodDot, styles.calendarMoodDotNeutral]} />
+                            <View
+                              style={[
+                                styles.calendarMoodDot,
+                                styles.calendarMoodDotNeutral,
+                              ]}
+                            />
                           ) : null}
                         </>
                       ) : null}

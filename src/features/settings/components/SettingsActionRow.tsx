@@ -47,7 +47,13 @@ export function SettingsActionRow({
   );
 
   if (!onPress) {
-    return <View style={[styles.row, variant === 'inline' ? styles.rowInline : null]}>{content}</View>;
+    return (
+      <View
+        style={[styles.row, variant === 'inline' ? styles.rowInline : null]}
+      >
+        {content}
+      </View>
+    );
   }
 
   return (

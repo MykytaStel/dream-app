@@ -15,7 +15,9 @@ export type HomeSearchPreset = {
   createdAt: number;
 };
 
-function normalizePreset(raw?: Partial<HomeSearchPreset>): HomeSearchPreset | null {
+function normalizePreset(
+  raw?: Partial<HomeSearchPreset>,
+): HomeSearchPreset | null {
   if (!raw?.id || !raw.label?.trim() || !raw.filters) {
     return null;
   }
@@ -46,7 +48,10 @@ export function getHomeSearchPresets() {
 }
 
 function persistHomeSearchPresets(presets: HomeSearchPreset[]) {
-  kv.set(HOME_SEARCH_PRESETS_STORAGE_KEY, JSON.stringify(presets.slice(0, MAX_HOME_SEARCH_PRESETS)));
+  kv.set(
+    HOME_SEARCH_PRESETS_STORAGE_KEY,
+    JSON.stringify(presets.slice(0, MAX_HOME_SEARCH_PRESETS)),
+  );
 }
 
 export function saveHomeSearchPreset(input: {
@@ -66,7 +71,10 @@ export function saveHomeSearchPreset(input: {
   );
 
   if (existing) {
-    const nextPresets = [existing, ...current.filter(preset => preset.id !== existing.id)];
+    const nextPresets = [
+      existing,
+      ...current.filter(preset => preset.id !== existing.id),
+    ];
     persistHomeSearchPresets(nextPresets);
     return nextPresets;
   }
@@ -77,7 +85,10 @@ export function saveHomeSearchPreset(input: {
     filters: normalizedFilters,
     createdAt: Date.now(),
   };
-  const nextPresets = [nextPreset, ...current].slice(0, MAX_HOME_SEARCH_PRESETS);
+  const nextPresets = [nextPreset, ...current].slice(
+    0,
+    MAX_HOME_SEARCH_PRESETS,
+  );
   persistHomeSearchPresets(nextPresets);
   return nextPresets;
 }

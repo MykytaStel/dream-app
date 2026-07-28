@@ -16,14 +16,17 @@ const MOOD_VALENCE: Record<Mood, 'positive' | 'neutral' | 'negative'> = {
   dark: 'negative',
 };
 
-export function getMoodValence(mood: Mood): 'positive' | 'neutral' | 'negative' {
+export function getMoodValence(
+  mood: Mood,
+): 'positive' | 'neutral' | 'negative' {
   return MOOD_VALENCE[mood] ?? 'neutral';
 }
 
 type DreamDateLike = Pick<Dream, 'createdAt' | 'sleepDate'>;
 
 export function getDreamDate(dream: DreamDateLike) {
-  const value = dream.sleepDate ?? new Date(dream.createdAt).toISOString().slice(0, 10);
+  const value =
+    dream.sleepDate ?? new Date(dream.createdAt).toISOString().slice(0, 10);
   return new Date(`${value}T00:00:00`);
 }
 
@@ -33,7 +36,9 @@ export function countDreamWords(text?: string) {
 
 export function getCurrentStreak(dreams: DreamDateLike[]) {
   const uniqueDays = Array.from(
-    new Set(dreams.map(dream => getDreamDate(dream).toISOString().slice(0, 10))),
+    new Set(
+      dreams.map(dream => getDreamDate(dream).toISOString().slice(0, 10)),
+    ),
   ).sort((a, b) => b.localeCompare(a));
 
   if (!uniqueDays.length) {
@@ -81,7 +86,10 @@ export function getAverageWords(dreams: Dream[]) {
     return 0;
   }
 
-  const totalWords = dreams.reduce((sum, dream) => sum + countDreamWords(dream.text), 0);
+  const totalWords = dreams.reduce(
+    (sum, dream) => sum + countDreamWords(dream.text),
+    0,
+  );
   return Math.round(totalWords / dreams.length);
 }
 
@@ -188,7 +196,10 @@ function hasText(value?: string) {
   return Boolean(value?.trim());
 }
 
-function toNegativeMoodRate(negativeCount: number, total: number): NegativeMoodRate {
+function toNegativeMoodRate(
+  negativeCount: number,
+  total: number,
+): NegativeMoodRate {
   return {
     negativeCount,
     total,
@@ -217,7 +228,8 @@ function getDistressWakeEmotionCount(dream: Dream) {
 
 export function getDreamLucidityLevel(dream: Pick<Dream, 'lucidity' | 'tags'>) {
   if (typeof dream.lucidity === 'number' && Number.isFinite(dream.lucidity)) {
-    return Math.max(0, Math.min(3, Math.floor(dream.lucidity))) as 0 | 1 | 2 | 3;
+    return Math.max(0, Math.min(3, Math.floor(dream.lucidity))) as
+      0 | 1 | 2 | 3;
   }
 
   if (dream.tags.some(tag => LUCID_TAGS.has(tag))) {
@@ -255,7 +267,9 @@ export function isHighDistressNightmare(dream: Pick<Dream, 'nightmare'>) {
 }
 
 export function isRecurringNightmare(dream: Pick<Dream, 'nightmare'>) {
-  return Boolean(dream.nightmare?.recurring || dream.nightmare?.recurringKey?.trim());
+  return Boolean(
+    dream.nightmare?.recurring || dream.nightmare?.recurringKey?.trim(),
+  );
 }
 
 export function getDreamNightmareClassification(
@@ -314,7 +328,10 @@ export function getNightmareStats(dreams: Dream[]): NightmareStats {
     if (isHighDistressNightmare(dream)) {
       highDistressCount += 1;
     }
-    if (dream.nightmare?.rescriptStatus === 'drafted' || dream.nightmare?.rescriptStatus === 'rehearsed') {
+    if (
+      dream.nightmare?.rescriptStatus === 'drafted' ||
+      dream.nightmare?.rescriptStatus === 'rehearsed'
+    ) {
       rescriptedCount += 1;
     }
 
@@ -326,8 +343,10 @@ export function getNightmareStats(dreams: Dream[]): NightmareStats {
 
     if (
       !latestNightmareDream ||
-      getDreamDate(dream).getTime() > getDreamDate(latestNightmareDream).getTime() ||
-      (getDreamDate(dream).getTime() === getDreamDate(latestNightmareDream).getTime() &&
+      getDreamDate(dream).getTime() >
+        getDreamDate(latestNightmareDream).getTime() ||
+      (getDreamDate(dream).getTime() ===
+        getDreamDate(latestNightmareDream).getTime() &&
         dream.createdAt > latestNightmareDream.createdAt)
     ) {
       latestNightmareDream = dream;
@@ -342,7 +361,9 @@ export function getNightmareStats(dreams: Dream[]): NightmareStats {
     recurringCount,
     highDistressCount,
     rescriptedCount,
-    rate: dreams.length ? Math.round((nightmareCount / dreams.length) * 100) : undefined,
+    rate: dreams.length
+      ? Math.round((nightmareCount / dreams.length) * 100)
+      : undefined,
     latestNightmareDream,
   };
 }
@@ -360,8 +381,10 @@ export function getLucidDreamStats(dreams: Dream[]): LucidDreamStats {
 
     if (
       !latestLucidDream ||
-      getDreamDate(dream).getTime() > getDreamDate(latestLucidDream).getTime() ||
-      (getDreamDate(dream).getTime() === getDreamDate(latestLucidDream).getTime() &&
+      getDreamDate(dream).getTime() >
+        getDreamDate(latestLucidDream).getTime() ||
+      (getDreamDate(dream).getTime() ===
+        getDreamDate(latestLucidDream).getTime() &&
         dream.createdAt > latestLucidDream.createdAt)
     ) {
       latestLucidDream = dream;
@@ -371,7 +394,9 @@ export function getLucidDreamStats(dreams: Dream[]): LucidDreamStats {
   return {
     totalDreams: dreams.length,
     lucidCount,
-    rate: dreams.length ? Math.round((lucidCount / dreams.length) * 100) : undefined,
+    rate: dreams.length
+      ? Math.round((lucidCount / dreams.length) * 100)
+      : undefined,
     latestLucidDream,
   };
 }
@@ -410,7 +435,10 @@ export function getLucidPracticeStats(dreams: Dream[]): LucidPracticeStats {
         return;
       }
 
-      dreamSignCounts.set(normalized, (dreamSignCounts.get(normalized) ?? 0) + 1);
+      dreamSignCounts.set(
+        normalized,
+        (dreamSignCounts.get(normalized) ?? 0) + 1,
+      );
     });
   });
 
@@ -497,7 +525,9 @@ export function getSleepContextStats(dreams: Dream[]): SleepContextStats {
     withContext,
     withStress,
     averageStress:
-      withStress > 0 ? Math.round((stressTotal / withStress) * 10) / 10 : undefined,
+      withStress > 0
+        ? Math.round((stressTotal / withStress) * 10) / 10
+        : undefined,
     alcoholTaken,
     caffeineLate,
     medications,

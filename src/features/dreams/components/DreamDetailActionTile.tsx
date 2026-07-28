@@ -22,7 +22,10 @@ export function DreamDetailActionTile({
   danger = false,
 }: DreamDetailActionTileProps) {
   const theme = useTheme<Theme>();
-  const styles = React.useMemo(() => createStyles(theme, active, danger), [active, danger, theme]);
+  const styles = React.useMemo(
+    () => createStyles(theme, active, danger),
+    [active, danger, theme],
+  );
   const iconColor = danger
     ? theme.colors.danger
     : active
@@ -32,7 +35,10 @@ export function DreamDetailActionTile({
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.pressable, pressed ? styles.pressablePressed : null]}
+      style={({ pressed }) => [
+        styles.pressable,
+        pressed ? styles.pressablePressed : null,
+      ]}
       accessibilityRole="button"
       accessibilityLabel={label}
     >

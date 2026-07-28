@@ -1,6 +1,9 @@
 import { Platform } from 'react-native';
 import RNFS from 'react-native-fs';
-import { getDream, updateDreamTranscriptState } from '../repository/dreamsRepository';
+import {
+  getDream,
+  updateDreamTranscriptState,
+} from '../repository/dreamsRepository';
 import { initWhisper, WhisperNativeContext } from './whisperNative';
 
 const DREAM_TRANSCRIPTION_MODEL_DIRECTORY = 'whisper-models';
@@ -8,7 +11,8 @@ const DREAM_TRANSCRIPTION_MODEL_FILENAME = 'ggml-tiny.en.bin';
 const DREAM_TRANSCRIPTION_MODEL_URL =
   'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin';
 
-export type DreamTranscriptionProgressPhase = 'preparing-model' | 'transcribing';
+export type DreamTranscriptionProgressPhase =
+  'preparing-model' | 'transcribing';
 export type DreamTranscriptionProgress = {
   phase: DreamTranscriptionProgressPhase;
   progress: number | null;

@@ -116,8 +116,8 @@ export function useSettingsScreenController({
   const transcriptionDownloadLabel = React.useMemo(
     () =>
       isDownloadingTranscriptionModel
-        ? formatDownloadProgress(transcriptionDownloadProgress, copy) ??
-          copy.transcriptionDownloadButtonBusy
+        ? (formatDownloadProgress(transcriptionDownloadProgress, copy) ??
+          copy.transcriptionDownloadButtonBusy)
         : copy.transcriptionDownloadButton,
     [copy, isDownloadingTranscriptionModel, transcriptionDownloadProgress],
   );
@@ -277,9 +277,8 @@ export function useSettingsScreenController({
       setLocale(nextLocale);
 
       try {
-        const appliedSettings = await applyDreamReminderSettings(
-          reminderSettings,
-        );
+        const appliedSettings =
+          await applyDreamReminderSettings(reminderSettings);
         setReminderSettings(appliedSettings);
         setPermissionGranted(await getDreamReminderPermissionGranted());
       } catch (error) {
@@ -371,7 +370,8 @@ export function useSettingsScreenController({
       return;
     }
 
-    const availability = biometricAvailability ?? (await checkBiometricAvailability());
+    const availability =
+      biometricAvailability ?? (await checkBiometricAvailability());
     setBiometricAvailability(availability);
 
     if (!availability.available) {
@@ -386,7 +386,9 @@ export function useSettingsScreenController({
     setIsApplyingBiometricLock(true);
 
     try {
-      const success = await authenticateWithBiometrics(copy.biometricLockPrompt);
+      const success = await authenticateWithBiometrics(
+        copy.biometricLockPrompt,
+      );
       if (!success) {
         Alert.alert(
           copy.biometricLockEnableErrorTitle,

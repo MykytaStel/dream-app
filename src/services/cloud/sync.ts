@@ -183,7 +183,10 @@ async function ensureDreamAudioUploaded(
   } catch (error) {
     // If native upload is unavailable for some reason, fall back to JS upload.
     const message = error instanceof Error ? error.message : String(error);
-    if (!message.includes('supabase-rest-config-missing') && !message.includes('Supabase runtime config is missing.')) {
+    if (
+      !message.includes('supabase-rest-config-missing') &&
+      !message.includes('Supabase runtime config is missing.')
+    ) {
       // Native path tried and failed with a specific error; rethrow.
       throw error;
     }
@@ -405,7 +408,10 @@ async function fetchRemoteDreamBundles(
 
   let query = client.from('dream_entries').select('*').eq('user_id', userId);
 
-  if (typeof options?.updatedAtOrAfter === 'number' && Number.isFinite(options.updatedAtOrAfter)) {
+  if (
+    typeof options?.updatedAtOrAfter === 'number' &&
+    Number.isFinite(options.updatedAtOrAfter)
+  ) {
     query = query.gte(
       'updated_at',
       new Date(options.updatedAtOrAfter).toISOString(),
@@ -463,7 +469,10 @@ async function fetchRemoteDreamBundles(
     wakeEmotionsByDreamId.set(item.dream_id, [item]);
   });
 
-  const preSleepEmotionsByDreamId = new Map<string, DreamPreSleepEmotionRow[]>();
+  const preSleepEmotionsByDreamId = new Map<
+    string,
+    DreamPreSleepEmotionRow[]
+  >();
   preSleepEmotions.forEach(item => {
     const current = preSleepEmotionsByDreamId.get(item.dream_id);
     if (current) {
@@ -498,7 +507,10 @@ async function fetchRemoteDreamRevisions(userId: string, dreamIds?: string[]) {
     return [] as RemoteDreamRevisionRow[];
   }
 
-  let query = client.from('dream_entries').select('id, updated_at').eq('user_id', userId);
+  let query = client
+    .from('dream_entries')
+    .select('id, updated_at')
+    .eq('user_id', userId);
   if (dreamIds?.length) {
     query = query.in('id', dreamIds);
   }
@@ -665,15 +677,12 @@ async function performCloudSync(
         remoteDreamRevisionMap.get(dream.id) ?? null,
         remoteTombstoneMap.get(dream.id) ?? null,
       );
-      ({
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      } = accumulateConflictDecision(localUploadDecision, {
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      }));
+      ({ conflictsResolvedCount, localWinsCount, remoteWinsCount } =
+        accumulateConflictDecision(localUploadDecision, {
+          conflictsResolvedCount,
+          localWinsCount,
+          remoteWinsCount,
+        }));
 
       if (localUploadDecision.action === 'mark-synced') {
         conflictContext.resolvedDreamIds.add(dream.id);
@@ -713,15 +722,12 @@ async function performCloudSync(
         remoteDreamRevisionMap.get(tombstone.dreamId) ?? null,
         remoteTombstoneMap.get(tombstone.dreamId) ?? null,
       );
-      ({
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      } = accumulateConflictDecision(localUploadDecision, {
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      }));
+      ({ conflictsResolvedCount, localWinsCount, remoteWinsCount } =
+        accumulateConflictDecision(localUploadDecision, {
+          conflictsResolvedCount,
+          localWinsCount,
+          remoteWinsCount,
+        }));
 
       if (localUploadDecision.action === 'mark-synced') {
         conflictContext.resolvedTombstoneIds.add(tombstone.dreamId);
@@ -765,15 +771,12 @@ async function performCloudSync(
     );
     for (const row of remoteTombstones) {
       const decision = decideRemoteTombstoneResolution(row, conflictContext);
-      ({
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      } = accumulateConflictDecision(decision, {
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      }));
+      ({ conflictsResolvedCount, localWinsCount, remoteWinsCount } =
+        accumulateConflictDecision(decision, {
+          conflictsResolvedCount,
+          localWinsCount,
+          remoteWinsCount,
+        }));
 
       if (decision.action === 'skip') {
         skippedCount += 1;
@@ -792,15 +795,12 @@ async function performCloudSync(
     });
     for (const bundle of remoteBundles) {
       const decision = decideRemoteBundleResolution(bundle, conflictContext);
-      ({
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      } = accumulateConflictDecision(decision, {
-        conflictsResolvedCount,
-        localWinsCount,
-        remoteWinsCount,
-      }));
+      ({ conflictsResolvedCount, localWinsCount, remoteWinsCount } =
+        accumulateConflictDecision(decision, {
+          conflictsResolvedCount,
+          localWinsCount,
+          remoteWinsCount,
+        }));
 
       if (decision.action === 'skip') {
         skippedCount += 1;
@@ -812,7 +812,9 @@ async function performCloudSync(
     }
 
     const reconciledReviewState = reconcileDerivedReviewState(listDreams());
-    const remoteSavedReviewState = await fetchRemoteSavedReviewState(session.userId);
+    const remoteSavedReviewState = await fetchRemoteSavedReviewState(
+      session.userId,
+    );
     const savedReviewStateDecision = decideSavedReviewStateResolution(
       remoteSavedReviewState,
       reconciledReviewState,
@@ -850,7 +852,11 @@ async function performCloudSync(
         markSavedReviewStateSyncError(lastErrorMessage);
         failedCount += 1;
       }
-    } else if (remoteSavedReviewState || reconciledReviewState.savedMonths.length || reconciledReviewState.savedThreads.length) {
+    } else if (
+      remoteSavedReviewState ||
+      reconciledReviewState.savedMonths.length ||
+      reconciledReviewState.savedThreads.length
+    ) {
       skippedCount += 1;
     }
   } catch (error) {

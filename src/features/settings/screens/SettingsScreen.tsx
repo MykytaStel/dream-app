@@ -44,7 +44,10 @@ export default function SettingsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
-  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () => createSettingsScreenStyles(theme),
+    [theme],
+  );
 
   const controller = useSettingsScreenController({
     locale,
@@ -141,17 +144,19 @@ export default function SettingsScreen() {
         suggestedTime={suggestedTime}
         getReminderDate={controller.getReminderDate}
         onToggleReminder={() =>
-          controller.onToggleReminder().catch(e =>
-            logActionError('SettingsScreen.onToggleReminder', e),
-          )
+          controller
+            .onToggleReminder()
+            .catch(e => logActionError('SettingsScreen.onToggleReminder', e))
         }
         onOpenReminderTimePicker={controller.onOpenReminderTimePicker}
         onNativeTimePickerChange={controller.onNativeTimePickerChange}
         onApplySuggestedTime={onApplySuggestedTime}
         onSelectReminderStyle={style =>
-          controller.onSelectReminderStyle(style).catch(e =>
-            logActionError('SettingsScreen.onSelectReminderStyle', e),
-          )
+          controller
+            .onSelectReminderStyle(style)
+            .catch(e =>
+              logActionError('SettingsScreen.onSelectReminderStyle', e),
+            )
         }
       />
 
@@ -170,9 +175,11 @@ export default function SettingsScreen() {
         biometricLockEnabled={controller.biometricLockEnabled}
         isApplyingBiometricLock={controller.isApplyingBiometricLock}
         onToggleBiometricLock={() =>
-          controller.onToggleBiometricLock().catch(e =>
-            logActionError('SettingsScreen.onToggleBiometricLock', e),
-          )
+          controller
+            .onToggleBiometricLock()
+            .catch(e =>
+              logActionError('SettingsScreen.onToggleBiometricLock', e),
+            )
         }
       />
 
@@ -198,14 +205,18 @@ export default function SettingsScreen() {
         downloadLabel={controller.transcriptionDownloadLabel}
         installed={controller.transcriptionModelInstalled}
         onDownload={() =>
-          controller.onDownloadTranscriptionModel().catch(e =>
-            logActionError('SettingsScreen.onDownloadTranscriptionModel', e),
-          )
+          controller
+            .onDownloadTranscriptionModel()
+            .catch(e =>
+              logActionError('SettingsScreen.onDownloadTranscriptionModel', e),
+            )
         }
         onDelete={() =>
-          controller.onDeleteTranscriptionModel().catch(e =>
-            logActionError('SettingsScreen.onDeleteTranscriptionModel', e),
-          )
+          controller
+            .onDeleteTranscriptionModel()
+            .catch(e =>
+              logActionError('SettingsScreen.onDeleteTranscriptionModel', e),
+            )
         }
       />
 
@@ -217,14 +228,14 @@ export default function SettingsScreen() {
           isUpdatingSeedDreams={controller.isUpdatingSeedDreams}
           onPreviewWakeFlow={() => openWakeEntry({ source: 'manual' })}
           onSeed250={() =>
-            controller.onSeedDreams(250).catch(e =>
-              logActionError('SettingsScreen.onSeedDreams', e),
-            )
+            controller
+              .onSeedDreams(250)
+              .catch(e => logActionError('SettingsScreen.onSeedDreams', e))
           }
           onSeed1000={() =>
-            controller.onSeedDreams(1000).catch(e =>
-              logActionError('SettingsScreen.onSeedDreams', e),
-            )
+            controller
+              .onSeedDreams(1000)
+              .catch(e => logActionError('SettingsScreen.onSeedDreams', e))
           }
           onPreviewMonthlyReport={() => openMonthlyReport()}
           onPreviewBackupOnboarding={() => openBackupOnboardingPreview()}

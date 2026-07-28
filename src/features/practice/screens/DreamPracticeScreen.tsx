@@ -1,6 +1,11 @@
 import React from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import { RouteProp, useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
+import {
+  RouteProp,
+  useFocusEffect,
+  useNavigation,
+  useRoute,
+} from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { Button } from '../../../components/ui/Button';
@@ -9,11 +14,18 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { SegmentedControl } from '../../../components/ui/SegmentedControl';
 import { Text } from '../../../components/ui/Text';
-import { ROOT_ROUTE_NAMES, type DreamPracticeFocus, type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  type DreamPracticeFocus,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { type Theme } from '../../../theme/theme';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { getDreamPreSleepEmotionLabels } from '../../../constants/copy/dreams';
-import { getLucidTechniqueLabels, getPracticeCopy } from '../../../constants/copy/practice';
+import {
+  getLucidTechniqueLabels,
+  getPracticeCopy,
+} from '../../../constants/copy/practice';
 import {
   applyDreamPracticeReminderSettings,
   getDreamPracticeReminderSettings,
@@ -28,7 +40,10 @@ import {
   isNightmareDream,
 } from '../../dreams/model/dreamAnalytics';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
-import { openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
+import {
+  openNewDreamTab,
+  openWakeEntry,
+} from '../../../app/navigation/navigationRef';
 import {
   trackDreamSignSaved,
   trackGroundingOpened,
@@ -55,7 +70,10 @@ function shiftReminderConfig(config: DreamPracticeReminderConfig) {
   };
 }
 
-function formatReminderTime(config: DreamPracticeReminderConfig, locale: 'uk' | 'en') {
+function formatReminderTime(
+  config: DreamPracticeReminderConfig,
+  locale: 'uk' | 'en',
+) {
   const date = new Date();
   date.setHours(config.hour, config.minute, 0, 0);
   return date.toLocaleTimeString(locale === 'uk' ? 'uk-UA' : 'en-US', {
@@ -90,7 +108,12 @@ function PracticeReminderCard({
       </View>
       <View style={{ flexDirection: 'row', gap: 8 }}>
         <Button title={toggleLabel} onPress={onToggle} size="sm" />
-        <Button title={shiftLabel} onPress={onShiftLater} size="sm" variant="ghost" />
+        <Button
+          title={shiftLabel}
+          onPress={onShiftLater}
+          size="sm"
+          variant="ghost"
+        />
       </View>
     </View>
   );
@@ -108,7 +131,10 @@ function PracticeStepsCard({
       <Text style={{ fontWeight: '700', fontSize: 14 }}>{title}</Text>
       <View style={{ gap: 8 }}>
         {steps.map((step, index) => (
-          <View key={`${title}-${index}`} style={{ flexDirection: 'row', gap: 10 }}>
+          <View
+            key={`${title}-${index}`}
+            style={{ flexDirection: 'row', gap: 10 }}
+          >
             <View
               style={{
                 width: 22,
@@ -119,9 +145,13 @@ function PracticeStepsCard({
                 backgroundColor: 'rgba(92, 191, 146, 0.14)',
               }}
             >
-              <Text style={{ fontSize: 12, fontWeight: '700' }}>{index + 1}</Text>
+              <Text style={{ fontSize: 12, fontWeight: '700' }}>
+                {index + 1}
+              </Text>
             </View>
-            <Text style={{ flex: 1, fontSize: 13, lineHeight: 20 }}>{step}</Text>
+            <Text style={{ flex: 1, fontSize: 13, lineHeight: 20 }}>
+              {step}
+            </Text>
           </View>
         ))}
       </View>
@@ -133,18 +163,28 @@ export default function DreamPracticeScreen() {
   const theme = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getPracticeCopy(locale), [locale]);
-  const lucidTechniqueLabels = React.useMemo(() => getLucidTechniqueLabels(locale), [locale]);
+  const lucidTechniqueLabels = React.useMemo(
+    () => getLucidTechniqueLabels(locale),
+    [locale],
+  );
   const preSleepEmotionLabels = React.useMemo(
     () => getDreamPreSleepEmotionLabels(locale),
     [locale],
   );
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.DreamPractice>>();
-  const [focus, setFocus] = React.useState<DreamPracticeFocus>(route.params?.focus ?? 'lucid');
-  const [dreams, setDreams] = React.useState(() => listDreams());
-  const [reminders, setReminders] = React.useState<DreamPracticeReminderSettings>(
-    () => getDreamPracticeReminderSettings(),
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route =
+    useRoute<
+      RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.DreamPractice>
+    >();
+  const [focus, setFocus] = React.useState<DreamPracticeFocus>(
+    route.params?.focus ?? 'lucid',
   );
+  const [dreams, setDreams] = React.useState(() => listDreams());
+  const [reminders, setReminders] =
+    React.useState<DreamPracticeReminderSettings>(() =>
+      getDreamPracticeReminderSettings(),
+    );
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   React.useEffect(() => {
@@ -167,8 +207,14 @@ export default function DreamPracticeScreen() {
     });
   }, [focus, route.params?.entrySource]);
 
-  const lucidStats = React.useMemo(() => getLucidPracticeStats(dreams), [dreams]);
-  const nightmareStats = React.useMemo(() => getNightmareStats(dreams), [dreams]);
+  const lucidStats = React.useMemo(
+    () => getLucidPracticeStats(dreams),
+    [dreams],
+  );
+  const nightmareStats = React.useMemo(
+    () => getNightmareStats(dreams),
+    [dreams],
+  );
   const topPreSleepSignals = React.useMemo(
     () => getTopPreSleepEmotionSignals(dreams.filter(isNightmareDream), 3),
     [dreams],
@@ -178,10 +224,16 @@ export default function DreamPracticeScreen() {
     [dreams],
   );
   const todayKey = getTodayDateKey();
-  const hasDreamToday = dreams.some(dream => (dream.sleepDate ?? '').slice(0, 10) === todayKey);
-  const hasDreamSign = dreams.some(dream => Boolean(dream.lucidPractice?.dreamSigns?.length));
+  const hasDreamToday = dreams.some(
+    dream => (dream.sleepDate ?? '').slice(0, 10) === todayKey,
+  );
+  const hasDreamSign = dreams.some(dream =>
+    Boolean(dream.lucidPractice?.dreamSigns?.length),
+  );
   const hasRewriteInProgress = dreams.some(
-    dream => dream.nightmare?.rescriptStatus === 'drafted' || Boolean(dream.nightmare?.rewrittenEnding),
+    dream =>
+      dream.nightmare?.rescriptStatus === 'drafted' ||
+      Boolean(dream.nightmare?.rewrittenEnding),
   );
   const latestNightmare = React.useMemo(
     () => dreams.find(isNightmareDream),
@@ -204,11 +256,19 @@ export default function DreamPracticeScreen() {
     [copy],
   );
   const nightmareTonightSteps = React.useMemo(
-    () => [copy.nightmareTonightOne, copy.nightmareTonightTwo, copy.nightmareTonightThree],
+    () => [
+      copy.nightmareTonightOne,
+      copy.nightmareTonightTwo,
+      copy.nightmareTonightThree,
+    ],
     [copy],
   );
   const nightmareWakeSteps = React.useMemo(
-    () => [copy.nightmareWakeOne, copy.nightmareWakeTwo, copy.nightmareWakeThree],
+    () => [
+      copy.nightmareWakeOne,
+      copy.nightmareWakeTwo,
+      copy.nightmareWakeThree,
+    ],
     [copy],
   );
 
@@ -218,7 +278,10 @@ export default function DreamPracticeScreen() {
         const applied = await applyDreamPracticeReminderSettings(next);
         setReminders(applied);
       } catch (error) {
-        Alert.alert(copy.remindersTitle, error instanceof Error ? error.message : String(error));
+        Alert.alert(
+          copy.remindersTitle,
+          error instanceof Error ? error.message : String(error),
+        );
       }
     },
     [copy.remindersTitle],
@@ -265,7 +328,11 @@ export default function DreamPracticeScreen() {
     if (focus === 'lucid') {
       trackLucidPracticeStarted({ source: 'practice' });
     }
-    openNewDreamTab({ entryMode: 'default', source: 'manual', launchKey: Date.now() });
+    openNewDreamTab({
+      entryMode: 'default',
+      source: 'manual',
+      launchKey: Date.now(),
+    });
   }, [focus]);
   const openNightmareRewrite = React.useCallback(() => {
     trackNightmareRescriptingStarted({ source: 'practice' });
@@ -276,7 +343,11 @@ export default function DreamPracticeScreen() {
       return;
     }
 
-    openNewDreamTab({ entryMode: 'default', source: 'manual', launchKey: Date.now() });
+    openNewDreamTab({
+      entryMode: 'default',
+      source: 'manual',
+      launchKey: Date.now(),
+    });
   }, [latestNightmare, navigation]);
   const openGrounding = React.useCallback(() => {
     trackGroundingOpened({ source: 'practice' });
@@ -294,8 +365,14 @@ export default function DreamPracticeScreen() {
       <Card style={styles.heroCard}>
         <Text style={styles.eyebrow}>{copy.title}</Text>
         <SectionHeader
-          title={focus === 'lucid' ? copy.lucidHeroTitle : copy.nightmareHeroTitle}
-          subtitle={focus === 'lucid' ? copy.lucidHeroDescription : copy.nightmareHeroDescription}
+          title={
+            focus === 'lucid' ? copy.lucidHeroTitle : copy.nightmareHeroTitle
+          }
+          subtitle={
+            focus === 'lucid'
+              ? copy.lucidHeroDescription
+              : copy.nightmareHeroDescription
+          }
           large
         />
         <SegmentedControl
@@ -311,11 +388,18 @@ export default function DreamPracticeScreen() {
       </Card>
 
       <Card style={styles.sectionCard}>
-        <SectionHeader title={copy.quickActionsTitle} subtitle={copy.planTitle} />
+        <SectionHeader
+          title={copy.quickActionsTitle}
+          subtitle={copy.planTitle}
+        />
         {focus === 'lucid' ? (
           <>
             <View style={styles.buttonRow}>
-              <Button title={copy.quickRecordDream} onPress={openDreamCapture} icon="moon-outline" />
+              <Button
+                title={copy.quickRecordDream}
+                onPress={openDreamCapture}
+                icon="moon-outline"
+              />
               <Button
                 title={copy.quickRealityCheck}
                 onPress={markRealityCheck}
@@ -330,14 +414,28 @@ export default function DreamPracticeScreen() {
                 onPress={() => toggleReminder('evening_intention')}
                 icon="sparkles-outline"
               />
-              <Button title={copy.wbtbTitle} variant="ghost" onPress={markWbtb} icon="alarm-outline" />
+              <Button
+                title={copy.wbtbTitle}
+                variant="ghost"
+                onPress={markWbtb}
+                icon="alarm-outline"
+              />
             </View>
           </>
         ) : (
           <>
             <View style={styles.buttonRow}>
-              <Button title={copy.quickWakeCapture} onPress={() => openWakeEntry({ source: 'manual' })} icon="sunny-outline" />
-              <Button title={copy.quickGrounding} onPress={openGrounding} variant="ghost" icon="water-outline" />
+              <Button
+                title={copy.quickWakeCapture}
+                onPress={() => openWakeEntry({ source: 'manual' })}
+                icon="sunny-outline"
+              />
+              <Button
+                title={copy.quickGrounding}
+                onPress={openGrounding}
+                variant="ghost"
+                icon="water-outline"
+              />
             </View>
             <View style={styles.buttonRow}>
               <Button
@@ -346,7 +444,12 @@ export default function DreamPracticeScreen() {
                 onPress={openNightmareRewrite}
                 icon="create-outline"
               />
-              <Button title={copy.quickRecordDream} variant="ghost" onPress={openDreamCapture} icon="document-text-outline" />
+              <Button
+                title={copy.quickRecordDream}
+                variant="ghost"
+                onPress={openDreamCapture}
+                icon="document-text-outline"
+              />
             </View>
           </>
         )}
@@ -355,34 +458,69 @@ export default function DreamPracticeScreen() {
       <Card style={styles.sectionCard}>
         <SectionHeader title={copy.dailyChecklistTitle} />
         <View style={styles.checklistRow}>
-          <ChecklistItem label={copy.checklistCapture} checked={hasDreamToday} />
+          <ChecklistItem
+            label={copy.checklistCapture}
+            checked={hasDreamToday}
+          />
           <ChecklistItem label={copy.checklistSigns} checked={hasDreamSign} />
-          <ChecklistItem label={copy.checklistRealityChecks} checked={reminders.reality_checks.enabled} />
-          <ChecklistItem label={copy.checklistRewrite} checked={hasRewriteInProgress} />
+          <ChecklistItem
+            label={copy.checklistRealityChecks}
+            checked={reminders.reality_checks.enabled}
+          />
+          <ChecklistItem
+            label={copy.checklistRewrite}
+            checked={hasRewriteInProgress}
+          />
         </View>
       </Card>
 
       <Card style={styles.sectionCard}>
-        <SectionHeader title={copy.planTitle} subtitle={focus === 'lucid' ? copy.focusLucidHint : copy.focusNightmareHint} />
+        <SectionHeader
+          title={copy.planTitle}
+          subtitle={
+            focus === 'lucid' ? copy.focusLucidHint : copy.focusNightmareHint
+          }
+        />
         <View style={styles.flowGrid}>
           {focus === 'lucid' ? (
             <>
-              <PracticeStepsCard title={copy.doNowTitle} steps={lucidPrimarySteps} />
-              <PracticeStepsCard title={copy.tonightTitle} steps={lucidTonightSteps} />
-              <PracticeStepsCard title={copy.ifAwareTitle} steps={lucidAwareSteps} />
+              <PracticeStepsCard
+                title={copy.doNowTitle}
+                steps={lucidPrimarySteps}
+              />
+              <PracticeStepsCard
+                title={copy.tonightTitle}
+                steps={lucidTonightSteps}
+              />
+              <PracticeStepsCard
+                title={copy.ifAwareTitle}
+                steps={lucidAwareSteps}
+              />
             </>
           ) : (
             <>
-              <PracticeStepsCard title={copy.doNowTitle} steps={nightmarePrimarySteps} />
-              <PracticeStepsCard title={copy.tonightTitle} steps={nightmareTonightSteps} />
-              <PracticeStepsCard title={copy.ifNightmareWakeTitle} steps={nightmareWakeSteps} />
+              <PracticeStepsCard
+                title={copy.doNowTitle}
+                steps={nightmarePrimarySteps}
+              />
+              <PracticeStepsCard
+                title={copy.tonightTitle}
+                steps={nightmareTonightSteps}
+              />
+              <PracticeStepsCard
+                title={copy.ifNightmareWakeTitle}
+                steps={nightmareWakeSteps}
+              />
             </>
           )}
         </View>
       </Card>
 
       <Card style={styles.sectionCard}>
-        <SectionHeader title={copy.remindersTitle} subtitle={copy.reminderSafeHint} />
+        <SectionHeader
+          title={copy.remindersTitle}
+          subtitle={copy.reminderSafeHint}
+        />
         <View style={styles.reminderGrid}>
           <PracticeReminderCard
             title={copy.morningCaptureTitle}
@@ -435,7 +573,10 @@ export default function DreamPracticeScreen() {
                 ...reminders,
                 reality_checks: {
                   ...reminders.reality_checks,
-                  startHour: Math.min(16, reminders.reality_checks.startHour + 1),
+                  startHour: Math.min(
+                    16,
+                    reminders.reality_checks.startHour + 1,
+                  ),
                   endHour: Math.min(22, reminders.reality_checks.endHour + 1),
                 },
               });
@@ -446,16 +587,26 @@ export default function DreamPracticeScreen() {
 
       {focus === 'lucid' ? (
         <Card style={styles.sectionCard}>
-          <SectionHeader title={copy.progressTitle} subtitle={copy.lucidProgressHint} />
+          <SectionHeader
+            title={copy.progressTitle}
+            subtitle={copy.lucidProgressHint}
+          />
           <View style={styles.metricGrid}>
-            <MetricCard label={copy.lucidStatsAware} value={String(lucidStats.awareCount)} />
-            <MetricCard label={copy.lucidStatsControlled} value={String(lucidStats.controlledCount)} />
+            <MetricCard
+              label={copy.lucidStatsAware}
+              value={String(lucidStats.awareCount)}
+            />
+            <MetricCard
+              label={copy.lucidStatsControlled}
+              value={String(lucidStats.controlledCount)}
+            />
             <MetricCard
               label={copy.lucidStatsTopTechnique}
               value={
                 lucidStats.byTechnique[0]?.technique
-                  ? lucidTechniqueLabels[lucidStats.byTechnique[0].technique] ??
-                    lucidStats.byTechnique[0].technique
+                  ? (lucidTechniqueLabels[
+                      lucidStats.byTechnique[0].technique
+                    ] ?? lucidStats.byTechnique[0].technique)
                   : copy.lucidStatsNoTechnique
               }
             />
@@ -467,9 +618,16 @@ export default function DreamPracticeScreen() {
                 <Pressable
                   key={item.sign}
                   style={styles.tagChip}
-                  onPress={() => trackDreamSignSaved({ count: item.count, source: 'practice' })}
+                  onPress={() =>
+                    trackDreamSignSaved({
+                      count: item.count,
+                      source: 'practice',
+                    })
+                  }
                 >
-                  <Text style={styles.tagLabel}>{`${item.sign} · ${item.count}`}</Text>
+                  <Text
+                    style={styles.tagLabel}
+                  >{`${item.sign} · ${item.count}`}</Text>
                 </Pressable>
               ))
             ) : (
@@ -480,11 +638,23 @@ export default function DreamPracticeScreen() {
       ) : (
         <>
           <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.progressTitle} subtitle={copy.nightmareProgressHint} />
+            <SectionHeader
+              title={copy.progressTitle}
+              subtitle={copy.nightmareProgressHint}
+            />
             <View style={styles.metricGrid}>
-              <MetricCard label={copy.nightmareStatsRecurring} value={String(nightmareStats.recurringCount)} />
-              <MetricCard label={copy.nightmareStatsHighDistress} value={String(nightmareStats.highDistressCount)} />
-              <MetricCard label={copy.nightmareStatsRescripted} value={String(nightmareStats.rescriptedCount)} />
+              <MetricCard
+                label={copy.nightmareStatsRecurring}
+                value={String(nightmareStats.recurringCount)}
+              />
+              <MetricCard
+                label={copy.nightmareStatsHighDistress}
+                value={String(nightmareStats.highDistressCount)}
+              />
+              <MetricCard
+                label={copy.nightmareStatsRescripted}
+                value={String(nightmareStats.rescriptedCount)}
+              />
             </View>
           </Card>
 
@@ -494,9 +664,15 @@ export default function DreamPracticeScreen() {
               subtitle={copy.nightmarePatternsDescription}
             />
             <View style={styles.listBlock}>
-              <Text style={styles.listItem}>{`• Stress-linked entries: ${nightmareContextStats.withStress}`}</Text>
-              <Text style={styles.listItem}>{`• Late caffeine noted: ${nightmareContextStats.caffeineLate}`}</Text>
-              <Text style={styles.listItem}>{`• Alcohol noted: ${nightmareContextStats.alcoholTaken}`}</Text>
+              <Text
+                style={styles.listItem}
+              >{`• Stress-linked entries: ${nightmareContextStats.withStress}`}</Text>
+              <Text
+                style={styles.listItem}
+              >{`• Late caffeine noted: ${nightmareContextStats.caffeineLate}`}</Text>
+              <Text
+                style={styles.listItem}
+              >{`• Alcohol noted: ${nightmareContextStats.alcoholTaken}`}</Text>
               {topPreSleepSignals.map(item => (
                 <Text key={item.emotion} style={styles.listItem}>{`• ${
                   preSleepEmotionLabels[item.emotion] ?? item.emotion
@@ -506,37 +682,52 @@ export default function DreamPracticeScreen() {
           </Card>
 
           <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.nightmareGroundingTitle} subtitle={copy.nightmareGroundingBody} />
+            <SectionHeader
+              title={copy.nightmareGroundingTitle}
+              subtitle={copy.nightmareGroundingBody}
+            />
             <View style={styles.buttonRow}>
-              <Button
-                title={copy.quickGrounding}
-                onPress={openGrounding}
-              />
+              <Button title={copy.quickGrounding} onPress={openGrounding} />
               <Button
                 title={copy.quickNightmareRewrite}
                 variant="ghost"
                 onPress={() => {
                   trackNightmareRescriptingCompleted({ source: 'practice' });
-                  Alert.alert(copy.quickNightmareRewrite, copy.nightmareRewritePrompt);
+                  Alert.alert(
+                    copy.quickNightmareRewrite,
+                    copy.nightmareRewritePrompt,
+                  );
                 }}
               />
             </View>
           </Card>
 
           <Card style={styles.sectionCard}>
-            <SectionHeader title={copy.nightmareEscalationTitle} subtitle={copy.nightmareEscalationBody} />
+            <SectionHeader
+              title={copy.nightmareEscalationTitle}
+              subtitle={copy.nightmareEscalationBody}
+            />
           </Card>
         </>
       )}
 
       <Card style={styles.sectionCard}>
-        <SectionHeader title={copy.gentleRulesTitle} subtitle={copy.gentleRulesBody} />
+        <SectionHeader
+          title={copy.gentleRulesTitle}
+          subtitle={copy.gentleRulesBody}
+        />
       </Card>
     </ScreenContainer>
   );
 }
 
-function ChecklistItem({ label, checked }: { label: string; checked: boolean }) {
+function ChecklistItem({
+  label,
+  checked,
+}: {
+  label: string;
+  checked: boolean;
+}) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <View

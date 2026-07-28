@@ -46,10 +46,16 @@ export function CaptureSavedSheet({
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const t = useTheme<Theme>();
   const insets = useSafeAreaInsets();
-  const styles = React.useMemo(() => createStyles(t, insets.bottom), [insets.bottom, t]);
+  const styles = React.useMemo(
+    () => createStyles(t, insets.bottom),
+    [insets.bottom, t],
+  );
   const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
   const title = formatSavedDreamTitle(dream, copy.untitled);
-  const followUps = React.useMemo(() => getPostSaveFollowUps(dream, copy), [copy, dream]);
+  const followUps = React.useMemo(
+    () => getPostSaveFollowUps(dream, copy),
+    [copy, dream],
+  );
   const primaryFollowUp = followUps[0];
   const secondaryFollowUp = followUps[1] ?? null;
   const savedDate = dream?.sleepDate
@@ -61,10 +67,18 @@ export function CaptureSavedSheet({
     : null;
 
   return (
-    <Modal transparent animationType="fade" visible={visible} onRequestClose={onClose}>
+    <Modal
+      transparent
+      animationType="fade"
+      visible={visible}
+      onRequestClose={onClose}
+    >
       <View style={styles.root}>
         <Pressable style={styles.backdrop} onPress={onClose} />
-        <Animated.View entering={FadeInDown.duration(220)} style={styles.sheetWrap}>
+        <Animated.View
+          entering={FadeInDown.duration(220)}
+          style={styles.sheetWrap}
+        >
           <Card style={styles.card}>
             <View pointerEvents="none" style={styles.glowLarge} />
             <View pointerEvents="none" style={styles.glowSmall} />
@@ -85,7 +99,9 @@ export function CaptureSavedSheet({
 
             <View style={styles.metaRow}>
               <View style={styles.metaChip}>
-                <Text style={styles.metaChipLabel}>{copy.postSaveSavedLabel}</Text>
+                <Text style={styles.metaChipLabel}>
+                  {copy.postSaveSavedLabel}
+                </Text>
               </View>
               {savedDate ? (
                 <View style={styles.metaChip}>
@@ -110,14 +126,24 @@ export function CaptureSavedSheet({
             <View style={styles.followUpCard}>
               <View style={styles.followUpHeader}>
                 <View style={styles.followUpIconWrap}>
-                  <Ionicons name={primaryFollowUp.icon} size={16} color={t.colors.accent} />
+                  <Ionicons
+                    name={primaryFollowUp.icon}
+                    size={16}
+                    color={t.colors.accent}
+                  />
                 </View>
                 <View style={styles.followUpCopy}>
-                  <Text style={styles.followUpLabel}>{copy.postSaveNextStepLabel}</Text>
-                  <Text style={styles.followUpTitle}>{primaryFollowUp.title}</Text>
+                  <Text style={styles.followUpLabel}>
+                    {copy.postSaveNextStepLabel}
+                  </Text>
+                  <Text style={styles.followUpTitle}>
+                    {primaryFollowUp.title}
+                  </Text>
                 </View>
               </View>
-              <Text style={styles.followUpDescription}>{primaryFollowUp.description}</Text>
+              <Text style={styles.followUpDescription}>
+                {primaryFollowUp.description}
+              </Text>
             </View>
 
             <View style={styles.actions}>
@@ -139,7 +165,9 @@ export function CaptureSavedSheet({
                   ]}
                 >
                   <View style={styles.secondaryFollowUpCopy}>
-                    <Text style={styles.secondaryFollowUpLabel}>{copy.postSaveThenLabel}</Text>
+                    <Text style={styles.secondaryFollowUpLabel}>
+                      {copy.postSaveThenLabel}
+                    </Text>
                     <Text style={styles.secondaryFollowUpTitle}>
                       {secondaryFollowUp.title}
                     </Text>
@@ -170,7 +198,9 @@ export function CaptureSavedSheet({
                   pressed ? styles.footerActionPressed : null,
                 ]}
               >
-                <Text style={styles.footerActionLabel}>{copy.postSaveContinueLater}</Text>
+                <Text style={styles.footerActionLabel}>
+                  {copy.postSaveContinueLater}
+                </Text>
               </Pressable>
             </View>
           </Card>

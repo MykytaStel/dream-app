@@ -8,7 +8,10 @@ import {
   SleepContext,
   WakeEmotion,
 } from '../../features/dreams/model/dream';
-import { sanitizeDream, sortDreamsStable } from '../../features/dreams/model/dreamRules';
+import {
+  sanitizeDream,
+  sortDreamsStable,
+} from '../../features/dreams/model/dreamRules';
 import {
   APP_LOCALE_KEY,
   CURRENT_STORAGE_SCHEMA_VERSION,
@@ -65,7 +68,9 @@ function clampMinute(value: unknown) {
   return Math.min(59, Math.max(0, Math.floor(value)));
 }
 
-function parseHourMinute(raw: unknown): { hour: number; minute: number } | undefined {
+function parseHourMinute(
+  raw: unknown,
+): { hour: number; minute: number } | undefined {
   if (typeof raw !== 'string') {
     return undefined;
   }
@@ -82,7 +87,9 @@ function parseHourMinute(raw: unknown): { hour: number; minute: number } | undef
 }
 
 function normalizeLocale(value: unknown): AppLocale {
-  const raw = String(value ?? '').trim().toLowerCase();
+  const raw = String(value ?? '')
+    .trim()
+    .toLowerCase();
   if (!raw) {
     return 'en';
   }
@@ -94,7 +101,9 @@ function normalizeLocale(value: unknown): AppLocale {
   return 'en';
 }
 
-function pickSleepContextFromLegacy(record: LegacyRecord): SleepContext | undefined {
+function pickSleepContextFromLegacy(
+  record: LegacyRecord,
+): SleepContext | undefined {
   const source =
     (record.sleepContext && typeof record.sleepContext === 'object'
       ? (record.sleepContext as LegacyRecord)
@@ -111,7 +120,12 @@ function pickSleepContextFromLegacy(record: LegacyRecord): SleepContext | undefi
   if (typeof source.stressLevel === 'number') {
     stressLevel = source.stressLevel;
   } else if (typeof source.stress === 'number') {
-    stressLevel = source.stress <= 1 ? 0 : source.stress >= 5 ? 3 : Math.round(source.stress - 1);
+    stressLevel =
+      source.stress <= 1
+        ? 0
+        : source.stress >= 5
+          ? 3
+          : Math.round(source.stress - 1);
   }
 
   if (typeof stressLevel === 'number') {
@@ -155,7 +169,8 @@ function pickSleepContextFromLegacy(record: LegacyRecord): SleepContext | undefi
         : typeof source.majorEvent === 'string'
           ? source.majorEvent
           : undefined,
-    healthNotes: typeof source.healthNotes === 'string' ? source.healthNotes : undefined,
+    healthNotes:
+      typeof source.healthNotes === 'string' ? source.healthNotes : undefined,
   };
 }
 
@@ -181,7 +196,8 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
         : `legacy-dream-${index}-${createdAt}`,
     createdAt,
     archivedAt:
-      typeof record.archivedAt === 'number' && Number.isFinite(record.archivedAt)
+      typeof record.archivedAt === 'number' &&
+      Number.isFinite(record.archivedAt)
         ? record.archivedAt
         : undefined,
     updatedAt:
@@ -192,7 +208,8 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
       typeof record.starredAt === 'number' && Number.isFinite(record.starredAt)
         ? record.starredAt
         : undefined,
-    sleepDate: typeof record.sleepDate === 'string' ? record.sleepDate : undefined,
+    sleepDate:
+      typeof record.sleepDate === 'string' ? record.sleepDate : undefined,
     title: typeof record.title === 'string' ? record.title : undefined,
     text: typeof record.text === 'string' ? record.text : undefined,
     audioUri:
@@ -207,7 +224,8 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
         : typeof record.audioStoragePath === 'string'
           ? record.audioStoragePath
           : undefined,
-    transcript: typeof record.transcript === 'string' ? record.transcript : undefined,
+    transcript:
+      typeof record.transcript === 'string' ? record.transcript : undefined,
     transcriptStatus:
       record.transcriptStatus === 'idle' ||
       record.transcriptStatus === 'processing' ||
@@ -216,11 +234,13 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
         ? record.transcriptStatus
         : undefined,
     transcriptSource:
-      record.transcriptSource === 'generated' || record.transcriptSource === 'edited'
+      record.transcriptSource === 'generated' ||
+      record.transcriptSource === 'edited'
         ? record.transcriptSource
         : undefined,
     transcriptUpdatedAt:
-      typeof record.transcriptUpdatedAt === 'number' && Number.isFinite(record.transcriptUpdatedAt)
+      typeof record.transcriptUpdatedAt === 'number' &&
+      Number.isFinite(record.transcriptUpdatedAt)
         ? record.transcriptUpdatedAt
         : undefined,
     syncStatus:
@@ -231,36 +251,41 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
         ? (record.syncStatus as DreamSyncStatus)
         : undefined,
     lastSyncedAt:
-      typeof record.lastSyncedAt === 'number' && Number.isFinite(record.lastSyncedAt)
+      typeof record.lastSyncedAt === 'number' &&
+      Number.isFinite(record.lastSyncedAt)
         ? record.lastSyncedAt
         : undefined,
-    syncError: typeof record.syncError === 'string' ? record.syncError : undefined,
+    syncError:
+      typeof record.syncError === 'string' ? record.syncError : undefined,
     analysis: analysisRecord
-        ? {
-            provider: analysisRecord.provider === 'openai' ? 'openai' : 'manual',
-            status:
-              analysisRecord.status === 'ready'
-                ? 'ready'
-                : analysisRecord.status === 'error'
-                  ? 'error'
-                  : 'idle',
-            summary: typeof analysisRecord.summary === 'string' ? analysisRecord.summary : undefined,
-            themes: Array.isArray(analysisRecord.themes)
-              ? (analysisRecord.themes as unknown[]).filter(
-                  (theme): theme is string => typeof theme === 'string',
-                )
+      ? {
+          provider: analysisRecord.provider === 'openai' ? 'openai' : 'manual',
+          status:
+            analysisRecord.status === 'ready'
+              ? 'ready'
+              : analysisRecord.status === 'error'
+                ? 'error'
+                : 'idle',
+          summary:
+            typeof analysisRecord.summary === 'string'
+              ? analysisRecord.summary
               : undefined,
-            generatedAt:
-              typeof analysisRecord.generatedAt === 'number' &&
-              Number.isFinite(analysisRecord.generatedAt)
-                ? analysisRecord.generatedAt
-                : undefined,
-            errorMessage:
-              typeof analysisRecord.errorMessage === 'string'
-                ? analysisRecord.errorMessage
-                : undefined,
-          }
-        : undefined,
+          themes: Array.isArray(analysisRecord.themes)
+            ? (analysisRecord.themes as unknown[]).filter(
+                (theme): theme is string => typeof theme === 'string',
+              )
+            : undefined,
+          generatedAt:
+            typeof analysisRecord.generatedAt === 'number' &&
+            Number.isFinite(analysisRecord.generatedAt)
+              ? analysisRecord.generatedAt
+              : undefined,
+          errorMessage:
+            typeof analysisRecord.errorMessage === 'string'
+              ? analysisRecord.errorMessage
+              : undefined,
+        }
+      : undefined,
     tags: Array.isArray(record.tags)
       ? record.tags.filter((tag): tag is string => typeof tag === 'string')
       : [],
@@ -275,7 +300,7 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
             emotion === 'disoriented',
         )
       : undefined,
-    mood: (
+    mood:
       record.mood === 'positive' ||
       record.mood === 'negative' ||
       record.mood === 'neutral' ||
@@ -287,16 +312,19 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
       record.mood === 'anxious' ||
       record.mood === 'dark' ||
       record.mood === 'surreal'
-    ) ? (record.mood as Mood) : undefined,
-    dreamIntensity: (
+        ? (record.mood as Mood)
+        : undefined,
+    dreamIntensity:
       typeof record.dreamIntensity === 'number' &&
       record.dreamIntensity >= 1 &&
       record.dreamIntensity <= 5
-    ) ? (Math.floor(record.dreamIntensity) as DreamIntensity) : undefined,
+        ? (Math.floor(record.dreamIntensity) as DreamIntensity)
+        : undefined,
     sleepContext: pickSleepContextFromLegacy(record),
     lucidity:
       typeof record.lucidity === 'number'
-        ? (Math.max(0, Math.min(3, Math.floor(record.lucidity))) as 0 | 1 | 2 | 3)
+        ? (Math.max(0, Math.min(3, Math.floor(record.lucidity))) as
+            0 | 1 | 2 | 3)
         : undefined,
   };
 }
@@ -456,7 +484,11 @@ function normalizeLegacySavedThreadRecord(
     return null;
   }
 
-  if (record.kind !== 'word' && record.kind !== 'theme' && record.kind !== 'symbol') {
+  if (
+    record.kind !== 'word' &&
+    record.kind !== 'theme' &&
+    record.kind !== 'symbol'
+  ) {
     return null;
   }
 

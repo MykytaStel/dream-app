@@ -32,7 +32,9 @@ type HomeFilterSheetProps = {
   availableTags: string[];
   dateRangeFilters: Array<HomeOption<HomeDateRangeFilter>>;
   onClose: () => void;
-  updateTimelineFilters: (updater: (current: HomeTimelineFilters) => HomeTimelineFilters) => void;
+  updateTimelineFilters: (
+    updater: (current: HomeTimelineFilters) => HomeTimelineFilters,
+  ) => void;
 };
 
 type FilterOption<K extends string> = HomeOption<K>;
@@ -62,11 +64,17 @@ function FilterGroup<K extends string>({
           return (
             <Pressable
               key={option.key}
-              style={[styles.filterButton, active ? styles.filterButtonActive : null]}
+              style={[
+                styles.filterButton,
+                active ? styles.filterButtonActive : null,
+              ]}
               onPress={() => onSelect(option.key)}
             >
               <Text
-                style={[styles.filterButtonLabel, active ? styles.filterButtonLabelActive : null]}
+                style={[
+                  styles.filterButtonLabel,
+                  active ? styles.filterButtonLabelActive : null,
+                ]}
               >
                 {option.label}
               </Text>
@@ -108,7 +116,8 @@ export function HomeFilterSheet({
     timelineFilters.tags.length > 0 ||
     timelineFilters.entryType !== DEFAULT_HOME_TIMELINE_FILTERS.entryType ||
     hasAdvancedFilters;
-  const [showAdvancedFilters, setShowAdvancedFilters] = React.useState(hasAdvancedFilters);
+  const [showAdvancedFilters, setShowAdvancedFilters] =
+    React.useState(hasAdvancedFilters);
 
   React.useEffect(() => {
     if (!visible) {
@@ -122,7 +131,9 @@ export function HomeFilterSheet({
   const filteredTags = React.useMemo(
     () =>
       availableTags.filter(tag =>
-        normalizedTagQuery ? tag.toLowerCase().includes(normalizedTagQuery) : true,
+        normalizedTagQuery
+          ? tag.toLowerCase().includes(normalizedTagQuery)
+          : true,
       ),
     [availableTags, normalizedTagQuery],
   );
@@ -135,13 +146,24 @@ export function HomeFilterSheet({
     [filteredTags, timelineFilters.tags],
   );
   const visibleUnselectedTags = React.useMemo(
-    () => (showAllTags || normalizedTagQuery ? unselectedTags : unselectedTags.slice(0, 12)),
+    () =>
+      showAllTags || normalizedTagQuery
+        ? unselectedTags
+        : unselectedTags.slice(0, 12),
     [normalizedTagQuery, showAllTags, unselectedTags],
   );
-  const hiddenTagCount = Math.max(0, unselectedTags.length - visibleUnselectedTags.length);
+  const hiddenTagCount = Math.max(
+    0,
+    unselectedTags.length - visibleUnselectedTags.length,
+  );
 
   return (
-    <Modal transparent animationType="slide" visible={visible} onRequestClose={onClose}>
+    <Modal
+      transparent
+      animationType="slide"
+      visible={visible}
+      onRequestClose={onClose}
+    >
       <View style={styles.filterSheetRoot}>
         <Pressable style={styles.filterSheetBackdrop} onPress={onClose} />
         <View style={styles.filterSheetCard}>
@@ -163,7 +185,12 @@ export function HomeFilterSheet({
                   }
                 />
               ) : null}
-              <Button title={copy.homeHideFilters} variant="ghost" size="sm" onPress={onClose} />
+              <Button
+                title={copy.homeHideFilters}
+                variant="ghost"
+                size="sm"
+                onPress={onClose}
+              />
             </View>
           </View>
 
@@ -175,7 +202,11 @@ export function HomeFilterSheet({
             <FilterGroup
               label={copy.homeArchiveFilterLabel}
               options={homeFilters}
-              value={timelineFilters.archive === 'archived' ? 'all' : timelineFilters.archive}
+              value={
+                timelineFilters.archive === 'archived'
+                  ? 'all'
+                  : timelineFilters.archive
+              }
               styles={styles}
               onSelect={value =>
                 updateTimelineFilters(current => ({
@@ -213,7 +244,9 @@ export function HomeFilterSheet({
 
             {availableTags.length > 0 ? (
               <View style={styles.filterGroup}>
-                <Text style={styles.filterGroupLabel}>{copy.homeTagFilterLabel}</Text>
+                <Text style={styles.filterGroupLabel}>
+                  {copy.homeTagFilterLabel}
+                </Text>
                 <FormField
                   placeholder={copy.homeTagSearchPlaceholder}
                   value={tagQuery}
@@ -225,12 +258,17 @@ export function HomeFilterSheet({
                 />
                 {selectedTags.length > 0 ? (
                   <View style={styles.filterSelectionBlock}>
-                    <Text style={styles.filterGroupMetaLabel}>{copy.homeTagSelectedLabel}</Text>
+                    <Text style={styles.filterGroupMetaLabel}>
+                      {copy.homeTagSelectedLabel}
+                    </Text>
                     <View style={styles.filterRow}>
                       {selectedTags.map(tag => (
                         <Pressable
                           key={`selected-${tag}`}
-                          style={[styles.filterButton, styles.filterButtonActive]}
+                          style={[
+                            styles.filterButton,
+                            styles.filterButtonActive,
+                          ]}
                           onPress={() =>
                             updateTimelineFilters(current => ({
                               ...current,
@@ -239,7 +277,10 @@ export function HomeFilterSheet({
                           }
                         >
                           <Text
-                            style={[styles.filterButtonLabel, styles.filterButtonLabelActive]}
+                            style={[
+                              styles.filterButtonLabel,
+                              styles.filterButtonLabelActive,
+                            ]}
                           >
                             {tag}
                           </Text>
@@ -255,7 +296,10 @@ export function HomeFilterSheet({
                     return (
                       <Pressable
                         key={tag}
-                        style={[styles.filterButton, active ? styles.filterButtonActive : null]}
+                        style={[
+                          styles.filterButton,
+                          active ? styles.filterButtonActive : null,
+                        ]}
                         onPress={() =>
                           updateTimelineFilters(current => ({
                             ...current,
@@ -278,7 +322,9 @@ export function HomeFilterSheet({
                   })}
                 </View>
                 {!selectedTags.length && !visibleUnselectedTags.length ? (
-                  <Text style={styles.filterEmptyText}>{copy.homeTagsEmpty}</Text>
+                  <Text style={styles.filterEmptyText}>
+                    {copy.homeTagsEmpty}
+                  </Text>
                 ) : null}
                 {hiddenTagCount > 0 && !normalizedTagQuery ? (
                   <Pressable
@@ -290,12 +336,16 @@ export function HomeFilterSheet({
                     </Text>
                   </Pressable>
                 ) : null}
-                {showAllTags && unselectedTags.length > 12 && !normalizedTagQuery ? (
+                {showAllTags &&
+                unselectedTags.length > 12 &&
+                !normalizedTagQuery ? (
                   <Pressable
                     style={styles.filterMoreButton}
                     onPress={() => setShowAllTags(false)}
                   >
-                    <Text style={styles.filterMoreButtonText}>{copy.homeTagsShowLess}</Text>
+                    <Text style={styles.filterMoreButtonText}>
+                      {copy.homeTagsShowLess}
+                    </Text>
                   </Pressable>
                 ) : null}
               </View>
@@ -309,7 +359,9 @@ export function HomeFilterSheet({
               onPress={() => setShowAdvancedFilters(current => !current)}
             >
               <Text style={styles.inlineActionButtonText}>
-                {showAdvancedFilters ? copy.homeLessFilters : copy.homeMoreFilters}
+                {showAdvancedFilters
+                  ? copy.homeLessFilters
+                  : copy.homeMoreFilters}
               </Text>
             </Pressable>
 

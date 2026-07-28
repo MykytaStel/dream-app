@@ -15,8 +15,9 @@ type NativeAudioUploadModule = {
   }): Promise<void>;
 };
 
-const NativeAudioUpload: NativeAudioUploadModule | undefined =
-  (NativeModules as any).AudioUpload;
+const NativeAudioUpload: NativeAudioUploadModule | undefined = (
+  NativeModules as any
+).AudioUpload;
 
 function decodeBase64ToUint8Array(input: string): Uint8Array {
   const binary = decodeBase64(input);

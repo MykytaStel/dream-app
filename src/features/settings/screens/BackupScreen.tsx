@@ -6,7 +6,10 @@ import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { logActionError } from '../../../app/errorReporting';
-import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
@@ -29,10 +32,16 @@ export default function BackupScreen() {
   const theme = useTheme<Theme>();
   const { locale, setLocale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
-  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () => createSettingsScreenStyles(theme),
+    [theme],
+  );
   const navigation =
     useNavigation<
-      NativeStackNavigationProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.Backup>
+      NativeStackNavigationProp<
+        RootStackParamList,
+        typeof ROOT_ROUTE_NAMES.Backup
+      >
     >();
   const controller = useBackupScreenController({
     locale,
@@ -67,14 +76,14 @@ export default function BackupScreen() {
         }
         lastBackupName={controller.lastBackupName}
         onExportJson={() =>
-          controller.onExportData().catch(e =>
-            logActionError('BackupScreen.onExportData', e),
-          )
+          controller
+            .onExportData()
+            .catch(e => logActionError('BackupScreen.onExportData', e))
         }
         onShareLastBackup={() =>
-          controller.onShareLastBackup().catch(e =>
-            logActionError('BackupScreen.onShareLastBackup', e),
-          )
+          controller
+            .onShareLastBackup()
+            .catch(e => logActionError('BackupScreen.onShareLastBackup', e))
         }
       />
       <PortableExportSection
@@ -91,34 +100,34 @@ export default function BackupScreen() {
         lastMarkdownName={controller.lastMarkdownName}
         lastTextName={controller.lastTextName}
         onExportMarkdown={() =>
-          controller.onExportMarkdownData().catch(e =>
-            logActionError('BackupScreen.onExportMarkdownData', e),
-          )
+          controller
+            .onExportMarkdownData()
+            .catch(e => logActionError('BackupScreen.onExportMarkdownData', e))
         }
         onExportText={() =>
-          controller.onExportTextData().catch(e =>
-            logActionError('BackupScreen.onExportTextData', e),
-          )
+          controller
+            .onExportTextData()
+            .catch(e => logActionError('BackupScreen.onExportTextData', e))
         }
         onOpenLastMarkdown={() =>
-          controller.onOpenLastMarkdown().catch(e =>
-            logActionError('BackupScreen.onOpenLastMarkdown', e),
-          )
+          controller
+            .onOpenLastMarkdown()
+            .catch(e => logActionError('BackupScreen.onOpenLastMarkdown', e))
         }
         onOpenLastText={() =>
-          controller.onOpenLastText().catch(e =>
-            logActionError('BackupScreen.onOpenLastText', e),
-          )
+          controller
+            .onOpenLastText()
+            .catch(e => logActionError('BackupScreen.onOpenLastText', e))
         }
         onShareLastMarkdown={() =>
-          controller.onShareLastMarkdown().catch(e =>
-            logActionError('BackupScreen.onShareLastMarkdown', e),
-          )
+          controller
+            .onShareLastMarkdown()
+            .catch(e => logActionError('BackupScreen.onShareLastMarkdown', e))
         }
         onShareLastText={() =>
-          controller.onShareLastText().catch(e =>
-            logActionError('BackupScreen.onShareLastText', e),
-          )
+          controller
+            .onShareLastText()
+            .catch(e => logActionError('BackupScreen.onShareLastText', e))
         }
       />
       <RestoreSection
@@ -158,19 +167,19 @@ export default function BackupScreen() {
         }
         lastPdfName={controller.lastPdfName}
         onExportPdf={() =>
-          controller.onExportPdfData().catch(e =>
-            logActionError('BackupScreen.onExportPdfData', e),
-          )
+          controller
+            .onExportPdfData()
+            .catch(e => logActionError('BackupScreen.onExportPdfData', e))
         }
         onOpenLastPdf={() =>
-          controller.onOpenLastPdf().catch(e =>
-            logActionError('BackupScreen.onOpenLastPdf', e),
-          )
+          controller
+            .onOpenLastPdf()
+            .catch(e => logActionError('BackupScreen.onOpenLastPdf', e))
         }
         onShareLastPdf={() =>
-          controller.onShareLastPdf().catch(e =>
-            logActionError('BackupScreen.onShareLastPdf', e),
-          )
+          controller
+            .onShareLastPdf()
+            .catch(e => logActionError('BackupScreen.onShareLastPdf', e))
         }
       />
       <SectionHeader
@@ -205,40 +214,40 @@ export default function BackupScreen() {
         onChangeCloudConfigUrl={controller.onChangeCloudConfigUrl}
         onChangeCloudConfigAnonKey={controller.onChangeCloudConfigAnonKey}
         onChangeCloudIdentityEmail={controller.onChangeCloudIdentityEmail}
-        onChangeCloudIdentityPassword={
-          controller.onChangeCloudIdentityPassword
-        }
+        onChangeCloudIdentityPassword={controller.onChangeCloudIdentityPassword}
         onSaveCloudConfig={controller.onSaveCloudConfig}
         onClearCloudConfig={controller.onClearCloudConfig}
         onConnectCloud={() =>
-          controller.onConnectCloud().catch(e =>
-            logActionError('BackupScreen.onConnectCloud', e),
-          )
+          controller
+            .onConnectCloud()
+            .catch(e => logActionError('BackupScreen.onConnectCloud', e))
         }
         onSignInCloudAccount={() =>
-          controller.onSignInCloudAccount().catch(e =>
-            logActionError('BackupScreen.onSignInCloudAccount', e),
-          )
+          controller
+            .onSignInCloudAccount()
+            .catch(e => logActionError('BackupScreen.onSignInCloudAccount', e))
         }
         onRequestCloudPasswordReset={() =>
-          controller.onRequestCloudPasswordReset().catch(e =>
-            logActionError('BackupScreen.onRequestCloudPasswordReset', e),
-          )
+          controller
+            .onRequestCloudPasswordReset()
+            .catch(e =>
+              logActionError('BackupScreen.onRequestCloudPasswordReset', e),
+            )
         }
         onUpgradeCloudAccount={() =>
-          controller.onUpgradeCloudAccount().catch(e =>
-            logActionError('BackupScreen.onUpgradeCloudAccount', e),
-          )
+          controller
+            .onUpgradeCloudAccount()
+            .catch(e => logActionError('BackupScreen.onUpgradeCloudAccount', e))
         }
         onDisconnectCloud={() =>
-          controller.onDisconnectCloud().catch(e =>
-            logActionError('BackupScreen.onDisconnectCloud', e),
-          )
+          controller
+            .onDisconnectCloud()
+            .catch(e => logActionError('BackupScreen.onDisconnectCloud', e))
         }
         onRunCloudSync={() =>
-          controller.onRunCloudSync().catch(e =>
-            logActionError('BackupScreen.onRunCloudSync', e),
-          )
+          controller
+            .onRunCloudSync()
+            .catch(e => logActionError('BackupScreen.onRunCloudSync', e))
         }
         onToggleCloudSync={controller.onToggleCloudSync}
         onDismissCloudActionFeedback={controller.clearCloudActionFeedback}
@@ -261,8 +270,12 @@ export default function BackupScreen() {
         {showStatusDetails ? (
           <>
             <View style={styles.restorePreviewBlock}>
-              <Text style={styles.restoreLabel}>{copy.backupTimelineTitle}</Text>
-              <Text style={styles.restoreHint}>{copy.backupTimelineDescription}</Text>
+              <Text style={styles.restoreLabel}>
+                {copy.backupTimelineTitle}
+              </Text>
+              <Text style={styles.restoreHint}>
+                {copy.backupTimelineDescription}
+              </Text>
             </View>
             {controller.backupTimelineItems.map(item => (
               <SettingsActionRow
@@ -276,37 +289,56 @@ export default function BackupScreen() {
             {controller.latestLocalBackupPreview ? (
               <>
                 <View style={styles.restorePreviewBlock}>
-                  <Text style={styles.restoreLabel}>{copy.restorePreviewTitle}</Text>
+                  <Text style={styles.restoreLabel}>
+                    {copy.restorePreviewTitle}
+                  </Text>
                   <Text style={styles.restoreHint}>
-                    {controller.latestLocalBackupPreviewMeta ?? copy.restoreDescription}
+                    {controller.latestLocalBackupPreviewMeta ??
+                      copy.restoreDescription}
                   </Text>
                 </View>
                 <View style={styles.restorePreviewBlock}>
-                  <SettingsMetaGrid items={controller.latestLocalBackupPreviewItems} />
+                  <SettingsMetaGrid
+                    items={controller.latestLocalBackupPreviewItems}
+                  />
                 </View>
               </>
             ) : controller.latestLocalBackupPreviewError ? (
               <View style={styles.restoreEmptyBlock}>
-                <Text style={styles.restoreEmptyTitle}>{copy.restoreErrorTitle}</Text>
+                <Text style={styles.restoreEmptyTitle}>
+                  {copy.restoreErrorTitle}
+                </Text>
                 <Text style={styles.restoreHint}>
                   {controller.latestLocalBackupPreviewError}
                 </Text>
               </View>
             ) : controller.isLoadingLatestLocalBackupPreview ? (
               <View style={styles.restoreEmptyBlock}>
-                <Text style={styles.restoreEmptyTitle}>{copy.restoreLoading}</Text>
-                <Text style={styles.restoreHint}>{copy.restoreLoadingAction}</Text>
+                <Text style={styles.restoreEmptyTitle}>
+                  {copy.restoreLoading}
+                </Text>
+                <Text style={styles.restoreHint}>
+                  {copy.restoreLoadingAction}
+                </Text>
               </View>
             ) : (
               <View style={styles.restoreEmptyBlock}>
-                <Text style={styles.restoreEmptyTitle}>{copy.backupTimelineSnapshotMissing}</Text>
-                <Text style={styles.restoreHint}>{copy.backupTimelineSnapshotMissingMeta}</Text>
+                <Text style={styles.restoreEmptyTitle}>
+                  {copy.backupTimelineSnapshotMissing}
+                </Text>
+                <Text style={styles.restoreHint}>
+                  {copy.backupTimelineSnapshotMissingMeta}
+                </Text>
               </View>
             )}
 
             <View style={styles.restorePreviewBlock}>
-              <Text style={styles.restoreLabel}>{copy.backupContentTrustTitle}</Text>
-              <Text style={styles.restoreHint}>{copy.backupContentTrustDescription}</Text>
+              <Text style={styles.restoreLabel}>
+                {copy.backupContentTrustTitle}
+              </Text>
+              <Text style={styles.restoreHint}>
+                {copy.backupContentTrustDescription}
+              </Text>
             </View>
             {controller.backupContentTrustItems.map(item => (
               <SettingsActionRow

@@ -25,17 +25,27 @@ import { createMonthlyReportScreenStyles } from './MonthlyReportScreen.styles';
 
 export default function MonthlyReportScreen() {
   const theme = useTheme<Theme>();
-  const styles = React.useMemo(() => createMonthlyReportScreenStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () => createMonthlyReportScreenStyles(theme),
+    [theme],
+  );
   const { locale } = useI18n();
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
-  const wakeEmotionLabels = React.useMemo(() => getDreamWakeEmotionLabels(locale), [locale]);
+  const wakeEmotionLabels = React.useMemo(
+    () => getDreamWakeEmotionLabels(locale),
+    [locale],
+  );
   const preSleepEmotionLabels = React.useMemo(
     () => getDreamPreSleepEmotionLabels(locale),
     [locale],
   );
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.MonthlyReport>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route =
+    useRoute<
+      RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.MonthlyReport>
+    >();
 
   const controller = useMonthlyReportController({
     locale,
@@ -53,7 +63,11 @@ export default function MonthlyReportScreen() {
 
   if (controller.loading) {
     return (
-      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
+      <ScreenContainer
+        scroll={false}
+        withTopInset={false}
+        style={styles.emptyContainer}
+      >
         <ScreenStateCard
           variant="loading"
           title={statsCopy.monthlyReportLoadingTitle}
@@ -65,7 +79,11 @@ export default function MonthlyReportScreen() {
 
   if (controller.loadError) {
     return (
-      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
+      <ScreenContainer
+        scroll={false}
+        withTopInset={false}
+        style={styles.emptyContainer}
+      >
         <ScreenStateCard
           variant="error"
           title={dreamCopy.timelineErrorTitle}
@@ -75,9 +93,17 @@ export default function MonthlyReportScreen() {
     );
   }
 
-  if (!controller.months.length || !controller.report || !controller.viewModel) {
+  if (
+    !controller.months.length ||
+    !controller.report ||
+    !controller.viewModel
+  ) {
     return (
-      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
+      <ScreenContainer
+        scroll={false}
+        withTopInset={false}
+        style={styles.emptyContainer}
+      >
         <ScreenStateCard
           variant="empty"
           title={statsCopy.monthlyReportEmptyTitle}
@@ -101,9 +127,9 @@ export default function MonthlyReportScreen() {
         onSelectMonth={controller.setSelectedMonthKey}
         onToggleSaveForLater={controller.onToggleSaveForLater}
         onShareReport={() => {
-          controller.onShareReport().catch(e =>
-            logActionError('MonthlyReportScreen.onShareReport', e),
-          );
+          controller
+            .onShareReport()
+            .catch(e => logActionError('MonthlyReportScreen.onShareReport', e));
         }}
       />
 

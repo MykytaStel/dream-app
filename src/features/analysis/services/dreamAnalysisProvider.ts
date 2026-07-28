@@ -39,5 +39,8 @@ export const DREAM_ANALYSIS_PROVIDERS: DreamAnalysisProviderDefinition[] = [
 ];
 
 export function getDreamAnalysisProvider(providerId: DreamAnalysisProvider) {
-  return DREAM_ANALYSIS_PROVIDERS.find(provider => provider.id === providerId) ?? manualProvider;
+  return (
+    DREAM_ANALYSIS_PROVIDERS.find(provider => provider.id === providerId) ??
+    manualProvider
+  );
 }

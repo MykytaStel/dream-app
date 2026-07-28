@@ -22,13 +22,19 @@ export function HomeSearchPresetChip({
   onRemove,
 }: HomeSearchPresetChipProps) {
   const theme = useTheme<Theme>();
-  const styles = React.useMemo(() => createStyles(theme, active), [active, theme]);
+  const styles = React.useMemo(
+    () => createStyles(theme, active),
+    [active, theme],
+  );
 
   return (
     <View style={styles.chip}>
       <Pressable
         onPress={onPress}
-        style={({ pressed }) => [styles.labelPressable, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.labelPressable,
+          pressed ? styles.pressed : null,
+        ]}
       >
         <Text style={styles.label} numberOfLines={1}>
           {label}
@@ -38,7 +44,10 @@ export function HomeSearchPresetChip({
         onPress={onRemove}
         accessibilityRole="button"
         accessibilityLabel={removeLabel}
-        style={({ pressed }) => [styles.removeButton, pressed ? styles.pressed : null]}
+        style={({ pressed }) => [
+          styles.removeButton,
+          pressed ? styles.pressed : null,
+        ]}
       >
         <Ionicons
           name="close"

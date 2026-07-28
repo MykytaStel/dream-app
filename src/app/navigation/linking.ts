@@ -1,4 +1,7 @@
-import { LinkingOptions, getStateFromPath as defaultGetStateFromPath } from '@react-navigation/native';
+import {
+  LinkingOptions,
+  getStateFromPath as defaultGetStateFromPath,
+} from '@react-navigation/native';
 import {
   DREAM_WIDGET_PATHS,
   DREAM_WIDGET_URL_PREFIX,
@@ -33,7 +36,10 @@ export const appLinking: LinkingOptions<RootStackParamList> = {
     // When cold-launching into DreamDetail (e.g. from Last Dream widget),
     // inject Tabs as the base route so the back button returns to the journal.
     const routes = state.routes as { name: string; params?: object }[];
-    if (routes.length === 1 && routes[0].name === ROOT_ROUTE_NAMES.DreamDetail) {
+    if (
+      routes.length === 1 &&
+      routes[0].name === ROOT_ROUTE_NAMES.DreamDetail
+    ) {
       return {
         ...state,
         routes: [{ name: ROOT_ROUTE_NAMES.Tabs }, routes[0]],

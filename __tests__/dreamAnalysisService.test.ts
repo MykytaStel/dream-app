@@ -1,5 +1,8 @@
 import { kv } from '../src/services/storage/mmkv';
-import { saveDream, getDream } from '../src/features/dreams/repository/dreamsRepository';
+import {
+  saveDream,
+  getDream,
+} from '../src/features/dreams/repository/dreamsRepository';
 import { saveDreamAnalysisSettings } from '../src/features/analysis/services/dreamAnalysisSettingsService';
 import { generateDreamAnalysis } from '../src/features/analysis/services/dreamAnalysisService';
 
@@ -19,7 +22,8 @@ describe('dreamAnalysisService', () => {
       createdAt: 1,
       sleepDate: '2026-03-07',
       text: 'I kept missing the train and running through a flooded hallway.',
-      transcript: 'I kept missing the train and running through a flooded hallway.',
+      transcript:
+        'I kept missing the train and running through a flooded hallway.',
       tags: ['train', 'water'],
       mood: 'negative',
     });
@@ -30,7 +34,9 @@ describe('dreamAnalysisService', () => {
       provider: 'manual',
       status: 'ready',
     });
-    expect(result.analysis?.themes).toEqual(expect.arrayContaining(['train', 'water']));
+    expect(result.analysis?.themes).toEqual(
+      expect.arrayContaining(['train', 'water']),
+    );
     expect(result.analysis?.summary).toContain('Likely themes');
     expect(getDream('analysis-dream-1')?.analysis?.status).toBe('ready');
   });
@@ -44,7 +50,9 @@ describe('dreamAnalysisService', () => {
       tags: [],
     });
 
-    await expect(generateDreamAnalysis('analysis-dream-2')).rejects.toThrow('analysis-disabled');
+    await expect(generateDreamAnalysis('analysis-dream-2')).rejects.toThrow(
+      'analysis-disabled',
+    );
   });
 
   test('stores an error analysis record for unavailable network providers', async () => {

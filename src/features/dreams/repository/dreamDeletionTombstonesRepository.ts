@@ -2,10 +2,7 @@ import { kv } from '../../../services/storage/mmkv';
 import { DREAM_DELETION_TOMBSTONES_STORAGE_KEY } from '../../../services/storage/keys';
 
 export type DreamDeletionTombstoneSyncStatus =
-  | 'local'
-  | 'syncing'
-  | 'synced'
-  | 'error';
+  'local' | 'syncing' | 'synced' | 'error';
 
 export type DreamDeletionTombstone = {
   dreamId: string;

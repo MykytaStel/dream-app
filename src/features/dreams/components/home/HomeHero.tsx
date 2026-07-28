@@ -41,12 +41,18 @@ export const HomeHero = React.memo(function HomeHero({
   prompt,
 }: HomeHeroProps) {
   const t = useTheme<Theme>();
-  const isMilestone = streak != null && streak >= 2 && STREAK_MILESTONES.has(streak);
+  const isMilestone =
+    streak != null && streak >= 2 && STREAK_MILESTONES.has(streak);
 
   return (
-    <Animated.View entering={FadeIn.duration(400)} style={[styles.heroCard, { paddingTop: insetTop }]}>
+    <Animated.View
+      entering={FadeIn.duration(400)}
+      style={[styles.heroCard, { paddingTop: insetTop }]}
+    >
       <View pointerEvents="none" style={styles.heroGlowLarge} />
-      {prompt ? <View pointerEvents="none" style={styles.heroGlowSmall} /> : null}
+      {prompt ? (
+        <View pointerEvents="none" style={styles.heroGlowSmall} />
+      ) : null}
       <View style={styles.heroFrame}>
         <View style={styles.heroTopRow}>
           <View style={styles.heroCopy}>
@@ -56,8 +62,18 @@ export const HomeHero = React.memo(function HomeHero({
                 <Text style={styles.heroDateChipLabel}>{dateLabel}</Text>
               </View>
               {streak != null && streak >= 2 && streakLabel ? (
-                <View style={[styles.heroStreakChip, isMilestone ? styles.heroStreakChipMilestone : null]}>
-                  <Text style={[styles.heroStreakChipText, isMilestone ? styles.heroStreakChipTextMilestone : null]}>
+                <View
+                  style={[
+                    styles.heroStreakChip,
+                    isMilestone ? styles.heroStreakChipMilestone : null,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.heroStreakChipText,
+                      isMilestone ? styles.heroStreakChipTextMilestone : null,
+                    ]}
+                  >
                     {streakLabel}
                   </Text>
                 </View>
@@ -67,11 +83,17 @@ export const HomeHero = React.memo(function HomeHero({
               <View style={styles.heroPromptCard}>
                 <View style={styles.heroPromptHeader}>
                   <View style={styles.heroPromptIconWrap}>
-                    <Ionicons name={prompt.primaryActionIcon} size={16} color={t.colors.primary} />
+                    <Ionicons
+                      name={prompt.primaryActionIcon}
+                      size={16}
+                      color={t.colors.primary}
+                    />
                   </View>
                   <View style={styles.heroPromptCopy}>
                     <Text style={styles.heroPromptTitle}>{prompt.title}</Text>
-                    <Text style={styles.heroPromptDescription}>{prompt.description}</Text>
+                    <Text style={styles.heroPromptDescription}>
+                      {prompt.description}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.heroPromptActions}>

@@ -35,28 +35,43 @@ export function StreakMilestoneToast({ title, subtitle, onDismiss }: Props) {
       <View style={styles.auroraAccent}>
         <Animated.View
           entering={FadeIn.delay(200).duration(400)}
-          style={[styles.auroraStart, { backgroundColor: theme.colors.auroraStart }]}
+          style={[
+            styles.auroraStart,
+            { backgroundColor: theme.colors.auroraStart },
+          ]}
         />
         <Animated.View
           entering={FadeIn.delay(300).duration(400)}
-          style={[styles.auroraMid, { backgroundColor: theme.colors.auroraMid }]}
+          style={[
+            styles.auroraMid,
+            { backgroundColor: theme.colors.auroraMid },
+          ]}
         />
         <Animated.View
           entering={FadeIn.delay(400).duration(400)}
-          style={[styles.auroraEnd, { backgroundColor: theme.colors.auroraEnd }]}
+          style={[
+            styles.auroraEnd,
+            { backgroundColor: theme.colors.auroraEnd },
+          ]}
         />
       </View>
 
       <Pressable onPress={onDismiss} style={styles.content}>
         <View style={styles.textBlock}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
-          <Text style={[styles.subtitle, { color: theme.colors.textDim }]}>{subtitle}</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            {title}
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.colors.textDim }]}>
+            {subtitle}
+          </Text>
         </View>
         <Animated.View
           entering={FadeIn.delay(250).duration(300)}
           style={[styles.dismissHint, { borderColor: theme.colors.border }]}
         >
-          <Text style={[styles.dismissText, { color: theme.colors.textDim }]}>✕</Text>
+          <Text style={[styles.dismissText, { color: theme.colors.textDim }]}>
+            ✕
+          </Text>
         </Animated.View>
       </Pressable>
     </Animated.View>

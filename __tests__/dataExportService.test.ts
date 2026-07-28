@@ -168,12 +168,12 @@ describe('data export service', () => {
   });
 
   test('creates stable readable export filenames from timestamp', () => {
-    expect(createDreamReadableExportFileName('2026-03-06T08:00:00.000Z', 'markdown')).toBe(
-      'kaleidoskop-dreams-2026-03-06T08-00-00-000Z.md',
-    );
-    expect(createDreamReadableExportFileName('2026-03-06T08:00:00.000Z', 'text')).toBe(
-      'kaleidoskop-dreams-2026-03-06T08-00-00-000Z.txt',
-    );
+    expect(
+      createDreamReadableExportFileName('2026-03-06T08:00:00.000Z', 'markdown'),
+    ).toBe('kaleidoskop-dreams-2026-03-06T08-00-00-000Z.md');
+    expect(
+      createDreamReadableExportFileName('2026-03-06T08:00:00.000Z', 'text'),
+    ).toBe('kaleidoskop-dreams-2026-03-06T08-00-00-000Z.txt');
   });
 
   test('builds a readable markdown export with graceful audio and transcript states', () => {
@@ -249,7 +249,9 @@ describe('data export service', () => {
     expect(document).toContain('Walked through a hallway of water.');
     expect(document).toContain('## Dream 2: Voice memo only');
     expect(document).toContain('- transcript_status: processing');
-    expect(document).toContain('Audio is attached. Transcript is still processing.');
+    expect(document).toContain(
+      'Audio is attached. Transcript is still processing.',
+    );
     expect(document).toContain('## Dream 3: Transcript ready');
     expect(document).toContain('- transcript_source: edited');
     expect(document).toContain('### Transcript');
@@ -317,7 +319,9 @@ describe('data export service', () => {
 
     expect(RNFS.mkdir).toHaveBeenCalledWith('/documents/exports');
     expect(RNFS.writeFile).toHaveBeenCalledTimes(1);
-    expect(result.filePath).toMatch(/^\/documents\/exports\/kaleidoskop-export-.*\.json$/);
+    expect(result.filePath).toMatch(
+      /^\/documents\/exports\/kaleidoskop-export-.*\.json$/,
+    );
     expect(result.payload.version).toBe(DREAM_EXPORT_VERSION);
     expect(result.payload.appVersion).toMatch(/^v/);
     expect(result.payload.locale).toBe('en');
@@ -427,7 +431,9 @@ describe('data export service', () => {
 
     expect(RNFS.mkdir).toHaveBeenCalledWith('/documents/exports');
     expect(RNFS.writeFile).toHaveBeenCalledTimes(1);
-    expect(result.filePath).toMatch(/^\/documents\/exports\/kaleidoskop-dreams-.*\.txt$/);
+    expect(result.filePath).toMatch(
+      /^\/documents\/exports\/kaleidoskop-dreams-.*\.txt$/,
+    );
     expect(result.document).toContain('DREAM EXPORT');
     expect(result.document).toContain('DREAM 1: Ocean station');
     expect(result.document).toContain('content: text + audio + transcript');

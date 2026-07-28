@@ -43,7 +43,10 @@ export function useStatsScreenController({
     [locale],
   );
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const lucidityLabels = React.useMemo(() => getDreamLucidityLabels(locale), [locale]);
+  const lucidityLabels = React.useMemo(
+    () => getDreamLucidityLabels(locale),
+    [locale],
+  );
   const wakeEmotionLabels = React.useMemo(
     () => getDreamWakeEmotionLabels(locale),
     [locale],

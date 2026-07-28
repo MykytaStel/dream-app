@@ -24,5 +24,7 @@ export function getDreamWidgetMemoryUrl() {
 }
 
 export function getDreamWidgetDreamUrl(dreamId: string) {
-  return buildWidgetUrl(`${DREAM_WIDGET_PATHS.Dream}/${encodeURIComponent(dreamId)}`);
+  return buildWidgetUrl(
+    `${DREAM_WIDGET_PATHS.Dream}/${encodeURIComponent(dreamId)}`,
+  );
 }

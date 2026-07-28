@@ -22,7 +22,9 @@ type StaticContainerProps = BaseProps &
     scroll?: false;
   };
 
-export function ScreenContainer(props: ScrollContainerProps | StaticContainerProps) {
+export function ScreenContainer(
+  props: ScrollContainerProps | StaticContainerProps,
+) {
   const t = useTheme<Theme>();
   const insets = useSafeAreaInsets();
   const styles = React.useMemo(() => createScreenContainerStyles(t), [t]);

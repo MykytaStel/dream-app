@@ -59,22 +59,24 @@ export function normalizePatternSignal(value: string) {
 }
 
 function tokenizeText(value?: string) {
-  return value
-    ?.toLowerCase()
-    .replace(/[^a-z0-9\s'-]/g, ' ')
-    .split(/\s+/)
-    .map(token => token.replace(/^[-']+|[-']+$/g, ''))
-    .filter(token => {
-      if (!token || token.length < MIN_TOKEN_LENGTH) {
-        return false;
-      }
+  return (
+    value
+      ?.toLowerCase()
+      .replace(/[^a-z0-9\s'-]/g, ' ')
+      .split(/\s+/)
+      .map(token => token.replace(/^[-']+|[-']+$/g, ''))
+      .filter(token => {
+        if (!token || token.length < MIN_TOKEN_LENGTH) {
+          return false;
+        }
 
-      if (/^\d+$/.test(token)) {
-        return false;
-      }
+        if (/^\d+$/.test(token)) {
+          return false;
+        }
 
-      return !STOPWORDS.has(token);
-    }) ?? [];
+        return !STOPWORDS.has(token);
+      }) ?? []
+  );
 }
 
 function hasMatchingTag(dream: Dream, signal: string) {

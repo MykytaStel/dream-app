@@ -1,4 +1,7 @@
-import { getDreamPreSleepEmotionLabels, getDreamWakeEmotionLabels } from '../src/constants/copy/dreams';
+import {
+  getDreamPreSleepEmotionLabels,
+  getDreamWakeEmotionLabels,
+} from '../src/constants/copy/dreams';
 import { getStatsCopy } from '../src/constants/copy/stats';
 import type { Dream } from '../src/features/dreams/model/dream';
 import { getMonthlyReportData } from '../src/features/stats/model/monthlyReport';

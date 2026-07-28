@@ -68,7 +68,9 @@ describe('dreamReflection', () => {
   });
 
   test('can focus on transcript-derived recurring symbols only', () => {
-    expect(getRecurringReflectionSignals(dreams, { transcriptOnly: true })).toEqual([
+    expect(
+      getRecurringReflectionSignals(dreams, { transcriptOnly: true }),
+    ).toEqual([
       {
         label: 'lantern',
         dreamCount: 2,

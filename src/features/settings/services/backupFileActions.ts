@@ -5,8 +5,8 @@ type BackupFileIntentModule = {
   share: (filePath: string, mimeType: string, title?: string) => Promise<void>;
 };
 
-const backupFileIntentModule =
-  NativeModules.BackupFileIntent as BackupFileIntentModule | undefined;
+const backupFileIntentModule = NativeModules.BackupFileIntent as
+  BackupFileIntentModule | undefined;
 
 function createShareableFileUrl(filePath: string) {
   return filePath.startsWith('file://') ? filePath : `file://${filePath}`;

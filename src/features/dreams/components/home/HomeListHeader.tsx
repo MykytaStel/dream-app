@@ -239,11 +239,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           ]}
         >
           <View style={styles.heroShortcutIconWrap}>
-            <Ionicons
-              name="water-outline"
-              size={15}
-              color={t.colors.primary}
-            />
+            <Ionicons name="water-outline" size={15} color={t.colors.primary} />
           </View>
           <View style={styles.heroShortcutCopy}>
             <Text style={styles.heroShortcutLabel}>
@@ -423,7 +419,9 @@ export const HomeListHeader = React.memo(function HomeListHeader({
     return (
       <View style={styles.weeklyPatternsSection}>
         <View style={styles.weeklyPatternsHeader}>
-          <Text style={styles.sectionLabel}>{copy.homeWeeklyPatternsTitle}</Text>
+          <Text style={styles.sectionLabel}>
+            {copy.homeWeeklyPatternsTitle}
+          </Text>
           <Text style={styles.weeklyPatternsSubtitle}>
             {copy.homeWeeklyPatternsSubtitle}
           </Text>
@@ -503,8 +501,8 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           section === 'shortcuts'
             ? shortcutSection
             : section === 'spotlight'
-            ? spotlightSection
-            : weeklyPatternsSection;
+              ? spotlightSection
+              : weeklyPatternsSection;
 
         if (node) {
           sections.push({ key: section, node });

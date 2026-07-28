@@ -39,7 +39,10 @@ export function reconcileSavedDreamThreads(dreams: Dream[]) {
   }
 
   const seenKeys = new Set<string>();
-  const matchesCache = new Map<string, ReturnType<typeof getPatternDreamMatches>>();
+  const matchesCache = new Map<
+    string,
+    ReturnType<typeof getPatternDreamMatches>
+  >();
   const next = current.filter(record => {
     const key = buildSavedThreadKey(record.signal, record.kind);
 
@@ -50,7 +53,8 @@ export function reconcileSavedDreamThreads(dreams: Dream[]) {
     seenKeys.add(key);
 
     const matches =
-      matchesCache.get(key) ?? getPatternDreamMatches(dreams, record.signal, record.kind);
+      matchesCache.get(key) ??
+      getPatternDreamMatches(dreams, record.signal, record.kind);
     matchesCache.set(key, matches);
 
     return matches.length > 0;
@@ -81,7 +85,10 @@ export function reconcileSavedDreamThreads(dreams: Dream[]) {
   return next;
 }
 
-export function toggleSavedDreamThread(signal: string, kind: PatternDetailKind) {
+export function toggleSavedDreamThread(
+  signal: string,
+  kind: PatternDetailKind,
+) {
   const trimmedSignal = signal.trim();
   if (!trimmedSignal) {
     return getSavedDreamThreads();
@@ -113,7 +120,9 @@ export function toggleSavedDreamThread(signal: string, kind: PatternDetailKind) 
   };
   const next = [
     nextRecord,
-    ...current.filter(item => !areSameSavedThread(item.signal, item.kind, trimmedSignal, kind)),
+    ...current.filter(
+      item => !areSameSavedThread(item.signal, item.kind, trimmedSignal, kind),
+    ),
   ];
   updateSavedReviewState(currentState => ({
     ...currentState,
@@ -131,7 +140,7 @@ export function isDreamThreadSaved(signal: string, kind: PatternDetailKind) {
     return false;
   }
 
-  return getSavedDreamThreads().some(
-    item => areSameSavedThread(item.signal, item.kind, trimmedSignal, kind),
+  return getSavedDreamThreads().some(item =>
+    areSameSavedThread(item.signal, item.kind, trimmedSignal, kind),
   );
 }

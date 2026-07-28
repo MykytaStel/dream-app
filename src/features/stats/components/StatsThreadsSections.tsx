@@ -9,10 +9,7 @@ import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
 import { type RecurringSignalDashboardItem } from '../model/dreamThread';
-import {
-  type StatsCopy,
-  type StatsStyles,
-} from './StatsScreenSection.shared';
+import { type StatsCopy, type StatsStyles } from './StatsScreenSection.shared';
 
 const SavedThreadPreviewList = React.memo(function SavedThreadPreviewList({
   copy,
@@ -50,11 +47,15 @@ const SavedThreadPreviewList = React.memo(function SavedThreadPreviewList({
               styles.savedThreadRow,
               pressed ? styles.insightCardPressed : null,
             ]}
-            onPress={() => onOpenThreadDetail(item.signal, item.kind as PatternDetailKind)}
+            onPress={() =>
+              onOpenThreadDetail(item.signal, item.kind as PatternDetailKind)
+            }
           >
             <View style={styles.savedThreadCopy}>
               <Text style={styles.savedThreadTitle}>{item.signal}</Text>
-              <Text style={styles.savedThreadMeta}>{`${item.kindLabel} • ${item.matchesLabel}`}</Text>
+              <Text
+                style={styles.savedThreadMeta}
+              >{`${item.kindLabel} • ${item.matchesLabel}`}</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={t.colors.text} />
           </Pressable>
@@ -76,7 +77,12 @@ const RecurringSignalRow = React.memo(function RecurringSignalRow({
   onOpenThreadDetail: (signal: string, kind: PatternDetailKind) => void;
 }) {
   const t = useTheme<Theme>();
-  const itemMeta = [item.kindLabel, item.matchesLabel, item.sourceLabel, item.supportingLabel]
+  const itemMeta = [
+    item.kindLabel,
+    item.matchesLabel,
+    item.sourceLabel,
+    item.supportingLabel,
+  ]
     .filter((value): value is string => Boolean(value))
     .join(' • ');
 
@@ -136,8 +142,10 @@ export function StatsThreadsSections({
   }>;
   onOpenThreadDetail: (signal: string, kind: PatternDetailKind) => void;
 }) {
-  const topSymbol = patternGroups.find(group => group.key === 'symbol')?.values[0];
-  const topTheme = patternGroups.find(group => group.key === 'theme')?.values[0];
+  const topSymbol = patternGroups.find(group => group.key === 'symbol')
+    ?.values[0];
+  const topTheme = patternGroups.find(group => group.key === 'theme')
+    ?.values[0];
   const trackedSignalCount = patternGroups.reduce(
     (sum, group) => sum + group.values.length,
     0,
@@ -151,18 +159,27 @@ export function StatsThreadsSections({
       <Animated.View>
         <Card style={styles.sectionCard}>
           <View style={styles.recurringHeroBlock}>
-            <SectionHeader title={copy.patternsTitle} subtitle={copy.patternsDescription} />
+            <SectionHeader
+              title={copy.patternsTitle}
+              subtitle={copy.patternsDescription}
+            />
 
             <View style={styles.threadMetaWrap}>
               <View style={styles.threadMetaChip}>
-                <Text style={styles.threadMetaChipText}>{`${trackedSignalCount} ${copy.patternsTrackedLabel}`}</Text>
+                <Text
+                  style={styles.threadMetaChipText}
+                >{`${trackedSignalCount} ${copy.patternsTrackedLabel}`}</Text>
               </View>
               <View style={styles.threadMetaChip}>
-                <Text style={styles.threadMetaChipText}>{`${savedThreadItems.length} ${copy.savedThreadsTitle}`}</Text>
+                <Text
+                  style={styles.threadMetaChipText}
+                >{`${savedThreadItems.length} ${copy.savedThreadsTitle}`}</Text>
               </View>
             </View>
             {heroHighlights ? (
-              <Text style={styles.recurringHeroHighlights}>{heroHighlights}</Text>
+              <Text style={styles.recurringHeroHighlights}>
+                {heroHighlights}
+              </Text>
             ) : null}
 
             <SavedThreadPreviewList
@@ -180,10 +197,15 @@ export function StatsThreadsSections({
           <Card style={styles.sectionCard}>
             <View style={styles.recurringGroupHeaderRow}>
               <View style={styles.threadHeaderCopy}>
-                <SectionHeader title={group.label} subtitle={group.description} />
+                <SectionHeader
+                  title={group.label}
+                  subtitle={group.description}
+                />
               </View>
               <View style={styles.savedThreadsCountChip}>
-                <Text style={styles.savedThreadsCountText}>{group.values.length}</Text>
+                <Text style={styles.savedThreadsCountText}>
+                  {group.values.length}
+                </Text>
               </View>
             </View>
 

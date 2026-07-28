@@ -43,7 +43,9 @@ export function PatternGroupCard({
       {showHeader ? (
         <View style={styles.header}>
           {title ? <Text style={styles.title}>{title}</Text> : null}
-          {description ? <Text style={styles.description}>{description}</Text> : null}
+          {description ? (
+            <Text style={styles.description}>{description}</Text>
+          ) : null}
         </View>
       ) : null}
 
@@ -64,7 +66,9 @@ export function PatternGroupCard({
               <Text style={styles.leadEyebrow}>{leadLabel}</Text>
               {leadItem.sourceLabel ? (
                 <View style={styles.sourceChip}>
-                  <Text style={styles.sourceChipText}>{leadItem.sourceLabel}</Text>
+                  <Text style={styles.sourceChipText}>
+                    {leadItem.sourceLabel}
+                  </Text>
                 </View>
               ) : null}
             </View>
@@ -92,13 +96,17 @@ export function PatternGroupCard({
                     style={({ pressed }) => [
                       styles.secondaryCard,
                       item.onPress ? styles.secondaryCardInteractive : null,
-                      pressed && item.onPress ? styles.secondaryCardPressed : null,
+                      pressed && item.onPress
+                        ? styles.secondaryCardPressed
+                        : null,
                     ]}
                   >
                     <Text style={styles.secondaryCardLabel} numberOfLines={2}>
                       {item.label}
                     </Text>
-                    <Text style={styles.secondaryCardMeta}>{item.countLabel}</Text>
+                    <Text style={styles.secondaryCardMeta}>
+                      {item.countLabel}
+                    </Text>
                   </Pressable>
                 ))}
               </View>

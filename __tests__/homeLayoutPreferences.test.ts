@@ -56,9 +56,9 @@ describe('homeLayoutPreferences', () => {
       'weeklyPatterns',
       'spotlight',
     ]);
-    expect(
-      moveHomeLayoutSection(next, 'shortcuts', 'up').sectionOrder,
-    ).toEqual(['shortcuts', 'weeklyPatterns', 'spotlight']);
+    expect(moveHomeLayoutSection(next, 'shortcuts', 'up').sectionOrder).toEqual(
+      ['shortcuts', 'weeklyPatterns', 'spotlight'],
+    );
   });
 
   it('toggles section visibility and persists sanitized preferences', () => {

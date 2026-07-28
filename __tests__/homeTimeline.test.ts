@@ -78,10 +78,16 @@ describe('homeTimeline', () => {
   });
 
   test('matches transcript-aware filters', () => {
-    expect(matchesDreamTranscriptFilter(dreams[0], 'with-transcript')).toBe(false);
-    expect(matchesDreamTranscriptFilter(dreams[1], 'with-transcript')).toBe(true);
+    expect(matchesDreamTranscriptFilter(dreams[0], 'with-transcript')).toBe(
+      false,
+    );
+    expect(matchesDreamTranscriptFilter(dreams[1], 'with-transcript')).toBe(
+      true,
+    );
     expect(matchesDreamTranscriptFilter(dreams[1], 'audio-only')).toBe(false);
-    expect(matchesDreamTranscriptFilter(dreams[3], 'edited-transcript')).toBe(true);
+    expect(matchesDreamTranscriptFilter(dreams[3], 'edited-transcript')).toBe(
+      true,
+    );
     expect(matchesDreamTranscriptFilter(dreams[4], 'audio-only')).toBe(true);
   });
 
@@ -186,12 +192,21 @@ describe('homeTimeline', () => {
         },
         new Date('2026-03-06T12:00:00.000Z'),
       ).map(dream => dream.id),
-    ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5', 'dream-6', 'dream-7']);
+    ).toEqual([
+      'dream-1',
+      'dream-2',
+      'dream-4',
+      'dream-5',
+      'dream-6',
+      'dream-7',
+    ]);
   });
 
   test('sorts timeline newest first by default and can switch to oldest first', () => {
     expect(
-      applyHomeTimelineFilters(dreams, DEFAULT_HOME_TIMELINE_FILTERS).map(dream => dream.id),
+      applyHomeTimelineFilters(dreams, DEFAULT_HOME_TIMELINE_FILTERS).map(
+        dream => dream.id,
+      ),
     ).toEqual(['dream-1', 'dream-2', 'dream-4', 'dream-5']);
 
     expect(
@@ -252,7 +267,9 @@ describe('homeTimeline', () => {
       'stairs',
       'train',
     ]);
-    expect(hasActiveTimelineRefinements(DEFAULT_HOME_TIMELINE_FILTERS)).toBe(false);
+    expect(hasActiveTimelineRefinements(DEFAULT_HOME_TIMELINE_FILTERS)).toBe(
+      false,
+    );
     expect(hasActiveTimelineFilters(DEFAULT_HOME_TIMELINE_FILTERS)).toBe(false);
     expect(
       hasActiveTimelineRefinements({

@@ -1,6 +1,13 @@
 import { type AppLocale } from '../../../i18n/types';
-import { type Dream, type Mood, type WakeEmotion } from '../../dreams/model/dream';
-import { getDreamDate, getMoodValence } from '../../dreams/model/dreamAnalytics';
+import {
+  type Dream,
+  type Mood,
+  type WakeEmotion,
+} from '../../dreams/model/dream';
+import {
+  getDreamDate,
+  getMoodValence,
+} from '../../dreams/model/dreamAnalytics';
 import { type InsightRange } from './statsScreenModel';
 
 export type EmotionalTrendValence = 'positive' | 'neutral' | 'negative';
@@ -33,7 +40,7 @@ type TrendCopy = {
 // Aurora-derived valence colors (static, not theme-dynamic — safe for off-screen capture)
 export const TREND_VALENCE_COLOR: Record<EmotionalTrendValence, string> = {
   positive: '#63D9FF', // auroraStart — cyan
-  neutral: '#8D7CFF',  // auroraMid — purple
+  neutral: '#8D7CFF', // auroraMid — purple
   negative: '#C57EFF', // auroraEnd — magenta
 };
 
@@ -42,7 +49,13 @@ function toISOWeek(date: Date): string {
   d.setHours(0, 0, 0, 0);
   d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
   const week1 = new Date(d.getFullYear(), 0, 4);
-  const weekNum = Math.round(((d.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7) + 1;
+  const weekNum =
+    Math.round(
+      ((d.getTime() - week1.getTime()) / 86400000 -
+        3 +
+        ((week1.getDay() + 6) % 7)) /
+        7,
+    ) + 1;
   return `${d.getFullYear()}-W${String(weekNum).padStart(2, '0')}`;
 }
 
@@ -57,7 +70,9 @@ function formatWeekLabel(periodKey: string, locale: AppLocale): string {
   const week = parseInt(weekStr, 10);
   const jan4 = new Date(year, 0, 4);
   const dayOfWeek = (jan4.getDay() + 6) % 7; // 0 = Monday
-  const monday = new Date(jan4.getTime() - dayOfWeek * 86400000 + (week - 1) * 7 * 86400000);
+  const monday = new Date(
+    jan4.getTime() - dayOfWeek * 86400000 + (week - 1) * 7 * 86400000,
+  );
   return monday.toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
     month: 'short',
     day: 'numeric',
@@ -73,7 +88,9 @@ function formatMonthLabel(periodKey: string, locale: AppLocale): string {
   });
 }
 
-function getDominantMood(moodCounts: Partial<Record<Mood, number>>): Mood | null {
+function getDominantMood(
+  moodCounts: Partial<Record<Mood, number>>,
+): Mood | null {
   let dominant: Mood | null = null;
   let max = 0;
 
@@ -198,16 +215,19 @@ export function getSymbolTrendSummary(
     return [];
   }
 
-  const sorted = [...dreams].sort((a, b) => getDreamDate(a).getTime() - getDreamDate(b).getTime());
+  const sorted = [...dreams].sort(
+    (a, b) => getDreamDate(a).getTime() - getDreamDate(b).getTime(),
+  );
   const midpoint = Math.floor(sorted.length / 2);
   const firstHalf = sorted.slice(0, midpoint);
   const secondHalf = sorted.slice(midpoint);
 
   function countSymbolInDreams(label: string, subset: Dream[]): number {
     const normalized = label.toLowerCase();
-    return subset.filter(dream =>
-      dream.transcript?.toLowerCase().includes(normalized) ||
-      dream.tags.some(tag => tag.toLowerCase() === normalized),
+    return subset.filter(
+      dream =>
+        dream.transcript?.toLowerCase().includes(normalized) ||
+        dream.tags.some(tag => tag.toLowerCase() === normalized),
     ).length;
   }
 

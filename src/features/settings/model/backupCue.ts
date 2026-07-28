@@ -29,7 +29,8 @@ export function getReviewWorkspaceBackupCue(input: {
   reviewState: SavedReviewStateSnapshot;
   copy: BackupCueCopy;
 }): BackupCue | null {
-  const { cloudSession, cloudSyncEnabled, hasReviewItems, reviewState, copy } = input;
+  const { cloudSession, cloudSyncEnabled, hasReviewItems, reviewState, copy } =
+    input;
   const savedReviewSetCount = getSavedReviewSetCount(reviewState);
 
   if (!hasReviewItems) {
@@ -54,7 +55,11 @@ export function getReviewWorkspaceBackupCue(input: {
     };
   }
 
-  if (cloudSession.status === 'signed-in' && !cloudSyncEnabled && savedReviewSetCount > 0) {
+  if (
+    cloudSession.status === 'signed-in' &&
+    !cloudSyncEnabled &&
+    savedReviewSetCount > 0
+  ) {
     return {
       title: copy.backupCueSyncOffTitle,
       description: copy.backupCueSyncOffDescription,

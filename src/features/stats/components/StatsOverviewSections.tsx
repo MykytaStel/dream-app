@@ -149,18 +149,18 @@ export function StatsOverviewSections({
         meta: workQueueItems[0].reason,
       }
     : importantDreamItems[0]
-    ? {
-        eyebrow: copy.reviewShelfImportantDreamEyebrow,
-        title: importantDreamItems[0].title,
-        meta: importantDreamItems[0].meta,
-      }
-    : savedSetItems[0]
-    ? {
-        eyebrow: savedSetItems[0].eyebrow,
-        title: savedSetItems[0].title,
-        meta: savedSetItems[0].meta,
-      }
-    : null;
+      ? {
+          eyebrow: copy.reviewShelfImportantDreamEyebrow,
+          title: importantDreamItems[0].title,
+          meta: importantDreamItems[0].meta,
+        }
+      : savedSetItems[0]
+        ? {
+            eyebrow: savedSetItems[0].eyebrow,
+            title: savedSetItems[0].title,
+            meta: savedSetItems[0].meta,
+          }
+        : null;
 
   return (
     <>
@@ -220,18 +220,26 @@ export function StatsOverviewSections({
                     >
                       <View style={styles.detailsListHeader}>
                         <View style={styles.detailsListCopy}>
-                          <Text style={styles.reviewShelfCompactTitle}>{item.title}</Text>
-                          <Text style={styles.reviewShelfCompactMeta}>{item.meta}</Text>
+                          <Text style={styles.reviewShelfCompactTitle}>
+                            {item.title}
+                          </Text>
+                          <Text style={styles.reviewShelfCompactMeta}>
+                            {item.meta}
+                          </Text>
                         </View>
                         <View style={styles.detailsListValueChip}>
-                          <Text style={styles.detailsListValue}>{item.levelLabel}</Text>
+                          <Text style={styles.detailsListValue}>
+                            {item.levelLabel}
+                          </Text>
                         </View>
                       </View>
                     </Pressable>
                   ))}
                 </View>
               ) : (
-                <Text style={styles.detailsListHint}>{copy.lucidHistoryEmpty}</Text>
+                <Text style={styles.detailsListHint}>
+                  {copy.lucidHistoryEmpty}
+                </Text>
               )}
             </View>
           </View>
@@ -443,8 +451,8 @@ export function StatsOverviewSections({
                           delta > 0
                             ? styles.compareMetricDeltaPositive
                             : delta < 0
-                            ? styles.compareMetricDeltaNegative
-                            : styles.compareMetricDeltaNeutral;
+                              ? styles.compareMetricDeltaNegative
+                              : styles.compareMetricDeltaNeutral;
 
                         return (
                           <View

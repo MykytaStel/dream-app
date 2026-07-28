@@ -18,7 +18,10 @@ import {
   unstarDream,
 } from '../repository/dreamsRepository';
 import { type HomeRefreshMode } from './useHomeScreenData';
-import { hapticImpactMedium, hapticImpactLight } from '../../../services/haptics/hapticService';
+import {
+  hapticImpactMedium,
+  hapticImpactLight,
+} from '../../../services/haptics/hapticService';
 
 type UseHomeSwipeActionsArgs = {
   copy: DreamCopy;
@@ -61,9 +64,12 @@ export function useHomeSwipeActions({
     activeSwipeId.current = dreamId;
   }, []);
 
-  const bindSwipeMethods = React.useCallback((dreamId: string, methods: SwipeableMethods) => {
-    swipeMethods.current[dreamId] = methods;
-  }, []);
+  const bindSwipeMethods = React.useCallback(
+    (dreamId: string, methods: SwipeableMethods) => {
+      swipeMethods.current[dreamId] = methods;
+    },
+    [],
+  );
 
   const onSwipeOpened = React.useCallback((dreamId: string) => {
     activeSwipeId.current = dreamId;
@@ -160,8 +166,12 @@ export function useHomeSwipeActions({
     (dream: Dream) => {
       closeActiveSwipe();
 
-      const archiveLabel = isDreamArchived(dream) ? copy.swipeUnarchive : copy.swipeArchive;
-      const starLabel = isDreamStarred(dream) ? copy.detailUnstar : copy.detailStar;
+      const archiveLabel = isDreamArchived(dream)
+        ? copy.swipeUnarchive
+        : copy.swipeArchive;
+      const starLabel = isDreamStarred(dream)
+        ? copy.detailUnstar
+        : copy.detailStar;
 
       if (Platform.OS === 'ios') {
         const options = [
@@ -176,7 +186,9 @@ export function useHomeSwipeActions({
         ActionSheetIOS.showActionSheetWithOptions(
           {
             title: dream.title || copy.untitled,
-            message: dream.sleepDate || new Date(dream.createdAt).toISOString().slice(0, 10),
+            message:
+              dream.sleepDate ||
+              new Date(dream.createdAt).toISOString().slice(0, 10),
             options,
             cancelButtonIndex: 5,
             destructiveButtonIndex: 4,

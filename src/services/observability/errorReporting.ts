@@ -15,7 +15,9 @@ function sanitizeContext(
     return undefined;
   }
 
-  const entries = Object.entries(context).filter(([, value]) => value !== undefined);
+  const entries = Object.entries(context).filter(
+    ([, value]) => value !== undefined,
+  );
   if (!entries.length) {
     return undefined;
   }
@@ -40,7 +42,8 @@ export function reportActionError(
 }
 
 export function installGlobalErrorReporting(): () => void {
-  const maybeErrorUtils = (globalThis as { ErrorUtils?: ErrorUtilsShape }).ErrorUtils;
+  const maybeErrorUtils = (globalThis as { ErrorUtils?: ErrorUtilsShape })
+    .ErrorUtils;
   const previous = maybeErrorUtils?.getGlobalHandler?.();
 
   if (!maybeErrorUtils?.setGlobalHandler || !previous) {

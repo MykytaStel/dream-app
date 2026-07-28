@@ -4,8 +4,10 @@ const WIDGET_COPY_EN = {
   localOnlyLabel: 'Private on device',
   emptySubtitle: 'Start with a fragment, feeling, or image before it fades.',
   revisitTitle: 'Revisit now',
-  fallbackCaptureSubtitle: 'Open the lightest capture flow and keep the thread warm.',
-  fallbackInsightSubtitle: 'A small local read from the dreams you already saved.',
+  fallbackCaptureSubtitle:
+    'Open the lightest capture flow and keep the thread warm.',
+  fallbackInsightSubtitle:
+    'A small local read from the dreams you already saved.',
   memoryAction: 'Memory',
   totalDreamSingle: '1 dream saved',
   totalDreamPrefix: '',
@@ -30,8 +32,10 @@ const WIDGET_COPY_UK = {
   localOnlyLabel: 'Лише на пристрої',
   emptySubtitle: 'Почни з уривка, відчуття чи образу, поки сон не розчинився.',
   revisitTitle: 'Повернутись зараз',
-  fallbackCaptureSubtitle: 'Відкрий найлегший режим запису й не дай нитці охолонути.',
-  fallbackInsightSubtitle: 'Короткий локальний зріз зі снів, які ти вже зберіг.',
+  fallbackCaptureSubtitle:
+    'Відкрий найлегший режим запису й не дай нитці охолонути.',
+  fallbackInsightSubtitle:
+    'Короткий локальний зріз зі снів, які ти вже зберіг.',
   memoryAction: 'Памʼять',
   totalDreamSingle: 'Збережено 1 сон',
   totalDreamPrefix: 'Збережено ',

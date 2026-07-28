@@ -100,8 +100,7 @@ const STATS_COPY_EN = {
   lucidFrequencyLatestLabel: 'Most recent',
   lucidFrequencyLatestHint: 'Latest lucid entry in this range.',
   lucidFrequencyLatestEmptyValue: 'None',
-  lucidFrequencyLatestEmptyHint:
-    'No lucid entry landed in this range.',
+  lucidFrequencyLatestEmptyHint: 'No lucid entry landed in this range.',
   lucidHistoryTitle: 'Recent lucid history',
   lucidHistoryDescription:
     'Open a lucid entry and revisit what kind of awareness showed up.',
@@ -116,7 +115,8 @@ const STATS_COPY_EN = {
   nightmareHighDistressLabel: 'High distress',
   nightmareRescriptedLabel: 'Rewritten',
   nightmareDerivedLabel: 'Derived signals',
-  nightmareDerivedHint: 'Supportive fallback from distress-heavy wake patterns.',
+  nightmareDerivedHint:
+    'Supportive fallback from distress-heavy wake patterns.',
   weeklyPatternsTitle: 'Weekly patterns',
   weeklyPatternsDescription:
     'A calm read of what stood out in the last seven days.',
@@ -556,8 +556,7 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   lucidFrequencyCountLabel: 'Усвідомлені записи',
   lucidFrequencyCountHint:
     'Сюди входить коротка ясність, усвідомлені сни та записи з відчуттям контролю.',
-  lucidFrequencyCountEmptyHint:
-    'У цьому періоді немає усвідомлених записів.',
+  lucidFrequencyCountEmptyHint: 'У цьому періоді немає усвідомлених записів.',
   lucidFrequencyShareLabel: 'Частка цього періоду',
   lucidFrequencyShareHintPrefix: 'Приблизно один із ',
   lucidFrequencyShareHintSuffix: ' снів у цьому періоді.',
@@ -582,7 +581,8 @@ const STATS_COPY_UK: typeof STATS_COPY_EN = {
   nightmareHighDistressLabel: 'Високий дистрес',
   nightmareRescriptedLabel: 'Переписані',
   nightmareDerivedLabel: 'Похідні сигнали',
-  nightmareDerivedHint: 'Обережне fallback-визначення з дистресу після пробудження.',
+  nightmareDerivedHint:
+    'Обережне fallback-визначення з дистресу після пробудження.',
   weeklyPatternsTitle: 'Патерни тижня',
   weeklyPatternsDescription:
     'Спокійний зріз того, що виділилося за останні сім днів.',

@@ -22,7 +22,13 @@ type Props = {
 const MAX_BAR_HEIGHT = 48;
 const MIN_BAR_HEIGHT = 4;
 
-export function EmotionalTrendSection({ series, insight, title, description, emptyLabel }: Props) {
+export function EmotionalTrendSection({
+  series,
+  insight,
+  title,
+  description,
+  emptyLabel,
+}: Props) {
   const theme = useTheme<Theme>();
 
   const maxCount = React.useMemo(
@@ -35,7 +41,9 @@ export function EmotionalTrendSection({ series, insight, title, description, emp
       <Animated.View entering={FadeInDown.duration(280).springify()}>
         <Card style={styles.card}>
           <SectionHeader title={title} subtitle={description} />
-          <Text style={[styles.emptyLabel, { color: theme.colors.textDim }]}>{emptyLabel}</Text>
+          <Text style={[styles.emptyLabel, { color: theme.colors.textDim }]}>
+            {emptyLabel}
+          </Text>
         </Card>
       </Animated.View>
     );
@@ -85,7 +93,9 @@ export function EmotionalTrendSection({ series, insight, title, description, emp
           })}
         </ScrollView>
 
-        <View style={[styles.legendRow, { borderTopColor: theme.colors.border }]}>
+        <View
+          style={[styles.legendRow, { borderTopColor: theme.colors.border }]}
+        >
           {(['positive', 'neutral', 'negative'] as const).map(valence => (
             <View key={valence} style={styles.legendItem}>
               <View
@@ -99,7 +109,9 @@ export function EmotionalTrendSection({ series, insight, title, description, emp
         </View>
 
         {insight ? (
-          <Text style={[styles.insightText, { color: theme.colors.textDim }]}>{insight}</Text>
+          <Text style={[styles.insightText, { color: theme.colors.textDim }]}>
+            {insight}
+          </Text>
         ) : null}
       </Card>
     </Animated.View>

@@ -13,7 +13,10 @@ import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { Dream } from '../model/dream';
-import { getRelatedSignalSummaries, type RelatedDream } from '../model/relatedDreams';
+import {
+  getRelatedSignalSummaries,
+  type RelatedDream,
+} from '../model/relatedDreams';
 import {
   formatMetaTimestamp,
   formatTranscriptionProgress,
@@ -40,7 +43,11 @@ type AudioPlayerWidgetProps = {
   playbackErrorTitle: string;
 };
 
-function AudioPlayerWidget({ uri, styles, playbackErrorTitle }: AudioPlayerWidgetProps) {
+function AudioPlayerWidget({
+  uri,
+  styles,
+  playbackErrorTitle,
+}: AudioPlayerWidgetProps) {
   const theme = useTheme<Theme>();
   const [isPlaying, setIsPlaying] = React.useState(false);
   const [positionMs, setPositionMs] = React.useState(0);
@@ -120,13 +127,20 @@ function AudioPlayerWidget({ uri, styles, playbackErrorTitle }: AudioPlayerWidge
         <View style={styles.audioProgressShell}>
           <View style={styles.audioProgressTrack}>
             <View
-              style={[styles.audioProgressFill, { width: `${progressPercent}%` }]}
+              style={[
+                styles.audioProgressFill,
+                { width: `${progressPercent}%` },
+              ]}
             />
           </View>
           <View style={styles.audioTimeRow}>
-            <Text style={styles.audioTimeLabel}>{formatPlaybackTime(positionMs)}</Text>
+            <Text style={styles.audioTimeLabel}>
+              {formatPlaybackTime(positionMs)}
+            </Text>
             {durationMs > 0 ? (
-              <Text style={styles.audioTimeLabel}>{formatPlaybackTime(durationMs)}</Text>
+              <Text style={styles.audioTimeLabel}>
+                {formatPlaybackTime(durationMs)}
+              </Text>
             ) : null}
           </View>
         </View>
@@ -239,7 +253,8 @@ export function DreamDetailSections({
     () => getRelatedSignalSummaries(relatedDreams, 5),
     [relatedDreams],
   );
-  const leadPrompt = viewModel.followUpPrompt ?? viewModel.reflectionPrompts[0] ?? null;
+  const leadPrompt =
+    viewModel.followUpPrompt ?? viewModel.reflectionPrompts[0] ?? null;
   const supportingPrompts = viewModel.followUpPrompt
     ? viewModel.reflectionPrompts
     : viewModel.reflectionPrompts.slice(1);
@@ -253,9 +268,9 @@ export function DreamDetailSections({
   const lucidControlChips = (dream.lucidPractice?.controlAreas ?? []).map(
     value => lucidControlLabels[value] ?? value,
   );
-  const lucidStabilizationChips = (dream.lucidPractice?.stabilizationActions ?? []).map(
-    value => lucidStabilizationLabels[value] ?? value,
-  );
+  const lucidStabilizationChips = (
+    dream.lucidPractice?.stabilizationActions ?? []
+  ).map(value => lucidStabilizationLabels[value] ?? value);
   const nightmareAftereffectChips = (dream.nightmare?.aftereffects ?? []).map(
     value => nightmareAftereffectLabels[value] ?? value,
   );
@@ -266,9 +281,9 @@ export function DreamDetailSections({
     !analysisSettings.enabled || analysisSettings.provider === 'openai';
   const hasAnalysisContent = Boolean(
     dream.analysis?.summary ||
-      dream.analysis?.themes?.length ||
-      dream.analysis?.generatedAt ||
-      dream.analysis?.status === 'error',
+    dream.analysis?.themes?.length ||
+    dream.analysis?.generatedAt ||
+    dream.analysis?.status === 'error',
   );
   const primaryCaptureTitle = rawCaptureText
     ? copy.detailTranscriptTitle
@@ -293,14 +308,22 @@ export function DreamDetailSections({
 
           <View style={styles.featuredPanel}>
             <Text style={styles.featuredEyebrow}>{primaryCaptureTitle}</Text>
-            <Text style={rawCaptureText || dream.transcript ? styles.featuredBody : styles.featuredMutedBody}>
+            <Text
+              style={
+                rawCaptureText || dream.transcript
+                  ? styles.featuredBody
+                  : styles.featuredMutedBody
+              }
+            >
               {primaryCaptureBody}
             </Text>
           </View>
 
           {dream.audioUri || dream.transcript || isEditingTranscript ? (
             <View style={styles.supportBlock}>
-              <Text style={styles.supportHeading}>{copy.detailGeneratedTranscriptTitle}</Text>
+              <Text style={styles.supportHeading}>
+                {copy.detailGeneratedTranscriptTitle}
+              </Text>
 
               {dream.transcript ? (
                 <View style={styles.utilityRows}>
@@ -335,7 +358,8 @@ export function DreamDetailSections({
                 >
                   {dream.transcript
                     ? viewModel.transcriptSourceLabel
-                    : viewModel.transcriptStatus === 'processing' || isTranscribingAudio
+                    : viewModel.transcriptStatus === 'processing' ||
+                        isTranscribingAudio
                       ? copy.detailGeneratedTranscriptProcessing
                       : viewModel.transcriptStatus === 'error'
                         ? copy.detailGeneratedTranscriptError
@@ -345,7 +369,9 @@ export function DreamDetailSections({
 
               {viewModel.transcriptSyncHint ? (
                 <View style={styles.syncNoteCard}>
-                  <Text style={styles.syncNoteText}>{viewModel.transcriptSyncHint}</Text>
+                  <Text style={styles.syncNoteText}>
+                    {viewModel.transcriptSyncHint}
+                  </Text>
                 </View>
               ) : null}
 
@@ -391,8 +417,10 @@ export function DreamDetailSections({
                       <Button
                         title={
                           isTranscribingAudio
-                            ? formatTranscriptionProgress(transcriptionProgress, copy) ??
-                              copy.detailTranscribeInProgress
+                            ? (formatTranscriptionProgress(
+                                transcriptionProgress,
+                                copy,
+                              ) ?? copy.detailTranscribeInProgress)
                             : dream.transcript
                               ? copy.detailGeneratedTranscriptReplace
                               : viewModel.transcriptStatus === 'error'
@@ -400,13 +428,18 @@ export function DreamDetailSections({
                                 : copy.detailTranscribeAudio
                         }
                         variant={
-                          dream.transcript || viewModel.transcriptStatus === 'error'
+                          dream.transcript ||
+                          viewModel.transcriptStatus === 'error'
                             ? 'ghost'
                             : 'primary'
                         }
                         onPress={onTranscribeAudio}
                         disabled={isTranscribingAudio}
-                        icon={dream.transcript ? 'refresh-outline' : 'sparkles-outline'}
+                        icon={
+                          dream.transcript
+                            ? 'refresh-outline'
+                            : 'sparkles-outline'
+                        }
                       />
                     ) : null}
                   </>
@@ -420,7 +453,9 @@ export function DreamDetailSections({
               <Text style={styles.supportHeading}>{copy.voiceTitle}</Text>
               {viewModel.audioSyncHint ? (
                 <View style={styles.syncNoteCard}>
-                  <Text style={styles.syncNoteText}>{viewModel.audioSyncHint}</Text>
+                  <Text style={styles.syncNoteText}>
+                    {viewModel.audioSyncHint}
+                  </Text>
                 </View>
               ) : null}
               <AudioPlayerWidget
@@ -433,7 +468,9 @@ export function DreamDetailSections({
             <View style={styles.supportBlock}>
               <Text style={styles.supportHeading}>{copy.voiceTitle}</Text>
               <View style={styles.syncNoteCard}>
-                <Text style={styles.syncNoteText}>{copy.detailAudioCloudOnlyHint}</Text>
+                <Text style={styles.syncNoteText}>
+                  {copy.detailAudioCloudOnlyHint}
+                </Text>
               </View>
               <Button
                 title={
@@ -454,7 +491,9 @@ export function DreamDetailSections({
         {leadPrompt ? <View style={styles.sheetDivider} /> : null}
         {leadPrompt ? (
           <View style={styles.sheetSection}>
-            <Text style={styles.sheetHeading}>{copy.detailReflectionTitle}</Text>
+            <Text style={styles.sheetHeading}>
+              {copy.detailReflectionTitle}
+            </Text>
             <View style={styles.revisitPanel}>
               <Text style={styles.featuredTitle}>{leadPrompt.title}</Text>
               <Text style={styles.featuredBody}>{leadPrompt.body}</Text>
@@ -465,7 +504,10 @@ export function DreamDetailSections({
                     pressed ? styles.featuredActionPressed : null,
                   ]}
                   onPress={() => {
-                    if (leadPrompt.actionKind === 'related' && relatedDreams[0]) {
+                    if (
+                      leadPrompt.actionKind === 'related' &&
+                      relatedDreams[0]
+                    ) {
                       onOpenRelatedDream(relatedDreams[0].dream.id);
                       return;
                     }
@@ -485,7 +527,9 @@ export function DreamDetailSections({
                     onEditDream();
                   }}
                 >
-                  <Text style={styles.featuredActionText}>{leadPrompt.actionLabel}</Text>
+                  <Text style={styles.featuredActionText}>
+                    {leadPrompt.actionLabel}
+                  </Text>
                   <Ionicons
                     name="arrow-forward-outline"
                     size={14}
@@ -499,8 +543,12 @@ export function DreamDetailSections({
               <View style={styles.supportingPromptList}>
                 {supportingPrompts.map(prompt => (
                   <View key={prompt.key} style={styles.supportingPromptRow}>
-                    <Text style={styles.supportingPromptTitle}>{prompt.title}</Text>
-                    <Text style={styles.supportingPromptBody}>{prompt.body}</Text>
+                    <Text style={styles.supportingPromptTitle}>
+                      {prompt.title}
+                    </Text>
+                    <Text style={styles.supportingPromptBody}>
+                      {prompt.body}
+                    </Text>
                   </View>
                 ))}
               </View>
@@ -517,7 +565,11 @@ export function DreamDetailSections({
               {relatedSignalSummaries.map(signal => (
                 <TagChip
                   key={signal.label}
-                  label={signal.count > 1 ? `${signal.label} x${signal.count}` : signal.label}
+                  label={
+                    signal.count > 1
+                      ? `${signal.label} x${signal.count}`
+                      : signal.label
+                  }
                 />
               ))}
             </View>
@@ -537,10 +589,14 @@ export function DreamDetailSections({
                   onPress={() => onOpenRelatedDream(item.dream.id)}
                 >
                   <View style={styles.relatedCopy}>
-                    <Text style={styles.relatedTitle}>{item.dream.title || copy.untitled}</Text>
+                    <Text style={styles.relatedTitle}>
+                      {item.dream.title || copy.untitled}
+                    </Text>
                     <Text style={styles.relatedMeta}>
                       {item.dream.sleepDate ||
-                        new Date(item.dream.createdAt).toISOString().slice(0, 10)}
+                        new Date(item.dream.createdAt)
+                          .toISOString()
+                          .slice(0, 10)}
                     </Text>
                   </View>
                   <Ionicons
@@ -578,7 +634,9 @@ export function DreamDetailSections({
               onPress={onOpenSettingsForAnalysis}
             >
               <View style={styles.settingsNoticeCopy}>
-                <Text style={styles.settingsNoticeTitle}>{copy.detailAnalysisOpenSettings}</Text>
+                <Text style={styles.settingsNoticeTitle}>
+                  {copy.detailAnalysisOpenSettings}
+                </Text>
                 <Text style={styles.settingsNoticeBody}>
                   {analysisSettings.enabled
                     ? copy.detailAnalysisOpenAiUnavailable
@@ -592,12 +650,16 @@ export function DreamDetailSections({
               />
             </Pressable>
           ) : (
-            <Text style={styles.supportText}>{viewModel.analysisStateText}</Text>
+            <Text style={styles.supportText}>
+              {viewModel.analysisStateText}
+            </Text>
           )}
 
           {dream.analysis?.summary ? (
             <View style={styles.featuredPanel}>
-              <Text style={styles.featuredEyebrow}>{copy.detailAnalysisSummaryLabel}</Text>
+              <Text style={styles.featuredEyebrow}>
+                {copy.detailAnalysisSummaryLabel}
+              </Text>
               <Text style={styles.featuredBody}>{dream.analysis.summary}</Text>
             </View>
           ) : !analysisNeedsSettings ? (
@@ -632,7 +694,9 @@ export function DreamDetailSections({
           ) : null}
 
           {dream.analysis?.status === 'error' && dream.analysis.errorMessage ? (
-            <Text style={styles.statusErrorText}>{dream.analysis.errorMessage}</Text>
+            <Text style={styles.statusErrorText}>
+              {dream.analysis.errorMessage}
+            </Text>
           ) : null}
 
           {!analysisNeedsSettings || dream.analysis ? (
@@ -646,11 +710,15 @@ export function DreamDetailSections({
                         ? copy.detailAnalysisRegenerate
                         : copy.detailAnalysisGenerate
                   }
-                  variant={dream.analysis?.status === 'ready' ? 'ghost' : 'primary'}
+                  variant={
+                    dream.analysis?.status === 'ready' ? 'ghost' : 'primary'
+                  }
                   onPress={onGenerateAnalysis}
                   disabled={isGeneratingAnalysis}
                   icon={
-                    dream.analysis?.status === 'ready' ? 'refresh-outline' : 'sparkles-outline'
+                    dream.analysis?.status === 'ready'
+                      ? 'refresh-outline'
+                      : 'sparkles-outline'
                   }
                 />
               ) : null}
@@ -684,7 +752,10 @@ export function DreamDetailSections({
               {dream.lucidPractice?.technique ? (
                 <InfoRow
                   label={practiceCopy.openLucid}
-                  value={lucidTechniqueLabels[dream.lucidPractice.technique] ?? dream.lucidPractice.technique}
+                  value={
+                    lucidTechniqueLabels[dream.lucidPractice.technique] ??
+                    dream.lucidPractice.technique
+                  }
                 />
               ) : null}
               {typeof dream.lucidPractice?.recallScore === 'number' ? (
@@ -695,13 +766,19 @@ export function DreamDetailSections({
               ) : null}
               {dream.lucidPractice?.trigger ? (
                 <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>{practiceCopy.lucidTriggerLabel}</Text>
-                  <Text style={styles.contextNoteText}>{dream.lucidPractice.trigger}</Text>
+                  <Text style={styles.supportHeading}>
+                    {practiceCopy.lucidTriggerLabel}
+                  </Text>
+                  <Text style={styles.contextNoteText}>
+                    {dream.lucidPractice.trigger}
+                  </Text>
                 </View>
               ) : null}
               {lucidDreamSignChips.length ? (
                 <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>{practiceCopy.lucidDreamSignsLabel}</Text>
+                  <Text style={styles.supportHeading}>
+                    {practiceCopy.lucidDreamSignsLabel}
+                  </Text>
                   <View style={styles.tagsRow}>
                     {lucidDreamSignChips.map(value => (
                       <TagChip key={value} label={value} />
@@ -721,7 +798,9 @@ export function DreamDetailSections({
               ) : null}
               {lucidStabilizationChips.length ? (
                 <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>{practiceCopy.lucidStabilizationLabel}</Text>
+                  <Text style={styles.supportHeading}>
+                    {practiceCopy.lucidStabilizationLabel}
+                  </Text>
                   <View style={styles.tagsRow}>
                     {lucidStabilizationChips.map(value => (
                       <TagChip key={value} label={value} />
@@ -763,15 +842,22 @@ export function DreamDetailSections({
               {typeof dream.nightmare?.wokeFromDream === 'boolean' ? (
                 <InfoRow
                   label={practiceCopy.nightmareWokeLabel}
-                  value={dream.nightmare.wokeFromDream ? copy.boolYes : copy.boolNo}
+                  value={
+                    dream.nightmare.wokeFromDream ? copy.boolYes : copy.boolNo
+                  }
                 />
               ) : null}
               {dream.nightmare?.recurringKey ? (
-                <InfoRow label="Recurring pattern" value={dream.nightmare.recurringKey} />
+                <InfoRow
+                  label="Recurring pattern"
+                  value={dream.nightmare.recurringKey}
+                />
               ) : null}
               {nightmareAftereffectChips.length ? (
                 <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>{practiceCopy.nightmareAftereffectsLabel}</Text>
+                  <Text style={styles.supportHeading}>
+                    {practiceCopy.nightmareAftereffectsLabel}
+                  </Text>
                   <View style={styles.tagsRow}>
                     {nightmareAftereffectChips.map(value => (
                       <TagChip key={value} label={value} />
@@ -781,7 +867,9 @@ export function DreamDetailSections({
               ) : null}
               {nightmareGroundingChips.length ? (
                 <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>{practiceCopy.nightmareGroundingTitle}</Text>
+                  <Text style={styles.supportHeading}>
+                    {practiceCopy.nightmareGroundingTitle}
+                  </Text>
                   <View style={styles.tagsRow}>
                     {nightmareGroundingChips.map(value => (
                       <TagChip key={value} label={value} />
@@ -791,8 +879,12 @@ export function DreamDetailSections({
               ) : null}
               {dream.nightmare?.rewrittenEnding ? (
                 <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>{practiceCopy.quickNightmareRewrite}</Text>
-                  <Text style={styles.contextNoteText}>{dream.nightmare.rewrittenEnding}</Text>
+                  <Text style={styles.supportHeading}>
+                    {practiceCopy.quickNightmareRewrite}
+                  </Text>
+                  <Text style={styles.contextNoteText}>
+                    {dream.nightmare.rewrittenEnding}
+                  </Text>
                 </View>
               ) : null}
               {dream.nightmare?.rescriptStatus ? (
@@ -806,7 +898,9 @@ export function DreamDetailSections({
               ) : null}
             </>
           ) : (
-            <Text style={styles.supportText}>{practiceCopy.nightmareGroundingBody}</Text>
+            <Text style={styles.supportText}>
+              {practiceCopy.nightmareGroundingBody}
+            </Text>
           )}
         </View>
 
@@ -814,13 +908,17 @@ export function DreamDetailSections({
         <View style={styles.sheetSection}>
           <Text style={styles.sheetHeading}>{copy.detailStateTitle}</Text>
 
-          {!viewModel.hasContext && !viewModel.hasEmotions && !viewModel.hasLucidity ? (
+          {!viewModel.hasContext &&
+          !viewModel.hasEmotions &&
+          !viewModel.hasLucidity ? (
             <Text style={styles.supportText}>{copy.detailStateEmpty}</Text>
           ) : (
             <>
               {viewModel.lucidityLabel ? (
                 <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>{copy.detailLucidityLabel}</Text>
+                  <Text style={styles.supportHeading}>
+                    {copy.detailLucidityLabel}
+                  </Text>
                   <View style={styles.tagsRow}>
                     <TagChip label={viewModel.lucidityLabel} />
                   </View>
@@ -829,7 +927,9 @@ export function DreamDetailSections({
 
               {dream.wakeEmotions?.length ? (
                 <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>{copy.detailWakeEmotionsLabel}</Text>
+                  <Text style={styles.supportHeading}>
+                    {copy.detailWakeEmotionsLabel}
+                  </Text>
                   {wakeEmotionChips.length ? (
                     <View style={styles.tagsRow}>
                       {wakeEmotionChips.map(label => (
@@ -837,14 +937,18 @@ export function DreamDetailSections({
                       ))}
                     </View>
                   ) : (
-                    <Text style={styles.supportText}>{viewModel.moodLabel}</Text>
+                    <Text style={styles.supportText}>
+                      {viewModel.moodLabel}
+                    </Text>
                   )}
                 </View>
               ) : null}
 
               {dream.sleepContext?.preSleepEmotions?.length ? (
                 <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>{copy.detailPreSleepEmotionsLabel}</Text>
+                  <Text style={styles.supportHeading}>
+                    {copy.detailPreSleepEmotionsLabel}
+                  </Text>
                   <View style={styles.tagsRow}>
                     {dream.sleepContext.preSleepEmotions.map(emotion => (
                       <TagChip
@@ -870,13 +974,21 @@ export function DreamDetailSections({
                   {typeof dream.sleepContext?.alcoholTaken === 'boolean' ? (
                     <InfoRow
                       label={copy.alcoholLabel}
-                      value={dream.sleepContext.alcoholTaken ? copy.boolYes : copy.boolNo}
+                      value={
+                        dream.sleepContext.alcoholTaken
+                          ? copy.boolYes
+                          : copy.boolNo
+                      }
                     />
                   ) : null}
                   {typeof dream.sleepContext?.caffeineLate === 'boolean' ? (
                     <InfoRow
                       label={copy.caffeineLabel}
-                      value={dream.sleepContext.caffeineLate ? copy.boolYes : copy.boolNo}
+                      value={
+                        dream.sleepContext.caffeineLate
+                          ? copy.boolYes
+                          : copy.boolNo
+                      }
                     />
                   ) : null}
                 </View>
@@ -884,22 +996,32 @@ export function DreamDetailSections({
 
               {dream.sleepContext?.medications ? (
                 <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>{copy.medicationsLabel}</Text>
-                  <Text style={styles.contextNoteText}>{dream.sleepContext.medications}</Text>
+                  <Text style={styles.supportHeading}>
+                    {copy.medicationsLabel}
+                  </Text>
+                  <Text style={styles.contextNoteText}>
+                    {dream.sleepContext.medications}
+                  </Text>
                 </View>
               ) : null}
 
               {dream.sleepContext?.importantEvents ? (
                 <View style={styles.contextNoteCard}>
                   <Text style={styles.supportHeading}>{copy.eventsLabel}</Text>
-                  <Text style={styles.contextNoteText}>{dream.sleepContext.importantEvents}</Text>
+                  <Text style={styles.contextNoteText}>
+                    {dream.sleepContext.importantEvents}
+                  </Text>
                 </View>
               ) : null}
 
               {dream.sleepContext?.healthNotes ? (
                 <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>{copy.healthNotesLabel}</Text>
-                  <Text style={styles.contextNoteText}>{dream.sleepContext.healthNotes}</Text>
+                  <Text style={styles.supportHeading}>
+                    {copy.healthNotesLabel}
+                  </Text>
+                  <Text style={styles.contextNoteText}>
+                    {dream.sleepContext.healthNotes}
+                  </Text>
                 </View>
               ) : null}
             </>

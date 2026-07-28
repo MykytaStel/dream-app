@@ -118,7 +118,9 @@ export function getMonthlyReportCoverSignals(input: {
   return [
     report.topTheme?.label,
     report.topSymbol?.label,
-    report.topWakeEmotion ? wakeEmotionLabels[report.topWakeEmotion.emotion] : null,
+    report.topWakeEmotion
+      ? wakeEmotionLabels[report.topWakeEmotion.emotion]
+      : null,
     report.topPreSleepEmotion
       ? preSleepEmotionLabels[report.topPreSleepEmotion.emotion]
       : null,
@@ -133,15 +135,26 @@ export function buildMonthlyReportShareLines(input: {
   wakeEmotionLabels: Record<string, string>;
   preSleepEmotionLabels: Record<string, string>;
 }) {
-  const { report, monthTitle, coverText, copy, wakeEmotionLabels, preSleepEmotionLabels } = input;
+  const {
+    report,
+    monthTitle,
+    coverText,
+    copy,
+    wakeEmotionLabels,
+    preSleepEmotionLabels,
+  } = input;
 
   return [
     `${copy.monthlyReportShareTitle} · ${monthTitle}`,
     coverText,
     `${copy.monthlyReportEntriesLabel}: ${report.entryCount}`,
     `${copy.monthlyReportWordsLabel}: ${report.totalWords}`,
-    report.topTheme ? `${copy.monthlyReportThemeLabel}: ${report.topTheme.label}` : null,
-    report.topSymbol ? `${copy.monthlyReportSymbolLabel}: ${report.topSymbol.label}` : null,
+    report.topTheme
+      ? `${copy.monthlyReportThemeLabel}: ${report.topTheme.label}`
+      : null,
+    report.topSymbol
+      ? `${copy.monthlyReportSymbolLabel}: ${report.topSymbol.label}`
+      : null,
     report.topWakeEmotion
       ? `${copy.monthlyReportWakeLabel}: ${wakeEmotionLabels[report.topWakeEmotion.emotion]}`
       : null,
@@ -151,7 +164,10 @@ export function buildMonthlyReportShareLines(input: {
   ].filter((value): value is string => Boolean(value));
 }
 
-function getMonthlyReportDreamTitle(dream: Dream, copy: MonthlyReportCopyShape) {
+function getMonthlyReportDreamTitle(
+  dream: Dream,
+  copy: MonthlyReportCopyShape,
+) {
   const title = dream.title?.trim();
   if (title) {
     return title;
@@ -240,7 +256,7 @@ export function getMonthlyReportViewModel(input: {
   preSleepEmotionLabels: Record<string, string>;
   isSavedForLater: boolean;
   now?: number;
-}) : MonthlyReportViewModel {
+}): MonthlyReportViewModel {
   const {
     report,
     locale,
@@ -250,7 +266,11 @@ export function getMonthlyReportViewModel(input: {
     isSavedForLater,
     now,
   } = input;
-  const monthTitle = formatMonthTitle(report.month.year, report.month.month, locale);
+  const monthTitle = formatMonthTitle(
+    report.month.year,
+    report.month.month,
+    locale,
+  );
   const coverSignals = getMonthlyReportCoverSignals({
     report,
     wakeEmotionLabels,
@@ -320,9 +340,12 @@ export function getMonthlyReportViewModel(input: {
   const leadMetric = metricTiles[0];
   const secondaryMetrics = metricTiles.slice(1);
   const leadSignal =
-    recurringSignals.find(signal => signal.value !== copy.monthlyReportNoSignal) ??
-    recurringSignals[0];
-  const secondarySignals = recurringSignals.filter(signal => signal.label !== leadSignal.label);
+    recurringSignals.find(
+      signal => signal.value !== copy.monthlyReportNoSignal,
+    ) ?? recurringSignals[0];
+  const secondarySignals = recurringSignals.filter(
+    signal => signal.label !== leadSignal.label,
+  );
   const calmTiles: MonthlyReportCalmTileView[] = [
     {
       label: copy.monthlyReportTranscriptLabel,

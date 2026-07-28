@@ -6,7 +6,10 @@ import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import { DreamComposerCopy } from './DreamComposer.types';
-import { DREAM_TEMPLATE_DEFINITIONS, DreamTemplate } from '../model/dreamTemplates';
+import {
+  DREAM_TEMPLATE_DEFINITIONS,
+  DreamTemplate,
+} from '../model/dreamTemplates';
 
 type TemplateWithLabel = DreamTemplate & { label: string };
 

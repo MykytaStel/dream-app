@@ -43,7 +43,11 @@ export function reconcileSavedMonthlyReportMonths(dreams: Dream[]) {
     next.length !== current.length ||
     next.some((record, index) => {
       const previous = current[index];
-      return !previous || record.monthKey !== previous.monthKey || record.savedAt !== previous.savedAt;
+      return (
+        !previous ||
+        record.monthKey !== previous.monthKey ||
+        record.savedAt !== previous.savedAt
+      );
     });
 
   if (changed) {
@@ -79,7 +83,10 @@ export function toggleSavedMonthlyReportMonth(monthKey: string) {
     monthKey,
     savedAt: Date.now(),
   };
-  const next = [nextRecord, ...current.filter(item => item.monthKey !== monthKey)];
+  const next = [
+    nextRecord,
+    ...current.filter(item => item.monthKey !== monthKey),
+  ];
   updateSavedReviewState(currentState => ({
     ...currentState,
     updatedAt: Date.now(),

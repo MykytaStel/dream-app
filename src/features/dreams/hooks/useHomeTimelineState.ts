@@ -121,7 +121,10 @@ export function useHomeTimelineState({
       { key: 'all', label: copy.homeFilterAll },
       { key: 'lucid', label: practiceCopy.filterLucid },
       { key: 'nightmare', label: practiceCopy.filterNightmare },
-      { key: 'recurring-nightmare', label: practiceCopy.filterRecurringNightmare },
+      {
+        key: 'recurring-nightmare',
+        label: practiceCopy.filterRecurringNightmare,
+      },
       { key: 'control', label: practiceCopy.filterControl },
       { key: 'high-distress', label: practiceCopy.filterHighDistress },
     ],
@@ -278,8 +281,8 @@ export function useHomeTimelineState({
   const spotlightPatternKind: PatternDetailKind | null = spotlightWord
     ? 'word'
     : spotlightTheme
-    ? 'theme'
-    : null;
+      ? 'theme'
+      : null;
   const searchResultsLabel = React.useMemo(
     () => formatResultCount(visibleDreams.length, copy),
     [copy, visibleDreams.length],
@@ -310,16 +313,16 @@ export function useHomeTimelineState({
         ? copy.homeSpotlightAttentionAudioSingle
         : `${transcriptArchiveStats.audioOnly} ${copy.homeSpotlightAttentionAudioPlural}`
       : moodBacklogCount > 0
-      ? moodBacklogCount === 1
-        ? copy.homeSpotlightAttentionMoodSingle
-        : `${moodBacklogCount} ${copy.homeSpotlightAttentionMoodPlural}`
-      : copy.homeSpotlightAttentionClear;
+        ? moodBacklogCount === 1
+          ? copy.homeSpotlightAttentionMoodSingle
+          : `${moodBacklogCount} ${copy.homeSpotlightAttentionMoodPlural}`
+        : copy.homeSpotlightAttentionClear;
   const attentionHint =
     transcriptArchiveStats.audioOnly > 0
       ? copy.homeSpotlightAttentionAudioHint
       : moodBacklogCount > 0
-      ? copy.homeSpotlightAttentionMoodHint
-      : copy.homeSpotlightAttentionClearHint;
+        ? copy.homeSpotlightAttentionMoodHint
+        : copy.homeSpotlightAttentionClearHint;
 
   const activeFilterChips = React.useMemo<HomeFilterChip[]>(
     () =>
@@ -358,7 +361,9 @@ export function useHomeTimelineState({
       Number(timelineFilters.starredOnly) +
       Number(timelineFilters.mood !== DEFAULT_HOME_TIMELINE_FILTERS.mood) +
       Number(timelineFilters.tags.length > 0) +
-      Number(timelineFilters.special !== DEFAULT_HOME_TIMELINE_FILTERS.special) +
+      Number(
+        timelineFilters.special !== DEFAULT_HOME_TIMELINE_FILTERS.special,
+      ) +
       Number(
         timelineFilters.entryType !== DEFAULT_HOME_TIMELINE_FILTERS.entryType,
       ) +
@@ -501,10 +506,10 @@ export function useHomeTimelineState({
     copy,
     dateRangeFilters,
     homeFilters,
-      moodLabels,
-      specialFilters,
-      setSavedSearchPresets,
-      timelineFilters,
+    moodLabels,
+    specialFilters,
+    setSavedSearchPresets,
+    timelineFilters,
     transcriptFilters,
     typeFilters,
   ]);

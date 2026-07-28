@@ -39,7 +39,9 @@ describe('dream sync contract', () => {
       'user-1',
     );
 
-    expect(createDreamEntryRow(hydrateDreamFromSyncBundle(bundle), 'user-1')).toMatchObject({
+    expect(
+      createDreamEntryRow(hydrateDreamFromSyncBundle(bundle), 'user-1'),
+    ).toMatchObject({
       id: 'dream-1',
       user_id: 'user-1',
       raw_text: 'Local body',

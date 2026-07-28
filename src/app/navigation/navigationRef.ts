@@ -8,7 +8,9 @@ import {
 
 export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
-export function openNewDreamTab(params?: TabParamList[typeof TAB_ROUTE_NAMES.New]) {
+export function openNewDreamTab(
+  params?: TabParamList[typeof TAB_ROUTE_NAMES.New],
+) {
   if (!navigationRef.isReady()) {
     return false;
   }
@@ -20,11 +22,15 @@ export function openNewDreamTab(params?: TabParamList[typeof TAB_ROUTE_NAMES.New
   return true;
 }
 
-export function openRecordTab(params?: TabParamList[typeof TAB_ROUTE_NAMES.New]) {
+export function openRecordTab(
+  params?: TabParamList[typeof TAB_ROUTE_NAMES.New],
+) {
   return openNewDreamTab(params);
 }
 
-export function openWakeEntry(params?: RootStackParamList[typeof ROOT_ROUTE_NAMES.WakeEntry]) {
+export function openWakeEntry(
+  params?: RootStackParamList[typeof ROOT_ROUTE_NAMES.WakeEntry],
+) {
   if (!navigationRef.isReady()) {
     return false;
   }

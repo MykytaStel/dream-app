@@ -5,10 +5,13 @@ type DreamWidgetNativeModule = {
   updateSnapshot(snapshotJson: string): Promise<void>;
 };
 
-const dreamWidgetNativeModule = (NativeModules as { DreamWidget?: DreamWidgetNativeModule })
-  .DreamWidget;
+const dreamWidgetNativeModule = (
+  NativeModules as { DreamWidget?: DreamWidgetNativeModule }
+).DreamWidget;
 
-export async function publishDreamWidgetSnapshot(snapshot: DreamWidgetSnapshot) {
+export async function publishDreamWidgetSnapshot(
+  snapshot: DreamWidgetSnapshot,
+) {
   if (!dreamWidgetNativeModule?.updateSnapshot) {
     return;
   }

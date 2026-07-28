@@ -46,7 +46,9 @@ export function SegmentedControl<T extends string>({
               pressed ? styles.chipPressed : null,
             ]}
           >
-            <Text style={[styles.chipText, selected ? styles.chipTextActive : null]}>
+            <Text
+              style={[styles.chipText, selected ? styles.chipTextActive : null]}
+            >
               {option.label}
             </Text>
           </Pressable>

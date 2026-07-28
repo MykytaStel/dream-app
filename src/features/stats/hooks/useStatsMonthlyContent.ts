@@ -1,7 +1,10 @@
 import React from 'react';
 import { type AppLocale } from '../../../i18n/types';
 import { type Dream } from '../../dreams/model/dream';
-import { getMonthlyReportData, getMonthlyReportMonths } from '../model/monthlyReport';
+import {
+  getMonthlyReportData,
+  getMonthlyReportMonths,
+} from '../model/monthlyReport';
 import { formatMonthTitle } from '../model/statsScreenModel';
 
 export function useStatsMonthlyContent(args: {
@@ -13,16 +16,24 @@ export function useStatsMonthlyContent(args: {
   const { locale, dreams, wakeEmotionLabels, isMonthlyMode } = args;
   const monthlyReportMonths = React.useMemo(
     () =>
-      isMonthlyMode ? getMonthlyReportMonths(dreams, locale === 'uk' ? 'uk-UA' : 'en-US') : [],
+      isMonthlyMode
+        ? getMonthlyReportMonths(dreams, locale === 'uk' ? 'uk-UA' : 'en-US')
+        : [],
     [dreams, isMonthlyMode, locale],
   );
   const latestMonthlyReport = React.useMemo(
     () =>
-      isMonthlyMode ? getMonthlyReportData(dreams, monthlyReportMonths[0]?.key) : null,
+      isMonthlyMode
+        ? getMonthlyReportData(dreams, monthlyReportMonths[0]?.key)
+        : null,
     [dreams, isMonthlyMode, monthlyReportMonths],
   );
   const latestMonthlyReportTitle = latestMonthlyReport
-    ? formatMonthTitle(latestMonthlyReport.month.year, latestMonthlyReport.month.month, locale)
+    ? formatMonthTitle(
+        latestMonthlyReport.month.year,
+        latestMonthlyReport.month.month,
+        locale,
+      )
     : null;
   const monthlyReportPreviewSignals = React.useMemo(() => {
     if (!latestMonthlyReport) {

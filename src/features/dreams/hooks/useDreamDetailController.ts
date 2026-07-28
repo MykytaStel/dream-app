@@ -23,7 +23,10 @@ import {
   type DreamDetailSectionsState,
 } from '../model/dreamDetailPresentation';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
-import { hapticImpactMedium, hapticImpactLight } from '../../../services/haptics/hapticService';
+import {
+  hapticImpactMedium,
+  hapticImpactLight,
+} from '../../../services/haptics/hapticService';
 import {
   archiveDream,
   clearDreamAnalysis,
@@ -76,16 +79,23 @@ export function useDreamDetailController({
   onDeleteComplete,
 }: UseDreamDetailControllerArgs) {
   const [dream, setDream] = React.useState(() => getDream(dreamId));
-  const [showSavedHighlight, setShowSavedHighlight] = React.useState(Boolean(justSaved));
+  const [showSavedHighlight, setShowSavedHighlight] = React.useState(
+    Boolean(justSaved),
+  );
   const [isTranscribingAudio, setIsTranscribingAudio] = React.useState(false);
   const [isEditingTranscript, setIsEditingTranscript] = React.useState(false);
   const [transcriptDraft, setTranscriptDraft] = React.useState('');
-  const [expandedSections, setExpandedSections] = React.useState<DreamDetailSectionsState | null>(
-    () => (dream ? applyFocusedSection(createDefaultExpandedSections(dream), focusSection) : null),
-  );
-  const [analysisSettings, setAnalysisSettings] = React.useState<DreamAnalysisSettings>(() =>
-    getDreamAnalysisSettings(),
-  );
+  const [expandedSections, setExpandedSections] =
+    React.useState<DreamDetailSectionsState | null>(() =>
+      dream
+        ? applyFocusedSection(
+            createDefaultExpandedSections(dream),
+            focusSection,
+          )
+        : null,
+    );
+  const [analysisSettings, setAnalysisSettings] =
+    React.useState<DreamAnalysisSettings>(() => getDreamAnalysisSettings());
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = React.useState(false);
   const [isDownloadingAudio, setIsDownloadingAudio] = React.useState(false);
   const [relatedDreams, setRelatedDreams] = React.useState<RelatedDream[]>([]);
@@ -97,7 +107,10 @@ export function useDreamDetailController({
     setDream(nextDream);
     setExpandedSections(
       nextDream
-        ? applyFocusedSection(createDefaultExpandedSections(nextDream), focusSection)
+        ? applyFocusedSection(
+            createDefaultExpandedSections(nextDream),
+            focusSection,
+          )
         : null,
     );
     setAnalysisSettings(getDreamAnalysisSettings());
@@ -171,17 +184,24 @@ export function useDreamDetailController({
   const sections = React.useMemo(
     () =>
       expandedSections ??
-      (dream ? createDefaultExpandedSections(dream) : createEmptyDetailSectionsState()),
+      (dream
+        ? createDefaultExpandedSections(dream)
+        : createEmptyDetailSectionsState()),
     [dream, expandedSections],
   );
 
   const updateSections = React.useCallback(
-    (updater: (current: DreamDetailSectionsState) => DreamDetailSectionsState) => {
+    (
+      updater: (current: DreamDetailSectionsState) => DreamDetailSectionsState,
+    ) => {
       setExpandedSections(current => {
         const base =
           current ??
           (dream
-            ? applyFocusedSection(createDefaultExpandedSections(dream), focusSection)
+            ? applyFocusedSection(
+                createDefaultExpandedSections(dream),
+                focusSection,
+              )
             : createEmptyDetailSectionsState());
         return updater(base);
       });
@@ -233,7 +253,9 @@ export function useDreamDetailController({
 
     hapticImpactLight();
     const nextDream =
-      typeof dream.archivedAt === 'number' ? unarchiveDream(dreamId) : archiveDream(dreamId);
+      typeof dream.archivedAt === 'number'
+        ? unarchiveDream(dreamId)
+        : archiveDream(dreamId);
 
     if (nextDream) {
       setDream(nextDream);
@@ -247,32 +269,29 @@ export function useDreamDetailController({
 
     hapticImpactMedium();
     const nextDream =
-      typeof dream.starredAt === 'number' ? unstarDream(dreamId) : starDream(dreamId);
+      typeof dream.starredAt === 'number'
+        ? unstarDream(dreamId)
+        : starDream(dreamId);
     setDream(nextDream);
   }, [dream, dreamId]);
 
   const onDeleteDream = React.useCallback(() => {
-    Alert.alert(
-      copy.detailDeleteTitle,
-      copy.detailDeleteDescription,
-      [
-        {
-          text: copy.detailDeleteCancel,
-          style: 'cancel',
+    Alert.alert(copy.detailDeleteTitle, copy.detailDeleteDescription, [
+      {
+        text: copy.detailDeleteCancel,
+        style: 'cancel',
+      },
+      {
+        text: copy.detailDeleteConfirm,
+        style: 'destructive',
+        onPress: () => {
+          deleteDream(dreamId);
+          clearLastViewedDream(dreamId);
+          onDeleteComplete();
         },
-        {
-          text: copy.detailDeleteConfirm,
-          style: 'destructive',
-          onPress: () => {
-            deleteDream(dreamId);
-            clearLastViewedDream(dreamId);
-            onDeleteComplete();
-          },
-        },
-      ],
-    );
+      },
+    ]);
   }, [copy, dreamId, onDeleteComplete]);
-
 
   const onTranscribeAudio = React.useCallback(async () => {
     const currentDream = dream;
@@ -287,9 +306,12 @@ export function useDreamDetailController({
     });
 
     try {
-      const pendingTranscription = transcribeDreamAudio(dreamId, nextProgress => {
-        setTranscriptionProgress(nextProgress);
-      });
+      const pendingTranscription = transcribeDreamAudio(
+        dreamId,
+        nextProgress => {
+          setTranscriptionProgress(nextProgress);
+        },
+      );
       setDream(getDream(dreamId));
       await pendingTranscription;
       setDream(getDream(dreamId));
@@ -303,7 +325,10 @@ export function useDreamDetailController({
       setTranscriptDraft(getDream(dreamId)?.transcript ?? '');
       const fallbackDescription = copy.detailTranscriptionErrorDescription;
       const message = error instanceof Error ? error.message : String(error);
-      Alert.alert(copy.detailTranscriptionErrorTitle, `${fallbackDescription}\n${message}`);
+      Alert.alert(
+        copy.detailTranscriptionErrorTitle,
+        `${fallbackDescription}\n${message}`,
+      );
     } finally {
       setIsTranscribingAudio(false);
       setTranscriptionProgress(null);
@@ -373,7 +398,10 @@ export function useDreamDetailController({
     }
 
     if (analysisSettings.provider === 'openai') {
-      Alert.alert(copy.detailAnalysisErrorTitle, copy.detailAnalysisOpenAiUnavailable);
+      Alert.alert(
+        copy.detailAnalysisErrorTitle,
+        copy.detailAnalysisOpenAiUnavailable,
+      );
       return;
     }
 
@@ -396,7 +424,14 @@ export function useDreamDetailController({
     } finally {
       setIsGeneratingAnalysis(false);
     }
-  }, [analysisSettings.enabled, analysisSettings.provider, copy, dreamId, isGeneratingAnalysis, updateSections]);
+  }, [
+    analysisSettings.enabled,
+    analysisSettings.provider,
+    copy,
+    dreamId,
+    isGeneratingAnalysis,
+    updateSections,
+  ]);
 
   const onDownloadAudio = React.useCallback(async () => {
     const remotePath = dream?.audioRemotePath;

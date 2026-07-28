@@ -1,4 +1,7 @@
-import { DREAM_EXPORT_VERSION, type DreamExportV1 } from '../src/features/settings/services/dataExportService';
+import {
+  DREAM_EXPORT_VERSION,
+  type DreamExportV1,
+} from '../src/features/settings/services/dataExportService';
 import { buildDreamArchivePdfHtml } from '../src/features/settings/services/dreamArchivePdf';
 
 function createPayload(overrides?: Partial<DreamExportV1>): DreamExportV1 {
@@ -106,7 +109,9 @@ describe('dream archive pdf html', () => {
     expect(html).toContain('Newest first');
     expect(html).toContain('Entry 01 / 2');
     expect(html).toContain('Starred');
-    expect(html.indexOf('Newer dream')).toBeLessThan(html.indexOf('Older dream'));
+    expect(html.indexOf('Newer dream')).toBeLessThan(
+      html.indexOf('Older dream'),
+    );
   });
 
   test('renders paragraph-friendly long-form text and clips oversized sections', () => {

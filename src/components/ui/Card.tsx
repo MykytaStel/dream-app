@@ -7,10 +7,5 @@ import { getCardStyles } from './Card.styles';
 export const Card = ({ style, ...p }: ViewProps) => {
   const t = useTheme<Theme>();
   const styles = getCardStyles(t);
-  return (
-    <View
-      style={[styles.card, style]}
-      {...p}
-    />
-  );
+  return <View style={[styles.card, style]} {...p} />;
 };

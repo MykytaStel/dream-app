@@ -18,7 +18,10 @@ type SettingsMetaGridProps = {
   dense?: boolean;
 };
 
-export function SettingsMetaGrid({ items, dense = false }: SettingsMetaGridProps) {
+export function SettingsMetaGrid({
+  items,
+  dense = false,
+}: SettingsMetaGridProps) {
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
@@ -35,7 +38,9 @@ export function SettingsMetaGrid({ items, dense = false }: SettingsMetaGridProps
         >
           <View style={styles.headerRow}>
             {item.icon ? (
-              <View style={[styles.iconShell, dense ? styles.iconShellDense : null]}>
+              <View
+                style={[styles.iconShell, dense ? styles.iconShellDense : null]}
+              >
                 <Ionicons
                   name={item.icon}
                   size={dense ? 13 : 14}

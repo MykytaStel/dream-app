@@ -9,7 +9,9 @@ type GlobalWithDev = typeof globalThis & {
   __DEV__?: boolean;
   ErrorUtils?: {
     getGlobalHandler?: () => (error: Error, isFatal?: boolean) => void;
-    setGlobalHandler?: (handler: (error: Error, isFatal?: boolean) => void) => void;
+    setGlobalHandler?: (
+      handler: (error: Error, isFatal?: boolean) => void,
+    ) => void;
   };
 };
 
@@ -35,7 +37,9 @@ describe('error reporting', () => {
     globalWithDev.__DEV__ = true;
 
     const provider = createProvider();
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
 
     setObservabilityProvider(provider);
 
@@ -60,9 +64,12 @@ describe('error reporting', () => {
     globalWithDev.__DEV__ = true;
 
     const provider = createProvider();
-    const consoleError = jest.spyOn(console, 'error').mockImplementation(() => {});
+    const consoleError = jest
+      .spyOn(console, 'error')
+      .mockImplementation(() => {});
     const previousHandler = jest.fn();
-    let installedHandler: ((error: Error, isFatal?: boolean) => void) | undefined;
+    let installedHandler:
+      ((error: Error, isFatal?: boolean) => void) | undefined;
 
     globalWithDev.ErrorUtils = {
       getGlobalHandler: () => previousHandler,

@@ -34,25 +34,31 @@ const PRACTICE_COPY_EN = {
   gentleRulesTitle: 'Keep it gentle',
   gentleRulesBody:
     'The goal is steadier awareness and safer sleep, not forcing results. Skip WBTB when you are already tired.',
-  lucidNowOne: 'Capture dreams first. Recall is the base layer for lucid practice.',
+  lucidNowOne:
+    'Capture dreams first. Recall is the base layer for lucid practice.',
   lucidNowTwo: 'Save one or two dream signs that keep repeating.',
   lucidNowThree: 'Use reality checks only during the day, not in bed.',
   lucidTonightOne: 'Set one calm intention before sleep.',
   lucidTonightTwo: 'Pick one dream sign to notice tonight.',
-  lucidTonightThree: 'Leave WBTB optional and use it only if sleep feels stable.',
+  lucidTonightThree:
+    'Leave WBTB optional and use it only if sleep feels stable.',
   lucidAwareOne: 'Pause and confirm that you are dreaming.',
   lucidAwareTwo: 'Stabilize first: hands, touch, breathing, or voice.',
-  lucidAwareThree: 'Try one small control action instead of forcing the whole scene.',
+  lucidAwareThree:
+    'Try one small control action instead of forcing the whole scene.',
   nightmareNowOne: 'Ground first. Light, breath, water, or naming the room.',
-  nightmareNowTwo: 'Write only the key image or feeling if you are still shaky.',
+  nightmareNowTwo:
+    'Write only the key image or feeling if you are still shaky.',
   nightmareNowThree: 'Mark if it was recurring or highly distressing.',
   nightmareTonightOne: 'Rewrite the ending while fully awake.',
   nightmareTonightTwo: 'Keep the new version short, safe, and believable.',
-  nightmareTonightThree: 'Notice stress, late caffeine, alcohol, and repeated cues before sleep.',
+  nightmareTonightThree:
+    'Notice stress, late caffeine, alcohol, and repeated cues before sleep.',
   nightmareWakeOne: 'Turn on a light and orient to the room.',
   nightmareWakeTwo: 'Slow the body before analysis.',
   nightmareWakeThree: 'Record the nightmare after you feel more settled.',
-  lucidProgressHint: 'More aware dreams usually start with better recall and clearer dream signs.',
+  lucidProgressHint:
+    'More aware dreams usually start with better recall and clearer dream signs.',
   nightmareProgressHint:
     'Progress means less distress, fewer repeats, and safer wake-ups, not perfect nights.',
   quickRecordDream: 'Record dream',
@@ -92,13 +98,17 @@ const PRACTICE_COPY_EN = {
     'If nightmares become frequent, highly distressing, or make you avoid sleep, consider reaching out to a clinician or therapist.',
   nightmareRewritePrompt: 'Draft a calmer ending while awake',
   reminderNotificationMorningTitle: 'Catch the dream before it fades',
-  reminderNotificationMorningBody: 'Record a few lines while the memory is still near.',
+  reminderNotificationMorningBody:
+    'Record a few lines while the memory is still near.',
   reminderNotificationRealityTitle: 'Reality check',
-  reminderNotificationRealityBody: 'Pause, look twice, and notice what feels off or stable.',
+  reminderNotificationRealityBody:
+    'Pause, look twice, and notice what feels off or stable.',
   reminderNotificationEveningTitle: 'Set tonight’s intention',
-  reminderNotificationEveningBody: 'Pick one dream sign or one calm intention before sleep.',
+  reminderNotificationEveningBody:
+    'Pick one dream sign or one calm intention before sleep.',
   reminderNotificationWbtbTitle: 'Optional WBTB window',
-  reminderNotificationWbtbBody: 'Only use this if you feel rested enough to go back to sleep well.',
+  reminderNotificationWbtbBody:
+    'Only use this if you feel rested enough to go back to sleep well.',
   focusLucidHint: 'Lucid signs are forming',
   focusNightmareHint: 'Nightmare patterns need a softer pass',
   filterLucid: 'Lucid',
@@ -136,7 +146,8 @@ type PracticeCopy = typeof PRACTICE_COPY_EN;
 
 const PRACTICE_COPY_UK: PracticeCopy = {
   title: 'Практика снів',
-  subtitle: 'Усвідомленість і підтримка при кошмарах в одному спокійному місці.',
+  subtitle:
+    'Усвідомленість і підтримка при кошмарах в одному спокійному місці.',
   lucidTab: 'Усвідомленість',
   nightmareTab: 'Кошмари',
   lucidHeroTitle: 'Тренуй усвідомлення м’яко',
@@ -173,20 +184,26 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   lucidNowThree: 'Роби reality checks лише вдень, а не в ліжку.',
   lucidTonightOne: 'Задай один спокійний намір перед сном.',
   lucidTonightTwo: 'Обери один dream sign, який хочеш помітити цієї ночі.',
-  lucidTonightThree: 'Залиш WBTB необов’язковим і використовуй лише коли сон стабільний.',
+  lucidTonightThree:
+    'Залиш WBTB необов’язковим і використовуй лише коли сон стабільний.',
   lucidAwareOne: 'Зупинись і підтвердь, що ти спиш.',
   lucidAwareTwo: 'Спершу стабілізація: руки, дотик, дихання або голос.',
   lucidAwareThree: 'Почни з однієї малої дії контролю, а не з усього сюжету.',
-  nightmareNowOne: 'Спершу заземлення: світло, дихання, вода або назвати кімнату.',
+  nightmareNowOne:
+    'Спершу заземлення: світло, дихання, вода або назвати кімнату.',
   nightmareNowTwo: 'Якщо ще трусить, запиши лише ключовий образ або відчуття.',
   nightmareNowThree: 'Познач, чи це повторюваний сон і чи був сильний дистрес.',
   nightmareTonightOne: 'Перепиши фінал повністю наяву.',
-  nightmareTonightTwo: 'Нова версія має бути короткою, безпечнішою і правдоподібною.',
-  nightmareTonightThree: 'Звертай увагу на стрес, пізній кофеїн, алкоголь і повторювані сигнали перед сном.',
+  nightmareTonightTwo:
+    'Нова версія має бути короткою, безпечнішою і правдоподібною.',
+  nightmareTonightThree:
+    'Звертай увагу на стрес, пізній кофеїн, алкоголь і повторювані сигнали перед сном.',
   nightmareWakeOne: 'Увімкни світло і зорієнтуйся в кімнаті.',
   nightmareWakeTwo: 'Спочатку заспокой тіло, а не аналізуй.',
-  nightmareWakeThree: 'Записуй кошмар лише коли вже трохи стабілізувався(-лась).',
-  lucidProgressHint: 'Частіше за все усвідомлені сни починаються з кращого пригадування і чіткіших dream signs.',
+  nightmareWakeThree:
+    'Записуй кошмар лише коли вже трохи стабілізувався(-лась).',
+  lucidProgressHint:
+    'Частіше за все усвідомлені сни починаються з кращого пригадування і чіткіших dream signs.',
   nightmareProgressHint:
     'Прогрес це менше дистресу, менше повторів і спокійніші пробудження, а не “ідеальні ночі”.',
   quickRecordDream: 'Записати сон',
@@ -226,13 +243,17 @@ const PRACTICE_COPY_UK: PracticeCopy = {
     'Якщо кошмари стають частими, дуже виснажливими або змушують уникати сну, варто поговорити з лікарем чи терапевтом.',
   nightmareRewritePrompt: 'Спробуй записати спокійніший фінал наяву',
   reminderNotificationMorningTitle: 'Злови сон, поки не зник',
-  reminderNotificationMorningBody: 'Запиши кілька рядків, поки пам’ять ще поруч.',
+  reminderNotificationMorningBody:
+    'Запиши кілька рядків, поки пам’ять ще поруч.',
   reminderNotificationRealityTitle: 'Reality check',
-  reminderNotificationRealityBody: 'Зупинись, глянь двічі й поміть, що стабільне, а що дивне.',
+  reminderNotificationRealityBody:
+    'Зупинись, глянь двічі й поміть, що стабільне, а що дивне.',
   reminderNotificationEveningTitle: 'Сформуй намір на ніч',
-  reminderNotificationEveningBody: 'Обери один dream sign або один спокійний намір перед сном.',
+  reminderNotificationEveningBody:
+    'Обери один dream sign або один спокійний намір перед сном.',
   reminderNotificationWbtbTitle: 'Необов’язкове вікно WBTB',
-  reminderNotificationWbtbBody: 'Використовуй це лише якщо почуваєшся достатньо відпочившим(-ою).',
+  reminderNotificationWbtbBody:
+    'Використовуй це лише якщо почуваєшся достатньо відпочившим(-ою).',
   focusLucidHint: 'Формуються сигнали усвідомленості',
   focusNightmareHint: 'Кошмарним патернам потрібен м’якший перегляд',
   filterLucid: 'Усвідомлений',
@@ -243,7 +264,8 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   homeLucidCtaTitle: 'Практикувати усвідомленість',
   homeLucidCtaHint: 'Пригадування, dream signs і ясність на цю ніч.',
   homeNightmareCtaTitle: 'Після кошмару',
-  homeNightmareCtaHint: 'Заземлення, короткий запис і переписування, коли будеш готовий(-а).',
+  homeNightmareCtaHint:
+    'Заземлення, короткий запис і переписування, коли будеш готовий(-а).',
   statsLucidProgressTitle: 'Прогрес усвідомленості',
   statsLucidProgressDescription:
     'Шлях від пригадування до усвідомлення, стабілізації та контролю.',

@@ -133,7 +133,10 @@ function fromIsoString(value: string) {
   return new Date(value).getTime();
 }
 
-export function createDreamEntryRow(dream: Dream, userId: string): DreamEntryRow {
+export function createDreamEntryRow(
+  dream: Dream,
+  userId: string,
+): DreamEntryRow {
   return {
     id: dream.id,
     user_id: userId,
@@ -146,7 +149,9 @@ export function createDreamEntryRow(dream: Dream, userId: string): DreamEntryRow
     transcript: dream.transcript ?? null,
     transcript_status: dream.transcriptStatus ?? null,
     transcript_source: dream.transcriptSource ?? null,
-    transcript_updated_at: dream.transcriptUpdatedAt ? toIsoString(dream.transcriptUpdatedAt) : null,
+    transcript_updated_at: dream.transcriptUpdatedAt
+      ? toIsoString(dream.transcriptUpdatedAt)
+      : null,
     mood: dream.mood ?? null,
     lucidity: dream.lucidity ?? null,
     lucid_practice: dream.lucidPractice ?? null,
@@ -164,7 +169,10 @@ export function createDreamEntryRow(dream: Dream, userId: string): DreamEntryRow
   };
 }
 
-export function createDreamSyncBundle(dream: Dream, userId: string): DreamSyncBundle {
+export function createDreamSyncBundle(
+  dream: Dream,
+  userId: string,
+): DreamSyncBundle {
   return {
     dream: createDreamEntryRow(dream, userId),
     tags: dream.tags.map((tag, position) => ({
@@ -177,11 +185,13 @@ export function createDreamSyncBundle(dream: Dream, userId: string): DreamSyncBu
       emotion,
       position,
     })),
-    preSleepEmotions: (dream.sleepContext?.preSleepEmotions ?? []).map((emotion, position) => ({
-      dream_id: dream.id,
-      emotion,
-      position,
-    })),
+    preSleepEmotions: (dream.sleepContext?.preSleepEmotions ?? []).map(
+      (emotion, position) => ({
+        dream_id: dream.id,
+        emotion,
+        position,
+      }),
+    ),
     sleepContext: createDreamSleepContextRow(dream.id, dream.sleepContext),
   };
 }
@@ -213,7 +223,9 @@ export function hydrateDreamFromSyncBundle(bundle: DreamSyncBundle): Dream {
             provider: row.analysis_provider,
             status: row.analysis_status,
             summary: row.analysis_summary ?? undefined,
-            themes: row.analysis_themes.length ? row.analysis_themes : undefined,
+            themes: row.analysis_themes.length
+              ? row.analysis_themes
+              : undefined,
             generatedAt: row.analysis_generated_at
               ? fromIsoString(row.analysis_generated_at)
               : undefined,

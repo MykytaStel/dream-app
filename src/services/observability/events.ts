@@ -37,7 +37,9 @@ function sanitizeContext(
     return undefined;
   }
 
-  const entries = Object.entries(context).filter(([, value]) => value !== undefined);
+  const entries = Object.entries(context).filter(
+    ([, value]) => value !== undefined,
+  );
   if (!entries.length) {
     return undefined;
   }
@@ -95,7 +97,10 @@ export function trackReminderToggled(input: { enabled: boolean }) {
   });
 }
 
-export function trackPracticeHubOpened(input: { focus: 'lucid' | 'nightmares'; source?: string }) {
+export function trackPracticeHubOpened(input: {
+  focus: 'lucid' | 'nightmares';
+  source?: string;
+}) {
   trackEvent(OBS_EVENTS.PracticeHubOpened, {
     focus: input.focus,
     source: input.source,

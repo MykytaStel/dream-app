@@ -12,7 +12,10 @@ import Animated, {
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
-import type { MonthlyReportData, MonthlyReportMonth } from '../model/monthlyReport';
+import type {
+  MonthlyReportData,
+  MonthlyReportMonth,
+} from '../model/monthlyReport';
 import {
   getMonthlyReportCoverSignals,
   type MonthlyReportCopyShape,
@@ -71,7 +74,10 @@ export function MonthlyReportHero({
   }, [pulse, rotation]);
 
   const facetClusterStyle = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotation.value * 360}deg` }, { scale: 1 + pulse.value * 0.03 }],
+    transform: [
+      { rotate: `${rotation.value * 360}deg` },
+      { scale: 1 + pulse.value * 0.03 },
+    ],
     opacity: 0.9 - pulse.value * 0.12,
   }));
 
@@ -90,7 +96,10 @@ export function MonthlyReportHero({
       <Card style={styles.heroCard}>
         <View pointerEvents="none" style={styles.heroGlowTop} />
         <View pointerEvents="none" style={styles.heroGlowBottom} />
-        <Animated.View pointerEvents="none" style={[styles.heroFacetCluster, facetClusterStyle]}>
+        <Animated.View
+          pointerEvents="none"
+          style={[styles.heroFacetCluster, facetClusterStyle]}
+        >
           <View style={[styles.heroFacet, styles.heroFacetPrimary]} />
           <View style={[styles.heroFacet, styles.heroFacetAccent]} />
           <View style={[styles.heroFacet, styles.heroFacetAlt]} />
@@ -107,17 +116,28 @@ export function MonthlyReportHero({
         </View>
 
         <View style={styles.monthStripBlock}>
-          <Text style={styles.monthStripLabel}>{copy.monthlyReportMonthStripLabel}</Text>
+          <Text style={styles.monthStripLabel}>
+            {copy.monthlyReportMonthStripLabel}
+          </Text>
           <View style={styles.monthStripRow}>
             {months.slice(0, 6).map(month => {
-              const active = month.key === (selectedMonthKey ?? report.month.key);
+              const active =
+                month.key === (selectedMonthKey ?? report.month.key);
               return (
                 <Pressable
                   key={month.key}
-                  style={[styles.monthChip, active ? styles.monthChipActive : null]}
+                  style={[
+                    styles.monthChip,
+                    active ? styles.monthChipActive : null,
+                  ]}
                   onPress={() => onSelectMonth(month.key)}
                 >
-                  <Text style={[styles.monthChipText, active ? styles.monthChipTextActive : null]}>
+                  <Text
+                    style={[
+                      styles.monthChipText,
+                      active ? styles.monthChipTextActive : null,
+                    ]}
+                  >
                     {month.label}
                   </Text>
                 </Pressable>

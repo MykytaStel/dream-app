@@ -19,9 +19,7 @@ export function getStoredHomeLayoutPreferences(): HomeLayoutPreferences {
   }
 }
 
-export function saveHomeLayoutPreferences(
-  preferences: HomeLayoutPreferences,
-) {
+export function saveHomeLayoutPreferences(preferences: HomeLayoutPreferences) {
   kv.set(
     HOME_LAYOUT_PREFERENCES_STORAGE_KEY,
     JSON.stringify(sanitizeHomeLayoutPreferences(preferences)),

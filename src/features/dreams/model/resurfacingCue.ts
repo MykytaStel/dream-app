@@ -1,7 +1,8 @@
 import type { Dream } from './dream';
 import { getDreamDate } from './dreamAnalytics';
 
-export type DreamResurfacingWindow = 'week' | 'month' | 'quarter' | 'half-year' | 'year';
+export type DreamResurfacingWindow =
+  'week' | 'month' | 'quarter' | 'half-year' | 'year';
 
 export type DreamResurfacingMatch = {
   window: DreamResurfacingWindow;
@@ -37,7 +38,9 @@ export function getDreamResurfacingMatch(
 ): DreamResurfacingMatch | null {
   const dreamDate = startOfLocalDay(getDreamDate(dream));
   const currentDate = startOfLocalDay(new Date(now));
-  const daysAgo = Math.round((currentDate.getTime() - dreamDate.getTime()) / DAY_MS);
+  const daysAgo = Math.round(
+    (currentDate.getTime() - dreamDate.getTime()) / DAY_MS,
+  );
 
   if (daysAgo < 6) {
     return null;
@@ -48,7 +51,10 @@ export function getDreamResurfacingMatch(
     distance: Math.abs(daysAgo - window.days),
   }))
     .filter(window => window.distance <= window.tolerance)
-    .sort((left, right) => left.distance - right.distance || right.score - left.score)[0];
+    .sort(
+      (left, right) =>
+        left.distance - right.distance || right.score - left.score,
+    )[0];
 
   if (!match) {
     return null;

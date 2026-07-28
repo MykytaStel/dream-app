@@ -33,8 +33,7 @@ describe('statsWorkQueue', () => {
         id: 'analysis-ready',
         createdAt: new Date('2026-03-09T08:00:00Z').getTime(),
         title: 'Bridge over water',
-        text:
-          'I kept crossing the bridge over dark water while a distant crowd watched from the shore, and the same image returned several times before I woke up.',
+        text: 'I kept crossing the bridge over dark water while a distant crowd watched from the shore, and the same image returned several times before I woke up.',
         tags: ['bridge', 'water'],
         mood: 'negative',
       },

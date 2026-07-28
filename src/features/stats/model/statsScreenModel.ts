@@ -12,7 +12,10 @@ import {
   getDreamResurfacingMatch,
   type DreamResurfacingWindow,
 } from '../../dreams/model/resurfacingCue';
-import type { DreamDetailFocusSection, PatternDetailKind } from '../../../app/navigation/routes';
+import type {
+  DreamDetailFocusSection,
+  PatternDetailKind,
+} from '../../../app/navigation/routes';
 import type { DreamAchievementId } from './achievements';
 import type { DreamReflectionSignal, DreamWordSignal } from './dreamReflection';
 import type { PatternGroupCardItem } from '../components/PatternGroupCard';
@@ -173,7 +176,11 @@ function toLocalDateKey(date: Date) {
   return new Date(date.getTime() - offset).toISOString().slice(0, 10);
 }
 
-export function buildRecentActivityBars(dreams: Dream[], range: InsightRange, locale: AppLocale) {
+export function buildRecentActivityBars(
+  dreams: Dream[],
+  range: InsightRange,
+  locale: AppLocale,
+) {
   const totalDays = range === '7d' ? 7 : 14;
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -256,11 +263,18 @@ export function formatSignedDelta(value: number) {
   return String(value);
 }
 
-export function formatMonthTitle(year: number, month: number, locale: AppLocale) {
-  return new Date(year, month - 1, 1).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
-    month: 'long',
-    year: 'numeric',
-  });
+export function formatMonthTitle(
+  year: number,
+  month: number,
+  locale: AppLocale,
+) {
+  return new Date(year, month - 1, 1).toLocaleDateString(
+    locale === 'uk' ? 'uk-UA' : 'en-US',
+    {
+      month: 'long',
+      year: 'numeric',
+    },
+  );
 }
 
 function getDreamTitle(dream: Dream) {
@@ -275,12 +289,12 @@ function hasAnalysisContext(dream: Dream) {
 
   return Boolean(
     context.preSleepEmotions?.length ||
-      typeof context.stressLevel === 'number' ||
-      typeof context.alcoholTaken === 'boolean' ||
-      typeof context.caffeineLate === 'boolean' ||
-      context.medications?.trim() ||
-      context.importantEvents?.trim() ||
-      context.healthNotes?.trim(),
+    typeof context.stressLevel === 'number' ||
+    typeof context.alcoholTaken === 'boolean' ||
+    typeof context.caffeineLate === 'boolean' ||
+    context.medications?.trim() ||
+    context.importantEvents?.trim() ||
+    context.healthNotes?.trim(),
   );
 }
 
@@ -374,8 +388,12 @@ export function getMemoryNudge(
       match: getDreamResurfacingMatch(dream, now),
     }))
     .filter(
-      (candidate): candidate is { dream: Dream; match: NonNullable<ReturnType<typeof getDreamResurfacingMatch>> } =>
-        candidate.match !== null,
+      (
+        candidate,
+      ): candidate is {
+        dream: Dream;
+        match: NonNullable<ReturnType<typeof getDreamResurfacingMatch>>;
+      } => candidate.match !== null,
     )
     .sort((left, right) => {
       if (right.match.score !== left.match.score) {
@@ -404,7 +422,10 @@ export function getMemoryNudge(
   }
 
   const transcriptCandidate = dreams
-    .filter(dream => dream.audioUri && !dream.transcript?.trim() && !dream.text?.trim())
+    .filter(
+      dream =>
+        dream.audioUri && !dream.transcript?.trim() && !dream.text?.trim(),
+    )
     .sort((left, right) => right.createdAt - left.createdAt)[0];
   if (transcriptCandidate) {
     return {
@@ -439,10 +460,17 @@ export function getMemoryWorkQueue(
   };
 
   const transcriptGenerateCandidate = dreams
-    .filter(dream => dream.audioUri && !dream.transcript?.trim() && dream.transcriptStatus !== 'processing')
+    .filter(
+      dream =>
+        dream.audioUri &&
+        !dream.transcript?.trim() &&
+        dream.transcriptStatus !== 'processing',
+    )
     .sort((left, right) => {
-      const rightUpdatedAt = right.transcriptUpdatedAt ?? right.updatedAt ?? right.createdAt;
-      const leftUpdatedAt = left.transcriptUpdatedAt ?? left.updatedAt ?? left.createdAt;
+      const rightUpdatedAt =
+        right.transcriptUpdatedAt ?? right.updatedAt ?? right.createdAt;
+      const leftUpdatedAt =
+        left.transcriptUpdatedAt ?? left.updatedAt ?? left.createdAt;
       return rightUpdatedAt - leftUpdatedAt;
     })[0];
   push(
@@ -466,10 +494,17 @@ export function getMemoryWorkQueue(
   );
 
   const transcriptEditCandidate = dreams
-    .filter(dream => dream.audioUri && dream.transcript?.trim() && dream.transcriptSource !== 'edited')
+    .filter(
+      dream =>
+        dream.audioUri &&
+        dream.transcript?.trim() &&
+        dream.transcriptSource !== 'edited',
+    )
     .sort((left, right) => {
-      const rightUpdatedAt = right.transcriptUpdatedAt ?? right.updatedAt ?? right.createdAt;
-      const leftUpdatedAt = left.transcriptUpdatedAt ?? left.updatedAt ?? left.createdAt;
+      const rightUpdatedAt =
+        right.transcriptUpdatedAt ?? right.updatedAt ?? right.createdAt;
+      const leftUpdatedAt =
+        left.transcriptUpdatedAt ?? left.updatedAt ?? left.createdAt;
       return rightUpdatedAt - leftUpdatedAt;
     })[0];
   push(
@@ -506,15 +541,22 @@ export function getMemoryWorkQueue(
           return rightStatusScore - leftStatusScore;
         }
 
-        const scoreDiff = getAnalysisMaterialScore(right) - getAnalysisMaterialScore(left);
+        const scoreDiff =
+          getAnalysisMaterialScore(right) - getAnalysisMaterialScore(left);
         if (scoreDiff !== 0) {
           return scoreDiff;
         }
 
         const rightUpdatedAt =
-          right.analysis?.generatedAt ?? right.updatedAt ?? right.transcriptUpdatedAt ?? right.createdAt;
+          right.analysis?.generatedAt ??
+          right.updatedAt ??
+          right.transcriptUpdatedAt ??
+          right.createdAt;
         const leftUpdatedAt =
-          left.analysis?.generatedAt ?? left.updatedAt ?? left.transcriptUpdatedAt ?? left.createdAt;
+          left.analysis?.generatedAt ??
+          left.updatedAt ??
+          left.transcriptUpdatedAt ??
+          left.createdAt;
         return rightUpdatedAt - leftUpdatedAt;
       })[0];
 
@@ -561,7 +603,9 @@ export function buildSavedMonthlyReviewItems(input: {
       const signals = [
         report.topTheme?.label,
         report.topSymbol?.label,
-        report.topWakeEmotion ? wakeEmotionLabels[report.topWakeEmotion.emotion] : null,
+        report.topWakeEmotion
+          ? wakeEmotionLabels[report.topWakeEmotion.emotion]
+          : null,
       ].filter((value): value is string => Boolean(value));
 
       return {
@@ -575,7 +619,10 @@ export function buildSavedMonthlyReviewItems(input: {
     .filter((item): item is MemorySavedMonthReviewItem => Boolean(item));
 }
 
-function getReflectionSourceLabel(source: DreamReflectionSignal['source'], copy: StatsCopy) {
+function getReflectionSourceLabel(
+  source: DreamReflectionSignal['source'],
+  copy: StatsCopy,
+) {
   switch (source) {
     case 'tag':
       return copy.reflectionSourceTag;

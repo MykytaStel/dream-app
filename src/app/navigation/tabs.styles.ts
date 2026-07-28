@@ -216,7 +216,8 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
     },
     quickAddSheet: {
       marginHorizontal: TAB_BAR_SIDE_OFFSET,
-      marginBottom: TAB_BAR_BOTTOM_OFFSET + Math.max(bottomInset, theme.spacing.sm),
+      marginBottom:
+        TAB_BAR_BOTTOM_OFFSET + Math.max(bottomInset, theme.spacing.sm),
       paddingHorizontal: theme.spacing.lg,
       paddingTop: theme.spacing.md,
       paddingBottom: theme.spacing.lg,

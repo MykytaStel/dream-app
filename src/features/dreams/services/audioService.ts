@@ -18,8 +18,9 @@ type NativeAudioRecorderModule = {
   cleanupOrphanedAudioFiles(maxAgeDays: number): Promise<number>;
 };
 
-const NativeAudioRecorder: NativeAudioRecorderModule | undefined =
-  (NativeModules as any).AudioRecorder;
+const NativeAudioRecorder: NativeAudioRecorderModule | undefined = (
+  NativeModules as any
+).AudioRecorder;
 
 function normalizeUriForStorage(value: string | null | undefined): string {
   if (!value) {
@@ -48,7 +49,9 @@ export async function startRecording(): Promise<string> {
     const permission = await ensureRecordAudioPermission();
     if (permission !== 'granted') {
       const reason =
-        permission === 'denied' ? 'android-audio-permission-denied' : 'android-audio-permission-unavailable';
+        permission === 'denied'
+          ? 'android-audio-permission-denied'
+          : 'android-audio-permission-unavailable';
       const error = new Error('Audio recording permission is required.');
       (error as any).code = reason;
       throw error;
@@ -136,10 +139,11 @@ export async function stop() {
 }
 
 /** Deletes orphaned recording files in app audio dir older than maxAgeDays. Android only; no-op on iOS. */
-export async function cleanupOrphanedAudioFiles(maxAgeDays: number): Promise<number> {
+export async function cleanupOrphanedAudioFiles(
+  maxAgeDays: number,
+): Promise<number> {
   if (Platform.OS !== 'android' || !NativeAudioRecorder) {
     return 0;
   }
   return NativeAudioRecorder.cleanupOrphanedAudioFiles(maxAgeDays);
 }
-

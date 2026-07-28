@@ -25,10 +25,10 @@ export function formatCloudSyncMeta(
     snapshot.status === 'syncing'
       ? copy.cloudSyncStateSyncing
       : snapshot.status === 'success'
-      ? copy.cloudSyncStateSuccess
-      : snapshot.status === 'error'
-      ? copy.cloudSyncStateError
-      : copy.cloudSyncStateIdle;
+        ? copy.cloudSyncStateSuccess
+        : snapshot.status === 'error'
+          ? copy.cloudSyncStateError
+          : copy.cloudSyncStateIdle;
 
   const parts = [
     stateLabel,
@@ -42,7 +42,9 @@ export function formatCloudSyncMeta(
   }
 
   if (showDiagnostics && snapshot.conflictsResolvedCount) {
-    parts.push(`${copy.cloudConflictsLabel} ${snapshot.conflictsResolvedCount}`);
+    parts.push(
+      `${copy.cloudConflictsLabel} ${snapshot.conflictsResolvedCount}`,
+    );
   }
 
   if (showDiagnostics && snapshot.localWinsCount) {
@@ -93,7 +95,9 @@ export function buildCloudSyncEventItems(
     }
 
     if (event.conflictsResolvedCount) {
-      metaParts.push(`${copy.cloudConflictsLabel} ${event.conflictsResolvedCount}`);
+      metaParts.push(
+        `${copy.cloudConflictsLabel} ${event.conflictsResolvedCount}`,
+      );
     }
 
     if (event.failedCount) {

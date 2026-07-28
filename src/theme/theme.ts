@@ -1,5 +1,11 @@
 import { createTheme } from '@shopify/restyle';
-import { palette, radius, spacing, typography, type ThemePalette } from './tokens';
+import {
+  palette,
+  radius,
+  spacing,
+  typography,
+  type ThemePalette,
+} from './tokens';
 
 export const APP_THEME_IDS = ['kaleidoscope', 'ember', 'moss'] as const;
 
@@ -61,7 +67,9 @@ export const appThemeMetadata: Record<
 export const theme = themes[DEFAULT_THEME_ID];
 
 export function isAppThemeId(value: unknown): value is AppThemeId {
-  return typeof value === 'string' && APP_THEME_IDS.includes(value as AppThemeId);
+  return (
+    typeof value === 'string' && APP_THEME_IDS.includes(value as AppThemeId)
+  );
 }
 
 export type Theme = typeof theme;

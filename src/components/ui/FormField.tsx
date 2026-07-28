@@ -1,5 +1,11 @@
 import React from 'react';
-import { StyleProp, TextInput, TextInputProps, View, ViewStyle } from 'react-native';
+import {
+  StyleProp,
+  TextInput,
+  TextInputProps,
+  View,
+  ViewStyle,
+} from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../theme/theme';
 import { Text } from './Text';
@@ -36,7 +42,12 @@ export function FormField({
         {...props}
       />
       {helperText ? (
-        <Text style={[styles.helper, helperTone === 'error' ? styles.helperError : null]}>
+        <Text
+          style={[
+            styles.helper,
+            helperTone === 'error' ? styles.helperError : null,
+          ]}
+        >
           {helperText}
         </Text>
       ) : null}

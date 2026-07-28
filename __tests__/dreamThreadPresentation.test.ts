@@ -69,8 +69,12 @@ describe('dreamThread presentation', () => {
       'dream-2',
       'dream-3',
     ]);
-    expect(viewModel.entries[0].markerLabel).toBe(statsCopy.threadDetailEntryFirst);
-    expect(viewModel.entries[2].markerLabel).toBe(statsCopy.threadDetailEntryLatest);
+    expect(viewModel.entries[0].markerLabel).toBe(
+      statsCopy.threadDetailEntryFirst,
+    );
+    expect(viewModel.entries[2].markerLabel).toBe(
+      statsCopy.threadDetailEntryLatest,
+    );
   });
 
   test('marks a single-dream thread as only match', () => {
@@ -97,7 +101,9 @@ describe('dreamThread presentation', () => {
     });
 
     expect(viewModel.entries).toHaveLength(1);
-    expect(viewModel.entries[0].markerLabel).toBe(statsCopy.threadDetailEntryOnly);
+    expect(viewModel.entries[0].markerLabel).toBe(
+      statsCopy.threadDetailEntryOnly,
+    );
   });
 
   test('builds saved thread shelf items only for threads that still have matches', () => {
@@ -123,9 +129,21 @@ describe('dreamThread presentation', () => {
 
     const items = buildSavedDreamThreadShelfItems({
       records: [
-        { signal: 'mirror', kind: 'symbol', savedAt: Date.UTC(2026, 2, 14, 10, 0) },
-        { signal: 'bridge', kind: 'theme', savedAt: Date.UTC(2026, 2, 14, 9, 0) },
-        { signal: 'missing', kind: 'word', savedAt: Date.UTC(2026, 2, 14, 8, 0) },
+        {
+          signal: 'mirror',
+          kind: 'symbol',
+          savedAt: Date.UTC(2026, 2, 14, 10, 0),
+        },
+        {
+          signal: 'bridge',
+          kind: 'theme',
+          savedAt: Date.UTC(2026, 2, 14, 9, 0),
+        },
+        {
+          signal: 'missing',
+          kind: 'word',
+          savedAt: Date.UTC(2026, 2, 14, 8, 0),
+        },
       ],
       dreams,
       statsCopy,
@@ -162,8 +180,16 @@ describe('dreamThread presentation', () => {
 
     const items = buildSavedDreamThreadShelfItems({
       records: [
-        { signal: 'Hello-World', kind: 'theme', savedAt: Date.UTC(2026, 2, 14, 10, 0) },
-        { signal: 'hello world', kind: 'theme', savedAt: Date.UTC(2026, 2, 14, 9, 0) },
+        {
+          signal: 'Hello-World',
+          kind: 'theme',
+          savedAt: Date.UTC(2026, 2, 14, 10, 0),
+        },
+        {
+          signal: 'hello world',
+          kind: 'theme',
+          savedAt: Date.UTC(2026, 2, 14, 9, 0),
+        },
       ],
       dreams,
       statsCopy,
@@ -224,8 +250,12 @@ describe('dreamThread presentation', () => {
         statsCopy.patternDetailSourceTranscript,
       ],
     });
-    expect(items[0].timelineLabel).toContain(statsCopy.threadDetailFirstSeenLabel);
-    expect(items[0].timelineLabel).toContain(statsCopy.threadDetailLatestSeenLabel);
+    expect(items[0].timelineLabel).toContain(
+      statsCopy.threadDetailFirstSeenLabel,
+    );
+    expect(items[0].timelineLabel).toContain(
+      statsCopy.threadDetailLatestSeenLabel,
+    );
   });
 
   test('builds recurring word dashboard items with mention counts', () => {

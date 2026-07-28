@@ -4,16 +4,25 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@shopify/restyle';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+} from 'react-native-reanimated';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { ScreenStateCard } from '../components/ScreenStateCard';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { Card } from '../../../components/ui/Card';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
-import { getDreamCopy, getDreamMoodLabels } from '../../../constants/copy/dreams';
+import {
+  getDreamCopy,
+  getDreamMoodLabels,
+} from '../../../constants/copy/dreams';
 import { type RootStackParamList } from '../../../app/navigation/routes';
-import { openNewDreamTab, openWakeEntry } from '../../../app/navigation/navigationRef';
+import {
+  openNewDreamTab,
+  openWakeEntry,
+} from '../../../app/navigation/navigationRef';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
@@ -39,7 +48,8 @@ export default function ArchiveScreen() {
   const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = React.useMemo(() => createArchiveScreenStyles(theme), [theme]);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const listRef = React.useRef<SectionList<Dream, ArchiveSection>>(null);
   const showWakeCapturePrompt = isWakeCaptureWindow();
@@ -47,7 +57,10 @@ export default function ArchiveScreen() {
   const scrollArchiveToTop = React.useCallback(() => {
     requestAnimationFrame(() => {
       const list = listRef.current as unknown as {
-        scrollToOffset?: (params: { animated?: boolean; offset: number }) => void;
+        scrollToOffset?: (params: {
+          animated?: boolean;
+          offset: number;
+        }) => void;
       } | null;
 
       list?.scrollToOffset?.({ animated: true, offset: 0 });
@@ -86,7 +99,15 @@ export default function ArchiveScreen() {
         viewMode={browse.viewMode}
       />
     ),
-    [browse.deferredSearchQuery, browse.viewMode, copy, locale, moodLabels, navigation, styles],
+    [
+      browse.deferredSearchQuery,
+      browse.viewMode,
+      copy,
+      locale,
+      moodLabels,
+      navigation,
+      styles,
+    ],
   );
 
   const listHeader = React.useMemo(
@@ -97,7 +118,11 @@ export default function ArchiveScreen() {
           layout={archiveLayoutTransition}
           style={styles.titleBlock}
         >
-          <SectionHeader title={copy.archiveTitle} subtitle={copy.archiveSubtitle} large />
+          <SectionHeader
+            title={copy.archiveTitle}
+            subtitle={copy.archiveSubtitle}
+            large
+          />
         </Animated.View>
 
         {browse.selectedMonthKey ? (
@@ -154,10 +179,19 @@ export default function ArchiveScreen() {
           <View style={styles.emptyWrap}>
             <ScreenStateCard
               variant="empty"
-              title={browse.archiveEmptyContent?.title ?? copy.archiveNoResultsTitle}
-              subtitle={browse.archiveEmptyContent?.subtitle ?? copy.archiveNoResultsDescription}
-              actionLabel={browse.hasResettableView ? copy.archiveResetView : undefined}
-              onAction={browse.hasResettableView ? browse.resetArchiveView : undefined}
+              title={
+                browse.archiveEmptyContent?.title ?? copy.archiveNoResultsTitle
+              }
+              subtitle={
+                browse.archiveEmptyContent?.subtitle ??
+                copy.archiveNoResultsDescription
+              }
+              actionLabel={
+                browse.hasResettableView ? copy.archiveResetView : undefined
+              }
+              onAction={
+                browse.hasResettableView ? browse.resetArchiveView : undefined
+              }
             />
           </View>
         ) : null}
@@ -214,7 +248,9 @@ export default function ArchiveScreen() {
           variant="empty"
           title={copy.archiveEmptyTitle}
           subtitle={copy.archiveEmptyDescription}
-          actionLabel={showWakeCapturePrompt ? copy.quickAddWakeAction : copy.createTitle}
+          actionLabel={
+            showWakeCapturePrompt ? copy.quickAddWakeAction : copy.createTitle
+          }
           onAction={openEmptyStateCapture}
         />
       </ScreenContainer>
@@ -238,7 +274,8 @@ export default function ArchiveScreen() {
           styles.content,
           {
             paddingTop: insets.top + theme.spacing.xs,
-            paddingBottom: getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
+            paddingBottom:
+              getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
           },
         ]}
         ListHeaderComponent={listHeader}

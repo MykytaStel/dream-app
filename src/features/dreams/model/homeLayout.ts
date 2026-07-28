@@ -37,9 +37,8 @@ const HOME_LAYOUT_PRESET_CONFIGS: Record<
   },
 };
 
-export const DEFAULT_HOME_LAYOUT_PREFERENCES = getHomeLayoutPreferencesForPreset(
-  'balanced',
-);
+export const DEFAULT_HOME_LAYOUT_PREFERENCES =
+  getHomeLayoutPreferencesForPreset('balanced');
 
 export function isHomeLayoutPreset(value: unknown): value is HomeLayoutPreset {
   return (
@@ -48,7 +47,9 @@ export function isHomeLayoutPreset(value: unknown): value is HomeLayoutPreset {
   );
 }
 
-export function isHomeLayoutSection(value: unknown): value is HomeLayoutSection {
+export function isHomeLayoutSection(
+  value: unknown,
+): value is HomeLayoutSection {
   return (
     typeof value === 'string' &&
     HOME_LAYOUT_SECTIONS.includes(value as HomeLayoutSection)

@@ -2,7 +2,10 @@ import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type AppLocale } from '../../../i18n/types';
 import { Dream, Mood } from './dream';
 import { getDreamSignalWeights } from './relatedDreams';
-import { getDreamResurfacingMatch, type DreamResurfacingWindow } from './resurfacingCue';
+import {
+  getDreamResurfacingMatch,
+  type DreamResurfacingWindow,
+} from './resurfacingCue';
 import {
   type HomeArchiveFilter,
   type HomeDateRangeFilter,
@@ -11,7 +14,10 @@ import {
   type HomeTimelineFilters,
   type HomeTranscriptFilter,
 } from './homeTimeline';
-import { type HomeFilterChip, type HomeOption } from '../components/home/homeTypes';
+import {
+  type HomeFilterChip,
+  type HomeOption,
+} from '../components/home/homeTypes';
 
 export type HomeRevisitCue = {
   dreamId: string;
@@ -93,7 +99,9 @@ export function buildSearchPresetLabel({
 
   if (filters.tags.length > 0) {
     const [firstTag, ...restTags] = filters.tags;
-    return clipPresetLabel(restTags.length > 0 ? `${firstTag} +${restTags.length}` : firstTag);
+    return clipPresetLabel(
+      restTags.length > 0 ? `${firstTag} +${restTags.length}` : firstTag,
+    );
   }
 
   if (filters.starredOnly) {
@@ -106,8 +114,8 @@ export function buildSearchPresetLabel({
 
   if (filters.transcript !== 'all') {
     return (
-      transcriptFilters.find(filter => filter.key === filters.transcript)?.label ??
-      copy.homeSearchPresetFallback
+      transcriptFilters.find(filter => filter.key === filters.transcript)
+        ?.label ?? copy.homeSearchPresetFallback
     );
   }
 
@@ -127,8 +135,8 @@ export function buildSearchPresetLabel({
 
   if (filters.dateRange !== 'all') {
     return (
-      dateRangeFilters.find(filter => filter.key === filters.dateRange)?.label ??
-      copy.homeSearchPresetFallback
+      dateRangeFilters.find(filter => filter.key === filters.dateRange)
+        ?.label ?? copy.homeSearchPresetFallback
     );
   }
 
@@ -201,8 +209,8 @@ export function buildActiveFilterChips({
     chips.push({
       key: `transcript:${filters.transcript}`,
       label:
-        transcriptFilters.find(filter => filter.key === filters.transcript)?.label ??
-        filters.transcript,
+        transcriptFilters.find(filter => filter.key === filters.transcript)
+          ?.label ?? filters.transcript,
     });
   }
 
@@ -226,8 +234,8 @@ export function buildActiveFilterChips({
     chips.push({
       key: `date:${filters.dateRange}`,
       label:
-        dateRangeFilters.find(filter => filter.key === filters.dateRange)?.label ??
-        filters.dateRange,
+        dateRangeFilters.find(filter => filter.key === filters.dateRange)
+          ?.label ?? filters.dateRange,
     });
   }
 
@@ -251,13 +259,12 @@ export function formatLastViewedDreamMeta(
     return null;
   }
 
-  return `${copy.homeLastDreamMetaPrefix} ${new Date(dream.createdAt).toLocaleDateString(
-    locale === 'uk' ? 'uk-UA' : 'en-US',
-    {
-      month: 'short',
-      day: 'numeric',
-    },
-  )}`;
+  return `${copy.homeLastDreamMetaPrefix} ${new Date(
+    dream.createdAt,
+  ).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
+    month: 'short',
+    day: 'numeric',
+  })}`;
 }
 
 const HOME_REVISIT_MIN_AGE_MS = 6 * 60 * 60 * 1000;
@@ -333,7 +340,9 @@ export function getHomeRevisitCue(
       const hasTranscript = Boolean(dream.transcript?.trim());
       const resurfacingMatch = getDreamResurfacingMatch(dream, now);
       const hasSignal = Boolean(
-        dream.tags.length || dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length,
+        dream.tags.length ||
+        dream.wakeEmotions?.length ||
+        dream.sleepContext?.preSleepEmotions?.length,
       );
       const score =
         (typeof dream.starredAt === 'number' ? 40 : 0) +

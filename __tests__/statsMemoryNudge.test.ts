@@ -40,7 +40,13 @@ describe('statsMemoryNudge', () => {
     const recurringSymbols: DreamReflectionSignal[] = [];
 
     expect(
-      getMemoryNudge(dreams, copy, recurringThemes, recurringWords, recurringSymbols),
+      getMemoryNudge(
+        dreams,
+        copy,
+        recurringThemes,
+        recurringWords,
+        recurringSymbols,
+      ),
     ).toEqual({
       dreamId: 'theme-dream',
       dreamTitle: 'Bridge over dark water',

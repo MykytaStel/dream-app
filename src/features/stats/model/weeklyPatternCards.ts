@@ -132,12 +132,12 @@ function hasMeaningfulSleepContext(dream: Dream) {
 
   return Boolean(
     context.preSleepEmotions?.length ||
-      typeof context.stressLevel === 'number' ||
-      typeof context.alcoholTaken === 'boolean' ||
-      typeof context.caffeineLate === 'boolean' ||
-      context.medications?.trim() ||
-      context.importantEvents?.trim() ||
-      context.healthNotes?.trim(),
+    typeof context.stressLevel === 'number' ||
+    typeof context.alcoholTaken === 'boolean' ||
+    typeof context.caffeineLate === 'boolean' ||
+    context.medications?.trim() ||
+    context.importantEvents?.trim() ||
+    context.healthNotes?.trim(),
   );
 }
 
@@ -189,18 +189,18 @@ export function buildWeeklyPatternCards({
             kind: 'word' as const,
           }
       : topTheme
-      ? {
-          label: topTheme.label,
-          count: topTheme.dreamCount,
-          kind: 'theme' as const,
-        }
-      : topWord
-      ? {
-          label: topWord.label,
-          count: topWord.dreamCount,
-          kind: 'word' as const,
-        }
-      : null;
+        ? {
+            label: topTheme.label,
+            count: topTheme.dreamCount,
+            kind: 'theme' as const,
+          }
+        : topWord
+          ? {
+              label: topWord.label,
+              count: topWord.dreamCount,
+              kind: 'word' as const,
+            }
+          : null;
   const moodCounts = getMoodCounts(weeklyDreams);
   const dominantMood = Object.entries(moodCounts)
     .filter((entry): entry is [Mood, number] => entry[1] > 0)

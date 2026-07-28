@@ -83,9 +83,14 @@ function getSignalTone(theme: Theme, tone: ArchiveSignalTone) {
   }
 }
 
-function buildSignalChips(dream: Dream, copy: DreamCopy, mood?: string): ArchiveSignalChip[] {
+function buildSignalChips(
+  dream: Dream,
+  copy: DreamCopy,
+  mood?: string,
+): ArchiveSignalChip[] {
   const transcript = dream.transcript?.trim();
-  const transcriptStatus = dream.transcriptStatus ?? (transcript ? 'ready' : 'idle');
+  const transcriptStatus =
+    dream.transcriptStatus ?? (transcript ? 'ready' : 'idle');
   const hasAudio = Boolean(dream.audioUri?.trim());
   const hasContext = Boolean(dream.sleepContext?.importantEvents?.trim());
   const starred = isDreamStarred(dream);
@@ -148,7 +153,10 @@ function buildSignalChips(dream: Dream, copy: DreamCopy, mood?: string): Archive
           }
         : transcript
           ? {
-              key: dream.transcriptSource === 'edited' ? 'transcript-edited' : 'transcript',
+              key:
+                dream.transcriptSource === 'edited'
+                  ? 'transcript-edited'
+                  : 'transcript',
               label:
                 dream.transcriptSource === 'edited'
                   ? copy.editedTranscriptTag
@@ -185,7 +193,9 @@ function getPreviewLabel(dream: Dream, copy: DreamCopy) {
   }
 
   if (hasTranscript) {
-    return dream.transcriptSource === 'edited' ? copy.editedTranscriptTag : copy.transcriptTag;
+    return dream.transcriptSource === 'edited'
+      ? copy.editedTranscriptTag
+      : copy.transcriptTag;
   }
 
   if (hasAudio) {
@@ -213,7 +223,9 @@ function getPreviewIcon(dream: Dream): string {
   }
 
   if (hasTranscript) {
-    return dream.transcriptSource === 'edited' ? 'create-outline' : 'chatbubble-ellipses-outline';
+    return dream.transcriptSource === 'edited'
+      ? 'create-outline'
+      : 'chatbubble-ellipses-outline';
   }
 
   if (hasAudio) {
@@ -255,7 +267,11 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
     [copy, dream, isCompact, mood],
   );
   const matchReasons = React.useMemo(
-    () => getArchiveMatchReasonLabels(dream, searchQuery, copy).slice(0, isCompact ? 1 : 2),
+    () =>
+      getArchiveMatchReasonLabels(dream, searchQuery, copy).slice(
+        0,
+        isCompact ? 1 : 2,
+      ),
     [copy, dream, isCompact, searchQuery],
   );
   const visibleTags = dream.tags.slice(0, isCompact ? 1 : 2);
@@ -266,7 +282,9 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   })} · ${date.toLocaleDateString(localeKey, {
     weekday: 'short',
   })}`;
-  const compactMonthLabel = date.toLocaleDateString(localeKey, { month: 'short' });
+  const compactMonthLabel = date.toLocaleDateString(localeKey, {
+    month: 'short',
+  });
   const compactDayLabel = String(date.getDate());
   const preview = formatArchivePreview(dream, copy);
   const previewLabel = getPreviewLabel(dream, copy);
@@ -275,7 +293,11 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   if (isCompact) {
     return (
       <Pressable
-        onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: dream.id })}
+        onPress={() =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            dreamId: dream.id,
+          })
+        }
         style={({ pressed }: { pressed: boolean }) => [
           styles.listRowPressable,
           pressed ? styles.listRowPressed : null,
@@ -291,7 +313,10 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
         >
           <View
             pointerEvents="none"
-            style={[styles.listRowGlow, { backgroundColor: `${accentColor}16` }]}
+            style={[
+              styles.listRowGlow,
+              { backgroundColor: `${accentColor}16` },
+            ]}
           />
           <View
             pointerEvents="none"
@@ -316,7 +341,11 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
               <Text style={styles.rowTitleCompact} numberOfLines={1}>
                 {dream.title || copy.untitled}
               </Text>
-              <Ionicons name="chevron-forward" size={15} color={theme.colors.textDim} />
+              <Ionicons
+                name="chevron-forward"
+                size={15}
+                color={theme.colors.textDim}
+              />
             </View>
 
             <Text style={styles.compactDateMeta}>{rowDateLabel}</Text>
@@ -360,13 +389,18 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
             {visibleTags.length || hiddenTagCount ? (
               <View style={styles.compactTagRow}>
                 {visibleTags.map(tag => (
-                  <View key={`${dream.id}-${tag}`} style={styles.compactTagPill}>
+                  <View
+                    key={`${dream.id}-${tag}`}
+                    style={styles.compactTagPill}
+                  >
                     <Text style={styles.compactTagText}>{tag}</Text>
                   </View>
                 ))}
                 {hiddenTagCount ? (
                   <View style={styles.compactTagPill}>
-                    <Text style={styles.compactTagText}>{`+${hiddenTagCount}`}</Text>
+                    <Text
+                      style={styles.compactTagText}
+                    >{`+${hiddenTagCount}`}</Text>
                   </View>
                 ) : null}
               </View>
@@ -379,7 +413,9 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
 
   return (
     <Pressable
-      onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: dream.id })}
+      onPress={() =>
+        navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: dream.id })
+      }
       style={({ pressed }: { pressed: boolean }) => [
         styles.listRowPressable,
         pressed ? styles.listRowPressed : null,
@@ -412,17 +448,27 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
                 },
               ]}
             >
-              <Text style={[styles.rowDateChipText, styles.rowDateChipTextStrong]}>{rowDateLabel}</Text>
+              <Text
+                style={[styles.rowDateChipText, styles.rowDateChipTextStrong]}
+              >
+                {rowDateLabel}
+              </Text>
             </View>
             {matchReasons[0] ? (
               <View style={styles.matchReasonPill}>
-                <Text style={styles.matchReasonPillText}>{matchReasons[0]}</Text>
+                <Text style={styles.matchReasonPillText}>
+                  {matchReasons[0]}
+                </Text>
               </View>
             ) : null}
           </View>
 
           <View style={styles.rowChevron}>
-            <Ionicons name="chevron-forward" size={16} color={theme.colors.textDim} />
+            <Ionicons
+              name="chevron-forward"
+              size={16}
+              color={theme.colors.textDim}
+            />
           </View>
         </View>
 
@@ -448,7 +494,11 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
                     ]}
                   >
                     <Ionicons name={chip.icon} size={12} color={tone.color} />
-                    <Text style={[styles.signalChipText, { color: tone.color }]}>{chip.label}</Text>
+                    <Text
+                      style={[styles.signalChipText, { color: tone.color }]}
+                    >
+                      {chip.label}
+                    </Text>
                   </View>
                 );
               })}
@@ -464,7 +514,12 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
               },
             ]}
           >
-            <View style={[styles.rowPreviewAccent, { backgroundColor: accentColor }]} />
+            <View
+              style={[
+                styles.rowPreviewAccent,
+                { backgroundColor: accentColor },
+              ]}
+            />
             <View style={styles.rowPreviewContent}>
               <View style={styles.rowPreviewHeader}>
                 <View
@@ -477,7 +532,9 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
                   ]}
                 >
                   <Ionicons name={previewIcon} size={12} color={accentColor} />
-                  <Text style={[styles.rowPreviewTypeText, { color: accentColor }]}>
+                  <Text
+                    style={[styles.rowPreviewTypeText, { color: accentColor }]}
+                  >
                     {previewLabel}
                   </Text>
                 </View>

@@ -25,7 +25,10 @@ export const ROOT_ROUTE_NAMES = {
   DreamPractice: 'DreamPractice',
 } as const;
 
-type TabRouteLabelMap = Record<(typeof TAB_ROUTE_NAMES)[keyof typeof TAB_ROUTE_NAMES], string>;
+type TabRouteLabelMap = Record<
+  (typeof TAB_ROUTE_NAMES)[keyof typeof TAB_ROUTE_NAMES],
+  string
+>;
 
 const TAB_ROUTE_LABELS_EN: TabRouteLabelMap = {
   [TAB_ROUTE_NAMES.Home]: 'Home',
@@ -39,7 +42,7 @@ const TAB_ROUTE_LABELS_UK: TabRouteLabelMap = {
   [TAB_ROUTE_NAMES.Home]: 'Стрічка',
   [TAB_ROUTE_NAMES.Archive]: 'Архів',
   [TAB_ROUTE_NAMES.New]: 'Додати',
-  [TAB_ROUTE_NAMES.Stats]: 'Пам\'ять',
+  [TAB_ROUTE_NAMES.Stats]: "Пам'ять",
   [TAB_ROUTE_NAMES.Settings]: 'Опції',
 };
 
@@ -49,7 +52,8 @@ export function getTabRouteLabels(locale: AppLocale) {
 
 export type TabRouteName = keyof typeof TAB_ROUTE_NAMES;
 export type PatternDetailKind = 'word' | 'theme' | 'symbol';
-export type DreamDetailFocusSection = 'reflection' | 'written' | 'transcript' | 'analysis';
+export type DreamDetailFocusSection =
+  'reflection' | 'written' | 'transcript' | 'analysis';
 export type DreamPracticeFocus = 'lucid' | 'nightmares';
 
 export type TabParamList = {
@@ -100,7 +104,8 @@ export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.DreamPractice]:
     | {
         focus?: DreamPracticeFocus;
-        entrySource?: 'manual' | 'home' | 'stats' | 'detail' | 'onboarding' | 'reminder';
+        entrySource?:
+          'manual' | 'home' | 'stats' | 'detail' | 'onboarding' | 'reminder';
       }
     | undefined;
 };

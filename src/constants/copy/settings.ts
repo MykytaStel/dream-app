@@ -54,8 +54,7 @@ const SETTINGS_COPY_EN = {
   reminderStyleGentleNotificationBody:
     'A few calm words now can save the feeling before the day gets loud.',
   reminderStyleDirectNotificationTitle: 'Write it down now',
-  reminderStyleDirectNotificationBody:
-    'Catch the key images before they slip.',
+  reminderStyleDirectNotificationBody: 'Catch the key images before they slip.',
   languageTitle: 'Language',
   languageDescription: 'Choose your app language.',
   languageEnglish: 'EN',
@@ -76,8 +75,7 @@ const SETTINGS_COPY_EN = {
   privacyFootnote:
     'If you delete the app, local entries, downloaded transcription model, and drafts may be removed with it until export or sync exists.',
   cloudTitle: 'Cloud backup',
-  cloudDescription:
-    'Optional device-to-device sync for one archive.',
+  cloudDescription: 'Optional device-to-device sync for one archive.',
   cloudConfigLabel: 'Runtime config',
   cloudConfigReady: 'Ready',
   cloudConfigMissing: 'Missing',
@@ -101,7 +99,8 @@ const SETTINGS_COPY_EN = {
     'Create the backup on this device first, then save it under an email account if you want another device to open the same archive.',
   cloudGuideTitle: 'How backup works',
   cloudGuideStepOne: 'Turn on backup on your first device.',
-  cloudGuideStepTwo: 'Save it under an email account if you want the same archive on another device.',
+  cloudGuideStepTwo:
+    'Save it under an email account if you want the same archive on another device.',
   cloudGuideStepThree: 'Open that same backup on another device and run sync.',
   cloudGuideExistingStepOne:
     'Enter the same email and password you used for this backup before.',
@@ -113,7 +112,8 @@ const SETTINGS_COPY_EN = {
   cloudGuideAnonymousStepTwo: 'Save this backup under an email account next.',
   cloudGuideAnonymousStepThree: 'Then open the same backup on another device.',
   cloudGuideNamedStepOne: 'This backup is already linked to your account.',
-  cloudGuideNamedStepTwo: 'Open the same backup with this email on another device.',
+  cloudGuideNamedStepTwo:
+    'Open the same backup with this email on another device.',
   cloudGuideNamedStepThree: 'Keep sync on so changes move between devices.',
   cloudSuccessTitle: 'Next step',
   cloudConnectedSuccessTitle: 'Backup is on for this device',
@@ -245,7 +245,8 @@ const SETTINGS_COPY_EN = {
   backupContentTrustTranscriptStillLocalSingle: '1 newer locally',
   backupContentTrustTranscriptStillLocalPlural: '{count} newer locally',
   backupContentTrustReviewTitle: 'Saved review sets',
-  backupContentTrustReviewMeta: '{total} saved • {months} months • {threads} threads',
+  backupContentTrustReviewMeta:
+    '{total} saved • {months} months • {threads} threads',
   backupContentTrustReviewEmpty: 'No saved sets yet',
   backupContentTrustReviewEmptyMeta:
     'Saved months and threads will appear here once you start curating review work.',
@@ -267,8 +268,7 @@ const SETTINGS_COPY_EN = {
   cloudCredentialsMissingDescription:
     'Enter an email and password before continuing.',
   cloudEmailMissingTitle: 'Missing email',
-  cloudEmailMissingDescription:
-    'Enter the email for the backup account first.',
+  cloudEmailMissingDescription: 'Enter the email for the backup account first.',
   cloudSyncToggleLabel: 'Auto sync',
   cloudSyncToggleHint:
     'Auto sync can be enabled only after cloud backup is connected.',
@@ -335,11 +335,9 @@ const SETTINGS_COPY_EN = {
   pdfExportFootnote:
     'PDF exports are plain files for reading or sharing. This app does not encrypt the file.',
   exportTitle: 'Local export',
-  exportDescription:
-    'Create a restore backup or a readable PDF snapshot.',
+  exportDescription: 'Create a restore backup or a readable PDF snapshot.',
   exportLatestPathLabel: 'Latest file',
-  exportFootnote:
-    'Backup is for restore later. PDF is for reading or sharing.',
+  exportFootnote: 'Backup is for restore later. PDF is for reading or sharing.',
   exportButton: 'Create backup',
   exportButtonBusy: 'Creating backup...',
   exportMarkdownButton: 'Create Markdown',
@@ -449,14 +447,14 @@ const SETTINGS_COPY_EN = {
   transcriptionDownloadErrorTitle: 'Could not download model',
   transcriptionDeleteButton: 'Delete local model',
   transcriptionDeleteButtonBusy: 'Deleting model...',
-  transcriptionMissingHint: 'Download the model once to enable offline transcription.',
+  transcriptionMissingHint:
+    'Download the model once to enable offline transcription.',
   transcriptionDeleteSuccessTitle: 'Model removed',
   transcriptionDeleteSuccessDescription:
     'The offline transcription model was removed from local storage.',
   transcriptionDeleteErrorTitle: 'Could not remove model',
   scaleTestTitle: 'Scale test',
-  scaleTestDescription:
-    'Generate sample dreams for stress testing.',
+  scaleTestDescription: 'Generate sample dreams for stress testing.',
   developerToolsTitle: 'Developer tools',
   developerToolsDescription:
     'Debug-only tools for previews, seed data, and stress testing.',
@@ -512,8 +510,7 @@ const SETTINGS_COPY_EN = {
   biometricLockEnableErrorFailed:
     'Biometric check failed. App lock was not enabled.',
   analysisTitle: 'Dream analysis',
-  analysisDescription:
-    'Generate a local reflection from saved dream data.',
+  analysisDescription: 'Generate a local reflection from saved dream data.',
   analysisProviderLabel: 'Provider',
   analysisProviderManual: 'Local manual',
   analysisProviderOpenAi: 'OpenAI (planned)',
@@ -601,8 +598,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   privacyFootnote:
     'Якщо видалити застосунок, локальні записи, завантажена модель транскрипції і чернетки можуть зникнути, доки не зʼявиться експорт або синхронізація.',
   cloudTitle: 'Хмарний backup',
-  cloudDescription:
-    'Опційний sync одного архіву між пристроями.',
+  cloudDescription: 'Опційний sync одного архіву між пристроями.',
   cloudConfigLabel: 'Runtime-конфіг',
   cloudConfigReady: 'Готово',
   cloudConfigMissing: 'Відсутній',
@@ -626,8 +622,10 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Спершу створи backup на цьому пристрої, а потім збережи його під email-акаунтом, якщо хочеш відкрити той самий архів на іншому пристрої.',
   cloudGuideTitle: 'Як працює backup',
   cloudGuideStepOne: 'Увімкни backup на своєму першому пристрої.',
-  cloudGuideStepTwo: 'Збережи його під email-акаунтом, якщо хочеш той самий архів на іншому пристрої.',
-  cloudGuideStepThree: 'Відкрий той самий backup на іншому пристрої й запусти sync.',
+  cloudGuideStepTwo:
+    'Збережи його під email-акаунтом, якщо хочеш той самий архів на іншому пристрої.',
+  cloudGuideStepThree:
+    'Відкрий той самий backup на іншому пристрої й запусти sync.',
   cloudGuideExistingStepOne:
     'Введи ту саму пошту і пароль, які вже використовуються для цього backup.',
   cloudGuideExistingStepTwo:
@@ -636,10 +634,13 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Тримай sync увімкненим, щоб редагування і видалення ходили між пристроями.',
   cloudGuideAnonymousStepOne: 'Цей пристрій уже підключений до backup.',
   cloudGuideAnonymousStepTwo: 'Тепер збережи цей backup під email-акаунтом.',
-  cloudGuideAnonymousStepThree: 'Після цього відкрий той самий backup на іншому пристрої.',
+  cloudGuideAnonymousStepThree:
+    'Після цього відкрий той самий backup на іншому пристрої.',
   cloudGuideNamedStepOne: 'Цей backup уже привʼязаний до твого акаунта.',
-  cloudGuideNamedStepTwo: 'Відкрий той самий backup з цією поштою на іншому пристрої.',
-  cloudGuideNamedStepThree: 'Тримай sync увімкненим, щоб зміни ходили між пристроями.',
+  cloudGuideNamedStepTwo:
+    'Відкрий той самий backup з цією поштою на іншому пристрої.',
+  cloudGuideNamedStepThree:
+    'Тримай sync увімкненим, щоб зміни ходили між пристроями.',
   cloudSuccessTitle: 'Що далі',
   cloudConnectedSuccessTitle: 'Backup увімкнено на цьому пристрої',
   cloudConnectedSuccessDescription:
@@ -660,7 +661,8 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupCueSyncOffTitle: 'Backup підключено, але sync вимкнений',
   backupCueSyncOffDescription:
     'Увімкни sync знову перед переходом на інший пристрій, щоб нові локальні зміни не лишилися тут.',
-  backupCueReviewPendingTitle: 'Збережені набори ревʼю новіші на цьому пристрої',
+  backupCueReviewPendingTitle:
+    'Збережені набори ревʼю новіші на цьому пристрої',
   backupCueReviewPendingDescription:
     'Збережені місяці й нитки змінилися локально. Відкрий backup і запусти sync перед переходом на інший пристрій.',
   backupOnboardingEyebrow: 'Архів уже почався',
@@ -701,8 +703,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupLocalSectionDescription:
     'Створи restore-backup, читабельний Markdown або text-експорт, відновися з backup або експортуй PDF.',
   backupCloudSectionTitle: 'Хмарний backup',
-  backupCloudSectionDescription:
-    'Опційний sync одного архіву між пристроями.',
+  backupCloudSectionDescription: 'Опційний sync одного архіву між пристроями.',
   backupStatusTitle: 'Деталі статусу',
   backupStatusDescription:
     'Відкривай лише коли треба перевірити sync-стан або що лишилось тільки локально.',
@@ -762,7 +763,8 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupContentTrustAudioStillLocalSingle: '1 ще локально',
   backupContentTrustAudioStillLocalPlural: '{count} ще локально',
   backupContentTrustTranscriptTitle: 'Збережені транскрипти',
-  backupContentTrustTranscriptMeta: '{total} збережено • {edited} відредаговано',
+  backupContentTrustTranscriptMeta:
+    '{total} збережено • {edited} відредаговано',
   backupContentTrustTranscriptEmpty: 'Ще немає збережених транскриптів',
   backupContentTrustTranscriptEmptyMeta:
     'Статус транскриптів з’явиться тут, щойно якийсь сон матиме збережений текст транскрипту.',
@@ -770,7 +772,8 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupContentTrustTranscriptStillLocalSingle: '1 новіший локально',
   backupContentTrustTranscriptStillLocalPlural: '{count} новіші локально',
   backupContentTrustReviewTitle: 'Збережені набори ревʼю',
-  backupContentTrustReviewMeta: '{total} збережено • {months} місяців • {threads} ниток',
+  backupContentTrustReviewMeta:
+    '{total} збережено • {months} місяців • {threads} ниток',
   backupContentTrustReviewEmpty: 'Ще немає збережених наборів',
   backupContentTrustReviewEmptyMeta:
     'Збережені місяці й нитки зʼявляться тут, щойно ти почнеш збирати ревʼю-набори.',
@@ -785,15 +788,15 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudIdentityDescriptionAnonymous:
     'Збережи цей backup під email-акаунтом, щоб інший пристрій міг відкрити його.',
   cloudIdentityEmailLabel: 'Email',
-  cloudIdentityEmailHint: 'Використовується для того самого хмарного акаунта на різних пристроях.',
+  cloudIdentityEmailHint:
+    'Використовується для того самого хмарного акаунта на різних пристроях.',
   cloudIdentityPasswordLabel: 'Пароль',
   cloudIdentityPasswordHint: 'Використай щонайменше 6 символів.',
   cloudCredentialsMissingTitle: 'Немає даних для входу',
   cloudCredentialsMissingDescription:
     'Введи email і пароль перед продовженням.',
   cloudEmailMissingTitle: 'Немає email',
-  cloudEmailMissingDescription:
-    'Спершу введи email для backup-акаунта.',
+  cloudEmailMissingDescription: 'Спершу введи email для backup-акаунта.',
   cloudSyncToggleLabel: 'Автосинк',
   cloudSyncToggleHint:
     'Автосинк можна увімкнути лише після підключення backup.',
@@ -920,7 +923,8 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   restoreNoBackupAction: 'Спершу створи restore-backup',
   restoreSelectBackupAction: 'Спершу обери restore-backup',
   restoreLoadingAction: 'Готуємо preview відновлення...',
-  restoreReplaceWarning: 'Replace перезапише локальний архів на цьому пристрої.',
+  restoreReplaceWarning:
+    'Replace перезапише локальний архів на цьому пристрої.',
   restoreMergeGuidance:
     'Merge лишає поточні налаштування й додає сни з backup.',
   restoreFileLabel: 'Файл',
@@ -974,14 +978,14 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   transcriptionDownloadErrorTitle: 'Не вдалося завантажити модель',
   transcriptionDeleteButton: 'Видалити локальну модель',
   transcriptionDeleteButtonBusy: 'Видалення моделі...',
-  transcriptionMissingHint: 'Завантаж модель один раз, щоб увімкнути офлайн-транскрипцію.',
+  transcriptionMissingHint:
+    'Завантаж модель один раз, щоб увімкнути офлайн-транскрипцію.',
   transcriptionDeleteSuccessTitle: 'Модель видалено',
   transcriptionDeleteSuccessDescription:
     'Офлайн-модель транскрипції видалено з локального сховища.',
   transcriptionDeleteErrorTitle: 'Не вдалося видалити модель',
   scaleTestTitle: 'Перевірка масштабу',
-  scaleTestDescription:
-    'Згенеруй тестові сни для stress test.',
+  scaleTestDescription: 'Згенеруй тестові сни для stress test.',
   developerToolsTitle: 'Developer tools',
   developerToolsDescription:
     'Інструменти лише для debug: preview, seed data і stress test.',
@@ -1037,8 +1041,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   biometricLockEnableErrorFailed:
     'Біометрична перевірка не пройшла. Блокування не увімкнено.',
   analysisTitle: 'Аналіз сну',
-  analysisDescription:
-    'Генеруй локальну рефлексію зі збережених даних сну.',
+  analysisDescription: 'Генеруй локальну рефлексію зі збережених даних сну.',
   analysisProviderLabel: 'Провайдер',
   analysisProviderManual: 'Локальний',
   analysisProviderOpenAi: 'OpenAI (заплановано)',

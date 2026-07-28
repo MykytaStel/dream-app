@@ -41,5 +41,7 @@ export function getDreamDraftResumeDescription(
   copy: DreamCopy,
 ) {
   const labels = getDreamDraftSummaryLabels(snapshot, copy);
-  return labels.length ? labels.slice(0, 3).join(' • ') : copy.quickAddContinueHint;
+  return labels.length
+    ? labels.slice(0, 3).join(' • ')
+    : copy.quickAddContinueHint;
 }

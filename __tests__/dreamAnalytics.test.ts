@@ -138,6 +138,8 @@ describe('dream analytics emotion signals', () => {
       lucidCount: 2,
       rate: 67,
     });
-    expect(getLucidDreamStats(dreams).latestLucidDream?.id).toBe('lucid-tagged');
+    expect(getLucidDreamStats(dreams).latestLucidDream?.id).toBe(
+      'lucid-tagged',
+    );
   });
 });

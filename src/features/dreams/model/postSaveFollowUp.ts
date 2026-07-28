@@ -56,7 +56,8 @@ export function getPostSaveFollowUps(
   const transcript = dream?.transcript?.trim();
   const textWordCount = countDreamWords(dream?.text);
   const hasRawText = Boolean(dream?.text?.trim());
-  const needsTranscript = hasAudio && (!transcript || dream?.transcriptStatus === 'error');
+  const needsTranscript =
+    hasAudio && (!transcript || dream?.transcriptStatus === 'error');
   const needsRefine = !hasRawText || textWordCount < REFINE_WORD_THRESHOLD;
 
   if (needsTranscript) {

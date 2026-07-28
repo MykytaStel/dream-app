@@ -51,7 +51,10 @@ export function StatsHeroSection({
     focusSection: DreamDetailFocusSection;
     icon: string;
   } | null;
-  onOpenMemoryNudge: (dreamId: string, focusSection: DreamDetailFocusSection) => void;
+  onOpenMemoryNudge: (
+    dreamId: string,
+    focusSection: DreamDetailFocusSection,
+  ) => void;
   coverageGap: { label: string; value: number } | null;
 }) {
   const t = useTheme<Theme>();
@@ -77,7 +80,9 @@ export function StatsHeroSection({
             <View
               style={[
                 styles.rangeSection,
-                selectedMemoryMode === 'threads' ? styles.rangeSectionWide : null,
+                selectedMemoryMode === 'threads'
+                  ? styles.rangeSectionWide
+                  : null,
               ]}
             >
               <Text style={styles.rangeLabel}>{copy.rangeLabel}</Text>
@@ -88,11 +93,17 @@ export function StatsHeroSection({
                   return (
                     <Pressable
                       key={option.key}
-                      style={[styles.rangeChip, active ? styles.rangeChipActive : null]}
+                      style={[
+                        styles.rangeChip,
+                        active ? styles.rangeChipActive : null,
+                      ]}
                       onPress={() => onSelectRange(option.key)}
                     >
                       <Text
-                        style={[styles.rangeChipText, active ? styles.rangeChipTextActive : null]}
+                        style={[
+                          styles.rangeChipText,
+                          active ? styles.rangeChipTextActive : null,
+                        ]}
                       >
                         {option.label}
                       </Text>
@@ -105,10 +116,15 @@ export function StatsHeroSection({
         ) : null}
 
         {selectedMemoryMode === 'overview' ? (
-          <Animated.View entering={FadeInDown.duration(220)} layout={statsLayoutTransition}>
+          <Animated.View
+            entering={FadeInDown.duration(220)}
+            layout={statsLayoutTransition}
+          >
             <View style={styles.overviewPanel}>
               <View style={styles.overviewPanelHeader}>
-                <Text style={styles.overviewPanelTitle}>{copy.spotlightTitle}</Text>
+                <Text style={styles.overviewPanelTitle}>
+                  {copy.spotlightTitle}
+                </Text>
               </View>
 
               <Pressable
@@ -118,10 +134,14 @@ export function StatsHeroSection({
                   styles.storyCard,
                   styles.storyCardAccent,
                   styles.storyCardSingle,
-                  pressed && topSignal?.onPress ? styles.insightCardPressed : null,
+                  pressed && topSignal?.onPress
+                    ? styles.insightCardPressed
+                    : null,
                 ]}
               >
-                <Text style={styles.storyLabel}>{copy.overviewTopSignalLabel}</Text>
+                <Text style={styles.storyLabel}>
+                  {copy.overviewTopSignalLabel}
+                </Text>
                 <Text style={styles.storyValue} numberOfLines={2}>
                   {topSignal?.label ?? copy.overviewTopSignalEmpty}
                 </Text>
@@ -132,17 +152,30 @@ export function StatsHeroSection({
 
               {memoryNudge ? (
                 <Pressable
-                  onPress={() => onOpenMemoryNudge(memoryNudge.dreamId, memoryNudge.focusSection)}
+                  onPress={() =>
+                    onOpenMemoryNudge(
+                      memoryNudge.dreamId,
+                      memoryNudge.focusSection,
+                    )
+                  }
                   style={({ pressed }) => [
                     styles.memoryNudgeCard,
                     pressed ? styles.insightCardPressed : null,
                   ]}
                 >
                   <View style={styles.memoryNudgeHeader}>
-                    <Text style={styles.storyLabel}>{copy.memoryNudgeLabel}</Text>
+                    <Text style={styles.storyLabel}>
+                      {copy.memoryNudgeLabel}
+                    </Text>
                     <View style={styles.memoryNudgeBadge}>
-                      <Ionicons name={memoryNudge.icon} size={12} color={t.colors.accent} />
-                      <Text style={styles.memoryNudgeBadgeText}>{memoryNudge.badgeLabel}</Text>
+                      <Ionicons
+                        name={memoryNudge.icon}
+                        size={12}
+                        color={t.colors.accent}
+                      />
+                      <Text style={styles.memoryNudgeBadgeText}>
+                        {memoryNudge.badgeLabel}
+                      </Text>
                     </View>
                   </View>
                   <Text style={styles.storyValue} numberOfLines={2}>
@@ -152,15 +185,23 @@ export function StatsHeroSection({
                     {memoryNudge.reason}
                   </Text>
                   <View style={styles.memoryNudgeActionRow}>
-                    <Text style={styles.memoryNudgeActionText}>{memoryNudge.actionLabel}</Text>
-                    <Ionicons name="arrow-forward-outline" size={14} color={t.colors.accent} />
+                    <Text style={styles.memoryNudgeActionText}>
+                      {memoryNudge.actionLabel}
+                    </Text>
+                    <Ionicons
+                      name="arrow-forward-outline"
+                      size={14}
+                      color={t.colors.accent}
+                    />
                   </View>
                 </Pressable>
               ) : null}
 
               <Text style={styles.overviewNextStepHint}>
                 {`${copy.overviewNextStepLabel}: ${
-                  coverageGap?.value ? coverageGap.label : copy.overviewNextStepEmpty
+                  coverageGap?.value
+                    ? coverageGap.label
+                    : copy.overviewNextStepEmpty
                 }`}
               </Text>
             </View>

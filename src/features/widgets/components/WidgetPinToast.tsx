@@ -1,7 +1,11 @@
 import React from 'react';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Animated, { FadeIn, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  SlideInDown,
+  SlideOutDown,
+} from 'react-native-reanimated';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
@@ -36,29 +40,52 @@ export function WidgetPinToast({
       <View style={styles.auroraAccent}>
         <Animated.View
           entering={FadeIn.delay(200).duration(400)}
-          style={[styles.auroraSegment, { backgroundColor: theme.colors.auroraStart }]}
+          style={[
+            styles.auroraSegment,
+            { backgroundColor: theme.colors.auroraStart },
+          ]}
         />
         <Animated.View
           entering={FadeIn.delay(300).duration(400)}
-          style={[styles.auroraSegment, { backgroundColor: theme.colors.auroraMid }]}
+          style={[
+            styles.auroraSegment,
+            { backgroundColor: theme.colors.auroraMid },
+          ]}
         />
         <Animated.View
           entering={FadeIn.delay(400).duration(400)}
-          style={[styles.auroraSegment, { backgroundColor: theme.colors.auroraEnd }]}
+          style={[
+            styles.auroraSegment,
+            { backgroundColor: theme.colors.auroraEnd },
+          ]}
         />
       </View>
 
       <View style={styles.content}>
-        <View style={[styles.iconWrap, { backgroundColor: `${theme.colors.primary}1F` }]}>
-          <Ionicons name="grid-outline" size={20} color={theme.colors.primary} />
+        <View
+          style={[
+            styles.iconWrap,
+            { backgroundColor: `${theme.colors.primary}1F` },
+          ]}
+        >
+          <Ionicons
+            name="grid-outline"
+            size={20}
+            color={theme.colors.primary}
+          />
         </View>
 
         <View style={styles.body}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
-          <Text style={[styles.subtitle, { color: theme.colors.textDim }]}>{subtitle}</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            {title}
+          </Text>
+          <Text style={[styles.subtitle, { color: theme.colors.textDim }]}>
+            {subtitle}
+          </Text>
 
           <View style={styles.actions}>
-            {(Platform.OS === 'android' && canPinNatively) || Platform.OS === 'ios' ? (
+            {(Platform.OS === 'android' && canPinNatively) ||
+            Platform.OS === 'ios' ? (
               <Pressable
                 onPress={Platform.OS === 'android' ? onAddWidget : onDismiss}
                 style={({ pressed }) => [
@@ -68,7 +95,9 @@ export function WidgetPinToast({
                 ]}
                 accessibilityRole="button"
               >
-                <Text style={[styles.primaryBtnLabel, { color: theme.colors.ink }]}>
+                <Text
+                  style={[styles.primaryBtnLabel, { color: theme.colors.ink }]}
+                >
                   {actionLabel}
                 </Text>
               </Pressable>
@@ -76,10 +105,15 @@ export function WidgetPinToast({
 
             <Pressable
               onPress={onDismiss}
-              style={({ pressed }) => [styles.dismissBtn, pressed && styles.pressed]}
+              style={({ pressed }) => [
+                styles.dismissBtn,
+                pressed && styles.pressed,
+              ]}
               accessibilityRole="button"
             >
-              <Text style={[styles.dismissLabel, { color: theme.colors.textDim }]}>
+              <Text
+                style={[styles.dismissLabel, { color: theme.colors.textDim }]}
+              >
                 {dismissLabel}
               </Text>
             </Pressable>
@@ -96,7 +130,9 @@ export function WidgetPinToast({
           accessibilityRole="button"
           accessibilityLabel="Dismiss"
         >
-          <Text style={[styles.closeLabel, { color: theme.colors.textDim }]}>✕</Text>
+          <Text style={[styles.closeLabel, { color: theme.colors.textDim }]}>
+            ✕
+          </Text>
         </Pressable>
       </View>
     </Animated.View>

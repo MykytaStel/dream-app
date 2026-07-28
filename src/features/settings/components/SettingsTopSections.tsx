@@ -1,5 +1,11 @@
 import React from 'react';
-import { Platform, Pressable, Switch, TouchableOpacity, View } from 'react-native';
+import {
+  Platform,
+  Pressable,
+  Switch,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
@@ -36,7 +42,8 @@ export function SettingsHeroSection({
   onSelectLocale: (locale: AppLocale) => void;
   styles: SettingsStyles;
 }) {
-  const [optimisticLocale, setOptimisticLocale] = React.useState<AppLocale | null>(null);
+  const [optimisticLocale, setOptimisticLocale] =
+    React.useState<AppLocale | null>(null);
 
   React.useEffect(() => {
     setOptimisticLocale(null);
@@ -195,7 +202,9 @@ export function ReminderSection({
         meta={reminderSummaryMeta}
         value={reminderSummaryValue}
         disabled={isApplyingReminder}
-        onPress={reminderSettings.enabled ? onOpenReminderTimePicker : undefined}
+        onPress={
+          reminderSettings.enabled ? onOpenReminderTimePicker : undefined
+        }
       />
 
       <View style={styles.settingControlBlock}>
@@ -216,7 +225,9 @@ export function ReminderSection({
           minWidth={92}
         />
         <Text style={styles.reminderHint}>{reminderStyleDescription}</Text>
-        <Text style={styles.reminderHint}>{copy.reminderStylePreviewLabel}</Text>
+        <Text style={styles.reminderHint}>
+          {copy.reminderStylePreviewLabel}
+        </Text>
         <SettingsActionRow
           title={reminderStylePreview.title}
           meta={reminderStylePreview.body}
@@ -239,7 +250,9 @@ export function ReminderSection({
                 {`${copy.reminderSmartSuggestionLabel} · ${suggestedTime.label}`}
               </Text>
               <View style={styles.reminderSuggestionApplyChip}>
-                <Text style={styles.reminderSuggestionApplyText}>{copy.reminderSmartSuggestionApply}</Text>
+                <Text style={styles.reminderSuggestionApplyText}>
+                  {copy.reminderSmartSuggestionApply}
+                </Text>
               </View>
             </TouchableOpacity>
           ) : null}
@@ -344,7 +357,13 @@ export function BiometricLockSection({
     return biometricLockEnabled
       ? copy.biometricLockEnabledValue
       : copy.biometricLockDisabledValue;
-  }, [biometricAvailability, biometricLockEnabled, copy, isNotEnrolled, isSupported]);
+  }, [
+    biometricAvailability,
+    biometricLockEnabled,
+    copy,
+    isNotEnrolled,
+    isSupported,
+  ]);
 
   return (
     <Card style={styles.sectionCard}>
@@ -416,9 +435,16 @@ export function PrivacySection({
 }) {
   return (
     <Card style={styles.sectionCard}>
-      <SettingsSectionHeader title={copy.privacyTitle} description={copy.privacyDescription} />
+      <SettingsSectionHeader
+        title={copy.privacyTitle}
+        description={copy.privacyDescription}
+      />
       {privacyHighlights.map(item => (
-        <SettingsActionRow key={item.label} title={item.label} meta={item.value} />
+        <SettingsActionRow
+          key={item.label}
+          title={item.label}
+          meta={item.value}
+        />
       ))}
       <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
     </Card>

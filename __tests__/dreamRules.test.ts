@@ -19,7 +19,13 @@ describe('dreamRules', () => {
 
   test('normalizes tags to lower-case, dash-separated unique list', () => {
     expect(
-      normalizeTags(['  Blue Sky ', 'blue-sky', '  lucid   Dream ', '', 'Lucid Dream']),
+      normalizeTags([
+        '  Blue Sky ',
+        'blue-sky',
+        '  lucid   Dream ',
+        '',
+        'Lucid Dream',
+      ]),
     ).toEqual(['blue-sky', 'lucid-dream']);
   });
 
@@ -101,8 +107,12 @@ describe('dreamRules', () => {
   });
 
   test('accepts text-only, audio-only, and mixed dream captures', () => {
-    expect(hasDreamContent({ text: '  remembered hallway  ', audioUri: undefined })).toBe(true);
-    expect(hasDreamContent({ text: '   ', audioUri: 'file:///dream.m4a' })).toBe(true);
+    expect(
+      hasDreamContent({ text: '  remembered hallway  ', audioUri: undefined }),
+    ).toBe(true);
+    expect(
+      hasDreamContent({ text: '   ', audioUri: 'file:///dream.m4a' }),
+    ).toBe(true);
     expect(
       validateDreamForSave({
         text: 'remembered hallway',
@@ -152,6 +162,11 @@ describe('dreamRules', () => {
       { id: 'd', createdAt: 120, sleepDate: '2026-03-06', tags: [] },
     ];
 
-    expect(sortDreamsStable(dreams).map(dream => dream.id)).toEqual(['d', 'b', 'a', 'c']);
+    expect(sortDreamsStable(dreams).map(dream => dream.id)).toEqual([
+      'd',
+      'b',
+      'a',
+      'c',
+    ]);
   });
 });

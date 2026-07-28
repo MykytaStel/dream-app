@@ -21,7 +21,11 @@ export function createButtonStyles(
   return StyleSheet.create({
     container: {
       borderRadius: theme.borderRadii.xl,
-      shadowColor: isPrimary ? theme.colors.glow : isDanger ? theme.colors.danger : 'transparent',
+      shadowColor: isPrimary
+        ? theme.colors.glow
+        : isDanger
+          ? theme.colors.danger
+          : 'transparent',
       shadowOffset: { width: 0, height: 8 },
       shadowOpacity: isPrimary || isDanger ? 0.18 : 0,
       shadowRadius: 18,
@@ -33,18 +37,16 @@ export function createButtonStyles(
       paddingHorizontal: horizontalPadding,
       borderRadius: theme.borderRadii.xl,
       borderWidth: 1,
-      backgroundColor:
-        isPrimary
-          ? theme.colors.primary
-          : isDanger
-            ? theme.colors.danger
-            : hexToRgba(theme.colors.surfaceElevated, 0.9),
-      borderColor:
-        isPrimary
-          ? hexToRgba('#FFFFFF', 0.14)
-          : isDanger
-            ? hexToRgba('#FFFFFF', 0.08)
-            : hexToRgba('#FFFFFF', 0.06),
+      backgroundColor: isPrimary
+        ? theme.colors.primary
+        : isDanger
+          ? theme.colors.danger
+          : hexToRgba(theme.colors.surfaceElevated, 0.9),
+      borderColor: isPrimary
+        ? hexToRgba('#FFFFFF', 0.14)
+        : isDanger
+          ? hexToRgba('#FFFFFF', 0.08)
+          : hexToRgba('#FFFFFF', 0.06),
     },
     contentRow: {
       flexDirection: 'row',
@@ -59,16 +61,14 @@ export function createButtonStyles(
       fontSize: labelSize,
       lineHeight: labelSize + 2,
       letterSpacing: 0.1,
-      color: isPrimary || isDanger ? theme.colors.background : theme.colors.text,
+      color:
+        isPrimary || isDanger ? theme.colors.background : theme.colors.text,
     },
   });
 }
 
 export const createButtonAnimatedStyle = (pressed: boolean) => ({
-  transform: [
-    { scale: pressed ? 0.985 : 1 },
-    { translateY: pressed ? 1 : 0 },
-  ],
+  transform: [{ scale: pressed ? 0.985 : 1 }, { translateY: pressed ? 1 : 0 }],
 });
 
 export type ButtonStyle = ViewStyle;

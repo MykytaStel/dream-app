@@ -9,7 +9,9 @@ type DreamWidgetPinNativeModule = {
   isPinSupported?: () => Promise<boolean>;
 };
 
-const nativeModule = (NativeModules as { DreamWidget?: DreamWidgetPinNativeModule }).DreamWidget;
+const nativeModule = (
+  NativeModules as { DreamWidget?: DreamWidgetPinNativeModule }
+).DreamWidget;
 
 export function hasWidgetPinPromptBeenSeen(): boolean {
   return kv.getBoolean(WIDGET_PIN_PROMPT_SEEN_KEY) === true;

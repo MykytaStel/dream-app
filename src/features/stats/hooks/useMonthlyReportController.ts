@@ -52,14 +52,23 @@ export function useMonthlyReportController({
   const [months, setMonths] = React.useState<MonthlyReportMonth[]>(() =>
     getMonthlyReportMonthsFromKeys(meta.monthKeys, localeTag),
   );
-  const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
-  const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
-  const [savedThreadRecords, setSavedThreadRecords] = React.useState(() => getSavedDreamThreads());
+  const [dreams, setDreams] = React.useState(
+    () => [] as ReturnType<typeof listDreams>,
+  );
+  const [savedMonths, setSavedMonths] = React.useState(() =>
+    getSavedMonthlyReportMonths(),
+  );
+  const [savedThreadRecords, setSavedThreadRecords] = React.useState(() =>
+    getSavedDreamThreads(),
+  );
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
-  const [selectedMonthKey, setSelectedMonthKey] = React.useState<string | undefined>(
-    initialMonthKey ?? getMonthlyReportMonthsFromKeys(meta.monthKeys, localeTag)[0]?.key,
+  const [selectedMonthKey, setSelectedMonthKey] = React.useState<
+    string | undefined
+  >(
+    initialMonthKey ??
+      getMonthlyReportMonthsFromKeys(meta.monthKeys, localeTag)[0]?.key,
   );
 
   useFocusEffect(
@@ -70,13 +79,20 @@ export function useMonthlyReportController({
       try {
         const requestId = ++hydrationRequestRef.current;
         const nextMeta = getDreamsMeta();
-        const nextMonths = getMonthlyReportMonthsFromKeys(nextMeta.monthKeys, localeTag);
+        const nextMonths = getMonthlyReportMonthsFromKeys(
+          nextMeta.monthKeys,
+          localeTag,
+        );
 
         setMeta(nextMeta);
         setMonths(nextMonths);
         setSavedMonths(getSavedMonthlyReportMonths());
         setSavedThreadRecords(getSavedDreamThreads());
-        trackLocalSurfaceLoad('monthly_report_refresh', startedAt, nextMeta.totalCount);
+        trackLocalSurfaceLoad(
+          'monthly_report_refresh',
+          startedAt,
+          nextMeta.totalCount,
+        );
 
         const runHydration = () => {
           try {
@@ -133,7 +149,9 @@ export function useMonthlyReportController({
 
   const isSavedForLater = React.useMemo(
     () =>
-      report ? savedMonths.some(item => item.monthKey === report.month.key) : false,
+      report
+        ? savedMonths.some(item => item.monthKey === report.month.key)
+        : false,
     [report, savedMonths],
   );
 
@@ -149,7 +167,14 @@ export function useMonthlyReportController({
             isSavedForLater,
           })
         : null,
-    [copy, isSavedForLater, localeTag, preSleepEmotionLabels, report, wakeEmotionLabels],
+    [
+      copy,
+      isSavedForLater,
+      localeTag,
+      preSleepEmotionLabels,
+      report,
+      wakeEmotionLabels,
+    ],
   );
   const savedThreadItems = React.useMemo(
     () =>

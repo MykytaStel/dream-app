@@ -8,5 +8,9 @@ export function getTabBarHeight(bottomInset: number) {
 }
 
 export function getTabBarReservedSpace(bottomInset: number) {
-  return getTabBarHeight(bottomInset) + TAB_BAR_BOTTOM_OFFSET + TAB_BAR_SCREEN_CLEARANCE;
+  return (
+    getTabBarHeight(bottomInset) +
+    TAB_BAR_BOTTOM_OFFSET +
+    TAB_BAR_SCREEN_CLEARANCE
+  );
 }

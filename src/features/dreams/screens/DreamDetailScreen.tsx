@@ -23,7 +23,10 @@ import {
   getNightmareRescriptStatusLabels,
   getPracticeCopy,
 } from '../../../constants/copy/practice';
-import { buildDreamCardData, buildDreamShareText } from '../model/dreamCardPresentation';
+import {
+  buildDreamCardData,
+  buildDreamShareText,
+} from '../model/dreamCardPresentation';
 import {
   ROOT_ROUTE_NAMES,
   TAB_ROUTE_NAMES,
@@ -35,28 +38,45 @@ import { DreamDetailOverview } from '../components/DreamDetailOverview';
 import { DreamDetailSections } from '../components/DreamDetailSections';
 import { useDreamDetailController } from '../hooks/useDreamDetailController';
 import { getDreamDetailViewModel } from '../model/dreamDetailPresentation';
-import {
-  createDreamDetailScreenStyles,
-} from './DreamDetailScreen.styles';
+import { createDreamDetailScreenStyles } from './DreamDetailScreen.styles';
 
 export default function DreamDetailScreen() {
   const theme = useTheme<Theme>();
   const { locale } = useI18n();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const route = useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.DreamDetail>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const route =
+    useRoute<
+      RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.DreamDetail>
+    >();
 
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const stressLabels = React.useMemo(() => getDreamStressLabels(locale), [locale]);
-  const wakeEmotionLabels = React.useMemo(() => getDreamWakeEmotionLabels(locale), [locale]);
+  const stressLabels = React.useMemo(
+    () => getDreamStressLabels(locale),
+    [locale],
+  );
+  const wakeEmotionLabels = React.useMemo(
+    () => getDreamWakeEmotionLabels(locale),
+    [locale],
+  );
   const preSleepEmotionLabels = React.useMemo(
     () => getDreamPreSleepEmotionLabels(locale),
     [locale],
   );
-  const styles = React.useMemo(() => createDreamDetailScreenStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () => createDreamDetailScreenStyles(theme),
+    [theme],
+  );
   const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
-  const lucidTechniqueLabels = React.useMemo(() => getLucidTechniqueLabels(locale), [locale]);
-  const lucidControlLabels = React.useMemo(() => getLucidControlAreaLabels(locale), [locale]);
+  const lucidTechniqueLabels = React.useMemo(
+    () => getLucidTechniqueLabels(locale),
+    [locale],
+  );
+  const lucidControlLabels = React.useMemo(
+    () => getLucidControlAreaLabels(locale),
+    [locale],
+  );
   const lucidStabilizationLabels = React.useMemo(
     () => getLucidStabilizationLabels(locale),
     [locale],
@@ -146,18 +166,22 @@ export default function DreamDetailScreen() {
       <ScreenContainer scroll>
         <Card style={styles.detailSheet}>
           <View style={styles.sheetSection}>
-          <Pressable
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-            accessibilityLabel={copy.detailBack}
-          >
-            <Ionicons name="chevron-back" size={18} color={theme.colors.text} />
-          </Pressable>
-          <SectionHeader
-            title={copy.detailMissingTitle}
-            subtitle={copy.detailMissingDescription}
-            large
-          />
+            <Pressable
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              accessibilityLabel={copy.detailBack}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={18}
+                color={theme.colors.text}
+              />
+            </Pressable>
+            <SectionHeader
+              title={copy.detailMissingTitle}
+              subtitle={copy.detailMissingDescription}
+              large
+            />
           </View>
         </Card>
       </ScreenContainer>

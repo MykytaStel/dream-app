@@ -8,7 +8,10 @@ import {
 } from '../../../services/storage/keys';
 import { Dream } from '../../dreams/model/dream';
 import { sanitizeDream, sortDreamsStable } from '../../dreams/model/dreamRules';
-import { buildDreamWidgetSnapshot, type DreamWidgetDraftSnapshot } from '../model/dreamWidget';
+import {
+  buildDreamWidgetSnapshot,
+  type DreamWidgetDraftSnapshot,
+} from '../model/dreamWidget';
 import { publishDreamWidgetSnapshot } from './dreamWidgetHostService';
 
 type DreamWidgetSyncInput = {
@@ -53,8 +56,12 @@ function readStoredDreams(): Dream[] {
   }
 }
 
-function normalizeEntryMode(value: unknown): DreamWidgetDraftSnapshot['resumeMode'] | undefined {
-  return value === 'default' || value === 'voice' || value === 'wake' ? value : undefined;
+function normalizeEntryMode(
+  value: unknown,
+): DreamWidgetDraftSnapshot['resumeMode'] | undefined {
+  return value === 'default' || value === 'voice' || value === 'wake'
+    ? value
+    : undefined;
 }
 
 function readStoredDraftSnapshot(): DreamWidgetDraftSnapshot | null {
@@ -67,15 +74,20 @@ function readStoredDraftSnapshot(): DreamWidgetDraftSnapshot | null {
     const draft = JSON.parse(raw) as DraftRecord;
     const title = typeof draft.title === 'string' ? draft.title.trim() : '';
     const text = typeof draft.text === 'string' ? draft.text.trim() : '';
-    const hasAudio = typeof draft.audioUri === 'string' && Boolean(draft.audioUri.trim());
+    const hasAudio =
+      typeof draft.audioUri === 'string' && Boolean(draft.audioUri.trim());
     const hasText = Boolean(title || text);
-    const wakeEmotionCount = Array.isArray(draft.wakeEmotions) ? draft.wakeEmotions.length : 0;
+    const wakeEmotionCount = Array.isArray(draft.wakeEmotions)
+      ? draft.wakeEmotions.length
+      : 0;
     const preSleepEmotionCount = Array.isArray(draft.preSleepEmotions)
       ? draft.preSleepEmotions.length
       : 0;
     const tagCount = Array.isArray(draft.tags) ? draft.tags.length : 0;
     const hasWakeSignals =
-      Boolean(draft.mood) || typeof draft.lucidity === 'number' || wakeEmotionCount > 0;
+      Boolean(draft.mood) ||
+      typeof draft.lucidity === 'number' ||
+      wakeEmotionCount > 0;
     const hasContext =
       typeof draft.stressLevel === 'number' ||
       preSleepEmotionCount > 0 ||
@@ -85,14 +97,24 @@ function readStoredDraftSnapshot(): DreamWidgetDraftSnapshot | null {
       Boolean(draft.importantEvents?.trim()) ||
       Boolean(draft.healthNotes?.trim());
 
-    if (!hasAudio && !hasText && !hasWakeSignals && !hasContext && tagCount === 0) {
+    if (
+      !hasAudio &&
+      !hasText &&
+      !hasWakeSignals &&
+      !hasContext &&
+      tagCount === 0
+    ) {
       return null;
     }
 
     return {
       resumeMode:
         normalizeEntryMode(draft.entryMode) ??
-        (hasWakeSignals || hasContext ? 'wake' : hasAudio && !hasText ? 'voice' : 'default'),
+        (hasWakeSignals || hasContext
+          ? 'wake'
+          : hasAudio && !hasText
+            ? 'voice'
+            : 'default'),
       hasAudio,
       hasText,
       wordCount: text ? text.split(/\s+/).length : 0,
@@ -109,11 +131,15 @@ function readStoredDraftSnapshot(): DreamWidgetDraftSnapshot | null {
   }
 }
 
-export async function syncDreamWidgetSnapshot(input: DreamWidgetSyncInput = {}) {
+export async function syncDreamWidgetSnapshot(
+  input: DreamWidgetSyncInput = {},
+) {
   const snapshot = buildDreamWidgetSnapshot({
     dreams: input.dreams ?? readStoredDreams(),
     draftSnapshot:
-      input.draftSnapshot !== undefined ? input.draftSnapshot : readStoredDraftSnapshot(),
+      input.draftSnapshot !== undefined
+        ? input.draftSnapshot
+        : readStoredDraftSnapshot(),
     locale: input.locale ?? getStoredLocale(),
   });
   const raw = JSON.stringify(snapshot);

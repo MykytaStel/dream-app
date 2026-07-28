@@ -56,7 +56,11 @@ function normalizeSavedThreadRecord(
     return null;
   }
 
-  if (value.kind !== 'word' && value.kind !== 'theme' && value.kind !== 'symbol') {
+  if (
+    value.kind !== 'word' &&
+    value.kind !== 'theme' &&
+    value.kind !== 'symbol'
+  ) {
     return null;
   }
 
@@ -71,7 +75,9 @@ function normalizeSavedThreadRecord(
 }
 
 function normalizeSyncStatus(value: unknown): ReviewStateSyncStatus {
-  return value === 'syncing' || value === 'synced' || value === 'error' ? value : 'local';
+  return value === 'syncing' || value === 'synced' || value === 'error'
+    ? value
+    : 'local';
 }
 
 function readLegacySavedMonths() {
@@ -122,7 +128,9 @@ function persistReviewState(snapshot: SavedReviewStateSnapshot) {
   return snapshot;
 }
 
-function normalizeSnapshot(raw: RawReviewStateSnapshot): SavedReviewStateSnapshot {
+function normalizeSnapshot(
+  raw: RawReviewStateSnapshot,
+): SavedReviewStateSnapshot {
   return {
     updatedAt:
       typeof raw.updatedAt === 'number' && Number.isFinite(raw.updatedAt)

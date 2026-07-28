@@ -15,14 +15,34 @@ import {
   SleepContext,
   WakeEmotion,
 } from './dream';
-import { DreamAnalysisProvider, DreamAnalysisStatus } from '../../analysis/model/dreamAnalysis';
+import {
+  DreamAnalysisProvider,
+  DreamAnalysisStatus,
+} from '../../analysis/model/dreamAnalysis';
 
 const SLEEP_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = ['idle', 'processing', 'ready', 'error'];
-const TRANSCRIPT_SOURCE_VALUES: DreamTranscriptSource[] = ['generated', 'edited'];
+const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = [
+  'idle',
+  'processing',
+  'ready',
+  'error',
+];
+const TRANSCRIPT_SOURCE_VALUES: DreamTranscriptSource[] = [
+  'generated',
+  'edited',
+];
 const ANALYSIS_PROVIDER_VALUES: DreamAnalysisProvider[] = ['manual', 'openai'];
-const ANALYSIS_STATUS_VALUES: DreamAnalysisStatus[] = ['idle', 'ready', 'error'];
-const SYNC_STATUS_VALUES: DreamSyncStatus[] = ['local', 'syncing', 'synced', 'error'];
+const ANALYSIS_STATUS_VALUES: DreamAnalysisStatus[] = [
+  'idle',
+  'ready',
+  'error',
+];
+const SYNC_STATUS_VALUES: DreamSyncStatus[] = [
+  'local',
+  'syncing',
+  'synced',
+  'error',
+];
 const WAKE_EMOTION_VALUES: WakeEmotion[] = [
   'calm',
   'uneasy',
@@ -121,7 +141,10 @@ function normalizeOptionalText(value?: string) {
   return normalized ? normalized : undefined;
 }
 
-function normalizeEmotionSelection<T extends string>(values: unknown, allowedValues: readonly T[]) {
+function normalizeEmotionSelection<T extends string>(
+  values: unknown,
+  allowedValues: readonly T[],
+) {
   if (!Array.isArray(values)) {
     return undefined;
   }
@@ -129,14 +152,20 @@ function normalizeEmotionSelection<T extends string>(values: unknown, allowedVal
   const allowed = new Set(allowedValues);
   const normalized = Array.from(
     new Set(
-      values.filter((value): value is T => typeof value === 'string' && allowed.has(value as T)),
+      values.filter(
+        (value): value is T =>
+          typeof value === 'string' && allowed.has(value as T),
+      ),
     ),
   );
 
   return normalized.length ? normalized : undefined;
 }
 
-function normalizeSelection<T extends string>(value: unknown, allowedValues: readonly T[]) {
+function normalizeSelection<T extends string>(
+  value: unknown,
+  allowedValues: readonly T[],
+) {
   if (typeof value !== 'string') {
     return undefined;
   }
@@ -152,7 +181,9 @@ function normalizeFreeformList(values: unknown) {
   const normalized = Array.from(
     new Set(
       values
-        .map(value => (typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : ''))
+        .map(value =>
+          typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '',
+        )
         .filter(Boolean),
     ),
   ).slice(0, 12);
@@ -187,7 +218,8 @@ function normalizeSyncStatus(rawStatus: Dream['syncStatus']) {
 function normalizeTranscriptFields(input: Dream) {
   const transcript = normalizeOptionalText(input.transcript);
   const transcriptUpdatedAt =
-    typeof input.transcriptUpdatedAt === 'number' && Number.isFinite(input.transcriptUpdatedAt)
+    typeof input.transcriptUpdatedAt === 'number' &&
+    Number.isFinite(input.transcriptUpdatedAt)
       ? input.transcriptUpdatedAt
       : undefined;
   const hasAudio = Boolean(input.audioUri?.trim());
@@ -226,7 +258,9 @@ function normalizeTranscriptFields(input: Dream) {
     transcriptStatus,
     transcriptSource,
     transcriptUpdatedAt:
-      transcript || transcriptStatus === 'processing' || transcriptStatus === 'error'
+      transcript ||
+      transcriptStatus === 'processing' ||
+      transcriptStatus === 'error'
         ? transcriptUpdatedAt
         : undefined,
   };
@@ -241,11 +275,14 @@ function normalizeAnalysisFields(input: Dream) {
   const provider = ANALYSIS_PROVIDER_VALUES.includes(analysis.provider)
     ? analysis.provider
     : undefined;
-  const status = ANALYSIS_STATUS_VALUES.includes(analysis.status) ? analysis.status : undefined;
+  const status = ANALYSIS_STATUS_VALUES.includes(analysis.status)
+    ? analysis.status
+    : undefined;
   const summary = normalizeOptionalText(analysis.summary);
   const errorMessage = normalizeOptionalText(analysis.errorMessage);
   const generatedAt =
-    typeof analysis.generatedAt === 'number' && Number.isFinite(analysis.generatedAt)
+    typeof analysis.generatedAt === 'number' &&
+    Number.isFinite(analysis.generatedAt)
       ? analysis.generatedAt
       : undefined;
   const themes = Array.isArray(analysis.themes)
@@ -293,7 +330,8 @@ function normalizeSyncFields(input: Dream) {
   const audioRemotePath = normalizeOptionalText(input.audioRemotePath);
   let syncStatus = normalizeSyncStatus(input.syncStatus) ?? 'local';
   const lastSyncedAt =
-    typeof input.lastSyncedAt === 'number' && Number.isFinite(input.lastSyncedAt)
+    typeof input.lastSyncedAt === 'number' &&
+    Number.isFinite(input.lastSyncedAt)
       ? input.lastSyncedAt
       : undefined;
   let syncError = normalizeOptionalText(input.syncError);
@@ -316,11 +354,7 @@ function normalizeSyncFields(input: Dream) {
 }
 
 export function normalizeTag(value: string) {
-  return value
-    .trim()
-    .toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-');
+  return value.trim().toLowerCase().replace(/\s+/g, '-').replace(/-+/g, '-');
 }
 
 export function normalizeTags(tags: string[]) {
@@ -340,7 +374,9 @@ export function normalizeTags(tags: string[]) {
   return normalized;
 }
 
-function normalizeSleepContext(context?: SleepContext): SleepContext | undefined {
+function normalizeSleepContext(
+  context?: SleepContext,
+): SleepContext | undefined {
   if (!context) {
     return undefined;
   }
@@ -384,17 +420,25 @@ function normalizeLucidPractice(value?: LucidPractice) {
   }
 
   const normalized: LucidPractice = {
-    technique: normalizeSelection(value.technique, LUCID_PRACTICE_TECHNIQUE_VALUES),
+    technique: normalizeSelection(
+      value.technique,
+      LUCID_PRACTICE_TECHNIQUE_VALUES,
+    ),
     dreamSigns: normalizeFreeformList(value.dreamSigns),
     trigger: normalizeOptionalText(value.trigger),
-    controlAreas: normalizeEmotionSelection(value.controlAreas, LUCID_CONTROL_AREA_VALUES),
+    controlAreas: normalizeEmotionSelection(
+      value.controlAreas,
+      LUCID_CONTROL_AREA_VALUES,
+    ),
     stabilizationActions: normalizeEmotionSelection(
       value.stabilizationActions,
       LUCID_STABILIZATION_ACTION_VALUES,
     ),
     recallScore:
-      typeof value.recallScore === 'number' && Number.isFinite(value.recallScore)
-        ? (Math.max(1, Math.min(5, Math.floor(value.recallScore))) as 1 | 2 | 3 | 4 | 5)
+      typeof value.recallScore === 'number' &&
+      Number.isFinite(value.recallScore)
+        ? (Math.max(1, Math.min(5, Math.floor(value.recallScore))) as
+            1 | 2 | 3 | 4 | 5)
         : undefined,
   };
 
@@ -418,18 +462,29 @@ function normalizeNightmareSupport(value?: NightmareSupport) {
     explicit: typeof value.explicit === 'boolean' ? value.explicit : undefined,
     distress:
       typeof value.distress === 'number' && Number.isFinite(value.distress)
-        ? (Math.max(1, Math.min(5, Math.floor(value.distress))) as 1 | 2 | 3 | 4 | 5)
+        ? (Math.max(1, Math.min(5, Math.floor(value.distress))) as
+            1 | 2 | 3 | 4 | 5)
         : undefined,
-    recurring: typeof value.recurring === 'boolean' ? value.recurring : undefined,
+    recurring:
+      typeof value.recurring === 'boolean' ? value.recurring : undefined,
     recurringKey: normalizeOptionalText(value.recurringKey)?.toLowerCase(),
-    wokeFromDream: typeof value.wokeFromDream === 'boolean' ? value.wokeFromDream : undefined,
-    aftereffects: normalizeEmotionSelection(value.aftereffects, NIGHTMARE_AFTEREFFECT_VALUES),
+    wokeFromDream:
+      typeof value.wokeFromDream === 'boolean'
+        ? value.wokeFromDream
+        : undefined,
+    aftereffects: normalizeEmotionSelection(
+      value.aftereffects,
+      NIGHTMARE_AFTEREFFECT_VALUES,
+    ),
     groundingUsed: normalizeEmotionSelection(
       value.groundingUsed,
       NIGHTMARE_GROUNDING_ACTION_VALUES,
     ),
     rewrittenEnding: normalizeOptionalText(value.rewrittenEnding),
-    rescriptStatus: normalizeSelection(value.rescriptStatus, NIGHTMARE_RESCRIPT_STATUS_VALUES),
+    rescriptStatus: normalizeSelection(
+      value.rescriptStatus,
+      NIGHTMARE_RESCRIPT_STATUS_VALUES,
+    ),
   };
 
   const hasValues =
@@ -446,7 +501,10 @@ function normalizeNightmareSupport(value?: NightmareSupport) {
   return hasValues ? normalized : undefined;
 }
 
-export function resolveDreamSleepDate(rawSleepDate: string | undefined, createdAt: number) {
+export function resolveDreamSleepDate(
+  rawSleepDate: string | undefined,
+  createdAt: number,
+) {
   const cleanDate = rawSleepDate?.trim();
   if (cleanDate && isValidSleepDate(cleanDate)) {
     return cleanDate;
@@ -459,7 +517,9 @@ export function hasDreamContent(input: Pick<Dream, 'text' | 'audioUri'>) {
   return Boolean(input.text?.trim() || input.audioUri?.trim());
 }
 
-export function validateDreamForSave(input: Pick<Dream, 'text' | 'audioUri' | 'sleepDate'>) {
+export function validateDreamForSave(
+  input: Pick<Dream, 'text' | 'audioUri' | 'sleepDate'>,
+) {
   if (!hasDreamContent(input)) {
     return DREAM_SAVE_VALIDATION.missingContent;
   }
@@ -497,7 +557,10 @@ export function sanitizeDream(input: Dream): Dream {
     analysis: normalizeAnalysisFields(input),
     tags: normalizeTags(input.tags ?? []),
     lucidity: normalizeLucidity(input.lucidity),
-    wakeEmotions: normalizeEmotionSelection(input.wakeEmotions, WAKE_EMOTION_VALUES),
+    wakeEmotions: normalizeEmotionSelection(
+      input.wakeEmotions,
+      WAKE_EMOTION_VALUES,
+    ),
     sleepContext: normalizeSleepContext(input.sleepContext),
     lucidPractice: normalizeLucidPractice(input.lucidPractice),
     nightmare: normalizeNightmareSupport(input.nightmare),

@@ -86,15 +86,23 @@ function QuickAddOption({
   );
 }
 
-export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps) {
+export function AppTabBar({
+  descriptors,
+  navigation,
+  state,
+}: BottomTabBarProps) {
   const t = useTheme<Theme>();
   const { locale } = useI18n();
   const insets = useSafeAreaInsets();
-  const styles = React.useMemo(() => createTabsStyles(t, insets.bottom), [t, insets.bottom]);
+  const styles = React.useMemo(
+    () => createTabsStyles(t, insets.bottom),
+    [t, insets.bottom],
+  );
   const labels = React.useMemo(() => getTabRouteLabels(locale), [locale]);
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const [isQuickAddOpen, setIsQuickAddOpen] = React.useState(false);
-  const [draftSnapshot, setDraftSnapshot] = React.useState<DreamDraftSnapshot | null>(null);
+  const [draftSnapshot, setDraftSnapshot] =
+    React.useState<DreamDraftSnapshot | null>(null);
   const activeRouteName = state.routes[state.index]?.name;
   const addFocused = activeRouteName === TAB_ROUTE_NAMES.New;
   const quickAddActive = isQuickAddOpen || addFocused;
@@ -129,14 +137,11 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
     ) => {
       closeQuickAdd();
       navigation.dispatch(
-        TabActions.jumpTo(
-          TAB_ROUTE_NAMES.New,
-          {
-            entryMode,
-            autoStartRecording: options?.autoStartRecording,
-            launchKey: options?.autoStartRecording ? Date.now() : undefined,
-          },
-        ),
+        TabActions.jumpTo(TAB_ROUTE_NAMES.New, {
+          entryMode,
+          autoStartRecording: options?.autoStartRecording,
+          launchKey: options?.autoStartRecording ? Date.now() : undefined,
+        }),
       );
     },
     [closeQuickAdd, navigation],
@@ -144,7 +149,9 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
 
   const renderTabButton = React.useCallback(
     (routeName: (typeof SIDE_ROUTE_NAMES)[number]) => {
-      const route = state.routes.find(candidate => candidate.name === routeName);
+      const route = state.routes.find(
+        candidate => candidate.name === routeName,
+      );
       if (!route) {
         return null;
       }
@@ -153,7 +160,8 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
       const isFocused = activeRouteName === route.name;
       const label = labels[routeName];
       const isNearCenter =
-        routeName === TAB_ROUTE_NAMES.Archive || routeName === TAB_ROUTE_NAMES.Stats;
+        routeName === TAB_ROUTE_NAMES.Archive ||
+        routeName === TAB_ROUTE_NAMES.Stats;
 
       const onPress = () => {
         closeQuickAdd();
@@ -180,10 +188,15 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
           key={route.key}
           accessibilityRole="button"
           accessibilityState={isFocused ? { selected: true } : {}}
-          accessibilityLabel={descriptor.options.tabBarAccessibilityLabel ?? label}
+          accessibilityLabel={
+            descriptor.options.tabBarAccessibilityLabel ?? label
+          }
           onLongPress={onLongPress}
           onPress={onPress}
-          style={[styles.tabItem, isNearCenter ? styles.tabItemNearCenter : null]}
+          style={[
+            styles.tabItem,
+            isNearCenter ? styles.tabItemNearCenter : null,
+          ]}
         >
           {({ pressed }) => (
             <View
@@ -244,7 +257,9 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
           <View pointerEvents="none" style={styles.tabBarGlowRight} />
           <View pointerEvents="none" style={styles.tabBarEdgeHighlight} />
           <View style={styles.tabBarRow}>
-            <View style={styles.tabCluster}>{leftRoutes.map(renderTabButton)}</View>
+            <View style={styles.tabCluster}>
+              {leftRoutes.map(renderTabButton)}
+            </View>
             <View style={styles.centerSlot}>
               <View
                 style={[
@@ -285,7 +300,9 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
                 </Pressable>
               </View>
             </View>
-            <View style={styles.tabCluster}>{rightRoutes.map(renderTabButton)}</View>
+            <View style={styles.tabCluster}>
+              {rightRoutes.map(renderTabButton)}
+            </View>
           </View>
         </View>
       </View>
@@ -306,7 +323,9 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
               <View style={styles.quickAddHeaderCopy}>
                 <Text style={styles.quickAddKicker}>{copy.quickAddKicker}</Text>
                 <Text style={styles.quickAddTitle}>{copy.createTitle}</Text>
-                <Text style={styles.quickAddSubtitle}>{copy.createSubtitle}</Text>
+                <Text style={styles.quickAddSubtitle}>
+                  {copy.createSubtitle}
+                </Text>
               </View>
               <Pressable
                 accessibilityLabel={copy.clearErrorAction}
@@ -322,10 +341,10 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
             </View>
 
             <View style={styles.quickAddOptions}>
-                <QuickAddOption
-                  description={copy.quickAddWakeHint}
-                  icon="sunny-outline"
-                  onPress={() => openComposer('wake')}
+              <QuickAddOption
+                description={copy.quickAddWakeHint}
+                icon="sunny-outline"
+                onPress={() => openComposer('wake')}
                 primary
                 styles={styles}
                 title={copy.quickAddWakeAction}
@@ -333,7 +352,9 @@ export function AppTabBar({ descriptors, navigation, state }: BottomTabBarProps)
               <QuickAddOption
                 description={copy.quickAddVoiceHint}
                 icon="mic-outline"
-                onPress={() => openComposer('voice', { autoStartRecording: true })}
+                onPress={() =>
+                  openComposer('voice', { autoStartRecording: true })
+                }
                 styles={styles}
                 title={copy.quickAddVoiceAction}
               />

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The pre-Android 12 form of data_extraction_rules.xml. Same intent, same
+  narrowness: only the archive key leaves the device, never the dreams.
+-->
+<full-backup-content>
+  <exclude domain="root" />
+  <exclude domain="file" />
+  <exclude domain="database" />
+  <exclude domain="sharedpref" />
+  <exclude domain="external" />
+  <include domain="file" path="archive-key/" />
+</full-backup-content>

@@ -18,16 +18,16 @@ module.exports = {
     '!src/@types/**',
     '!src/types/**',
   ],
-  // Measured 2026-07-28, rounded down. This is a floor that ratchets upward,
+  // Measured 2026-07-30, rounded down. This is a floor that ratchets upward,
   // not a target. Note it covers all of src/, not just the files the suites
   // happen to import — that distinction nearly halves the number, and the
   // lower one is the honest one.
   coverageThreshold: {
     global: {
-      statements: 35,
-      branches: 32,
-      functions: 30,
-      lines: 35,
+      statements: 37,
+      branches: 34,
+      functions: 31,
+      lines: 37,
     },
   },
 };

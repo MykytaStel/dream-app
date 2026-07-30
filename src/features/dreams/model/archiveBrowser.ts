@@ -10,6 +10,7 @@ import {
   sortDreamsForTimeline,
   type DreamSearchMatchReason,
 } from './homeTimeline';
+import { pluralize } from '../../../i18n/plural';
 
 export type ArchiveFilter = 'all' | 'active' | 'archived' | 'starred';
 export type ArchiveViewMode = 'comfortable' | 'compact';
@@ -118,46 +119,15 @@ export function getDistinctDayCount(dreams: Dream[]) {
   return new Set(dreams.map(dream => toLocalDateKey(getDreamDate(dream)))).size;
 }
 
-function getCountWord(
-  count: number,
-  locale: AppLocale,
-  forms: {
-    en: { one: string; other: string };
-    uk: { one: string; few: string; many: string };
-  },
-) {
-  if (locale === 'uk') {
-    const absolute = Math.abs(count);
-    const lastTwo = absolute % 100;
-    const last = absolute % 10;
-
-    if (lastTwo >= 11 && lastTwo <= 14) {
-      return forms.uk.many;
-    }
-
-    if (last === 1) {
-      return forms.uk.one;
-    }
-
-    if (last >= 2 && last <= 4) {
-      return forms.uk.few;
-    }
-
-    return forms.uk.many;
-  }
-
-  return Math.abs(count) === 1 ? forms.en.one : forms.en.other;
-}
-
 export function formatArchiveEntryCount(count: number, locale: AppLocale) {
-  return `${count} ${getCountWord(count, locale, {
+  return `${count} ${pluralize(count, locale, {
     en: { one: 'entry', other: 'entries' },
     uk: { one: 'запис', few: 'записи', many: 'записів' },
   })}`;
 }
 
 export function formatArchiveActiveDaysCount(count: number, locale: AppLocale) {
-  return `${count} ${getCountWord(count, locale, {
+  return `${count} ${pluralize(count, locale, {
     en: { one: 'active day', other: 'active days' },
     uk: { one: 'активний день', few: 'активні дні', many: 'активних днів' },
   })}`;

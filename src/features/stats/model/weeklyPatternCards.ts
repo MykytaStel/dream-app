@@ -5,6 +5,7 @@ import {
   getRecurringReflectionSignals,
   getRecurringWordSignals,
 } from './dreamReflection';
+import { pluralize } from '../../../i18n/plural';
 
 export type WeeklyPatternCard = {
   key: 'rhythm' | 'signal' | 'tone' | 'context' | 'capture' | 'quiet';
@@ -46,46 +47,15 @@ type BuildWeeklyPatternCardsArgs = {
   now?: number;
 };
 
-function formatCountUnit(
-  count: number,
-  locale: AppLocale,
-  forms: {
-    en: { one: string; other: string };
-    uk: { one: string; few: string; many: string };
-  },
-) {
-  if (locale === 'uk') {
-    const absolute = Math.abs(count);
-    const lastTwo = absolute % 100;
-    const last = absolute % 10;
-
-    if (lastTwo >= 11 && lastTwo <= 14) {
-      return forms.uk.many;
-    }
-
-    if (last === 1) {
-      return forms.uk.one;
-    }
-
-    if (last >= 2 && last <= 4) {
-      return forms.uk.few;
-    }
-
-    return forms.uk.many;
-  }
-
-  return Math.abs(count) === 1 ? forms.en.one : forms.en.other;
-}
-
 function formatEntryCountLabel(count: number, locale: AppLocale) {
-  return `${count} ${formatCountUnit(count, locale, {
+  return `${count} ${pluralize(count, locale, {
     en: { one: 'entry', other: 'entries' },
     uk: { one: 'запис', few: 'записи', many: 'записів' },
   })}`;
 }
 
 function formatDreamCountLabel(count: number, locale: AppLocale) {
-  return `${count} ${formatCountUnit(count, locale, {
+  return `${count} ${pluralize(count, locale, {
     en: { one: 'dream', other: 'dreams' },
     uk: { one: 'сон', few: 'сни', many: 'снів' },
   })}`;

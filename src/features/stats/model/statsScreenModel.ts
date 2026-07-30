@@ -69,6 +69,11 @@ export function getAchievementContent(id: DreamAchievementId, copy: StatsCopy) {
         title: copy.streakMilestoneSevenDaysTitle,
         description: copy.streakMilestoneSevenDaysSubtitle,
       };
+    case 'fourteen-day-streak':
+      return {
+        title: copy.streakMilestoneFourteenDaysTitle,
+        description: copy.streakMilestoneFourteenDaysSubtitle,
+      };
     case 'thirty-day-streak':
       return {
         title: copy.streakMilestoneThirtyDaysTitle,

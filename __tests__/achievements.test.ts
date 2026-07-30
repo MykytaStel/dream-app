@@ -36,6 +36,7 @@ describe('achievements', () => {
       { id: 'first-dream', current: 4, target: 1, unlocked: true },
       { id: 'three-day-streak', current: 3, target: 3, unlocked: true },
       { id: 'seven-day-streak', current: 3, target: 7, unlocked: false },
+      { id: 'fourteen-day-streak', current: 3, target: 14, unlocked: false },
       { id: 'thirty-day-streak', current: 3, target: 30, unlocked: false },
       { id: 'ten-dreams', current: 4, target: 10, unlocked: false },
       { id: 'fifty-dreams', current: 4, target: 50, unlocked: false },

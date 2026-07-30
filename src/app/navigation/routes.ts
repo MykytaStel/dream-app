@@ -23,6 +23,7 @@ export const ROOT_ROUTE_NAMES = {
   PatternDetail: 'PatternDetail',
   ReviewWorkspace: 'ReviewWorkspace',
   DreamPractice: 'DreamPractice',
+  Privacy: 'Privacy',
 } as const;
 
 type TabRouteLabelMap = Record<
@@ -91,6 +92,7 @@ export type RootStackParamList = {
     dreamId: string;
   };
   [ROOT_ROUTE_NAMES.Progress]: undefined;
+  [ROOT_ROUTE_NAMES.Privacy]: undefined;
   [ROOT_ROUTE_NAMES.MonthlyReport]:
     | {
         yearMonth?: string;

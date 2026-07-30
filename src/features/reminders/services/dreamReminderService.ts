@@ -15,6 +15,7 @@ import {
 } from '../../../services/storage/keys';
 import { getStoredLocale } from '../../../i18n/localeStore';
 import { getSettingsCopy } from '../../../constants/copy/settings';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 const REMINDER_CHANNEL_ID = 'dream-reminders';
 const REMINDER_NOTIFICATION_ID = 'dream-record-reminder';
@@ -90,7 +91,8 @@ function parseSettings(raw?: string): DreamReminderSettings {
     return normalizeReminderSettings(
       JSON.parse(raw) as Partial<DreamReminderSettings>,
     );
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(REMINDER_SETTINGS_KEY, error);
     return DEFAULT_REMINDER_SETTINGS;
   }
 }

@@ -10,6 +10,7 @@ export type DreamAchievementId =
   | 'first-dream'
   | 'three-day-streak'
   | 'seven-day-streak'
+  | 'fourteen-day-streak'
   | 'thirty-day-streak'
   | 'ten-dreams'
   | 'fifty-dreams'
@@ -22,7 +23,23 @@ export type StreakMilestoneToast = {
   subtitle: string;
 };
 
-const STREAK_MILESTONES = [3, 7, 14, 30] as const;
+/**
+ * The single description of a streak milestone.
+ *
+ * Both the celebration toast and the achievement list are derived from this, so
+ * the two cannot drift apart. They previously did: 14 days was celebrated but
+ * had no achievement, and its toast reported the seven-day identifier.
+ */
+export const STREAK_MILESTONES = [
+  { days: 3, id: 'three-day-streak', copyKey: 'ThreeDays' },
+  { days: 7, id: 'seven-day-streak', copyKey: 'SevenDays' },
+  { days: 14, id: 'fourteen-day-streak', copyKey: 'FourteenDays' },
+  { days: 30, id: 'thirty-day-streak', copyKey: 'ThirtyDays' },
+] as const satisfies ReadonlyArray<{
+  days: number;
+  id: DreamAchievementId;
+  copyKey: string;
+}>;
 
 export type DreamAchievementProgress = {
   id: DreamAchievementId;
@@ -90,24 +107,13 @@ export function getDreamAchievements(
       target: 1,
       unlocked: totalDreams >= 1,
     },
-    {
-      id: 'three-day-streak',
+    // Derived so a new milestone appears here and in the toast together.
+    ...STREAK_MILESTONES.map(milestone => ({
+      id: milestone.id,
       current: longestStreak,
-      target: 3,
-      unlocked: longestStreak >= 3,
-    },
-    {
-      id: 'seven-day-streak',
-      current: longestStreak,
-      target: 7,
-      unlocked: longestStreak >= 7,
-    },
-    {
-      id: 'thirty-day-streak',
-      current: longestStreak,
-      target: 30,
-      unlocked: longestStreak >= 30,
-    },
+      target: milestone.days,
+      unlocked: longestStreak >= milestone.days,
+    })),
     {
       id: 'ten-dreams',
       current: totalDreams,
@@ -151,41 +157,23 @@ export function getStreakMilestoneToast(
   lastCelebrated: number,
   copy: StreakToastCopy,
 ): StreakMilestoneToast | null {
-  // Find the highest milestone we've crossed that hasn't been celebrated yet
-  const crossedMilestone = [...STREAK_MILESTONES]
+  // The highest milestone crossed that has not been celebrated yet.
+  const crossed = [...STREAK_MILESTONES]
     .reverse()
-    .find(m => currentStreak >= m && lastCelebrated < m);
+    .find(
+      milestone =>
+        currentStreak >= milestone.days && lastCelebrated < milestone.days,
+    );
 
-  if (!crossedMilestone) {
+  if (!crossed) {
     return null;
   }
 
-  switch (crossedMilestone) {
-    case 3:
-      return {
-        milestoneId: 'three-day-streak',
-        title: copy.streakMilestoneThreeDaysTitle,
-        subtitle: copy.streakMilestoneThreeDaysSubtitle,
-      };
-    case 7:
-      return {
-        milestoneId: 'seven-day-streak',
-        title: copy.streakMilestoneSevenDaysTitle,
-        subtitle: copy.streakMilestoneSevenDaysSubtitle,
-      };
-    case 14:
-      return {
-        milestoneId: 'seven-day-streak',
-        title: copy.streakMilestoneFourteenDaysTitle,
-        subtitle: copy.streakMilestoneFourteenDaysSubtitle,
-      };
-    case 30:
-      return {
-        milestoneId: 'thirty-day-streak',
-        title: copy.streakMilestoneThirtyDaysTitle,
-        subtitle: copy.streakMilestoneThirtyDaysSubtitle,
-      };
-  }
+  return {
+    milestoneId: crossed.id,
+    title: copy[`streakMilestone${crossed.copyKey}Title`],
+    subtitle: copy[`streakMilestone${crossed.copyKey}Subtitle`],
+  };
 }
 
 export function getDreamAchievementSummary(

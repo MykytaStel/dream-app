@@ -15,31 +15,7 @@ import {
   type StatsCopy,
   type StatsStyles,
 } from './StatsScreenSection.shared';
-
-function getAchievementContent(id: DreamAchievementId, copy: StatsCopy) {
-  switch (id) {
-    case 'first-dream':
-      return {
-        title: copy.milestoneFirstDreamTitle,
-        description: copy.milestoneFirstDreamDescription,
-      };
-    case 'three-day-streak':
-      return {
-        title: copy.milestoneThreeDayStreakTitle,
-        description: copy.milestoneThreeDayStreakDescription,
-      };
-    case 'ten-dreams':
-      return {
-        title: copy.milestoneTenDreamsTitle,
-        description: copy.milestoneTenDreamsDescription,
-      };
-    case 'first-voice-dream':
-      return {
-        title: copy.milestoneFirstVoiceDreamTitle,
-        description: copy.milestoneFirstVoiceDreamDescription,
-      };
-  }
-}
+import { getAchievementContent } from '../model/statsScreenModel';
 
 export function StatsMilestonesSection({
   copy,
@@ -73,7 +49,11 @@ export function StatsMilestonesSection({
   return (
     <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.sectionCard}>
-        <Pressable style={styles.detailsToggleRow} onPress={onToggleExpanded}>
+        <Pressable
+          accessibilityRole="button"
+          style={styles.detailsToggleRow}
+          onPress={onToggleExpanded}
+        >
           <View style={styles.detailsToggleCopy}>
             <Text style={styles.detailsToggleTitle}>
               {copy.milestonesTitle}

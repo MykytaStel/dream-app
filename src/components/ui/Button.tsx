@@ -19,6 +19,8 @@ export const Button = ({
   icon,
   iconPosition = 'left',
   disabled = false,
+  accessibilityLabel,
+  accessibilityHint,
 }: {
   title: string;
   onPress?: () => void;
@@ -28,6 +30,9 @@ export const Button = ({
   icon?: string;
   iconPosition?: 'left' | 'right';
   disabled?: boolean;
+  /** Defaults to `title`; set it when the visible text is not self-explanatory. */
+  accessibilityLabel?: string;
+  accessibilityHint?: string;
 }) => {
   const t = useTheme<Theme>();
   const [pressed, setPressed] = React.useState(false);
@@ -56,6 +61,12 @@ export const Button = ({
         onPressOut={() => setPressed(false)}
         onPress={onPress}
         style={styles.pressable}
+        accessibilityRole="button"
+        // The label falls back to the visible title, which is correct for
+        // almost every button here; icon-only or ambiguous ones pass their own.
+        accessibilityLabel={accessibilityLabel ?? title}
+        accessibilityHint={accessibilityHint}
+        accessibilityState={{ disabled }}
       >
         <View style={styles.contentRow}>
           {icon && iconPosition === 'left' ? (

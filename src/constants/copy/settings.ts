@@ -139,6 +139,7 @@ const SETTINGS_COPY_EN = {
   backupCueReviewPendingDescription:
     'Saved months and threads changed locally. Open backup and run sync before switching devices.',
   backupOnboardingEyebrow: 'Archive started',
+  backupOnboardingDismissAction: 'Close',
   backupOnboardingTitle: 'You already have dreams worth keeping',
   backupOnboardingDescription:
     'After a few entries, backup starts paying off. Save this archive before it becomes device-bound.',
@@ -606,7 +607,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudConfigUrlHint: 'URL проєкту, зазвичай *.supabase.co.',
   cloudConfigAnonKeyLabel: 'Anon key',
   cloudConfigAnonKeyHint: 'Публічний anon key для mobile-клієнта.',
-  cloudSessionLabel: 'Backup',
+  cloudSessionLabel: 'Резервна копія',
   cloudSessionSignedOut: 'Вимкнено',
   cloudSessionSignedIn: 'Увімкнено',
   cloudAccountLabel: 'Акаунт',
@@ -666,6 +667,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupCueReviewPendingDescription:
     'Збережені місяці й нитки змінилися локально. Відкрий backup і запусти sync перед переходом на інший пристрій.',
   backupOnboardingEyebrow: 'Архів уже почався',
+  backupOnboardingDismissAction: 'Закрити',
   backupOnboardingTitle: 'У тебе вже є сни, які варто зберегти',
   backupOnboardingDescription:
     'Після кількох записів backup уже має сенс. Збережи цей архів, поки він не лишився прив’язаним до одного пристрою.',
@@ -682,7 +684,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupOnboardingPreviewSeenTitle: 'Стан показу',
   backupOnboardingPreviewSeenValue: 'Вже показано',
   backupOnboardingPreviewUnseenValue: 'Ще не показано',
-  backupOnboardingPreviewEligibilityTitle: 'Production gate',
+  backupOnboardingPreviewEligibilityTitle: 'Умова показу в продакшені',
   backupOnboardingPreviewEligibilityReady: 'На Home уже відкрився б.',
   backupOnboardingPreviewEligibilityWaiting:
     'Потрібно 3 збережені сни і unseen state.',
@@ -719,10 +721,10 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupFlowBackupMeta:
     'Створює JSON-файл для відновлення в цьому застосунку. Його можна використати пізніше в Локальному відновленні або зберегти деінде.',
   backupFlowBackupValue: 'Файл для restore',
-  backupFlowPortableTitle: 'Markdown / text export',
+  backupFlowPortableTitle: 'Експорт у Markdown / текст',
   backupFlowPortableMeta:
     'Створює читабельні .md або .txt файли зі стабільною структурою і метаданими снів. Це не restore-файли.',
-  backupFlowPortableValue: 'Portable file',
+  backupFlowPortableValue: 'Портативний файл',
   backupFlowPdfTitle: 'Експорт PDF',
   backupFlowPdfMeta:
     'Створює читабельний знімок для читання або поширення. Це не файл для відновлення.',
@@ -986,7 +988,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   transcriptionDeleteErrorTitle: 'Не вдалося видалити модель',
   scaleTestTitle: 'Перевірка масштабу',
   scaleTestDescription: 'Згенеруй тестові сни для stress test.',
-  developerToolsTitle: 'Developer tools',
+  developerToolsTitle: 'Інструменти розробника',
   developerToolsDescription:
     'Інструменти лише для debug: preview, seed data і stress test.',
   devSyncHistoryTitle: 'Останні sync спроби',

@@ -434,6 +434,13 @@ export function createDreamDetailScreenStyles(theme: Theme) {
     audioPlayButtonPressed: {
       opacity: 0.85,
     },
+    // The play triangle reads off-centre without a nudge; the pause bars do not.
+    audioPlayIconPlaying: {
+      marginLeft: 0,
+    },
+    audioPlayIconPaused: {
+      marginLeft: 2,
+    },
     audioProgressShell: {
       flex: 1,
       gap: 5,

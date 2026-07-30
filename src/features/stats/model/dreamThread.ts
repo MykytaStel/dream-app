@@ -13,6 +13,7 @@ import {
 } from './patternMatches';
 import type { DreamReflectionSignal, DreamWordSignal } from './dreamReflection';
 import type { SavedDreamThreadRecord } from '../services/dreamThreadShelfService';
+import { formatCount } from '../../../i18n/plural';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
 type DreamThreadShelfCopy = Pick<
@@ -223,27 +224,17 @@ function formatMentionLabel(
     | 'threadDetailMentionPluralUkFew'
   >,
 ) {
-  if (locale === 'uk') {
-    const absolute = Math.abs(count);
-    const lastTwo = absolute % 100;
-    const last = absolute % 10;
-
-    if (lastTwo >= 11 && lastTwo <= 14) {
-      return `${count} ${copy.threadDetailMentionPlural}`;
-    }
-
-    if (last === 1) {
-      return `${count} ${copy.threadDetailMentionSingle}`;
-    }
-
-    if (last >= 2 && last <= 4) {
-      return `${count} ${copy.threadDetailMentionPluralUkFew}`;
-    }
-
-    return `${count} ${copy.threadDetailMentionPlural}`;
-  }
-
-  return `${count} ${count === 1 ? copy.threadDetailMentionSingle : copy.threadDetailMentionPlural}`;
+  return formatCount(count, locale, {
+    en: {
+      one: copy.threadDetailMentionSingle,
+      other: copy.threadDetailMentionPlural,
+    },
+    uk: {
+      one: copy.threadDetailMentionSingle,
+      few: copy.threadDetailMentionPluralUkFew,
+      many: copy.threadDetailMentionPlural,
+    },
+  });
 }
 
 function buildRecurringSignalDashboardItem(input: {

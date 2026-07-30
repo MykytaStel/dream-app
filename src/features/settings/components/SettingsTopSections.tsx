@@ -75,6 +75,7 @@ export function SettingsHeroSection({
 
             return (
               <Pressable
+                accessibilityRole="button"
                 key={option.value}
                 style={[
                   styles.inlineLanguageChip,
@@ -132,10 +133,7 @@ export function ReminderSection({
   getReminderDate: () => Date;
   onToggleReminder: () => void;
   onOpenReminderTimePicker: () => void;
-  onNativeTimePickerChange: (
-    event: DateTimePickerEvent,
-    date?: Date,
-  ) => void;
+  onNativeTimePickerChange: (event: DateTimePickerEvent, date?: Date) => void;
   onApplySuggestedTime: () => void;
   onSelectReminderStyle: (style: DreamReminderStyle) => void;
 }) {
@@ -246,6 +244,7 @@ export function ReminderSection({
         <>
           {suggestedTime ? (
             <TouchableOpacity
+              accessibilityRole="button"
               activeOpacity={0.7}
               style={styles.reminderSuggestionRow}
               onPress={onApplySuggestedTime}

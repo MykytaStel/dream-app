@@ -32,64 +32,16 @@ import {
 import {
   getDreamAchievements,
   getDreamAchievementSummary,
-  type DreamAchievementId,
 } from '../model/achievements';
 import { getEntriesLastSevenDays } from '../../dreams/model/dreamAnalytics';
 import { createProgressScreenStyles } from './ProgressScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { trackLocalSurfaceLoad } from '../../../services/observability/perf';
+import { getAchievementContent } from '../model/statsScreenModel';
 
 const progressLayoutTransition = LinearTransition.springify()
   .damping(18)
   .stiffness(180);
-
-function getAchievementContent(
-  id: DreamAchievementId,
-  copy: ReturnType<typeof getStatsCopy>,
-) {
-  switch (id) {
-    case 'first-dream':
-      return {
-        title: copy.milestoneFirstDreamTitle,
-        description: copy.milestoneFirstDreamDescription,
-      };
-    case 'three-day-streak':
-      return {
-        title: copy.milestoneThreeDayStreakTitle,
-        description: copy.milestoneThreeDayStreakDescription,
-      };
-    case 'seven-day-streak':
-      return {
-        title: copy.streakMilestoneSevenDaysTitle,
-        description: copy.streakMilestoneSevenDaysSubtitle,
-      };
-    case 'thirty-day-streak':
-      return {
-        title: copy.streakMilestoneThirtyDaysTitle,
-        description: copy.streakMilestoneThirtyDaysSubtitle,
-      };
-    case 'ten-dreams':
-      return {
-        title: copy.milestoneTenDreamsTitle,
-        description: copy.milestoneTenDreamsDescription,
-      };
-    case 'fifty-dreams':
-      return {
-        title: copy.milestoneFiftyDreamsTitle,
-        description: copy.milestoneFiftyDreamsDescription,
-      };
-    case 'hundred-dreams':
-      return {
-        title: copy.milestoneHundredDreamsTitle,
-        description: copy.milestoneHundredDreamsDescription,
-      };
-    case 'first-voice-dream':
-      return {
-        title: copy.milestoneFirstVoiceDreamTitle,
-        description: copy.milestoneFirstVoiceDreamDescription,
-      };
-  }
-}
 
 export default function ProgressScreen() {
   const t = useTheme<Theme>();

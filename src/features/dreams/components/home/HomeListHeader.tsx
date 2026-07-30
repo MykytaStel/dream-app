@@ -166,6 +166,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
     if (showLastViewedShortcut) {
       shortcuts.push(
         <Pressable
+          accessibilityRole="button"
           key="last-viewed"
           onPress={onOpenLastDream}
           style={({ pressed }) => [
@@ -200,6 +201,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
     if (practiceShortcutTitle && onOpenPractice) {
       shortcuts.push(
         <Pressable
+          accessibilityRole="button"
           key="practice"
           onPress={onOpenPractice}
           style={({ pressed }) => [
@@ -231,6 +233,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
     if (nightmareShortcutTitle && onOpenNightmarePractice) {
       shortcuts.push(
         <Pressable
+          accessibilityRole="button"
           key="nightmare-practice"
           onPress={onOpenNightmarePractice}
           style={({ pressed }) => [
@@ -301,6 +304,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
         {spotlightPatternKind ? (
           <View style={styles.spotlightLeadRow}>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.spotlightTile,
                 styles.spotlightTileLead,
@@ -322,6 +326,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
 
         {revisitCue ? (
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.spotlightTile,
               styles.spotlightTileLead,
@@ -443,6 +448,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
 
               return (
                 <Pressable
+                  accessibilityRole="button"
                   key={card.key}
                   style={({ pressed }) => [
                     styles.weeklyPatternCard,
@@ -531,6 +537,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
         </View>
         <View style={styles.timelineHeaderActions}>
           <Pressable
+            accessibilityRole="button"
             style={styles.inlineActionButton}
             onPress={onOpenHomeCustomizationSheet}
           >
@@ -553,6 +560,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           <Text style={styles.searchPresetLabel}>{copy.homeSearchLabel}</Text>
           {hasSearchQuery ? (
             <Pressable
+              accessibilityRole="button"
               style={styles.inlineActionButton}
               onPress={onClearSearch}
             >
@@ -592,6 +600,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
               </Text>
               {canSaveSearchPreset ? (
                 <Pressable
+                  accessibilityRole="button"
                   style={styles.searchPresetSaveButton}
                   onPress={onSaveSearchPreset}
                 >
@@ -629,6 +638,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
             {copy.homeQuickFiltersLabel}
           </Text>
           <Pressable
+            accessibilityRole="button"
             style={styles.inlineActionButton}
             onPress={onOpenFilterSheet}
           >
@@ -639,6 +649,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
         </View>
         <View style={styles.primaryActionsRow}>
           <Pressable
+            accessibilityRole="button"
             style={[
               styles.inlineActionButton,
               timelineFilters.special === 'lucid'
@@ -665,6 +676,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
             style={[
               styles.inlineActionButton,
               timelineFilters.special === 'nightmare'
@@ -691,6 +703,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
             style={[
               styles.inlineActionButton,
               timelineFilters.starredOnly
@@ -717,6 +730,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
             style={[
               styles.inlineActionButton,
               timelineFilters.entryType === 'audio'
@@ -743,6 +757,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           </Pressable>
 
           <Pressable
+            accessibilityRole="button"
             style={[
               styles.inlineActionButton,
               timelineFilters.tags.length
@@ -792,6 +807,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
                 <TagChip key={chip.key} label={chip.label} />
               ))}
               <Pressable
+                accessibilityRole="button"
                 style={styles.clearFiltersButton}
                 onPress={onClearFilters}
               >
@@ -830,6 +846,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
           <View style={styles.emptyActionsRow}>
             {hasSearchQuery ? (
               <Pressable
+                accessibilityRole="button"
                 style={styles.inlineActionButton}
                 onPress={onClearSearch}
               >
@@ -840,6 +857,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
             ) : null}
             {hasNonSearchRefinements ? (
               <Pressable
+                accessibilityRole="button"
                 style={styles.inlineActionButton}
                 onPress={onClearFilters}
               >
@@ -849,6 +867,7 @@ export const HomeListHeader = React.memo(function HomeListHeader({
               </Pressable>
             ) : null}
             <Pressable
+              accessibilityRole="button"
               style={styles.inlineActionButton}
               onPress={onOpenFilterSheet}
             >

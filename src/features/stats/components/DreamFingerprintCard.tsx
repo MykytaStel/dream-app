@@ -62,6 +62,7 @@ export function DreamFingerprintCard({
           <View style={styles.grid}>
             {facets.map(facet => (
               <Pressable
+                accessibilityRole="button"
                 key={facet.key}
                 disabled={!facet.onPress}
                 onPress={facet.onPress}

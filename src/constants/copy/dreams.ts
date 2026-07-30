@@ -589,6 +589,8 @@ const DREAM_COPY_EN = {
   stopRecording: 'Stop recording',
   recordingHint: 'Recording in progress. Stop when you are done.',
   attachedAudioTitle: 'Voice note attached',
+  audioPlayAction: 'Play voice note',
+  audioPauseAction: 'Pause voice note',
   removeAudio: 'Remove voice note',
   addTag: 'Add',
   saveDream: 'Save dream',
@@ -1020,8 +1022,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Для цього сну ще не збережено аналіз. Згенеруй його, щоб перетворити запис на коротку локальну рефлексію.',
   detailAnalysisDisabled:
     'Шар аналізу вимкнений у Settings, тому цей сон поки лишається сирим записом без summary і themes.',
-  detailAnalysisSummaryLabel: 'Summary',
-  detailAnalysisThemesLabel: 'Themes',
+  detailAnalysisSummaryLabel: 'Підсумок',
+  detailAnalysisThemesLabel: 'Теми',
   detailAnalysisStateLabel: 'Режим аналізу',
   detailAnalysisStateLocalReady:
     'Локальний аналіз увімкнений і готовий для цього сну.',
@@ -1233,6 +1235,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   stopRecording: 'Зупинити запис',
   recordingHint: 'Йде запис. Зупини, коли завершиш.',
   attachedAudioTitle: 'Голосову нотатку додано',
+  audioPlayAction: 'Відтворити голосову нотатку',
+  audioPauseAction: 'Зупинити голосову нотатку',
   removeAudio: 'Видалити голос',
   addTag: 'Додати',
   saveDream: 'Зберегти сон',

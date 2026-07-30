@@ -58,6 +58,7 @@ export function SettingsActionRow({
 
   return (
     <Pressable
+      accessibilityRole="button"
       style={({ pressed }) => [
         styles.row,
         variant === 'inline' ? styles.rowInline : null,

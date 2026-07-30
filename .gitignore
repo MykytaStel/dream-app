@@ -79,3 +79,8 @@ v0/
 
 # Local-only working artifacts (specs, plans, research notes)
 .dev/
+
+# Environment files with real values; .env.example is committed instead
+.env
+.env.local
+.env.*.local

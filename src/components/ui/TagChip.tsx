@@ -39,7 +39,15 @@ export function TagChip({
   }
 
   return (
-    <Pressable onPress={onPress} style={styles.pressable}>
+    <Pressable
+      onPress={onPress}
+      style={styles.pressable}
+      // A removable chip removes the tag; a plain one toggles the filter.
+      // `selected` is announced so a screen reader can tell which are active.
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ selected }}
+    >
       {content}
     </Pressable>
   );

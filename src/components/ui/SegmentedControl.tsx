@@ -32,7 +32,9 @@ export function SegmentedControl<T extends string>({
   );
 
   return (
-    <View style={styles.row}>
+    // A radio group: exactly one option is active, which is what
+    // accessibilityRole="radio" plus a selected state announces.
+    <View style={styles.row} accessibilityRole="radiogroup">
       {options.map(option => {
         const selected = option.value === selectedValue;
 
@@ -45,6 +47,9 @@ export function SegmentedControl<T extends string>({
               selected ? styles.chipActive : null,
               pressed ? styles.chipPressed : null,
             ]}
+            accessibilityRole="radio"
+            accessibilityLabel={option.label}
+            accessibilityState={{ selected, checked: selected }}
           >
             <Text
               style={[styles.chipText, selected ? styles.chipTextActive : null]}

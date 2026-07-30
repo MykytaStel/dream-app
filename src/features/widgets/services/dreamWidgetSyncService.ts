@@ -13,6 +13,7 @@ import {
   type DreamWidgetDraftSnapshot,
 } from '../model/dreamWidget';
 import { publishDreamWidgetSnapshot } from './dreamWidgetHostService';
+import { reportError } from '../../../services/observability/errorReporting';
 
 type DreamWidgetSyncInput = {
   dreams?: Dream[];
@@ -162,6 +163,8 @@ export function scheduleDreamWidgetSync(input: DreamWidgetSyncInput = {}) {
     const nextInput = pendingInput;
     pendingInput = {};
     syncTimeout = null;
-    void syncDreamWidgetSnapshot(nextInput);
+    syncDreamWidgetSnapshot(nextInput).catch(error => {
+      reportError(error, { event: 'widget_snapshot_sync_failed' });
+    });
   }, 120);
 }

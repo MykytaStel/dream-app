@@ -1,5 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { LAST_VIEWED_DREAM_STORAGE_KEY } from '../../../services/storage/keys';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 type LastViewedDreamRecord = {
   dreamId: string;
@@ -34,7 +35,8 @@ export function getLastViewedDream() {
     return normalizeLastViewedDream(
       JSON.parse(raw) as Partial<LastViewedDreamRecord>,
     );
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(LAST_VIEWED_DREAM_STORAGE_KEY, error);
     return null;
   }
 }

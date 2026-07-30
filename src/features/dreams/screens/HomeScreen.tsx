@@ -390,6 +390,7 @@ export default function HomeScreen() {
   const renderListItem = React.useCallback(
     ({ item: dream }: { item: DreamListItem }) => (
       <Pressable
+        accessibilityRole="button"
         onPress={() =>
           navigation.navigate('DreamDetail', {
             dreamId: dream.id,

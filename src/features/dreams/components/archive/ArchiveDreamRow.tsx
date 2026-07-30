@@ -293,6 +293,7 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   if (isCompact) {
     return (
       <Pressable
+        accessibilityRole="button"
         onPress={() =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
             dreamId: dream.id,
@@ -413,6 +414,7 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
 
   return (
     <Pressable
+      accessibilityRole="button"
       onPress={() =>
         navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: dream.id })
       }

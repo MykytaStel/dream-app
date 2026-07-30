@@ -95,6 +95,7 @@ export default function OnboardingScreen() {
       <View style={styles.topBar}>
         {!isLast ? (
           <Pressable
+            accessibilityRole="button"
             onPress={finish}
             style={({ pressed }) => [
               styles.skipButton,

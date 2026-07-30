@@ -42,5 +42,10 @@ jobs:
       - name: Lint
         run: yarn lint
 
-      - name: Unit tests
-        run: yarn test:ci
+      - name: Format check
+        run: yarn format:check
+
+      # Replaces a plain test run rather than adding to it: this executes the
+      # same suites and additionally enforces the coverage floor.
+      - name: Unit tests with coverage
+        run: yarn test:coverage

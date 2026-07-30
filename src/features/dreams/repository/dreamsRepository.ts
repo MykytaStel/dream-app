@@ -1,4 +1,5 @@
 import { kv } from '../../../services/storage/mmkv';
+import { reportError } from '../../../services/observability/errorReporting';
 import {
   DREAMS_INDEX_STORAGE_KEY,
   DREAMS_META_STORAGE_KEY,
@@ -139,9 +140,28 @@ function resetDreamMetaCache() {
   dreamMetaCacheRaw = null;
 }
 
+/**
+ * True when the stored dreams could not be parsed on the most recent read.
+ *
+ * Reads fall back to an empty list so a screen can still render, but writes
+ * must refuse: saving after a failed read would persist the new list over the
+ * unreadable value and take the whole archive with it.
+ */
+let dreamStoreUnreadable = false;
+
+export class UnreadableDreamStoreError extends Error {
+  constructor() {
+    super(
+      'The stored dreams could not be read, so writing was refused to avoid replacing them.',
+    );
+    this.name = 'UnreadableDreamStoreError';
+  }
+}
+
 export function listDreams(): Dream[] {
   const raw = kv.getString(DREAMS_STORAGE_KEY);
   if (!raw) {
+    dreamStoreUnreadable = false;
     dreamCache = [];
     dreamCacheRaw = null;
     kv.remove(DREAMS_INDEX_STORAGE_KEY);
@@ -158,17 +178,24 @@ export function listDreams(): Dream[] {
   try {
     const parsed = JSON.parse(raw) as Dream[];
     const normalized = sortDreamsStable(parsed.map(sanitizeDream));
+    dreamStoreUnreadable = false;
     dreamCache = normalized;
     dreamCacheRaw = raw;
     return normalized;
-  } catch {
+  } catch (error) {
+    dreamStoreUnreadable = true;
     dreamCache = [];
     dreamCacheRaw = raw;
+    reportError(error, { event: 'dream_store_unreadable' });
     return [];
   }
 }
 
 function persistDreams(dreams: Dream[]) {
+  if (dreamStoreUnreadable) {
+    throw new UnreadableDreamStoreError();
+  }
+
   const normalized = sortDreamsStable(dreams.map(sanitizeDream));
   const raw = JSON.stringify(normalized);
   kv.set(DREAMS_STORAGE_KEY, raw);

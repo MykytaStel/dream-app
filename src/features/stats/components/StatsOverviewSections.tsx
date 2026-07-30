@@ -211,6 +211,7 @@ export function StatsOverviewSections({
                 <View style={styles.detailsList}>
                   {lucidHistoryItems.map(item => (
                     <Pressable
+                      accessibilityRole="button"
                       key={item.dreamId}
                       style={({ pressed }) => [
                         styles.detailsListRow,
@@ -294,6 +295,7 @@ export function StatsOverviewSections({
 
                     return (
                       <Pressable
+                        accessibilityRole="button"
                         key={card.key}
                         onPress={() => onOpenPatternDetail(signal, signalKind)}
                         style={({ pressed }) => [
@@ -337,6 +339,7 @@ export function StatsOverviewSections({
                   />
                 </View>
                 <Pressable
+                  accessibilityRole="button"
                   style={styles.toggleButton}
                   onPress={onOpenReviewWorkspace}
                 >
@@ -346,6 +349,7 @@ export function StatsOverviewSections({
                 </Pressable>
               </View>
               <Pressable
+                accessibilityRole="button"
                 onPress={onOpenReviewWorkspace}
                 style={({ pressed }) => [
                   styles.reviewShelfCompactRow,
@@ -374,7 +378,11 @@ export function StatsOverviewSections({
             </View>
           ) : null}
 
-          <Pressable style={styles.detailsToggleRow} onPress={onToggleDetails}>
+          <Pressable
+            accessibilityRole="button"
+            style={styles.detailsToggleRow}
+            onPress={onToggleDetails}
+          >
             <View style={styles.detailsToggleCopy}>
               <Text style={styles.detailsToggleTitle}>{copy.detailsTitle}</Text>
               <Text style={styles.detailsToggleDescription}>
@@ -409,6 +417,7 @@ export function StatsOverviewSections({
 
                         return (
                           <Pressable
+                            accessibilityRole="button"
                             key={option.key}
                             disabled={option.disabled}
                             style={[

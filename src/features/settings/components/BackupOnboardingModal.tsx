@@ -43,7 +43,14 @@ export function BackupOnboardingModal({
       onRequestClose={onClose}
     >
       <View style={styles.root}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        {/* The backdrop is a dismiss target, and without a label a screen
+            reader announces an unnamed button covering the whole screen. */}
+        <Pressable
+          style={styles.backdrop}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={copy.backupOnboardingDismissAction}
+        />
         <Animated.View
           entering={FadeInDown.duration(220)}
           style={styles.sheetWrap}

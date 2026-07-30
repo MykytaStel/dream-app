@@ -49,6 +49,7 @@ export function AppLockGate({
           </View>
 
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.unlockButton,
               pressed ? styles.unlockButtonPressed : null,

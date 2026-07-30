@@ -30,6 +30,7 @@ export function HomeSearchPresetChip({
   return (
     <View style={styles.chip}>
       <Pressable
+        accessibilityRole="button"
         onPress={onPress}
         style={({ pressed }) => [
           styles.labelPressable,

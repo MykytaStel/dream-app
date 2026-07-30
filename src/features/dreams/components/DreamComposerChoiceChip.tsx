@@ -45,7 +45,11 @@ export function DreamComposerChoiceChip({
           ];
 
   return (
-    <Pressable onPress={onPress} style={containerStyle}>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      style={containerStyle}
+    >
       <Text
         style={labelStyle}
         numberOfLines={variant !== 'mood' ? 1 : undefined}

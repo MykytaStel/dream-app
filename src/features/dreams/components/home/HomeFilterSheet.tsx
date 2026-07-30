@@ -63,6 +63,7 @@ function FilterGroup<K extends string>({
 
           return (
             <Pressable
+              accessibilityRole="button"
               key={option.key}
               style={[
                 styles.filterButton,
@@ -165,7 +166,11 @@ export function HomeFilterSheet({
       onRequestClose={onClose}
     >
       <View style={styles.filterSheetRoot}>
-        <Pressable style={styles.filterSheetBackdrop} onPress={onClose} />
+        <Pressable
+          accessibilityRole="button"
+          style={styles.filterSheetBackdrop}
+          onPress={onClose}
+        />
         <View style={styles.filterSheetCard}>
           <View style={styles.filterSheetHeader}>
             <View style={styles.filterSheetHandle} />
@@ -264,6 +269,7 @@ export function HomeFilterSheet({
                     <View style={styles.filterRow}>
                       {selectedTags.map(tag => (
                         <Pressable
+                          accessibilityRole="button"
                           key={`selected-${tag}`}
                           style={[
                             styles.filterButton,
@@ -295,6 +301,7 @@ export function HomeFilterSheet({
 
                     return (
                       <Pressable
+                        accessibilityRole="button"
                         key={tag}
                         style={[
                           styles.filterButton,
@@ -328,6 +335,7 @@ export function HomeFilterSheet({
                 ) : null}
                 {hiddenTagCount > 0 && !normalizedTagQuery ? (
                   <Pressable
+                    accessibilityRole="button"
                     style={styles.filterMoreButton}
                     onPress={() => setShowAllTags(true)}
                   >
@@ -340,6 +348,7 @@ export function HomeFilterSheet({
                 unselectedTags.length > 12 &&
                 !normalizedTagQuery ? (
                   <Pressable
+                    accessibilityRole="button"
                     style={styles.filterMoreButton}
                     onPress={() => setShowAllTags(false)}
                   >
@@ -352,6 +361,7 @@ export function HomeFilterSheet({
             ) : null}
 
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.searchDetailsToggleButton,
                 pressed ? styles.spotlightTilePressed : null,

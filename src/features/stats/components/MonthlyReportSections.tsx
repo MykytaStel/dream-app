@@ -122,6 +122,7 @@ export function MonthlyReportSections({
             <View style={styles.savedThreadsList}>
               {savedThreadItems.slice(0, 3).map(item => (
                 <Pressable
+                  accessibilityRole="button"
                   key={`${item.kind}-${item.signal}`}
                   style={({ pressed }) => [
                     styles.savedThreadRow,
@@ -155,6 +156,7 @@ export function MonthlyReportSections({
             subtitle={copy.monthlyReportSignalsDescription}
           />
           <Pressable
+            accessibilityRole="button"
             disabled={!viewModel.leadSignal.threadKind}
             style={({ pressed }) => [
               styles.signalLeadCard,
@@ -190,6 +192,7 @@ export function MonthlyReportSections({
           <View style={styles.signalGrid}>
             {viewModel.secondarySignals.map(signal => (
               <Pressable
+                accessibilityRole="button"
                 key={signal.label}
                 disabled={!signal.threadKind}
                 style={({ pressed }) => [

@@ -135,6 +135,7 @@ export function ArchiveMonthPanel({
 
                 return (
                   <Pressable
+                    accessibilityRole="button"
                     key={monthKey}
                     style={[
                       styles.quickJumpChip,
@@ -165,7 +166,11 @@ export function ArchiveMonthPanel({
               </Text>
             </View>
 
-            <Pressable style={styles.clearDateChip} onPress={onClearDate}>
+            <Pressable
+              accessibilityRole="button"
+              style={styles.clearDateChip}
+              onPress={onClearDate}
+            >
               <Text style={styles.clearDateChipText}>
                 {copy.archiveAllDates}
               </Text>
@@ -200,6 +205,7 @@ export function ArchiveMonthPanel({
 
                   return (
                     <Pressable
+                      accessibilityRole="button"
                       key={cell.key}
                       style={[
                         styles.calendarCell,

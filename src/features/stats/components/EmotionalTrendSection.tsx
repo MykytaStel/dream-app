@@ -74,11 +74,10 @@ export function EmotionalTrendSection({
                   <View
                     style={[
                       styles.bar,
-                      {
-                        height: barHeight,
-                        backgroundColor: barColor,
-                        opacity: entry.valence ? 0.85 : 0.3,
-                      },
+                      entry.valence
+                        ? styles.barWithValence
+                        : styles.barWithoutValence,
+                      { height: barHeight, backgroundColor: barColor },
                     ]}
                   />
                 </View>
@@ -142,6 +141,14 @@ const styles = StyleSheet.create({
   bar: {
     width: 20,
     borderRadius: 4,
+  },
+  // Height and colour stay inline because they are computed per entry; only the
+  // two fixed opacity steps belong here.
+  barWithValence: {
+    opacity: 0.85,
+  },
+  barWithoutValence: {
+    opacity: 0.3,
   },
   barLabel: {
     fontSize: 10,

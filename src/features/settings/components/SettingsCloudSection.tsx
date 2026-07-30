@@ -446,6 +446,7 @@ export function CloudSection({
       <CloudGuideBlock copy={copy} styles={styles} steps={backupGuideSteps} />
       {cloudActionFeedback ? (
         <Pressable
+          accessibilityRole="button"
           style={styles.backupSuccessBlock}
           onPress={onDismissCloudActionFeedback}
         >

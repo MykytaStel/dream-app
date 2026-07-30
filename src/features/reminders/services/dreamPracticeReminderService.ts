@@ -13,6 +13,7 @@ import { getStoredLocale } from '../../../i18n/localeStore';
 import { kv } from '../../../services/storage/mmkv';
 import { DREAM_PRACTICE_REMINDER_SETTINGS_KEY } from '../../../services/storage/keys';
 import { type DreamPracticeFocus } from '../../../app/navigation/routes';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 const PRACTICE_REMINDER_CHANNEL_ID = 'dream-practice-reminders';
 const PRACTICE_NOTIFICATION_TARGET = 'dream-practice';
@@ -271,7 +272,8 @@ export function getDreamPracticeReminderSettings() {
     return normalizeSettings(
       JSON.parse(raw) as Partial<DreamPracticeReminderSettings>,
     );
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(DREAM_PRACTICE_REMINDER_SETTINGS_KEY, error);
     return DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS;
   }
 }

@@ -6,12 +6,13 @@
     "android": "react-native run-android",
     "android:dev": "./run-android.sh",
     "ios": "react-native run-ios",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=0",
     "start": "react-native start",
     "test": "jest",
     "test:ci": "jest --ci --watchAll=false",
     "typecheck": "tsc --noEmit",
-    "test:coverage": "jest --coverage --ci --watchAll=false"
+    "test:coverage": "jest --coverage --ci --watchAll=false",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"__tests__/**/*.{ts,tsx}\""
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",

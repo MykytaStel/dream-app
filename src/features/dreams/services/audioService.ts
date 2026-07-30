@@ -11,8 +11,7 @@ import { ensureRecordAudioPermission } from './audioPermissions';
 const arp = AudioRecorderPlayer;
 
 export type AudioPermissionCode =
-  | 'android-audio-permission-denied'
-  | 'android-audio-permission-unavailable';
+  'android-audio-permission-denied' | 'android-audio-permission-unavailable';
 
 // Carries the reason on the error itself so callers can pick the right message
 // without parsing text. Callers read `.code`, which stays a plain string field.

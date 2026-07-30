@@ -132,10 +132,7 @@ export function ReminderSection({
   getReminderDate: () => Date;
   onToggleReminder: () => void;
   onOpenReminderTimePicker: () => void;
-  onNativeTimePickerChange: (
-    event: DateTimePickerEvent,
-    date?: Date,
-  ) => void;
+  onNativeTimePickerChange: (event: DateTimePickerEvent, date?: Date) => void;
   onApplySuggestedTime: () => void;
   onSelectReminderStyle: (style: DreamReminderStyle) => void;
 }) {

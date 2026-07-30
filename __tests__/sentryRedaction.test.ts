@@ -85,7 +85,9 @@ describe('redactSentryEvent', () => {
 
   test('keeps the technical fields that make a crash debuggable', () => {
     const event = {
-      exception: { values: [{ type: 'TypeError', value: 'x is not a function' }] },
+      exception: {
+        values: [{ type: 'TypeError', value: 'x is not a function' }],
+      },
       extra: { event: 'widget_snapshot_sync_failed', screen: 'Archive' },
       tags: { platform: 'ios' },
     } as unknown as ErrorEvent;

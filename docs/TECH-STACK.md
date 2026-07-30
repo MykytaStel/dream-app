@@ -9,21 +9,21 @@ Verified: 2026-07-28. Node `>=20`, Yarn `3.6.4`.
 
 | Package | Version | Why |
 |---|---|---|
-| `react-native` | 0.83.2 | app runtime, New Architecture enabled |
-| `react` | 19.2.4 | — |
+| `react-native` | 0.86.2 | app runtime, New Architecture enabled |
+| `react` | 19.2.8 | — |
 | `typescript` | 5.9.3 | pinned; see TypeScript below |
-| `@react-navigation/native` | 7.1.33 | navigation core |
-| `@react-navigation/native-stack` | 7.14.4 | screen stacks |
-| `@react-navigation/bottom-tabs` | 7.15.5 | primary tab layout |
-| `zustand` | 5.0.11 | client state |
-| `@tanstack/react-query` | 5.90.21 | server state and cache |
-| `zod` | 4.3.6 | schema validation at boundaries |
+| `@react-navigation/native` | 7.3.14 | navigation core |
+| `@react-navigation/native-stack` | 7.18.6 | screen stacks |
+| `@react-navigation/bottom-tabs` | 7.18.14 | primary tab layout |
+| `zustand` | 5.0.14 | client state |
+| `@tanstack/react-query` | 5.101.4 | server state and cache |
+| `zod` | 4.4.3 | schema validation at boundaries |
 | `@shopify/restyle` | ^2.4.5 | themed styling primitives |
-| `react-native-reanimated` | 4.2.2 | animation |
-| `react-native-worklets` | 0.7.4 | must stay compatible with Reanimated |
-| `react-native-gesture-handler` | 2.30.0 | gestures |
-| `react-native-screens` | 4.24.0 | native screen containers |
-| `react-native-safe-area-context` | 5.7.0 | safe area insets |
+| `react-native-reanimated` | 4.5.3 | animation |
+| `react-native-worklets` | 0.11.3 | must stay compatible with Reanimated |
+| `react-native-gesture-handler` | 3.1.0 | gestures |
+| `react-native-screens` | 4.26.2 | native screen containers |
+| `react-native-safe-area-context` | 5.8.0 | safe area insets |
 | `react-native-vector-icons` | ^10.3.0 | iconography |
 
 ## Storage and data
@@ -32,7 +32,7 @@ Verified: 2026-07-28. Node `>=20`, Yarn `3.6.4`.
 |---|---|---|
 | `react-native-mmkv` | 4.1.2 | primary local storage, synchronous and fast |
 | `@react-native-async-storage/async-storage` | ^2.2.0 | legacy storage paths; pinned, see Known debt |
-| `@supabase/supabase-js` | ^2.99.1 | optional cloud sync and backup |
+| `@supabase/supabase-js` | ^2.110.9 | optional cloud sync and backup |
 | `react-native-url-polyfill` | ^3.0.0 | URL support required by the Supabase client |
 | `react-native-fs` | ^2.20.0 | file access for export and audio |
 
@@ -59,13 +59,28 @@ Verified: 2026-07-28. Node `>=20`, Yarn `3.6.4`.
 | Package | Version |
 |---|---|
 | `jest` | ^29.6.3 |
-| `eslint` | ^8.19.0 |
-| `prettier` | 2.8.8 |
-| `@react-native/eslint-config` | 0.83.2 |
-| `@react-native/babel-preset` | 0.83.2 |
-| `@react-native/metro-config` | 0.83.2 |
+| `eslint` | 9.39.5 |
+| `prettier` | 3.9.6 |
+| `@react-native/eslint-config` | 0.86.2 |
+| `@react-native/babel-preset` | 0.86.2 |
+| `@react-native/metro-config` | 0.86.2 |
 | `@react-native-community/cli` | 20.1.2 |
-| `react-test-renderer` | 19.2.4 |
+| `react-test-renderer` | 19.2.8 |
+| `@testing-library/react-native` | 14.0.1 |
+| `test-renderer` | 1.2.0 |
+
+`@testing-library/react-native` 14 requires `test-renderer`, the modern replacement
+for `react-test-renderer`. Both are present because the older suites still import the
+latter; it goes once nothing does.
+
+## Observability
+
+| Package | Version | Why |
+|---|---|---|
+| `@sentry/react-native` | 8.20.0 | crash reporting, registered as an observability provider |
+
+Off unless `SENTRY_DSN` is set — see `.env.example`. No DSN ships in the repository,
+and its absence leaves the console provider in place.
 
 ## Deliberate omissions
 
@@ -80,7 +95,6 @@ decision.
 | Redux Toolkit | Zustand handles the amount of client state we have | state that needs middleware, time travel or strict action logs |
 | SQLite | MMKV fits the current data model | vector search in H3, which MMKV cannot serve |
 | RevenueCat | there is nothing to sell yet | a monetization decision, which needs retention data first |
-| Sentry | not installed yet | scheduled for H0; crash reporting is a release prerequisite |
 
 ## Known debt
 
@@ -89,7 +103,8 @@ decision.
 | `react-native-fs` | 2.20.0, effectively unmaintained. Works today; a candidate to break on newer React Native. |
 | `react-native-html-to-pdf` | 1.3.0, unmaintained for years. Same risk. |
 | `@react-native-async-storage/async-storage` | Pinned at `^2.2.0`. Version 3.x was tried and did not build; the cause has not been diagnosed yet. |
-| `add` | `^2.0.6` is not a real dependency — it landed from a mistyped `yarn add add`. Scheduled for removal. |
+| `jest` | Pinned at 29. Jest 30 breaks every suite: `@react-native/jest-preset@0.86.2` depends on jest 29 packages and nests `jest-mock@29.7.0`, while `jest-runtime@30` calls an API only jest-mock 30 has. Moves when react native ships a preset built against 30. |
+| `eslint` | Pinned at 9. `@react-native/eslint-config@0.86.2` declares `eslint: "^8.0.0 \|\| ^9.0.0"`, so 10 is not an option yet. A `resolutions` entry forces `eslint-plugin-ft-flow` to 3.0.11, because the upstream config nests 2.0.3, which calls an API eslint 9 removed. |
 | `react-native-mmkv` / `react-native-nitro-modules` | Both pinned below the latest release. `react-native-audio-recorder-player@4.5.0` — the newest published version — ships nitrogen-generated Kotlin built against `react-native-nitro-modules@^0.29.2`, and calls `updateNative`, which no longer exists in nitro 0.36.x. Upgrading nitro breaks the Android build at `:react-native-audio-recorder-player:compileDebugKotlin`. Since mmkv 4.3.2 is itself generated against nitro 0.35.9, mmkv and nitro cannot move until audio-recorder-player is rebuilt against modern nitro, or is replaced. All three declare `react-native-nitro-modules: "*"` as a peer, so no tool warns about this. |
 
 ## Upgrade policy

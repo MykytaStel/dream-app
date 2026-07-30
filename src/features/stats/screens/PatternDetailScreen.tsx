@@ -50,6 +50,7 @@ const PatternMatchRow = React.memo(function PatternMatchRow({
 }) {
   return (
     <Pressable
+      accessibilityRole="button"
       style={({ pressed }) => [
         styles.rowPressable,
         pressed ? styles.rowPressablePressed : null,
@@ -199,6 +200,7 @@ export default function PatternDetailScreen() {
           ))}
         </View>
         <Pressable
+          accessibilityRole="button"
           style={({ pressed }) => [
             styles.saveThreadButton,
             pressed ? styles.saveThreadButtonPressed : null,

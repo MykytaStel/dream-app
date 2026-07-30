@@ -139,6 +139,7 @@ const SETTINGS_COPY_EN = {
   backupCueReviewPendingDescription:
     'Saved months and threads changed locally. Open backup and run sync before switching devices.',
   backupOnboardingEyebrow: 'Archive started',
+  backupOnboardingDismissAction: 'Close',
   backupOnboardingTitle: 'You already have dreams worth keeping',
   backupOnboardingDescription:
     'After a few entries, backup starts paying off. Save this archive before it becomes device-bound.',
@@ -666,6 +667,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupCueReviewPendingDescription:
     'Збережені місяці й нитки змінилися локально. Відкрий backup і запусти sync перед переходом на інший пристрій.',
   backupOnboardingEyebrow: 'Архів уже почався',
+  backupOnboardingDismissAction: 'Закрити',
   backupOnboardingTitle: 'У тебе вже є сни, які варто зберегти',
   backupOnboardingDescription:
     'Після кількох записів backup уже має сенс. Збережи цей архів, поки він не лишився прив’язаним до одного пристрою.',

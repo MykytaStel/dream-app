@@ -277,7 +277,12 @@ function SwipeActionButton({
   hitSlop: number;
 }) {
   return (
-    <Pressable hitSlop={hitSlop} style={actionStyle} onPress={onPress}>
+    <Pressable
+      accessibilityRole="button"
+      hitSlop={hitSlop}
+      style={actionStyle}
+      onPress={onPress}
+    >
       <Text style={textStyle}>{label}</Text>
     </Pressable>
   );
@@ -476,6 +481,7 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
         onSwipeableClose={() => onSwipeClosed(dream.id)}
       >
         <Pressable
+          accessibilityRole="button"
           style={({ pressed }: { pressed: boolean }) => [
             styles.dreamPressable,
             pressed ? styles.dreamPressablePressed : null,

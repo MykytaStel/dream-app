@@ -49,7 +49,11 @@ export function StatsMilestonesSection({
   return (
     <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.sectionCard}>
-        <Pressable style={styles.detailsToggleRow} onPress={onToggleExpanded}>
+        <Pressable
+          accessibilityRole="button"
+          style={styles.detailsToggleRow}
+          onPress={onToggleExpanded}
+        >
           <View style={styles.detailsToggleCopy}>
             <Text style={styles.detailsToggleTitle}>
               {copy.milestonesTitle}

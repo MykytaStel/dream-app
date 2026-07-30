@@ -167,6 +167,7 @@ export default function DreamDetailScreen() {
         <Card style={styles.detailSheet}>
           <View style={styles.sheetSection}>
             <Pressable
+              accessibilityRole="button"
               style={styles.backButton}
               onPress={() => navigation.goBack()}
               accessibilityLabel={copy.detailBack}

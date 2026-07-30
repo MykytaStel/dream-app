@@ -314,7 +314,11 @@ export function AppTabBar({
         onRequestClose={closeQuickAdd}
       >
         <View style={styles.quickAddRoot}>
-          <Pressable style={styles.quickAddBackdrop} onPress={closeQuickAdd} />
+          <Pressable
+            accessibilityRole="button"
+            style={styles.quickAddBackdrop}
+            onPress={closeQuickAdd}
+          />
           <View style={styles.quickAddSheet}>
             <View pointerEvents="none" style={styles.quickAddGlowLarge} />
             <View pointerEvents="none" style={styles.quickAddGlowSmall} />

@@ -93,6 +93,7 @@ export function StatsHeroSection({
 
                   return (
                     <Pressable
+                      accessibilityRole="button"
                       key={option.key}
                       style={[
                         styles.rangeChip,
@@ -129,6 +130,7 @@ export function StatsHeroSection({
               </View>
 
               <Pressable
+                accessibilityRole="button"
                 disabled={!topSignal?.onPress}
                 onPress={topSignal?.onPress}
                 style={({ pressed }) => [
@@ -153,6 +155,7 @@ export function StatsHeroSection({
 
               {memoryNudge ? (
                 <Pressable
+                  accessibilityRole="button"
                   onPress={() =>
                     onOpenMemoryNudge(
                       memoryNudge.dreamId,

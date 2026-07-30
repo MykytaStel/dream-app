@@ -42,6 +42,7 @@ const SavedThreadPreviewList = React.memo(function SavedThreadPreviewList({
       <View style={styles.savedThreadsList}>
         {savedThreadItems.slice(0, 3).map(item => (
           <Pressable
+            accessibilityRole="button"
             key={`${item.kind}-${item.signal}`}
             style={({ pressed }) => [
               styles.savedThreadRow,
@@ -88,6 +89,7 @@ const RecurringSignalRow = React.memo(function RecurringSignalRow({
 
   return (
     <Pressable
+      accessibilityRole="button"
       onPress={() => onOpenThreadDetail(item.signal, item.kind)}
       style={({ pressed }) => [
         styles.threadMatchCard,

@@ -54,6 +54,7 @@ export function PatternGroupCard({
       ) : (
         <>
           <Pressable
+            accessibilityRole="button"
             disabled={!leadItem.onPress}
             onPress={leadItem.onPress}
             style={({ pressed }) => [
@@ -90,6 +91,7 @@ export function PatternGroupCard({
               <View style={styles.secondaryWrap}>
                 {secondaryItems.map(item => (
                   <Pressable
+                    accessibilityRole="button"
                     key={item.key}
                     disabled={!item.onPress}
                     onPress={item.onPress}

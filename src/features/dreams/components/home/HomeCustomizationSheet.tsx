@@ -62,7 +62,11 @@ export function HomeCustomizationSheet({
       onRequestClose={onClose}
     >
       <View style={styles.filterSheetRoot}>
-        <Pressable style={styles.filterSheetBackdrop} onPress={onClose} />
+        <Pressable
+          accessibilityRole="button"
+          style={styles.filterSheetBackdrop}
+          onPress={onClose}
+        />
         <View style={styles.filterSheetCard}>
           <View style={styles.filterSheetHeader}>
             <View style={styles.filterSheetHandle} />
@@ -118,6 +122,7 @@ export function HomeCustomizationSheet({
 
                   return (
                     <Pressable
+                      accessibilityRole="button"
                       key={section}
                       style={[
                         styles.filterButton,

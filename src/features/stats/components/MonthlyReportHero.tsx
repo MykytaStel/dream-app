@@ -125,6 +125,7 @@ export function MonthlyReportHero({
                 month.key === (selectedMonthKey ?? report.month.key);
               return (
                 <Pressable
+                  accessibilityRole="button"
                   key={month.key}
                   style={[
                     styles.monthChip,

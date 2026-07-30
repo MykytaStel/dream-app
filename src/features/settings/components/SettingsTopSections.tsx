@@ -75,6 +75,7 @@ export function SettingsHeroSection({
 
             return (
               <Pressable
+                accessibilityRole="button"
                 key={option.value}
                 style={[
                   styles.inlineLanguageChip,
@@ -243,6 +244,7 @@ export function ReminderSection({
         <>
           {suggestedTime ? (
             <TouchableOpacity
+              accessibilityRole="button"
               activeOpacity={0.7}
               style={styles.reminderSuggestionRow}
               onPress={onApplySuggestedTime}

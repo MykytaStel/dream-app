@@ -642,6 +642,7 @@ export default function DreamPracticeScreen() {
             {lucidStats.topDreamSigns.length ? (
               lucidStats.topDreamSigns.map(item => (
                 <Pressable
+                  accessibilityRole="button"
                   key={item.sign}
                   style={styles.tagChip}
                   onPress={() =>

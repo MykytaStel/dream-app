@@ -41,12 +41,16 @@ type AudioPlayerWidgetProps = {
   uri: string;
   styles: DreamDetailScreenStyles;
   playbackErrorTitle: string;
+  playLabel: string;
+  pauseLabel: string;
 };
 
 function AudioPlayerWidget({
   uri,
   styles,
   playbackErrorTitle,
+  playLabel,
+  pauseLabel,
 }: AudioPlayerWidgetProps) {
   const theme = useTheme<Theme>();
   const [isPlaying, setIsPlaying] = React.useState(false);
@@ -115,6 +119,10 @@ function AudioPlayerWidget({
             pressed ? styles.audioPlayButtonPressed : null,
           ]}
           onPress={onToggle}
+          accessibilityRole="button"
+          // Icon only, and the icon changes with state, so the label has to say
+          // which action pressing it performs right now.
+          accessibilityLabel={isPlaying ? pauseLabel : playLabel}
         >
           <View
             style={
@@ -468,6 +476,8 @@ export function DreamDetailSections({
                 uri={dream.audioUri}
                 styles={styles}
                 playbackErrorTitle={copy.detailAudioPlaybackErrorTitle}
+                playLabel={copy.audioPlayAction}
+                pauseLabel={copy.audioPauseAction}
               />
             </View>
           ) : dream.audioRemotePath && !dream.audioUri ? (
@@ -505,6 +515,7 @@ export function DreamDetailSections({
               <Text style={styles.featuredBody}>{leadPrompt.body}</Text>
               {leadPrompt.actionKind !== 'analysis' ? (
                 <Pressable
+                  accessibilityRole="button"
                   style={({ pressed }) => [
                     styles.featuredAction,
                     pressed ? styles.featuredActionPressed : null,
@@ -587,6 +598,7 @@ export function DreamDetailSections({
             <View style={styles.relatedList}>
               {relatedDreams.map(item => (
                 <Pressable
+                  accessibilityRole="button"
                   key={item.dream.id}
                   style={({ pressed }) => [
                     styles.relatedRow,
@@ -633,6 +645,7 @@ export function DreamDetailSections({
 
           {analysisNeedsSettings ? (
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.settingsNotice,
                 pressed ? styles.settingsNoticePressed : null,

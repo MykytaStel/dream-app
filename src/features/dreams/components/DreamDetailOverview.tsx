@@ -61,6 +61,7 @@ export function DreamDetailOverview({
       <Animated.View layout={detailLayoutTransition} style={styles.heroShell}>
         <View style={styles.heroTopBar}>
           <Pressable
+            accessibilityRole="button"
             style={styles.backButton}
             onPress={onBack}
             accessibilityLabel={copy.detailBack}
@@ -70,6 +71,7 @@ export function DreamDetailOverview({
 
           <View style={styles.heroIconActions}>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.heroIconButton,
                 pressed ? styles.heroIconButtonPressed : null,
@@ -84,6 +86,7 @@ export function DreamDetailOverview({
               />
             </Pressable>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.heroIconButton,
                 viewModel.starred ? styles.heroIconButtonActive : null,
@@ -101,6 +104,7 @@ export function DreamDetailOverview({
               />
             </Pressable>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.heroIconButton,
                 viewModel.archived ? styles.heroIconButtonActive : null,
@@ -118,6 +122,7 @@ export function DreamDetailOverview({
               />
             </Pressable>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.heroIconButton,
                 pressed ? styles.heroIconButtonPressed : null,
@@ -132,6 +137,7 @@ export function DreamDetailOverview({
               />
             </Pressable>
             <Pressable
+              accessibilityRole="button"
               style={({ pressed }) => [
                 styles.heroIconButton,
                 styles.heroIconButtonDanger,
@@ -207,6 +213,7 @@ export function DreamDetailOverview({
                 </View>
               </View>
               <Pressable
+                accessibilityRole="button"
                 style={styles.savedDismiss}
                 onPress={onDismissSavedHighlight}
                 accessibilityLabel={copy.clearErrorAction}

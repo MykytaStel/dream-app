@@ -554,6 +554,7 @@ export function DreamComposerRefineCard({
       <View style={styles.refineActionsRow}>
         {actions.map(action => (
           <Pressable
+            accessibilityRole="button"
             key={action.key}
             onPress={action.onPress}
             style={[

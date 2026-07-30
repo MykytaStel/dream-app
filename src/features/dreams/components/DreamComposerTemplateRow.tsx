@@ -60,6 +60,7 @@ export function DreamComposerTemplateRow({ copy, onApplyTemplate }: Props) {
       >
         {templates.map(template => (
           <Pressable
+            accessibilityRole="button"
             key={template.id}
             style={({ pressed }) => [
               styles.chip,

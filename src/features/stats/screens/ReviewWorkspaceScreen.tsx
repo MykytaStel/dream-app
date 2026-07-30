@@ -183,6 +183,7 @@ export default function ReviewWorkspaceScreen() {
               <View style={styles.workQueueList}>
                 {controller.workQueueItems.map(item => (
                   <Pressable
+                    accessibilityRole="button"
                     key={`${item.focusSection}:${item.dreamId}`}
                     onPress={() =>
                       navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
@@ -242,6 +243,7 @@ export default function ReviewWorkspaceScreen() {
               <View style={styles.reviewShelfList}>
                 {controller.importantDreamItems.map(item => (
                   <Pressable
+                    accessibilityRole="button"
                     key={item.dreamId}
                     onPress={() =>
                       navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
@@ -284,6 +286,7 @@ export default function ReviewWorkspaceScreen() {
               <View style={styles.savedThreadsList}>
                 {controller.savedSetItems.map(item => (
                   <Pressable
+                    accessibilityRole="button"
                     key={item.key}
                     style={({ pressed }) => [
                       styles.savedThreadRow,

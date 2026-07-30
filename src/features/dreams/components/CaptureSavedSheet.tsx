@@ -74,7 +74,11 @@ export function CaptureSavedSheet({
       onRequestClose={onClose}
     >
       <View style={styles.root}>
-        <Pressable style={styles.backdrop} onPress={onClose} />
+        <Pressable
+          accessibilityRole="button"
+          style={styles.backdrop}
+          onPress={onClose}
+        />
         <Animated.View
           entering={FadeInDown.duration(220)}
           style={styles.sheetWrap}

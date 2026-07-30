@@ -56,7 +56,11 @@ export function StreakMilestoneToast({ title, subtitle, onDismiss }: Props) {
         />
       </View>
 
-      <Pressable onPress={onDismiss} style={styles.content}>
+      <Pressable
+        accessibilityRole="button"
+        onPress={onDismiss}
+        style={styles.content}
+      >
         <View style={styles.textBlock}>
           <Text style={[styles.title, { color: theme.colors.text }]}>
             {title}

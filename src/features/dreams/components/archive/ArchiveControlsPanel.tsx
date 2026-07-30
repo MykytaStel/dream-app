@@ -112,6 +112,7 @@ export function ArchiveControlsPanel({
               const active = filter === option.key;
               return (
                 <Pressable
+                  accessibilityRole="button"
                   key={option.key}
                   onPress={() => onSelectFilter(option.key)}
                   style={[
@@ -143,6 +144,7 @@ export function ArchiveControlsPanel({
                 const active = specialFilter === option.key;
                 return (
                   <Pressable
+                    accessibilityRole="button"
                     key={option.key}
                     onPress={() => onSelectSpecialFilter(option.key)}
                     style={[
@@ -176,6 +178,7 @@ export function ArchiveControlsPanel({
                   const active = tagFilter === signal.tag;
                   return (
                     <Pressable
+                      accessibilityRole="button"
                       key={signal.tag}
                       style={[
                         styles.tagChip,
@@ -209,7 +212,11 @@ export function ArchiveControlsPanel({
           {hasHardReset || isSearchPending ? (
             <View style={styles.controlsFooterRow}>
               {hasHardReset ? (
-                <Pressable style={styles.controlsActionChip} onPress={onReset}>
+                <Pressable
+                  accessibilityRole="button"
+                  style={styles.controlsActionChip}
+                  onPress={onReset}
+                >
                   <Text style={styles.controlsActionChipText}>
                     {copy.archiveResetView}
                   </Text>
@@ -242,6 +249,7 @@ export function ArchiveControlsPanel({
 
             return (
               <Pressable
+                accessibilityRole="button"
                 key={option.key}
                 style={[styles.modeChip, active ? styles.modeChipActive : null]}
                 onPress={() => onChangeViewMode(option.key)}
@@ -266,6 +274,7 @@ export function ArchiveControlsPanel({
           layout={archiveControlsLayoutTransition}
         >
           <Pressable
+            accessibilityRole="button"
             style={({ pressed }) => [
               styles.revisitInlineCard,
               pressed ? styles.revisitCardPressed : null,

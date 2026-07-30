@@ -29,6 +29,27 @@ export function reportError(error: unknown, context?: ObservabilityContext) {
   observability.captureError(error, sanitizeContext(context));
 }
 
+/**
+ * A stored value could not be read and a default was used instead.
+ *
+ * These failures are recoverable by design, but they are never expected: each
+ * one means the user quietly lost a setting, a draft or a piece of state. They
+ * are reported so that corruption is visible rather than merely survivable.
+ *
+ * `storageKey` is the key name, never its contents.
+ */
+export function reportStorageReadFailure(
+  storageKey: string,
+  error: unknown,
+  context?: ObservabilityContext,
+) {
+  reportError(error, {
+    ...context,
+    storage_key: storageKey,
+    error_source: 'storage_read',
+  });
+}
+
 export function reportActionError(
   action: string,
   error: unknown,

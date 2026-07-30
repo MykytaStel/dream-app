@@ -5,6 +5,7 @@ import {
   normalizeHomeTimelineFilters,
   type HomeTimelineFilters,
 } from '../model/homeTimeline';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 const MAX_HOME_SEARCH_PRESETS = 6;
 
@@ -42,7 +43,8 @@ export function getHomeSearchPresets() {
       .map(normalizePreset)
       .filter((preset): preset is HomeSearchPreset => Boolean(preset))
       .sort((a, b) => b.createdAt - a.createdAt);
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(HOME_SEARCH_PRESETS_STORAGE_KEY, error);
     return [] as HomeSearchPreset[];
   }
 }

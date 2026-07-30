@@ -16,6 +16,7 @@ import {
   WakeEmotion,
 } from '../model/dream';
 import { normalizeTags } from '../model/dreamRules';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 export type DreamDraftEntryMode = 'default' | 'voice' | 'wake';
 
@@ -262,7 +263,8 @@ export function getDreamDraft() {
 
   try {
     return normalizeDraft(JSON.parse(raw) as Partial<DreamDraft>);
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(DREAM_DRAFT_STORAGE_KEY, error);
     return null;
   }
 }

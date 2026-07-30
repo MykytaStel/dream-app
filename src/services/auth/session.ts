@@ -3,6 +3,7 @@ import {
   CLOUD_SESSION_STORAGE_KEY,
   CLOUD_SYNC_ENABLED_KEY,
 } from '../storage/keys';
+import { reportStorageReadFailure } from '../observability/errorReporting';
 
 export type CloudSession =
   | { status: 'signed-out' }
@@ -51,7 +52,8 @@ export function getCloudSession(): CloudSession {
         isAnonymous: parsed.isAnonymous,
       };
     }
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(CLOUD_SESSION_STORAGE_KEY, error);
     kv.remove(CLOUD_SESSION_STORAGE_KEY);
   }
 

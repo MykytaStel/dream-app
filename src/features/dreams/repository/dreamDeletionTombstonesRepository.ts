@@ -1,5 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { DREAM_DELETION_TOMBSTONES_STORAGE_KEY } from '../../../services/storage/keys';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 export type DreamDeletionTombstoneSyncStatus =
   'local' | 'syncing' | 'synced' | 'error';
@@ -70,7 +71,8 @@ export function listDreamDeletionTombstones() {
     tombstoneCache = normalized;
     tombstoneCacheRaw = raw;
     return normalized;
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(DREAM_DELETION_TOMBSTONES_STORAGE_KEY, error);
     tombstoneCache = [];
     tombstoneCacheRaw = raw;
     return [];

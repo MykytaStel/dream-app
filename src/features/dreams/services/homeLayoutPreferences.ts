@@ -5,6 +5,7 @@ import {
   sanitizeHomeLayoutPreferences,
   type HomeLayoutPreferences,
 } from '../model/homeLayout';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 export function getStoredHomeLayoutPreferences(): HomeLayoutPreferences {
   const raw = kv.getString(HOME_LAYOUT_PREFERENCES_STORAGE_KEY);
@@ -14,7 +15,8 @@ export function getStoredHomeLayoutPreferences(): HomeLayoutPreferences {
 
   try {
     return sanitizeHomeLayoutPreferences(JSON.parse(raw));
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(HOME_LAYOUT_PREFERENCES_STORAGE_KEY, error);
     return getHomeLayoutPreferencesForPreset('balanced');
   }
 }

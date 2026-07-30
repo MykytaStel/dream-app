@@ -4,6 +4,7 @@ import {
 } from '../model/dreamAnalysis';
 import { kv } from '../../../services/storage/mmkv';
 import { DREAM_ANALYSIS_SETTINGS_KEY } from '../../../services/storage/keys';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 function normalizeDreamAnalysisSettings(
   input?: Partial<DreamAnalysisSettings> | DreamAnalysisSettings,
@@ -27,7 +28,8 @@ export function getDreamAnalysisSettings() {
     return normalizeDreamAnalysisSettings(
       JSON.parse(raw) as Partial<DreamAnalysisSettings>,
     );
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(DREAM_ANALYSIS_SETTINGS_KEY, error);
     return DEFAULT_DREAM_ANALYSIS_SETTINGS;
   }
 }

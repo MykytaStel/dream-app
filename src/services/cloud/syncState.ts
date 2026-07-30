@@ -4,6 +4,7 @@ import {
 } from '../storage/keys';
 import { kv } from '../storage/mmkv';
 import { getStoredReviewStateSnapshot } from '../../features/stats/services/reviewStateStorageService';
+import { reportStorageReadFailure } from '../observability/errorReporting';
 
 export type CloudSyncReason = 'manual' | 'launch';
 export type CloudSyncStatus = 'idle' | 'syncing' | 'success' | 'error';
@@ -191,7 +192,8 @@ export function getCloudSyncEvents() {
       .filter((item): item is CloudSyncEvent => Boolean(item))
       .sort((left, right) => right.at - left.at)
       .slice(0, MAX_CLOUD_SYNC_EVENTS);
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(CLOUD_SYNC_EVENTS_STORAGE_KEY, error);
     return [] as CloudSyncEvent[];
   }
 }
@@ -293,7 +295,8 @@ export function getCloudSyncSnapshot(): CloudSyncSnapshot {
           ? parsed.errorMessage
           : undefined,
     };
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(CLOUD_SYNC_SNAPSHOT_STORAGE_KEY, error);
     return DEFAULT_CLOUD_SYNC_SNAPSHOT;
   }
 }

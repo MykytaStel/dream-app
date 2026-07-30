@@ -5,6 +5,7 @@ import {
   PINNED_DREAM_THREADS_STORAGE_KEY,
   REVIEW_SAVED_STATE_STORAGE_KEY,
 } from '../../../services/storage/keys';
+import { reportStorageReadFailure } from '../../../services/observability/errorReporting';
 
 export type ReviewStateSyncStatus = 'local' | 'syncing' | 'synced' | 'error';
 
@@ -92,7 +93,8 @@ function readLegacySavedMonths() {
       .map(normalizeSavedMonthRecord)
       .filter((item): item is SavedMonthlyReportRecord => Boolean(item))
       .sort((a, b) => b.savedAt - a.savedAt);
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY, error);
     return [] as SavedMonthlyReportRecord[];
   }
 }
@@ -109,7 +111,8 @@ function readLegacySavedThreads() {
       .map(normalizeSavedThreadRecord)
       .filter((item): item is SavedDreamThreadRecord => Boolean(item))
       .sort((a, b) => b.savedAt - a.savedAt);
-  } catch {
+  } catch (error) {
+    reportStorageReadFailure(PINNED_DREAM_THREADS_STORAGE_KEY, error);
     return [] as SavedDreamThreadRecord[];
   }
 }
@@ -162,7 +165,8 @@ export function getStoredReviewStateSnapshot(): SavedReviewStateSnapshot {
   if (raw) {
     try {
       return normalizeSnapshot(JSON.parse(raw) as RawReviewStateSnapshot);
-    } catch {
+    } catch (error) {
+      reportStorageReadFailure(REVIEW_SAVED_STATE_STORAGE_KEY, error);
       return createDefaultSnapshot();
     }
   }

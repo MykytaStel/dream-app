@@ -4,11 +4,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { syncDreamReminderState } from '../features/reminders/services/dreamReminderService';
 import { syncDreamPracticeReminderState } from '../features/reminders/services/dreamPracticeReminderService';
-import { observability } from '../services/observability';
+import {
+  observability,
+  setObservabilityProvider,
+} from '../services/observability';
 import {
   installGlobalErrorReporting,
   reportError,
 } from '../services/observability/errorReporting';
+import { initSentry } from '../services/observability/sentryObservability';
 import { OBS_EVENTS } from '../services/observability/events';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { runStorageMigrations } from '../services/storage/migrations';
@@ -37,6 +41,14 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   React.useEffect(() => {
+    // Registered before anything else runs, so a failure during startup is
+    // still reported. Returns null when no DSN is configured, which leaves the
+    // console provider in place.
+    const sentry = initSentry();
+    if (sentry) {
+      setObservabilityProvider(sentry);
+    }
+
     try {
       runStorageMigrations();
     } catch (error) {

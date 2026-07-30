@@ -7,7 +7,7 @@ module.exports = {
   // which jest cannot parse without transpiling it first. The preset only
   // transpiles react-native itself, so the package is added by hand.
   transformIgnorePatterns: [
-    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|react-native-gesture-handler)/)',
+    'node_modules/(?!((jest-)?react-native|@react-native(-community)?|react-native-gesture-handler|@sentry)/)',
   ],
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

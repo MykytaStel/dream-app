@@ -160,7 +160,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   openNightmares: 'Підтримка при кошмарах',
   openPractice: 'Відкрити практику',
   morningCaptureTitle: 'Ранковий запис',
-  realityChecksTitle: 'Reality checks',
+  realityChecksTitle: 'Перевірки реальності',
   eveningIntentionTitle: 'Намір на вечір',
   wbtbTitle: 'WBTB',
   reminderOn: 'Увімк.',
@@ -226,7 +226,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   lucidStatsAware: 'Усвідомлені',
   lucidStatsControlled: 'З контролем',
   lucidStatsTopTechnique: 'Головна техніка',
-  lucidStatsDreamSigns: 'Dream signs',
+  lucidStatsDreamSigns: 'Ознаки сну',
   lucidStatsNoTechnique: 'Техніки ще не логувались',
   nightmareStatsTitle: 'Сигнали кошмарів',
   nightmareStatsRecurring: 'Повторювані',
@@ -245,7 +245,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   reminderNotificationMorningTitle: 'Злови сон, поки не зник',
   reminderNotificationMorningBody:
     'Запиши кілька рядків, поки пам’ять ще поруч.',
-  reminderNotificationRealityTitle: 'Reality check',
+  reminderNotificationRealityTitle: 'Перевірка реальності',
   reminderNotificationRealityBody:
     'Зупинись, глянь двічі й поміть, що стабільне, а що дивне.',
   reminderNotificationEveningTitle: 'Сформуй намір на ніч',
@@ -273,7 +273,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   statsNightmareRecoveryDescription:
     'Дивись, чи меншає дистрес, повтори і чи спокійнішими стають пробудження.',
   remindersTitle: 'Нагадування',
-  lucidDreamSignsLabel: 'Dream signs',
+  lucidDreamSignsLabel: 'Ознаки сну',
   lucidDreamSignsPlaceholder: 'двері, хибне пробудження, дзеркало',
   lucidTriggerLabel: 'Що дало усвідомлення',
   lucidTriggerPlaceholder: 'Що підказало, що це сон?',

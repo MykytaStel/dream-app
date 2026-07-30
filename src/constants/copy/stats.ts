@@ -290,7 +290,6 @@ const STATS_COPY_EN = {
   milestonesToggleHide: 'Hide milestones',
   currentStreak: 'Current streak',
   lastSevenDays: 'Last 7 days',
-  monthChange: 'Local-first',
   emptyTitle: 'No memory yet',
   emptyDescription:
     'Save a few dreams first. Memory will start connecting recurring signals from your local archive automatically.',

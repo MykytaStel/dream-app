@@ -1020,8 +1020,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Для цього сну ще не збережено аналіз. Згенеруй його, щоб перетворити запис на коротку локальну рефлексію.',
   detailAnalysisDisabled:
     'Шар аналізу вимкнений у Settings, тому цей сон поки лишається сирим записом без summary і themes.',
-  detailAnalysisSummaryLabel: 'Summary',
-  detailAnalysisThemesLabel: 'Themes',
+  detailAnalysisSummaryLabel: 'Підсумок',
+  detailAnalysisThemesLabel: 'Теми',
   detailAnalysisStateLabel: 'Режим аналізу',
   detailAnalysisStateLocalReady:
     'Локальний аналіз увімкнений і готовий для цього сну.',

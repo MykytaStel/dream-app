@@ -35,7 +35,11 @@ import { Theme } from '../../theme/theme';
 import { appLinking } from './linking';
 import Tabs from './tabs';
 import { ROOT_ROUTE_NAMES, type RootStackParamList } from './routes';
-import { navigationRef, openDreamPractice, openWakeEntry } from './navigationRef';
+import {
+  navigationRef,
+  openDreamPractice,
+  openWakeEntry,
+} from './navigationRef';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -43,7 +47,8 @@ export default function RootNavigator() {
   const t = useTheme<Theme>();
   const { appearance } = useAppTheme();
   const initialRouteName = React.useMemo(
-    () => (hasSeenOnboarding() ? ROOT_ROUTE_NAMES.Tabs : ROOT_ROUTE_NAMES.Onboarding),
+    () =>
+      hasSeenOnboarding() ? ROOT_ROUTE_NAMES.Tabs : ROOT_ROUTE_NAMES.Onboarding,
     [],
   );
   const navigationTheme = React.useMemo(() => {
@@ -87,9 +92,11 @@ export default function RootNavigator() {
 
     async function openFromNotification() {
       const initialNotification = await notifee.getInitialNotification();
-      const shouldOpenWake = consumePendingWakeOpenFromReminder() ||
+      const shouldOpenWake =
+        consumePendingWakeOpenFromReminder() ||
         isReminderInitialNotificationTarget(initialNotification);
-      const shouldOpenPractice = isPracticeInitialNotificationTarget(initialNotification);
+      const shouldOpenPractice =
+        isPracticeInitialNotificationTarget(initialNotification);
 
       if (cancelled) {
         return;
@@ -164,7 +171,10 @@ export default function RootNavigator() {
           statusBarBackgroundColor: t.colors.background,
         }}
       >
-        <Stack.Screen name={ROOT_ROUTE_NAMES.Onboarding} component={OnboardingScreen} />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.Onboarding}
+          component={OnboardingScreen}
+        />
         <Stack.Screen name={ROOT_ROUTE_NAMES.Tabs} component={Tabs} />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.Backup}

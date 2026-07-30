@@ -32,7 +32,9 @@ function getDreamFreshnessTimestamp(dream: Dream) {
 function hasPendingReviewState(snapshot: SavedReviewStateSnapshot) {
   const hasItems =
     snapshot.savedMonths.length > 0 || snapshot.savedThreads.length > 0;
-  return snapshot.syncStatus !== 'synced' && (hasItems || snapshot.updatedAt > 0);
+  return (
+    snapshot.syncStatus !== 'synced' && (hasItems || snapshot.updatedAt > 0)
+  );
 }
 
 export function buildBackupTimelineItems(input: {
@@ -55,12 +57,18 @@ export function buildBackupTimelineItems(input: {
     latestBackupPreview,
     reviewState,
   } = input;
-  const syncedDreamCount = dreams.filter(dream => dream.syncStatus === 'synced').length;
+  const syncedDreamCount = dreams.filter(
+    dream => dream.syncStatus === 'synced',
+  ).length;
   const pendingDreamCount = dreams.filter(
-    dream => (dream.syncStatus ?? 'local') === 'local' || dream.syncStatus === 'syncing',
+    dream =>
+      (dream.syncStatus ?? 'local') === 'local' ||
+      dream.syncStatus === 'syncing',
   ).length;
   const pendingReviewStateCount = hasPendingReviewState(reviewState) ? 1 : 0;
-  const errorDreamCount = dreams.filter(dream => dream.syncStatus === 'error').length;
+  const errorDreamCount = dreams.filter(
+    dream => dream.syncStatus === 'error',
+  ).length;
   const freshestDreamTimestamp = dreams.reduce(
     (latest, dream) => Math.max(latest, getDreamFreshnessTimestamp(dream)),
     0,
@@ -68,7 +76,10 @@ export function buildBackupTimelineItems(input: {
 
   const syncValue =
     typeof snapshot.lastSuccessAt === 'number'
-      ? formatBackupTimestamp(new Date(snapshot.lastSuccessAt).toISOString(), locale)
+      ? formatBackupTimestamp(
+          new Date(snapshot.lastSuccessAt).toISOString(),
+          locale,
+        )
       : copy.cloudLastSyncNever;
   const syncMetaParts = [
     snapshot.status === 'syncing'
@@ -90,7 +101,10 @@ export function buildBackupTimelineItems(input: {
   const snapshotValue = latestBackupPreview
     ? formatBackupTimestamp(latestBackupPreview.exportedAt, locale)
     : latestBackupFile
-      ? formatBackupTimestamp(new Date(latestBackupFile.modifiedAt).toISOString(), locale)
+      ? formatBackupTimestamp(
+          new Date(latestBackupFile.modifiedAt).toISOString(),
+          locale,
+        )
       : copy.backupTimelineSnapshotMissing;
   const snapshotMeta = latestBackupPreview
     ? `${copy.restoreDreamCountLabel} ${latestBackupPreview.summary.dreamCount} • ${copy.restoreAppVersionLabel} ${latestBackupPreview.appVersion}`
@@ -106,7 +120,10 @@ export function buildBackupTimelineItems(input: {
       deviceValue =
         pendingDreamCount === 1
           ? copy.backupTimelineDeviceAheadSingle
-          : copy.backupTimelineDeviceAheadPlural.replace('{count}', String(pendingDreamCount));
+          : copy.backupTimelineDeviceAheadPlural.replace(
+              '{count}',
+              String(pendingDreamCount),
+            );
     } else if (pendingReviewStateCount > 0) {
       deviceValue = copy.backupTimelineDeviceReviewAhead;
     } else if (typeof snapshot.lastSuccessAt === 'number') {
@@ -118,7 +135,10 @@ export function buildBackupTimelineItems(input: {
 
   const freshnessAnchor =
     freshestDreamTimestamp > 0
-      ? formatBackupTimestamp(new Date(freshestDreamTimestamp).toISOString(), locale)
+      ? formatBackupTimestamp(
+          new Date(freshestDreamTimestamp).toISOString(),
+          locale,
+        )
       : copy.backupTimelineDeviceNoLocalChanges;
   const deviceMetaParts = [
     `${copy.cloudPendingLabel} ${pendingDreamCount}`,

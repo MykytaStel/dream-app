@@ -5,7 +5,13 @@ import { Theme } from '../../theme/theme';
 import { Text } from './Text';
 import { createInfoRowStyles } from './InfoRow.styles';
 
-export function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
+export function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: React.ReactNode;
+}) {
   const t = useTheme<Theme>();
   const styles = React.useMemo(() => createInfoRowStyles(t), [t]);
 

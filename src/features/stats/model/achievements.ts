@@ -43,7 +43,11 @@ function toUtcDayValue(value: string) {
 
 export function getLongestRecordedStreak(dreams: DreamAchievementSource[]) {
   const uniqueDays = Array.from(
-    new Set(dreams.map(dream => resolveDreamSleepDate(dream.sleepDate, dream.createdAt))),
+    new Set(
+      dreams.map(dream =>
+        resolveDreamSleepDate(dream.sleepDate, dream.createdAt),
+      ),
+    ),
   ).sort((a, b) => a.localeCompare(b));
 
   if (!uniqueDays.length) {

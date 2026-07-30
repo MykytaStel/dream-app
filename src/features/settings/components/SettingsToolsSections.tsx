@@ -44,7 +44,10 @@ export function AnalysisSection({
                 enabled,
               });
             }}
-            trackColor={{ false: t.colors.switchTrackOff, true: t.colors.primary }}
+            trackColor={{
+              false: t.colors.switchTrackOff,
+              true: t.colors.primary,
+            }}
             thumbColor={t.colors.text}
           />
         }
@@ -57,7 +60,8 @@ export function AnalysisSection({
             onSave({
               ...analysisSettings,
               provider,
-              allowNetwork: provider === 'manual' ? false : analysisSettings.allowNetwork,
+              allowNetwork:
+                provider === 'manual' ? false : analysisSettings.allowNetwork,
             })
           }
           options={[
@@ -70,7 +74,9 @@ export function AnalysisSection({
         <View style={styles.settingControlBlock}>
           <Text style={styles.restoreLabel}>{copy.analysisNetworkLabel}</Text>
           <SettingsSegmentedControl
-            selectedValue={analysisSettings.allowNetwork ? 'allowed' : 'blocked'}
+            selectedValue={
+              analysisSettings.allowNetwork ? 'allowed' : 'blocked'
+            }
             onChange={value =>
               onSave({
                 ...analysisSettings,
@@ -134,7 +140,11 @@ export function TranscriptionSection({
         />
         {installed ? (
           <Button
-            title={isDeleting ? copy.transcriptionDeleteButtonBusy : copy.transcriptionDeleteButton}
+            title={
+              isDeleting
+                ? copy.transcriptionDeleteButtonBusy
+                : copy.transcriptionDeleteButton
+            }
             variant="ghost"
             size="sm"
             style={styles.buttonStackButton}
@@ -142,7 +152,9 @@ export function TranscriptionSection({
             disabled={isDeleting}
           />
         ) : (
-          <Text style={styles.privacyFootnote}>{copy.transcriptionMissingHint}</Text>
+          <Text style={styles.privacyFootnote}>
+            {copy.transcriptionMissingHint}
+          </Text>
         )}
       </View>
     </Card>
@@ -211,7 +223,9 @@ export function DevSection({
       />
       <View style={styles.buttonRow}>
         <Button
-          title={isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd250}
+          title={
+            isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd250
+          }
           variant="ghost"
           size="sm"
           style={styles.buttonRowButton}
@@ -219,7 +233,9 @@ export function DevSection({
           disabled={isUpdatingSeedDreams}
         />
         <Button
-          title={isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd1000}
+          title={
+            isUpdatingSeedDreams ? copy.scaleTestBusy : copy.scaleTestAdd1000
+          }
           variant="primary"
           size="sm"
           style={styles.buttonRowButton}

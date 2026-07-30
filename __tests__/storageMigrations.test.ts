@@ -61,7 +61,7 @@ describe('storage migrations', () => {
     expect(migrated[1].text).toBe('Raw note');
     expect(migrated[1].tags).toEqual(['city']);
     expect(typeof migrated[1].sleepDate).toBe('string');
-    expect((migrated[1].sleepDate as string)).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(migrated[1].sleepDate as string).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 
   test('migrates locale and reminder settings', () => {
@@ -84,7 +84,9 @@ describe('storage migrations', () => {
       minute: 45,
       style: 'balanced',
     });
-    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(
+      CURRENT_STORAGE_SCHEMA_VERSION,
+    );
   });
 
   test('migrates transcript fields into schema v3 and normalizes stale processing state', () => {
@@ -116,7 +118,9 @@ describe('storage migrations', () => {
 
     runStorageMigrations();
 
-    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    const migrated = JSON.parse(
+      kv.getString(DREAMS_STORAGE_KEY) ?? '[]',
+    ) as Array<Record<string, unknown>>;
     expect(migrated[0]).toMatchObject({
       id: 'voice-1',
       transcript: 'Echoes in a station hall',
@@ -155,7 +159,9 @@ describe('storage migrations', () => {
 
     runStorageMigrations();
 
-    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    const migrated = JSON.parse(
+      kv.getString(DREAMS_STORAGE_KEY) ?? '[]',
+    ) as Array<Record<string, unknown>>;
     expect(migrated[0]).toMatchObject({
       id: 'voice-legacy',
       transcript: 'Existing transcript',
@@ -200,7 +206,9 @@ describe('storage migrations', () => {
 
     runStorageMigrations();
 
-    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    const migrated = JSON.parse(
+      kv.getString(DREAMS_STORAGE_KEY) ?? '[]',
+    ) as Array<Record<string, unknown>>;
     expect(migrated[0]).toMatchObject({
       id: 'analysis-legacy',
       analysis: {
@@ -211,7 +219,9 @@ describe('storage migrations', () => {
         generatedAt: 1710000005000,
       },
     });
-    expect(JSON.parse(kv.getString(DREAM_ANALYSIS_SETTINGS_KEY) ?? '{}')).toEqual({
+    expect(
+      JSON.parse(kv.getString(DREAM_ANALYSIS_SETTINGS_KEY) ?? '{}'),
+    ).toEqual({
       enabled: true,
       provider: 'openai',
       allowNetwork: false,
@@ -236,7 +246,9 @@ describe('storage migrations', () => {
 
     runStorageMigrations();
 
-    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    const migrated = JSON.parse(
+      kv.getString(DREAMS_STORAGE_KEY) ?? '[]',
+    ) as Array<Record<string, unknown>>;
     expect(migrated[0]).toMatchObject({
       id: 'starred-legacy',
       starredAt: 1710000005000,
@@ -264,7 +276,9 @@ describe('storage migrations', () => {
 
     runStorageMigrations();
 
-    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    const migrated = JSON.parse(
+      kv.getString(DREAMS_STORAGE_KEY) ?? '[]',
+    ) as Array<Record<string, unknown>>;
     expect(migrated[0]).toMatchObject({
       id: 'emotion-legacy',
       wakeEmotions: ['calm', 'curious'],
@@ -287,12 +301,16 @@ describe('storage migrations', () => {
 
     runStorageMigrations();
 
-    expect(JSON.parse(kv.getString(REVIEW_SAVED_STATE_STORAGE_KEY) ?? '{}')).toMatchObject({
+    expect(
+      JSON.parse(kv.getString(REVIEW_SAVED_STATE_STORAGE_KEY) ?? '{}'),
+    ).toMatchObject({
       savedMonths: [{ monthKey: '2026-03', savedAt: 10 }],
       savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: 11 }],
       syncStatus: 'local',
     });
-    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(
+      CURRENT_STORAGE_SCHEMA_VERSION,
+    );
   });
 
   test('does not create an empty unified review snapshot when legacy shelves are empty', () => {
@@ -301,7 +319,9 @@ describe('storage migrations', () => {
     runStorageMigrations();
 
     expect(kv.getString(REVIEW_SAVED_STATE_STORAGE_KEY)).toBeUndefined();
-    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(
+      CURRENT_STORAGE_SCHEMA_VERSION,
+    );
   });
 
   test('migrates sync metadata into schema v8 defaults', () => {
@@ -321,7 +341,9 @@ describe('storage migrations', () => {
 
     runStorageMigrations();
 
-    const migrated = JSON.parse(kv.getString(DREAMS_STORAGE_KEY) ?? '[]') as Array<Record<string, unknown>>;
+    const migrated = JSON.parse(
+      kv.getString(DREAMS_STORAGE_KEY) ?? '[]',
+    ) as Array<Record<string, unknown>>;
     expect(migrated[0]).toMatchObject({
       id: 'sync-legacy',
       updatedAt: 1710000000000,

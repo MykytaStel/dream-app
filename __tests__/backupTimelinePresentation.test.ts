@@ -82,8 +82,16 @@ describe('backup timeline presentation', () => {
       },
       reviewState: {
         updatedAt: Date.UTC(2026, 2, 12, 8, 20),
-        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 8, 0) }],
-        savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: Date.UTC(2026, 2, 12, 8, 5) }],
+        savedMonths: [
+          { monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 8, 0) },
+        ],
+        savedThreads: [
+          {
+            signal: 'bridge',
+            kind: 'theme',
+            savedAt: Date.UTC(2026, 2, 12, 8, 5),
+          },
+        ],
         syncStatus: 'synced',
         lastSyncedAt: Date.UTC(2026, 2, 12, 8, 30),
       },
@@ -143,7 +151,9 @@ describe('backup timeline presentation', () => {
       latestBackupPreview: null,
       reviewState: {
         updatedAt: Date.UTC(2026, 2, 12, 9, 20),
-        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 9, 10) }],
+        savedMonths: [
+          { monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 9, 10) },
+        ],
         savedThreads: [],
         syncStatus: 'local',
       },
@@ -190,8 +200,16 @@ describe('backup content trust presentation', () => {
       ],
       reviewState: {
         updatedAt: Date.UTC(2026, 2, 12, 7, 10),
-        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 7, 5) }],
-        savedThreads: [{ signal: 'bridge', kind: 'theme', savedAt: Date.UTC(2026, 2, 12, 7, 6) }],
+        savedMonths: [
+          { monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 7, 5) },
+        ],
+        savedThreads: [
+          {
+            signal: 'bridge',
+            kind: 'theme',
+            savedAt: Date.UTC(2026, 2, 12, 7, 6),
+          },
+        ],
         syncStatus: 'synced',
         lastSyncedAt: Date.UTC(2026, 2, 12, 7, 11),
       },
@@ -232,7 +250,9 @@ describe('backup content trust presentation', () => {
       ],
       reviewState: {
         updatedAt: Date.UTC(2026, 2, 12, 7, 10),
-        savedMonths: [{ monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 7, 5) }],
+        savedMonths: [
+          { monthKey: '2026-03', savedAt: Date.UTC(2026, 2, 12, 7, 5) },
+        ],
         savedThreads: [],
         syncStatus: 'local',
       },

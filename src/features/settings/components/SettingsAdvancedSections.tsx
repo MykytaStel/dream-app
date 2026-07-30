@@ -6,4 +6,8 @@ export {
   PdfExportSection,
   RestoreSection,
 } from './SettingsBackupSections';
-export { AnalysisSection, DevSection, TranscriptionSection } from './SettingsToolsSections';
+export {
+  AnalysisSection,
+  DevSection,
+  TranscriptionSection,
+} from './SettingsToolsSections';

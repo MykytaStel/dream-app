@@ -88,7 +88,11 @@ describe('relatedDreams', () => {
     expect(threads).toEqual([
       expect.objectContaining({
         dream: emotionallyRelated,
-        sharedSignals: expect.arrayContaining(['threshold', 'curious', 'station']),
+        sharedSignals: expect.arrayContaining([
+          'threshold',
+          'curious',
+          'station',
+        ]),
       }),
     ]);
   });

@@ -6,9 +6,12 @@ jest.mock('../src/features/reminders/services/dreamReminderService', () => ({
   applyDreamReminderSettings: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock('../src/features/analysis/services/dreamAnalysisSettingsService', () => ({
-  saveDreamAnalysisSettings: jest.fn(),
-}));
+jest.mock(
+  '../src/features/analysis/services/dreamAnalysisSettingsService',
+  () => ({
+    saveDreamAnalysisSettings: jest.fn(),
+  }),
+);
 
 jest.mock('../src/i18n/localeStore', () => ({
   saveLocale: jest.fn(),
@@ -96,9 +99,14 @@ describe('data import service', () => {
       }),
     );
 
-    await restoreDreamImportFromFile('/documents/exports/import.json', 'replace');
+    await restoreDreamImportFromFile(
+      '/documents/exports/import.json',
+      'replace',
+    );
 
-    expect(getSavedMonthlyReportMonths()).toEqual([{ monthKey: '2026-04', savedAt: 122 }]);
+    expect(getSavedMonthlyReportMonths()).toEqual([
+      { monthKey: '2026-04', savedAt: 122 },
+    ]);
     expect(getDerivedReviewStateSnapshot()).toMatchObject({
       savedThreads: [{ signal: 'april', kind: 'theme', savedAt: 121 }],
     });
@@ -174,7 +182,9 @@ describe('data import service', () => {
       ],
       syncStatus: 'local',
     });
-    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(CURRENT_STORAGE_SCHEMA_VERSION);
+    expect(kv.getNumber(STORAGE_SCHEMA_VERSION_KEY)).toBe(
+      CURRENT_STORAGE_SCHEMA_VERSION,
+    );
   });
 
   test('keeps a newer local dream when merge restore includes an older copy with the same id', async () => {

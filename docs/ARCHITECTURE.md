@@ -1,312 +1,153 @@
-# ARCHITECTURE.md
+# Architecture
 
-## Architecture Goal
+## Layering
 
-Build a mobile application that is:
-- maintainable
-- scalable
-- fast
-- privacy-conscious
-- local-first
-- easy to evolve from MVP into a richer synced product
+Dependencies flow in one direction:
 
----
+```
+screens → hooks → services → repository → storage
+```
 
-## Recommended Approach
+A layer may import from layers to its right, never to its left. The rule exists so that
+a change to persistence cannot reach up and break a screen, and so that the interesting
+logic can be tested without mounting a component.
 
-Use a **feature-oriented React Native architecture** with clear boundaries between:
-- UI
-- business logic
-- persistence
-- server communication
-- platform integrations
+Alongside this chain sits `model/`, which holds pure functions: no React, no native
+modules, no I/O. `model/` imports nothing from the chain above. This is where the
+product's actual reasoning lives — streak calculation, pattern matching, presentation
+shaping — and it is trivially testable precisely because it touches nothing.
 
-This app should be able to start as local-first and later gain cloud sync without a rewrite.
+## Feature structure
 
----
+Code is organised by feature, not by technical layer, so that the files which change
+together live together.
 
-## Recommended Stack
+```
+src/features/
+  analysis/     dream analysis providers and settings
+  dreams/       capture, archive, detail, timeline
+  onboarding/   first-run flow
+  practice/     dream practice guidance
+  reminders/    notification scheduling
+  security/     app lock
+  settings/     preferences, backup, export, import
+  stats/        insight, patterns, achievements, reports
+  widgets/      home screen widget bridge
+```
 
-### App Layer
-- React Native
-- TypeScript
-- React Navigation
+Inside a feature, the conventional subfolders are `components`, `hooks`, `model`,
+`repository`, `screens`, `services`. A feature uses only the ones it needs.
 
-### State Layer
-- Zustand or Redux Toolkit for app/client state
-- TanStack Query for server state
+Cross-cutting code lives outside features:
 
-### Forms and Validation
-- React Hook Form
-- Zod
-
-### Persistence
-- MMKV for lightweight fast local storage
-- SQLite / WatermelonDB / Realm later if structured local data grows significantly
-
-### UX / Motion
-- Reanimated
-- Gesture Handler
-- FlashList
-
-### Error and Quality Tooling
-- Sentry
-- optional analytics provider
-- lightweight feature flags later
-
----
-
-## Layered Structure
-
-```txt
+```
 src/
-  app/
-  navigation/
-  features/
-    dreams/
-    insights/
-    onboarding/
-    settings/
-    search/
-  components/
-    ui/
-    common/
-  services/
-    api/
-    storage/
-    notifications/
-    analytics/
-    security/
-  store/
-  hooks/
-  theme/
-  utils/
-  constants/
-  types/
+  app/          navigation, linking, error reporting
+  components/   shared UI primitives and animation
+  constants/    copy, limits
+  i18n/         locale provider and store
+  services/     api, auth, cloud, haptics, observability, security, storage
+  theme/        tokens, themes, appearance
 ```
 
----
+## State
 
-## Feature Module Guidance
+| Kind of state | Tool | Notes |
+|---|---|---|
+| Client state | Zustand | UI state, filters, session flags |
+| Server state | TanStack Query | cache, invalidation, background refresh |
+| Persistence | MMKV | synchronous, fast enough to read during render |
+| Validation | Zod | applied at boundaries, not sprinkled through the app |
 
-Each feature can contain:
-- components
-- hooks
-- services
-- types
-- schema / validation
-- mappers
-- helpers
+## Sync
 
-Example:
+Cloud sync is optional; the app is fully functional without it.
 
-```txt
-features/dreams/
-  components/
-  hooks/
-  screens/
-  services/
-  dream.types.ts
-  dream.schema.ts
-  dream.mappers.ts
+- `services/cloud/sync.ts` — the sync loop: what to push, what to pull, in what order.
+- `services/cloud/syncResolution.ts` — conflict resolution when the same dream changed
+  in two places.
+- `services/cloud/syncState.ts` — per-entry sync status, surfaced in the UI so the user
+  can see what is and is not backed up.
+- `services/cloud/audioUpload.ts`, `audioDownload.ts` — voice recordings move separately
+  from entry text, because they are large and can fail independently.
+
+Deletions propagate as tombstones rather than as absence, so a delete on one device is
+not undone by a stale copy on another.
+
+Each `Dream` carries `syncStatus`, `lastSyncedAt` and `syncError`
+(`features/dreams/model/dream.ts`), which keeps sync state attached to the entry it
+describes instead of in a parallel structure that can drift.
+
+## Widget contract
+
+The app writes a snapshot; both native widget implementations read it. The snapshot is
+versioned so the native side can be updated independently.
+
+The authoritative shape is `DreamWidgetSnapshot` in
+`src/features/widgets/model/dreamWidget.ts`:
+
+```ts
+type DreamWidgetSnapshot = {
+  version: 1;
+  generatedAt: number;
+  locale: AppLocale;
+  privacyMode: 'redacted';
+  state: 'empty' | 'draft' | 'revisit' | 'insight';
+  title: string;
+  subtitle: string;
+  meta: string;
+  primaryAction: DreamWidgetAction;   // { label, url }
+  secondaryAction: DreamWidgetAction;
+  lastDream: { id: string; title: string; date: string } | null;
+};
 ```
 
----
+Two properties matter beyond the field list:
 
-## State Management Boundaries
+- **`privacyMode: 'redacted'`** — the widget never renders dream body text. A home
+  screen is visible to anyone holding the phone; the snapshot is built so that leaking
+  it would leak little.
+- **The native side renders, it does not decide.** `title`, `subtitle`, `meta` and both
+  actions are computed in TypeScript. Widget copy changes ship in a JS update rather
+  than a store release.
 
-### Use Local App State For
-- UI toggles
-- temporary flow state
-- modal visibility
-- selected filters
-- onboarding flags
+Deep link targets are built in `features/widgets/model/dreamWidgetLinks.ts` and resolved
+by `app/navigation/linking.ts`.
 
-### Use Persistent Local Storage For
-- dream entries
-- local preferences
-- reminder settings
-- lock settings
-- draft state
+## Native layer
 
-### Use Server State For
-- user profile if accounts exist
-- sync status
-- remote config
-- premium entitlements
-- cloud-backed insights
+| Module | Platforms | Style |
+|---|---|---|
+| `DreamWidget` | iOS + Android | legacy bridge |
+| `AudioUpload` | iOS + Android | legacy bridge |
+| `AudioRecorder` | Android | legacy bridge |
+| `BackupFileIntent` | Android | legacy bridge |
 
----
+New Architecture is enabled, but all four custom modules are written against the legacy
+bridge API (`RCT_EXTERN_MODULE` on iOS, `ReactContextBaseJavaModule` on Android) and run
+through the interop layer.
 
-## Data Flow Principles
+The cost is not mainly performance. It is that **the boundary is untyped**: the
+TypeScript side declares the module's shape by hand, and codegen never checks that
+declaration against the native signature. A mismatch surfaces at runtime, on a user's
+device, rather than at build time.
 
-Prefer this flow:
-- screen triggers user action
-- feature hook coordinates logic
-- service handles persistence / API
-- state updates are explicit and typed
-- UI reacts to well-defined state
+Migration to TurboModules starts with `DreamWidget`, which is called on every dream save
+and carries the most structured payload. The remaining three follow once the pattern is
+established.
 
-Avoid putting business logic directly inside screen components.
+## When to write a native module
 
----
+Write one only when at least one of these holds:
 
-## Data Model Direction
+1. **The computation is genuinely heavy** and measured to be a bottleneck in JavaScript.
+   Measured, not assumed.
+2. **The platform API has no maintained binding.** If a well-kept library exists, use it.
+3. **The integration is OS-level** — widgets, quick actions, App Intents, share sheets.
 
-### DreamEntry
-- id
-- title
-- body
-- createdAt
-- updatedAt
-- dreamDate
-- mood
-- emotions[]
-- tags[]
-- symbols[]
-- dreamType
-- isFavorite
-- isLucid
-- isNightmare
-- intensity
-- notes
+Otherwise take the library. Every custom native module is two implementations to
+maintain and one more thing that can break on a React Native upgrade.
 
-### UserSettings
-- theme
-- remindersEnabled
-- reminderTime
-- biometricLockEnabled
-- exportPreferences
-
-### InsightSnapshot
-- recurringSymbols
-- recurringEmotions
-- dreamFrequency
-- nightmareFrequency
-- lucidFrequency
-- weeklyTrend
-- monthlyTrend
-
----
-
-## Offline-First Strategy
-
-The app should work well without network access.
-
-Rules:
-- saving a dream should never depend on the backend
-- local storage is the first write target
-- sync should be additive, not blocking
-- drafts should survive app interruptions
-- conflict resolution should be simple and predictable
-
-Recommended early strategy:
-- local-first persistence
-- optional background sync later
-- server timestamps added when cloud is introduced
-
----
-
-## Backend Evolution Strategy
-
-### Phase 1
-- no required backend
-- local storage only
-- export support
-
-### Phase 2
-- optional auth
-- cloud backup
-- sync
-- profile
-
-### Phase 3
-- AI processing
-- subscriptions
-- remote config
-- admin content or curated symbol packs
-
----
-
-## Security Architecture Notes
-
-The app handles personal content.
-
-Use:
-- secure storage for sensitive settings and tokens
-- biometric lock for optional app protection
-- clear encryption strategy when cloud sync exists
-- minimal analytics payloads
-- no raw dream text in third-party analytics by default
-
----
-
-## Navigation Guidance
-
-Recommended initial navigation:
-- Home
-- Journal
-- Add Dream
-- Insights
-- Settings
-
-Alternative simpler MVP:
-- Home
-- Dreams
-- Add
-- Settings
-
-Do not overcomplicate navigation early.
-
----
-
-## Performance Guidance
-
-Watch for:
-- large list rendering costs
-- expensive filtering on every keystroke
-- large rich text payloads
-- oversized screen components
-- unnecessary cross-feature re-renders
-
-Prefer:
-- memoization only where justified
-- debounced search
-- optimized list items
-- smaller feature hooks
-- lazy loading of heavy secondary screens
-
----
-
-## Testing Strategy
-
-### Unit Tests
-- pure helpers
-- mappers
-- validation rules
-- formatting utilities
-
-### Integration Tests
-- dream create/edit flows
-- filter/search flows
-- persistence flows
-- settings flows
-
-### Manual QA Priorities
-- first-launch onboarding
-- add dream speed
-- offline save reliability
-- app resume behavior
-- notification handling
-- biometric lock flow
-
----
-
-## Recommended Principle
-
-The architecture should be boring in the best sense:
-- clear
-- stable
-- easy to reason about
-- ready for growth
-- not overbuilt too early
+The clearest upcoming case is H3: on-device embeddings need to hand large `Float32Array`
+buffers to JavaScript. Serialising those through the legacy bridge would dominate the
+runtime, which is exactly the situation JSI and TurboModules exist for.

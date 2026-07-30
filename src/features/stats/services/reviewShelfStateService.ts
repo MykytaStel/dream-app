@@ -23,7 +23,9 @@ export function getDerivedReviewStateSnapshot(): SavedReviewStateSnapshot {
   };
 }
 
-export function reconcileDerivedReviewState(dreams: Dream[]): SavedReviewStateSnapshot {
+export function reconcileDerivedReviewState(
+  dreams: Dream[],
+): SavedReviewStateSnapshot {
   reconcileSavedMonthlyReportMonths(dreams);
   reconcileSavedDreamThreads(dreams);
   return getStoredReviewStateSnapshot();

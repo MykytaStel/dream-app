@@ -219,9 +219,7 @@ describe('cloud auth service', () => {
       requestCloudPasswordReset(' DREAMER@example.com '),
     ).resolves.toBeUndefined();
 
-    expect(resetPasswordForEmail).toHaveBeenCalledWith(
-      'dreamer@example.com',
-    );
+    expect(resetPasswordForEmail).toHaveBeenCalledWith('dreamer@example.com');
   });
 
   test('subscribes to auth state changes and cleans up the listener', async () => {
@@ -234,8 +232,7 @@ describe('cloud auth service', () => {
     const unsubscribe = jest.fn();
     const onSessionChange = jest.fn();
     let handleAuthChange:
-      | ((event: string, session: MockSession | null) => void)
-      | undefined;
+      ((event: string, session: MockSession | null) => void) | undefined;
 
     mockedGetSupabaseClient.mockReturnValue({
       auth: {

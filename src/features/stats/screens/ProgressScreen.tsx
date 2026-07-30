@@ -8,13 +8,19 @@ import {
 } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+} from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
 import { InfoRow } from '../../../components/ui/InfoRow';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
-import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
 import { Theme } from '../../../theme/theme';
@@ -37,7 +43,10 @@ const progressLayoutTransition = LinearTransition.springify()
   .damping(18)
   .stiffness(180);
 
-function getAchievementContent(id: DreamAchievementId, copy: ReturnType<typeof getStatsCopy>) {
+function getAchievementContent(
+  id: DreamAchievementId,
+  copy: ReturnType<typeof getStatsCopy>,
+) {
   switch (id) {
     case 'first-dream':
       return {
@@ -87,10 +96,13 @@ export default function ProgressScreen() {
   const { locale } = useI18n();
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.Progress>>();
   const styles = React.useMemo(() => createProgressScreenStyles(t), [t]);
-  const [dreams, setDreams] = React.useState<DreamListItem[]>(() => listDreamListItems());
+  const [dreams, setDreams] = React.useState<DreamListItem[]>(() =>
+    listDreamListItems(),
+  );
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
@@ -152,20 +164,24 @@ export default function ProgressScreen() {
   const milestonesComplete =
     achievementSummary.unlockedCount === achievementSummary.totalCount;
   const highlightedAchievement = achievementSummary.highlightedId
-    ? achievements.find(achievement => achievement.id === achievementSummary.highlightedId) ?? null
+    ? (achievements.find(
+        achievement => achievement.id === achievementSummary.highlightedId,
+      ) ?? null)
     : null;
   const highlightedAchievementTitle = achievementSummary.highlightedId
     ? getAchievementContent(achievementSummary.highlightedId, copy).title
     : null;
-  const milestoneSummaryHint =
-    milestonesComplete
-      ? copy.milestonesCompleteTitle
-      : highlightedAchievementTitle ?? copy.milestoneInProgress;
+  const milestoneSummaryHint = milestonesComplete
+    ? copy.milestonesCompleteTitle
+    : (highlightedAchievementTitle ?? copy.milestoneInProgress);
   const highlightedAchievementContent = highlightedAchievement
     ? getAchievementContent(highlightedAchievement.id, copy)
     : null;
   const highlightedProgressRatio = highlightedAchievement
-    ? Math.min(highlightedAchievement.current / highlightedAchievement.target, 1)
+    ? Math.min(
+        highlightedAchievement.current / highlightedAchievement.target,
+        1,
+      )
     : 0;
   const highlightedProgressValue = highlightedAchievement
     ? `${Math.min(highlightedAchievement.current, highlightedAchievement.target)}/${highlightedAchievement.target}`
@@ -176,19 +192,27 @@ export default function ProgressScreen() {
       <Animated.View layout={progressLayoutTransition}>
         <Card style={styles.heroCard}>
           <View style={styles.heroHeader}>
-            <Text style={styles.heroSubtitle}>{copy.progressScreenSubtitle}</Text>
+            <Text style={styles.heroSubtitle}>
+              {copy.progressScreenSubtitle}
+            </Text>
           </View>
 
           <View style={styles.summaryRow}>
             <View style={styles.summaryCard}>
               <Text style={styles.summaryLabel}>{copy.weeklyGoalTitle}</Text>
-              <Text style={styles.summaryValue}>{`${lastSevenDays}/${weeklyGoalTarget}`}</Text>
+              <Text
+                style={styles.summaryValue}
+              >{`${lastSevenDays}/${weeklyGoalTarget}`}</Text>
               <Text style={styles.summaryHint}>
-                {weeklyGoalComplete ? copy.weeklyGoalStatusDone : copy.weeklyGoalStatusPending}
+                {weeklyGoalComplete
+                  ? copy.weeklyGoalStatusDone
+                  : copy.weeklyGoalStatusPending}
               </Text>
             </View>
             <View style={[styles.summaryCard, styles.summaryCardAccent]}>
-              <Text style={styles.summaryLabel}>{copy.milestonesUnlockedLabel}</Text>
+              <Text style={styles.summaryLabel}>
+                {copy.milestonesUnlockedLabel}
+              </Text>
               <Text style={styles.summaryValue}>
                 {`${achievementSummary.unlockedCount}/${achievementSummary.totalCount}`}
               </Text>
@@ -198,11 +222,17 @@ export default function ProgressScreen() {
 
           <View style={styles.focusCard}>
             <Text style={styles.focusLabel}>
-              {milestonesComplete ? copy.progressFocusDoneTitle : copy.progressFocusTitle}
+              {milestonesComplete
+                ? copy.progressFocusDoneTitle
+                : copy.progressFocusTitle}
             </Text>
-            {!milestonesComplete && highlightedAchievement && highlightedAchievementContent ? (
+            {!milestonesComplete &&
+            highlightedAchievement &&
+            highlightedAchievementContent ? (
               <>
-                <Text style={styles.focusTitle}>{highlightedAchievementContent.title}</Text>
+                <Text style={styles.focusTitle}>
+                  {highlightedAchievementContent.title}
+                </Text>
                 <Text style={styles.focusDescription}>
                   {highlightedAchievementContent.description}
                 </Text>
@@ -213,7 +243,9 @@ export default function ProgressScreen() {
                   <View
                     style={[
                       styles.achievementBadge,
-                      highlightedAchievement.unlocked ? styles.achievementBadgeUnlocked : null,
+                      highlightedAchievement.unlocked
+                        ? styles.achievementBadgeUnlocked
+                        : null,
                     ]}
                   >
                     <Text
@@ -243,7 +275,9 @@ export default function ProgressScreen() {
                 </View>
               </>
             ) : (
-              <Text style={styles.focusDescription}>{copy.progressFocusDoneDescription}</Text>
+              <Text style={styles.focusDescription}>
+                {copy.progressFocusDoneDescription}
+              </Text>
             )}
           </View>
         </Card>
@@ -254,50 +288,74 @@ export default function ProgressScreen() {
         layout={progressLayoutTransition}
       >
         <Card style={styles.sectionCard}>
-          <SectionHeader title={copy.milestonesTitle} subtitle={copy.milestonesDescription} />
+          <SectionHeader
+            title={copy.milestonesTitle}
+            subtitle={copy.milestonesDescription}
+          />
           <View style={styles.achievementsList}>
             {achievements.map(achievement => {
               const content = getAchievementContent(achievement.id, copy);
               const progressValue = `${Math.min(achievement.current, achievement.target)}/${achievement.target}`;
-              const progressRatio = Math.min(achievement.current / achievement.target, 1);
-              const isHighlighted = achievement.id === achievementSummary.highlightedId;
+              const progressRatio = Math.min(
+                achievement.current / achievement.target,
+                1,
+              );
+              const isHighlighted =
+                achievement.id === achievementSummary.highlightedId;
 
               return (
                 <View
                   key={achievement.id}
                   style={[
                     styles.achievementItem,
-                    achievement.unlocked ? styles.achievementItemUnlocked : null,
+                    achievement.unlocked
+                      ? styles.achievementItemUnlocked
+                      : null,
                     isHighlighted ? styles.achievementItemHighlighted : null,
                   ]}
                 >
                   <View style={styles.achievementHeaderRow}>
                     <View style={styles.achievementCopy}>
-                      <Text style={styles.achievementTitle}>{content.title}</Text>
-                      <Text style={styles.achievementDescription}>{content.description}</Text>
+                      <Text style={styles.achievementTitle}>
+                        {content.title}
+                      </Text>
+                      <Text style={styles.achievementDescription}>
+                        {content.description}
+                      </Text>
                     </View>
                     <View
                       style={[
                         styles.achievementBadge,
-                        achievement.unlocked ? styles.achievementBadgeUnlocked : null,
+                        achievement.unlocked
+                          ? styles.achievementBadgeUnlocked
+                          : null,
                       ]}
                     >
                       <Text
                         style={[
                           styles.achievementBadgeText,
-                          achievement.unlocked ? styles.achievementBadgeTextUnlocked : null,
+                          achievement.unlocked
+                            ? styles.achievementBadgeTextUnlocked
+                            : null,
                         ]}
                       >
-                        {achievement.unlocked ? copy.milestoneUnlocked : copy.milestoneInProgress}
+                        {achievement.unlocked
+                          ? copy.milestoneUnlocked
+                          : copy.milestoneInProgress}
                       </Text>
                     </View>
                   </View>
-                  <InfoRow label={copy.milestoneProgressLabel} value={progressValue} />
+                  <InfoRow
+                    label={copy.milestoneProgressLabel}
+                    value={progressValue}
+                  />
                   <View style={styles.achievementProgressTrack}>
                     <View
                       style={[
                         styles.achievementProgressFill,
-                        achievement.unlocked ? styles.achievementProgressFillUnlocked : null,
+                        achievement.unlocked
+                          ? styles.achievementProgressFillUnlocked
+                          : null,
                         { width: `${progressRatio * 100}%` },
                       ]}
                     />

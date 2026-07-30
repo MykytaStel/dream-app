@@ -186,24 +186,32 @@ function parseDreamExport(value: unknown): DreamExportV1 {
             Number.isFinite(value.reviewState.updatedAt)
               ? value.reviewState.updatedAt
               : Date.now(),
-          savedMonths: value.reviewState.savedMonths.filter(isRecordShape).map(item => ({
-            monthKey: typeof item.monthKey === 'string' ? item.monthKey : '',
-            savedAt:
-              typeof item.savedAt === 'number' && Number.isFinite(item.savedAt)
-                ? item.savedAt
-                : Date.now(),
-          })),
-          savedThreads: value.reviewState.savedThreads.filter(isRecordShape).map(item => ({
-            signal: typeof item.signal === 'string' ? item.signal : '',
-            kind:
-              item.kind === 'word' || item.kind === 'theme' || item.kind === 'symbol'
-                ? item.kind
-                : 'theme',
-            savedAt:
-              typeof item.savedAt === 'number' && Number.isFinite(item.savedAt)
-                ? item.savedAt
-                : Date.now(),
-          })),
+          savedMonths: value.reviewState.savedMonths
+            .filter(isRecordShape)
+            .map(item => ({
+              monthKey: typeof item.monthKey === 'string' ? item.monthKey : '',
+              savedAt:
+                typeof item.savedAt === 'number' &&
+                Number.isFinite(item.savedAt)
+                  ? item.savedAt
+                  : Date.now(),
+            })),
+          savedThreads: value.reviewState.savedThreads
+            .filter(isRecordShape)
+            .map(item => ({
+              signal: typeof item.signal === 'string' ? item.signal : '',
+              kind:
+                item.kind === 'word' ||
+                item.kind === 'theme' ||
+                item.kind === 'symbol'
+                  ? item.kind
+                  : 'theme',
+              savedAt:
+                typeof item.savedAt === 'number' &&
+                Number.isFinite(item.savedAt)
+                  ? item.savedAt
+                  : Date.now(),
+            })),
         }
       : {
           updatedAt: 0,
@@ -237,7 +245,8 @@ function parseDreamExport(value: unknown): DreamExportV1 {
     reminderSettings:
       value.reminderSettings as DreamExportV1['reminderSettings'],
     practiceReminderSettings:
-      (value.practiceReminderSettings as DreamPracticeReminderSettings | undefined) ??
+      (value.practiceReminderSettings as
+        DreamPracticeReminderSettings | undefined) ??
       ({
         morning_capture: {
           enabled: false,
@@ -322,8 +331,12 @@ function mergeSavedReviewState(
 
   return {
     updatedAt: Math.max(current.updatedAt, imported.updatedAt),
-    savedMonths: Array.from(savedMonths.values()).sort((a, b) => b.savedAt - a.savedAt),
-    savedThreads: Array.from(savedThreads.values()).sort((a, b) => b.savedAt - a.savedAt),
+    savedMonths: Array.from(savedMonths.values()).sort(
+      (a, b) => b.savedAt - a.savedAt,
+    ),
+    savedThreads: Array.from(savedThreads.values()).sort(
+      (a, b) => b.savedAt - a.savedAt,
+    ),
   };
 }
 
@@ -381,13 +394,17 @@ function createPreviewFromPayload(
   };
 }
 
-export async function listLocalDreamExportFiles(): Promise<LocalDreamExportFile[]> {
+export async function listLocalDreamExportFiles(): Promise<
+  LocalDreamExportFile[]
+> {
   return (await listLocalDreamExportArtifacts()).filter(
     artifact => artifact.format === 'json',
   );
 }
 
-export async function listLocalDreamExportArtifacts(): Promise<LocalDreamExportArtifact[]> {
+export async function listLocalDreamExportArtifacts(): Promise<
+  LocalDreamExportArtifact[]
+> {
   const directoryPath = getExportDirectoryPath();
   const exists = await RNFS.exists(directoryPath);
 

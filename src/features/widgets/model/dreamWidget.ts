@@ -2,7 +2,10 @@ import { getDreamCopy } from '../../../constants/copy/dreams';
 import { getWidgetCopy } from '../../../constants/copy/widgets';
 import { AppLocale } from '../../../i18n/types';
 import { Dream } from '../../dreams/model/dream';
-import { getCurrentStreak, getEntriesLastSevenDays } from '../../dreams/model/dreamAnalytics';
+import {
+  getCurrentStreak,
+  getEntriesLastSevenDays,
+} from '../../dreams/model/dreamAnalytics';
 import { getHomeRevisitCue } from '../../dreams/model/homeOverview';
 import { resolveDreamSleepDate } from '../../dreams/model/dreamRules';
 import {
@@ -83,7 +86,10 @@ export function buildDreamWidgetSnapshot({
     ? {
         id: latestDream.id,
         title: latestDream.title?.trim() ?? '',
-        date: resolveDreamSleepDate(latestDream.sleepDate, latestDream.createdAt),
+        date: resolveDreamSleepDate(
+          latestDream.sleepDate,
+          latestDream.createdAt,
+        ),
       }
     : null;
 
@@ -170,7 +176,9 @@ export function buildDreamWidgetSnapshot({
           widgetCopy.totalDreamSuffix,
         );
   const subtitle =
-    streak > 0 ? widgetCopy.fallbackInsightSubtitle : widgetCopy.fallbackCaptureSubtitle;
+    streak > 0
+      ? widgetCopy.fallbackInsightSubtitle
+      : widgetCopy.fallbackCaptureSubtitle;
   const meta = formatCount(
     entriesLastWeek,
     widgetCopy.weeklyEntrySingle,

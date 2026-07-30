@@ -32,12 +32,20 @@ export function StatsMonthlySections({
           <View style={styles.teaserRow}>
             <View style={styles.teaserCard}>
               <Text style={styles.teaserLabel}>{copy.entries}</Text>
-              <Text style={styles.teaserValue}>{latestMonthlyReport.entryCount}</Text>
-              <Text style={styles.teaserHint}>{latestMonthlyReportTitle ?? copy.monthLabel}</Text>
+              <Text style={styles.teaserValue}>
+                {latestMonthlyReport.entryCount}
+              </Text>
+              <Text style={styles.teaserHint}>
+                {latestMonthlyReportTitle ?? copy.monthLabel}
+              </Text>
             </View>
             <View style={[styles.teaserCard, styles.teaserCardAccent]}>
-              <Text style={styles.teaserLabel}>{copy.monthlyReportWordsLabel}</Text>
-              <Text style={styles.teaserValue}>{latestMonthlyReport.totalWords}</Text>
+              <Text style={styles.teaserLabel}>
+                {copy.monthlyReportWordsLabel}
+              </Text>
+              <Text style={styles.teaserValue}>
+                {latestMonthlyReport.totalWords}
+              </Text>
               <Text style={styles.teaserHint}>
                 {monthlyReportPreviewSignals.length
                   ? monthlyReportPreviewSignals.join(' • ')

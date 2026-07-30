@@ -88,7 +88,8 @@ function getDreamPdfCopy(locale: AppLocale): DreamPdfCopy {
 
   return {
     archiveTitle: 'Dream archive',
-    archiveSubtitle: 'A local PDF snapshot prepared for reading, printing, and keeping.',
+    archiveSubtitle:
+      'A local PDF snapshot prepared for reading, printing, and keeping.',
     exportedAt: 'Exported',
     version: 'App',
     locale: 'Locale',
@@ -217,7 +218,9 @@ function renderRichText(value: string) {
     .filter(Boolean);
 
   return paragraphs
-    .map(paragraph => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br />')}</p>`)
+    .map(
+      paragraph => `<p>${escapeHtml(paragraph).replace(/\n/g, '<br />')}</p>`,
+    )
     .join('');
 }
 
@@ -314,7 +317,9 @@ function buildDreamEntryHtml(
   const wakeEmotions = formatList(dream.wakeEmotions);
   const preSleepEmotions = formatList(dream.sleepContext?.preSleepEmotions);
   const text = dream.text?.trim() ? clipPdfText(dream.text, copy) : null;
-  const transcript = dream.transcript?.trim() ? clipPdfText(dream.transcript, copy) : null;
+  const transcript = dream.transcript?.trim()
+    ? clipPdfText(dream.transcript, copy)
+    : null;
   const analysis = dream.analysis?.summary?.trim()
     ? clipPdfText(dream.analysis.summary, copy)
     : null;
@@ -337,7 +342,9 @@ function buildDreamEntryHtml(
         ${renderEntryMetaRow(copy.createdAt, formatCreatedAt(dream.createdAt, locale))}
         ${renderEntryMetaRow(
           copy.updatedAt,
-          typeof dream.updatedAt === 'number' ? formatCreatedAt(dream.updatedAt, locale) : null,
+          typeof dream.updatedAt === 'number'
+            ? formatCreatedAt(dream.updatedAt, locale)
+            : null,
         )}
         ${renderEntryMetaRow(copy.tags, tags)}
         ${renderEntryMetaRow(copy.mood, dream.mood ?? null)}
@@ -345,27 +352,44 @@ function buildDreamEntryHtml(
         ${renderEntryMetaRow(copy.preSleep, preSleepEmotions)}
       </div>
 
-      ${hasBody
-        ? `
+      ${
+        hasBody
+          ? `
           <div class="entry-body">
             ${renderBodyBlock(copy.text, text)}
             ${renderBodyBlock(copy.transcript, transcript)}
             ${renderBodyBlock(copy.analysis, analysis)}
           </div>
         `
-        : `<div class="entry-empty">${escapeHtml(copy.noText)}</div>`}
+          : `<div class="entry-empty">${escapeHtml(copy.noText)}</div>`
+      }
     </article>
   `;
 }
 
 export function buildDreamArchivePdfHtml(payload: DreamExportV1) {
   const copy = getDreamPdfCopy(payload.locale);
-  const exportedAt = formatExportedTimestamp(payload.exportedAt, payload.locale);
-  const sortedDreams = payload.dreams.slice().sort((left, right) => right.createdAt - left.createdAt);
+  const exportedAt = formatExportedTimestamp(
+    payload.exportedAt,
+    payload.locale,
+  );
+  const sortedDreams = payload.dreams
+    .slice()
+    .sort((left, right) => right.createdAt - left.createdAt);
   const newestDream = sortedDreams[0] ?? null;
-  const oldestDream = sortedDreams.length ? sortedDreams[sortedDreams.length - 1] : null;
+  const oldestDream = sortedDreams.length
+    ? sortedDreams[sortedDreams.length - 1]
+    : null;
   const dreamEntries = sortedDreams
-    .map((dream, index) => buildDreamEntryHtml(dream, copy, payload.locale, index, sortedDreams.length))
+    .map((dream, index) =>
+      buildDreamEntryHtml(
+        dream,
+        copy,
+        payload.locale,
+        index,
+        sortedDreams.length,
+      ),
+    )
     .join('');
 
   return `
@@ -635,11 +659,15 @@ export function buildDreamArchivePdfHtml(payload: DreamExportV1) {
                 ${renderSummaryCard(copy.analyzed, String(payload.summary.analyzedDreamCount))}
                 ${renderSummaryCard(
                   copy.newestEntry,
-                  newestDream ? formatDreamDate(newestDream, payload.locale) : copy.missing,
+                  newestDream
+                    ? formatDreamDate(newestDream, payload.locale)
+                    : copy.missing,
                 )}
                 ${renderSummaryCard(
                   copy.oldestEntry,
-                  oldestDream ? formatDreamDate(oldestDream, payload.locale) : copy.missing,
+                  oldestDream
+                    ? formatDreamDate(oldestDream, payload.locale)
+                    : copy.missing,
                 )}
               </section>
             </div>
@@ -651,9 +679,11 @@ export function buildDreamArchivePdfHtml(payload: DreamExportV1) {
               <div class="entries-count">${escapeHtml(String(payload.summary.dreamCount))}</div>
             </div>
 
-            ${dreamEntries
-              ? `<section class="entry-list">${dreamEntries}</section>`
-              : `<div class="entry-empty-state">${escapeHtml(copy.noDreams)}</div>`}
+            ${
+              dreamEntries
+                ? `<section class="entry-list">${dreamEntries}</section>`
+                : `<div class="entry-empty-state">${escapeHtml(copy.noDreams)}</div>`
+            }
           </section>
         </main>
       </body>

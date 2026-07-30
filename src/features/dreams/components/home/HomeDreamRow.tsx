@@ -44,7 +44,10 @@ function formatPreview(dream: Dream, copy: DreamCopy) {
       dream.transcriptSource === 'edited'
         ? `${copy.editedTranscriptPreviewPrefix}: `
         : `${copy.transcriptPreviewPrefix}: `;
-    const availableLength = Math.max(12, DREAM_PREVIEW_MAX_LENGTH - prefix.length);
+    const availableLength = Math.max(
+      12,
+      DREAM_PREVIEW_MAX_LENGTH - prefix.length,
+    );
     const clippedTranscript =
       transcript.length > availableLength
         ? `${transcript.slice(0, availableLength - 3)}...`
@@ -59,7 +62,10 @@ function formatPreview(dream: Dream, copy: DreamCopy) {
   return copy.noDetailsPreview;
 }
 
-function moodLabel(mood: Dream['mood'] | undefined, moodLabels: Record<Mood, string>) {
+function moodLabel(
+  mood: Dream['mood'] | undefined,
+  moodLabels: Record<Mood, string>,
+) {
   return mood ? moodLabels[mood] : undefined;
 }
 
@@ -93,7 +99,8 @@ function buildSignalChips(
   const transcript = dream.transcript?.trim();
   const hasAudio = Boolean(dream.audioUri?.trim());
   const hasContext = Boolean(dream.sleepContext?.importantEvents?.trim());
-  const transcriptStatus = dream.transcriptStatus ?? (transcript ? 'ready' : 'idle');
+  const transcriptStatus =
+    dream.transcriptStatus ?? (transcript ? 'ready' : 'idle');
 
   return [
     starred
@@ -144,7 +151,10 @@ function buildSignalChips(
           }
         : transcript
           ? {
-              key: dream.transcriptSource === 'edited' ? 'transcript-edited' : 'transcript',
+              key:
+                dream.transcriptSource === 'edited'
+                  ? 'transcript-edited'
+                  : 'transcript',
               label:
                 dream.transcriptSource === 'edited'
                   ? copy.editedTranscriptTag
@@ -211,7 +221,9 @@ function getPreviewLabel(dream: Dream, copy: DreamCopy) {
   }
 
   if (hasTranscript) {
-    return dream.transcriptSource === 'edited' ? copy.editedTranscriptTag : copy.transcriptTag;
+    return dream.transcriptSource === 'edited'
+      ? copy.editedTranscriptTag
+      : copy.transcriptTag;
   }
 
   if (hasAudio) {
@@ -239,7 +251,9 @@ function getPreviewIcon(dream: Dream): string {
   }
 
   if (hasTranscript) {
-    return dream.transcriptSource === 'edited' ? 'create-outline' : 'chatbubble-ellipses-outline';
+    return dream.transcriptSource === 'edited'
+      ? 'create-outline'
+      : 'chatbubble-ellipses-outline';
   }
 
   if (hasAudio) {
@@ -318,12 +332,17 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
   const starred = isDreamStarred(dream);
   const visibleTags = dream.tags.slice(0, 2);
   const hiddenTagCount = Math.max(0, dream.tags.length - visibleTags.length);
-  const accentColor = starred ? theme.colors.accent : moodColor(theme, dream.mood);
+  const accentColor = starred
+    ? theme.colors.accent
+    : moodColor(theme, dream.mood);
   const signalChips = React.useMemo(
     () => buildSignalChips(dream, copy, starred, archived),
     [archived, copy, dream, starred],
   );
-  const previewLabel = React.useMemo(() => getPreviewLabel(dream, copy), [copy, dream]);
+  const previewLabel = React.useMemo(
+    () => getPreviewLabel(dream, copy),
+    [copy, dream],
+  );
   const previewIcon = React.useMemo(() => getPreviewIcon(dream), [dream]);
   const matchReasonLabels = React.useMemo(() => {
     const labelMap: Record<DreamSearchMatchReason, string> = {
@@ -352,7 +371,12 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
       bindSwipeMethods(dream.id, methods);
 
       return (
-        <View style={[styles.swipeActionsContainer, styles.swipeRightActionsContainer]}>
+        <View
+          style={[
+            styles.swipeActionsContainer,
+            styles.swipeRightActionsContainer,
+          ]}
+        >
           <SwipeActionButton
             label={copy.swipeEdit}
             hitSlop={layout.swipeActionHitSlop}
@@ -398,7 +422,12 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
         : styles.swipeArchiveAction;
 
       return (
-        <View style={[styles.swipeActionsContainer, styles.swipeLeftActionsContainer]}>
+        <View
+          style={[
+            styles.swipeActionsContainer,
+            styles.swipeLeftActionsContainer,
+          ]}
+        >
           <SwipeActionButton
             label={archiveLabel}
             hitSlop={layout.swipeActionHitSlop}
@@ -426,7 +455,8 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
   );
 
   const hasFooter = Boolean(visibleTags.length || hiddenTagCount);
-  const entering = index < 8 ? FadeInDown.delay(index * 45).duration(300) : undefined;
+  const entering =
+    index < 8 ? FadeInDown.delay(index * 45).duration(300) : undefined;
 
   return (
     <Animated.View entering={entering}>
@@ -436,8 +466,8 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
         overshootLeft={false}
         leftThreshold={layout.swipeThreshold}
         rightThreshold={layout.swipeThreshold}
-        dragOffsetFromLeftEdge={layout.swipeDragOffset}
-        dragOffsetFromRightEdge={layout.swipeDragOffset}
+        dragOffsetFromLeft={layout.swipeDragOffset}
+        dragOffsetFromRight={layout.swipeDragOffset}
         friction={1.9}
         renderLeftActions={renderLeftActions}
         renderRightActions={renderRightActions}
@@ -467,15 +497,24 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
           >
             <View
               pointerEvents="none"
-              style={[styles.dreamCardGlowLarge, { backgroundColor: `${accentColor}1A` }]}
+              style={[
+                styles.dreamCardGlowLarge,
+                { backgroundColor: `${accentColor}1A` },
+              ]}
             />
             <View
               pointerEvents="none"
-              style={[styles.dreamCardGlowSmall, { backgroundColor: `${accentColor}12` }]}
+              style={[
+                styles.dreamCardGlowSmall,
+                { backgroundColor: `${accentColor}12` },
+              ]}
             />
             <View
               pointerEvents="none"
-              style={[styles.dreamCardAccentBar, { backgroundColor: accentColor }]}
+              style={[
+                styles.dreamCardAccentBar,
+                { backgroundColor: accentColor },
+              ]}
             />
 
             <View style={styles.dreamHeaderRow}>
@@ -493,13 +532,17 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                 <Text style={styles.dayNumber}>{String(dateParts.day)}</Text>
                 <Text style={styles.month}>{dateParts.month}</Text>
               </View>
-              <View style={[styles.dreamHeaderCopy, styles.dreamHeaderCopyExpanded]}>
+              <View
+                style={[styles.dreamHeaderCopy, styles.dreamHeaderCopyExpanded]}
+              >
                 <View style={styles.titleRow}>
                   <Text style={styles.title} numberOfLines={1}>
                     {dream.title || copy.untitled}
                   </Text>
                   {!mood ? (
-                    <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
+                    <View
+                      style={[styles.moodDot, { backgroundColor: accentColor }]}
+                    />
                   ) : null}
                   {(dream.lucidity ?? 0) >= 2 ? (
                     <Text style={styles.lucidityGlyph}>✦</Text>
@@ -516,7 +559,12 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                         },
                       ]}
                     >
-                      <View style={[styles.moodDot, { backgroundColor: accentColor }]} />
+                      <View
+                        style={[
+                          styles.moodDot,
+                          { backgroundColor: accentColor },
+                        ]}
+                      />
                       <Text style={styles.moodPillText}>{mood}</Text>
                     </View>
                   ) : null}
@@ -541,7 +589,9 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                       ]}
                     >
                       <Ionicons name={chip.icon} size={12} color={tone.color} />
-                      <Text style={[styles.signalChipText, { color: tone.color }]}>
+                      <Text
+                        style={[styles.signalChipText, { color: tone.color }]}
+                      >
                         {chip.label}
                       </Text>
                     </View>
@@ -559,7 +609,9 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                 },
               ]}
             >
-              <View style={[styles.previewAccent, { backgroundColor: accentColor }]} />
+              <View
+                style={[styles.previewAccent, { backgroundColor: accentColor }]}
+              />
               <View style={styles.previewContent}>
                 <View style={styles.previewHeaderRow}>
                   <View
@@ -571,8 +623,14 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                       },
                     ]}
                   >
-                    <Ionicons name={previewIcon} size={12} color={accentColor} />
-                    <Text style={[styles.previewLabelText, { color: accentColor }]}>
+                    <Ionicons
+                      name={previewIcon}
+                      size={12}
+                      color={accentColor}
+                    />
+                    <Text
+                      style={[styles.previewLabelText, { color: accentColor }]}
+                    >
                       {previewLabel}
                     </Text>
                   </View>
@@ -580,7 +638,9 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                 <Text
                   style={[
                     styles.preview,
-                    !dream.text?.trim() && dream.transcript ? styles.previewTranscript : null,
+                    !dream.text?.trim() && dream.transcript
+                      ? styles.previewTranscript
+                      : null,
                   ]}
                   numberOfLines={3}
                 >
@@ -592,7 +652,10 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
             {matchReasonLabels.length ? (
               <View style={styles.matchReasonsRow}>
                 {matchReasonLabels.map(label => (
-                  <View key={`${dream.id}-match-${label}`} style={styles.matchReasonPill}>
+                  <View
+                    key={`${dream.id}-match-${label}`}
+                    style={styles.matchReasonPill}
+                  >
                     <Text style={styles.matchReasonPillText}>{label}</Text>
                   </View>
                 ))}
@@ -609,7 +672,9 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
                   ))}
                   {hiddenTagCount ? (
                     <View style={[styles.tagPill, styles.tagOverflowPill]}>
-                      <Text style={styles.tagPillText}>{`+${hiddenTagCount}`}</Text>
+                      <Text
+                        style={styles.tagPillText}
+                      >{`+${hiddenTagCount}`}</Text>
                     </View>
                   ) : null}
                 </View>

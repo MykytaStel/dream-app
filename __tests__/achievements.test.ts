@@ -21,7 +21,13 @@ describe('achievements', () => {
   test('tracks milestone progress for first dream, streak, total dreams, and voice capture', () => {
     const dreams: Dream[] = [
       { id: '1', createdAt: 1, sleepDate: '2026-03-01', tags: [] },
-      { id: '2', createdAt: 2, sleepDate: '2026-03-02', tags: [], audioUri: 'file:///a.m4a' },
+      {
+        id: '2',
+        createdAt: 2,
+        sleepDate: '2026-03-02',
+        tags: [],
+        audioUri: 'file:///a.m4a',
+      },
       { id: '3', createdAt: 3, sleepDate: '2026-03-03', tags: [] },
       { id: '4', createdAt: 4, sleepDate: '2026-03-10', tags: [] },
     ];

@@ -4,7 +4,11 @@ import {
   DREAMS_META_STORAGE_KEY,
   DREAMS_STORAGE_KEY,
 } from '../../../services/storage/keys';
-import { Dream, DreamTranscriptSource, DreamTranscriptStatus } from '../model/dream';
+import {
+  Dream,
+  DreamTranscriptSource,
+  DreamTranscriptStatus,
+} from '../model/dream';
 import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
 import {
   clearDreamDeletionTombstone,
@@ -86,15 +90,18 @@ function buildDreamListItem(dream: Dream): DreamListItem {
 }
 
 function buildDreamsMeta(dreams: Dream[]): DreamsMeta {
-  const monthKeys = Array.from(new Set(dreams.map(getDreamMonthKey))).sort((a, b) =>
-    b.localeCompare(a),
+  const monthKeys = Array.from(new Set(dreams.map(getDreamMonthKey))).sort(
+    (a, b) => b.localeCompare(a),
   );
 
   return {
     totalCount: dreams.length,
-    activeCount: dreams.filter(dream => typeof dream.archivedAt !== 'number').length,
-    archivedCount: dreams.filter(dream => typeof dream.archivedAt === 'number').length,
-    starredCount: dreams.filter(dream => typeof dream.starredAt === 'number').length,
+    activeCount: dreams.filter(dream => typeof dream.archivedAt !== 'number')
+      .length,
+    archivedCount: dreams.filter(dream => typeof dream.archivedAt === 'number')
+      .length,
+    starredCount: dreams.filter(dream => typeof dream.starredAt === 'number')
+      .length,
     audioOnlyCount: dreams.filter(
       dream =>
         Boolean(dream.audioUri?.trim()) &&
@@ -174,7 +181,9 @@ function persistDreams(dreams: Dream[]) {
   setTimeout(() => reconcileDerivedReviewState(normalized), 0);
 }
 
-function normalizeDreamListItem(raw: Partial<DreamListItem>): DreamListItem | null {
+function normalizeDreamListItem(
+  raw: Partial<DreamListItem>,
+): DreamListItem | null {
   if (!raw.id || typeof raw.id !== 'string') {
     return null;
   }
@@ -205,13 +214,18 @@ function normalizeDreamListItem(raw: Partial<DreamListItem>): DreamListItem | nu
     sleepDate: typeof raw.sleepDate === 'string' ? raw.sleepDate : undefined,
     title: typeof raw.title === 'string' ? raw.title : undefined,
     mood:
-      raw.mood === 'neutral' || raw.mood === 'positive' || raw.mood === 'negative'
+      raw.mood === 'neutral' ||
+      raw.mood === 'positive' ||
+      raw.mood === 'negative'
         ? raw.mood
         : undefined,
     hasAudio: Boolean(raw.hasAudio),
     transcriptPreview:
-      typeof raw.transcriptPreview === 'string' ? raw.transcriptPreview : undefined,
-    textPreview: typeof raw.textPreview === 'string' ? raw.textPreview : undefined,
+      typeof raw.transcriptPreview === 'string'
+        ? raw.transcriptPreview
+        : undefined,
+    textPreview:
+      typeof raw.textPreview === 'string' ? raw.textPreview : undefined,
   };
 }
 
@@ -256,12 +270,16 @@ function normalizeDreamsMeta(raw: Partial<DreamsMeta>): DreamsMeta | null {
   return {
     totalCount: raw.totalCount,
     activeCount: typeof raw.activeCount === 'number' ? raw.activeCount : 0,
-    archivedCount: typeof raw.archivedCount === 'number' ? raw.archivedCount : 0,
+    archivedCount:
+      typeof raw.archivedCount === 'number' ? raw.archivedCount : 0,
     starredCount: typeof raw.starredCount === 'number' ? raw.starredCount : 0,
-    audioOnlyCount: typeof raw.audioOnlyCount === 'number' ? raw.audioOnlyCount : 0,
+    audioOnlyCount:
+      typeof raw.audioOnlyCount === 'number' ? raw.audioOnlyCount : 0,
     latestSleepDate:
       typeof raw.latestSleepDate === 'string' ? raw.latestSleepDate : undefined,
-    monthKeys: raw.monthKeys.filter((value): value is string => typeof value === 'string'),
+    monthKeys: raw.monthKeys.filter(
+      (value): value is string => typeof value === 'string',
+    ),
   };
 }
 
@@ -585,15 +603,16 @@ export function ensurePreviewDream() {
 
   const today = new Date();
   const offset = today.getTimezoneOffset() * 60_000;
-  const sleepDate = new Date(today.getTime() - offset).toISOString().slice(0, 10);
+  const sleepDate = new Date(today.getTime() - offset)
+    .toISOString()
+    .slice(0, 10);
 
   saveDream({
     id: PREVIEW_DREAM_ID,
     createdAt: Date.now() - 1000 * 60 * 45,
     sleepDate,
     title: 'Staircase over the sea',
-    text:
-      'I was climbing a narrow staircase made of blue glass, floating above a dark quiet sea. Each step lit up under my feet, and somewhere in the distance I could hear a city waking up. At the top there was a small room full of postcards from places I had never visited, but somehow remembered.',
+    text: 'I was climbing a narrow staircase made of blue glass, floating above a dark quiet sea. Each step lit up under my feet, and somewhere in the distance I could hear a city waking up. At the top there was a small room full of postcards from places I had never visited, but somehow remembered.',
     tags: ['ocean', 'glass', 'stairs', 'city'],
     mood: 'positive',
     sleepContext: {

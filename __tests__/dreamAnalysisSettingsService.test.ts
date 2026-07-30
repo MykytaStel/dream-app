@@ -30,7 +30,9 @@ describe('dreamAnalysisSettingsService', () => {
       provider: 'openai',
       allowNetwork: true,
     });
-    expect(JSON.parse(kv.getString(DREAM_ANALYSIS_SETTINGS_KEY) ?? '{}')).toEqual(saved);
+    expect(
+      JSON.parse(kv.getString(DREAM_ANALYSIS_SETTINGS_KEY) ?? '{}'),
+    ).toEqual(saved);
   });
 
   test('falls back safely for invalid stored payloads', () => {
@@ -50,4 +52,3 @@ describe('dreamAnalysisSettingsService', () => {
     });
   });
 });
-

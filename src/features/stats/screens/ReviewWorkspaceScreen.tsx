@@ -22,7 +22,10 @@ import { createStatsScreenStyles } from './StatsScreen.styles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { useStatsScreenController } from '../hooks/useStatsScreenController';
 import { getReviewWorkspaceViewModel } from '../model/reviewWorkspace';
-import { getCloudSession, getCloudSyncEnabled } from '../../../services/auth/session';
+import {
+  getCloudSession,
+  getCloudSyncEnabled,
+} from '../../../services/auth/session';
 import { getDerivedReviewStateSnapshot } from '../services/reviewShelfStateService';
 import { getReviewWorkspaceBackupCue } from '../../settings/model/backupCue';
 import { SettingsActionRow } from '../../settings/components/SettingsActionRow';
@@ -34,8 +37,11 @@ export default function ReviewWorkspaceScreen() {
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const settingsCopy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const [cloudSession, setCloudSession] = React.useState(() => getCloudSession());
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const [cloudSession, setCloudSession] = React.useState(() =>
+    getCloudSession(),
+  );
   const [cloudSyncEnabled, setCloudSyncEnabledState] = React.useState(() =>
     getCloudSyncEnabled(),
   );
@@ -98,12 +104,22 @@ export default function ReviewWorkspaceScreen() {
         reviewState,
         copy: settingsCopy,
       }),
-    [cloudSession, cloudSyncEnabled, reviewState, settingsCopy, viewModel.hasItems],
+    [
+      cloudSession,
+      cloudSyncEnabled,
+      reviewState,
+      settingsCopy,
+      viewModel.hasItems,
+    ],
   );
 
   if (controller.loading) {
     return (
-      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
+      <ScreenContainer
+        scroll={false}
+        withTopInset={false}
+        style={styles.emptyContainer}
+      >
         <Card style={styles.heroCard}>
           <Text style={styles.storyHint}>{copy.reviewWorkspaceSubtitle}</Text>
         </Card>
@@ -113,7 +129,11 @@ export default function ReviewWorkspaceScreen() {
 
   if (controller.loadError) {
     return (
-      <ScreenContainer scroll={false} withTopInset={false} style={styles.emptyContainer}>
+      <ScreenContainer
+        scroll={false}
+        withTopInset={false}
+        style={styles.emptyContainer}
+      >
         <ScreenStateCard
           variant="error"
           title={dreamCopy.timelineErrorTitle}
@@ -175,19 +195,32 @@ export default function ReviewWorkspaceScreen() {
                       pressed ? styles.insightCardPressed : null,
                     ]}
                   >
-                    <Text style={styles.reportEntryEyebrow}>{copy.reviewShelfContinueEyebrow}</Text>
+                    <Text style={styles.reportEntryEyebrow}>
+                      {copy.reviewShelfContinueEyebrow}
+                    </Text>
                     <View style={styles.memoryNudgeHeader}>
-                      <Text style={styles.workQueueDreamTitle} numberOfLines={1}>
+                      <Text
+                        style={styles.workQueueDreamTitle}
+                        numberOfLines={1}
+                      >
                         {item.dreamTitle}
                       </Text>
                       <View style={styles.memoryNudgeBadge}>
-                        <Ionicons name={item.icon} size={12} color={theme.colors.accent} />
-                        <Text style={styles.memoryNudgeBadgeText}>{item.badgeLabel}</Text>
+                        <Ionicons
+                          name={item.icon}
+                          size={12}
+                          color={theme.colors.accent}
+                        />
+                        <Text style={styles.memoryNudgeBadgeText}>
+                          {item.badgeLabel}
+                        </Text>
                       </View>
                     </View>
                     <Text style={styles.storyHint}>{item.reason}</Text>
                     <View style={styles.memoryNudgeActionRow}>
-                      <Text style={styles.memoryNudgeActionText}>{item.actionLabel}</Text>
+                      <Text style={styles.memoryNudgeActionText}>
+                        {item.actionLabel}
+                      </Text>
                       <Ionicons
                         name="arrow-forward-outline"
                         size={14}
@@ -224,10 +257,18 @@ export default function ReviewWorkspaceScreen() {
                       <Text style={styles.reviewShelfCompactEyebrow}>
                         {copy.reviewShelfImportantDreamEyebrow}
                       </Text>
-                      <Text style={styles.reviewShelfCompactTitle}>{item.title}</Text>
-                      <Text style={styles.reviewShelfCompactMeta}>{item.meta}</Text>
+                      <Text style={styles.reviewShelfCompactTitle}>
+                        {item.title}
+                      </Text>
+                      <Text style={styles.reviewShelfCompactMeta}>
+                        {item.meta}
+                      </Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={16} color={theme.colors.textDim} />
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={theme.colors.textDim}
+                    />
                   </Pressable>
                 ))}
               </View>
@@ -256,7 +297,11 @@ export default function ReviewWorkspaceScreen() {
                         return;
                       }
 
-                      if (item.kind === 'thread' && item.signal && item.patternKind) {
+                      if (
+                        item.kind === 'thread' &&
+                        item.signal &&
+                        item.patternKind
+                      ) {
                         navigation.navigate(ROOT_ROUTE_NAMES.PatternDetail, {
                           signal: item.signal,
                           kind: item.patternKind as PatternDetailKind,
@@ -265,11 +310,17 @@ export default function ReviewWorkspaceScreen() {
                     }}
                   >
                     <View style={styles.savedThreadCopy}>
-                      <Text style={styles.reviewShelfCompactEyebrow}>{item.eyebrow}</Text>
+                      <Text style={styles.reviewShelfCompactEyebrow}>
+                        {item.eyebrow}
+                      </Text>
                       <Text style={styles.savedThreadTitle}>{item.title}</Text>
                       <Text style={styles.savedThreadMeta}>{item.meta}</Text>
                     </View>
-                    <Ionicons name="chevron-forward" size={16} color={theme.colors.text} />
+                    <Ionicons
+                      name="chevron-forward"
+                      size={16}
+                      color={theme.colors.text}
+                    />
                   </Pressable>
                 ))}
               </View>

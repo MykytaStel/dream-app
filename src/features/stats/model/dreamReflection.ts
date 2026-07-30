@@ -100,7 +100,10 @@ function tokenizeNarrativeParts(dream: Dream) {
     .flatMap(tokenizeTranscript);
 }
 
-function buildSignalSource(tagHits: number, transcriptHits: number): DreamReflectionSignal['source'] {
+function buildSignalSource(
+  tagHits: number,
+  transcriptHits: number,
+): DreamReflectionSignal['source'] {
   if (tagHits > 0 && transcriptHits > 0) {
     return 'mixed';
   }
@@ -108,7 +111,9 @@ function buildSignalSource(tagHits: number, transcriptHits: number): DreamReflec
   return tagHits > 0 ? 'tag' : 'transcript';
 }
 
-export function getTranscriptArchiveStats(dreams: Dream[]): TranscriptArchiveStats {
+export function getTranscriptArchiveStats(
+  dreams: Dream[],
+): TranscriptArchiveStats {
   return dreams.reduce<TranscriptArchiveStats>(
     (acc, dream) => {
       const hasAudio = Boolean(dream.audioUri?.trim());
@@ -221,7 +226,8 @@ export function getRecurringReflectionSignals(
         return b.dreamCount - a.dreamCount;
       }
 
-      const hitDiff = b.tagHits + b.transcriptHits - (a.tagHits + a.transcriptHits);
+      const hitDiff =
+        b.tagHits + b.transcriptHits - (a.tagHits + a.transcriptHits);
       if (hitDiff !== 0) {
         return hitDiff;
       }

@@ -66,22 +66,24 @@ function normalizeSignal(value: string) {
 }
 
 function tokenizeText(value?: string) {
-  return value
-    ?.toLowerCase()
-    .replace(/[^a-z0-9\s'-]/g, ' ')
-    .split(/\s+/)
-    .map(token => token.replace(/^[-']+|[-']+$/g, ''))
-    .filter(token => {
-      if (!token || token.length < MIN_TOKEN_LENGTH) {
-        return false;
-      }
+  return (
+    value
+      ?.toLowerCase()
+      .replace(/[^a-z0-9\s'-]/g, ' ')
+      .split(/\s+/)
+      .map(token => token.replace(/^[-']+|[-']+$/g, ''))
+      .filter(token => {
+        if (!token || token.length < MIN_TOKEN_LENGTH) {
+          return false;
+        }
 
-      if (/^\d+$/.test(token)) {
-        return false;
-      }
+        if (/^\d+$/.test(token)) {
+          return false;
+        }
 
-      return !STOPWORDS.has(token);
-    }) ?? [];
+        return !STOPWORDS.has(token);
+      }) ?? []
+  );
 }
 
 function formatSignal(signal: string) {
@@ -110,10 +112,17 @@ export function getDreamSignalWeights(dream: Dream) {
   const signalWeights = new Map<string, number>();
 
   addWeightedSignals(signalWeights, dream.tags, SIGNAL_WEIGHT.tag);
-  addWeightedSignals(signalWeights, dream.analysis?.themes ?? [], SIGNAL_WEIGHT.theme);
   addWeightedSignals(
     signalWeights,
-    [...(dream.wakeEmotions ?? []), ...(dream.sleepContext?.preSleepEmotions ?? [])],
+    dream.analysis?.themes ?? [],
+    SIGNAL_WEIGHT.theme,
+  );
+  addWeightedSignals(
+    signalWeights,
+    [
+      ...(dream.wakeEmotions ?? []),
+      ...(dream.sleepContext?.preSleepEmotions ?? []),
+    ],
     SIGNAL_WEIGHT.emotion,
   );
   addWeightedSignals(
@@ -138,17 +147,20 @@ export function getRelatedDreams(
   precomputedWeights?: Map<string, Map<string, number>>,
 ): RelatedDream[] {
   const targetSignals =
-    precomputedWeights?.get(targetDream.id) ?? getDreamSignalWeights(targetDream);
+    precomputedWeights?.get(targetDream.id) ??
+    getDreamSignalWeights(targetDream);
 
   return dreams
     .filter(candidate => candidate.id !== targetDream.id)
     .map(candidate => {
       const candidateSignals =
-        precomputedWeights?.get(candidate.id) ?? getDreamSignalWeights(candidate);
+        precomputedWeights?.get(candidate.id) ??
+        getDreamSignalWeights(candidate);
       const sharedSignalEntries = Array.from(targetSignals.entries())
         .filter(([signal]) => candidateSignals.has(signal))
         .map(([signal, targetWeight]) => {
-          const candidateWeight = candidateSignals.get(signal) ?? SIGNAL_WEIGHT.text;
+          const candidateWeight =
+            candidateSignals.get(signal) ?? SIGNAL_WEIGHT.text;
 
           return {
             signal,
@@ -168,7 +180,11 @@ export function getRelatedDreams(
         .slice(0, 4);
       const score =
         sharedSignalEntries.reduce((total, entry) => total + entry.score, 0) +
-        (targetDream.mood && candidate.mood && targetDream.mood === candidate.mood ? 1 : 0);
+        (targetDream.mood &&
+        candidate.mood &&
+        targetDream.mood === candidate.mood
+          ? 1
+          : 0);
 
       return {
         dream: candidate,

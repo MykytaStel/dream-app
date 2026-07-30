@@ -77,6 +77,5 @@ yarn-error.log
 # Local design references
 v0/
 
-# Local-only working artifacts (specs, plans, research, assistant context)
+# Local-only working artifacts (specs, plans, research notes)
 .dev/
-CLAUDE.md

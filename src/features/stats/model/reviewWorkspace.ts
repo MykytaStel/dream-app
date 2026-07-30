@@ -54,11 +54,14 @@ function formatDreamDate(dream: Dream, locale: AppLocale) {
     return dream.sleepDate;
   }
 
-  return new Date(dream.createdAt).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  });
+  return new Date(dream.createdAt).toLocaleDateString(
+    locale === 'uk' ? 'uk-UA' : 'en-US',
+    {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+    },
+  );
 }
 
 function getImportantDreamTitle(
@@ -86,7 +89,10 @@ export function buildReviewWorkspaceImportantDreamItems(input: {
   const { dreams, locale, copy } = input;
 
   return dreams
-    .filter((dream): dream is Dream & { starredAt: number } => typeof dream.starredAt === 'number')
+    .filter(
+      (dream): dream is Dream & { starredAt: number } =>
+        typeof dream.starredAt === 'number',
+    )
     .sort((left, right) => right.starredAt - left.starredAt)
     .map(dream => ({
       dreamId: dream.id,
@@ -131,10 +137,10 @@ export function buildReviewWorkspaceSavedSetItems(input: {
     statsCopy: input.copy,
   });
   const savedThreadItemsByKey = new Map(
-    savedThreadItems.map(item => [
-      `${item.kind}:${normalizePatternSignal(item.signal)}`,
-      item,
-    ] as const),
+    savedThreadItems.map(
+      item =>
+        [`${item.kind}:${normalizePatternSignal(item.signal)}`, item] as const,
+    ),
   );
 
   const monthSetItems: ReviewWorkspaceSavedSetItem[] = [];
@@ -195,7 +201,8 @@ export function getReviewWorkspaceViewModel(input: {
   const { workQueueCount, importantDreamCount, savedSetCount, copy } = input;
 
   return {
-    hasItems: workQueueCount > 0 || importantDreamCount > 0 || savedSetCount > 0,
+    hasItems:
+      workQueueCount > 0 || importantDreamCount > 0 || savedSetCount > 0,
     summaryTiles: [
       {
         label: copy.reviewWorkspaceSummaryContinueLabel,

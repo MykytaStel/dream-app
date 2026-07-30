@@ -3,7 +3,8 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 ext {
-    REACT_NATIVE_NODE_MODULES_DIR = file("../../node_modules/react-native")
+    // String, not File — see the note in the root build.gradle.
+    REACT_NATIVE_NODE_MODULES_DIR = file("../../node_modules/react-native").absolutePath
     REACT_NATIVE_WORKLETS_NODE_MODULES_DIR = file("../../node_modules/react-native-worklets")
 }
 

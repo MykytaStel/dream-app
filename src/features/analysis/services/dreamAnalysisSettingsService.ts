@@ -1,4 +1,7 @@
-import { DreamAnalysisSettings, DEFAULT_DREAM_ANALYSIS_SETTINGS } from '../model/dreamAnalysis';
+import {
+  DreamAnalysisSettings,
+  DEFAULT_DREAM_ANALYSIS_SETTINGS,
+} from '../model/dreamAnalysis';
 import { kv } from '../../../services/storage/mmkv';
 import { DREAM_ANALYSIS_SETTINGS_KEY } from '../../../services/storage/keys';
 
@@ -21,7 +24,9 @@ export function getDreamAnalysisSettings() {
   }
 
   try {
-    return normalizeDreamAnalysisSettings(JSON.parse(raw) as Partial<DreamAnalysisSettings>);
+    return normalizeDreamAnalysisSettings(
+      JSON.parse(raw) as Partial<DreamAnalysisSettings>,
+    );
   } catch {
     return DEFAULT_DREAM_ANALYSIS_SETTINGS;
   }
@@ -32,4 +37,3 @@ export function saveDreamAnalysisSettings(settings: DreamAnalysisSettings) {
   kv.set(DREAM_ANALYSIS_SETTINGS_KEY, JSON.stringify(normalized));
   return normalized;
 }
-

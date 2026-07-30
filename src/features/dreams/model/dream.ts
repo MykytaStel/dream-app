@@ -21,25 +21,11 @@ export type DreamTranscriptStatus = 'idle' | 'processing' | 'ready' | 'error';
 export type DreamTranscriptSource = 'generated' | 'edited';
 export type DreamSyncStatus = 'local' | 'syncing' | 'synced' | 'error';
 export type LucidPracticeTechnique =
-  | 'mild'
-  | 'wbtb'
-  | 'ssild'
-  | 'reality_check'
-  | 'intention';
+  'mild' | 'wbtb' | 'ssild' | 'reality_check' | 'intention';
 export type LucidControlArea =
-  | 'scene'
-  | 'movement'
-  | 'characters'
-  | 'body'
-  | 'emotion'
-  | 'waking';
+  'scene' | 'movement' | 'characters' | 'body' | 'emotion' | 'waking';
 export type LucidStabilizationAction =
-  | 'hands'
-  | 'breathing'
-  | 'spinning'
-  | 'touch'
-  | 'voice'
-  | 'anchor';
+  'hands' | 'breathing' | 'spinning' | 'touch' | 'voice' | 'anchor';
 export type LucidRecallScore = 1 | 2 | 3 | 4 | 5;
 export type NightmareDistressLevel = 1 | 2 | 3 | 4 | 5;
 export type NightmareAftereffect =
@@ -50,27 +36,12 @@ export type NightmareAftereffect =
   | 'disoriented'
   | 'sadness';
 export type NightmareGroundingAction =
-  | 'light'
-  | 'breathing'
-  | 'water'
-  | 'journal'
-  | 'body-check'
-  | 'safe-sound';
+  'light' | 'breathing' | 'water' | 'journal' | 'body-check' | 'safe-sound';
 export type NightmareRescriptStatus = 'none' | 'drafted' | 'rehearsed';
 export type WakeEmotion =
-  | 'calm'
-  | 'uneasy'
-  | 'curious'
-  | 'heavy'
-  | 'inspired'
-  | 'disoriented';
+  'calm' | 'uneasy' | 'curious' | 'heavy' | 'inspired' | 'disoriented';
 export type PreSleepEmotion =
-  | 'peaceful'
-  | 'anxious'
-  | 'restless'
-  | 'hopeful'
-  | 'drained'
-  | 'lonely';
+  'peaceful' | 'anxious' | 'restless' | 'hopeful' | 'drained' | 'lonely';
 
 export type SleepContext = {
   stressLevel?: StressLevel;
@@ -105,11 +76,11 @@ export type NightmareSupport = {
 
 export type Dream = {
   id: string;
-  createdAt: number;      // epoch
-  updatedAt?: number;     // epoch
-  archivedAt?: number;    // epoch (soft archive)
-  starredAt?: number;     // epoch
-  sleepDate?: string;     // YYYY-MM-DD
+  createdAt: number; // epoch
+  updatedAt?: number; // epoch
+  archivedAt?: number; // epoch (soft archive)
+  starredAt?: number; // epoch
+  sleepDate?: string; // YYYY-MM-DD
   title?: string;
   text?: string;
   audioUri?: string;

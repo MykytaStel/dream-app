@@ -1,4 +1,8 @@
-import { ObservabilityContext, ObservabilityLevel, ObservabilityService } from './types';
+import {
+  ObservabilityContext,
+  ObservabilityLevel,
+  ObservabilityService,
+} from './types';
 
 function normalizeError(error: unknown): string {
   if (error instanceof Error) {

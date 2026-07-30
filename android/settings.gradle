@@ -1,6 +1,16 @@
 pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
 plugins { id("com.facebook.react.settings") }
-extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
+// The default autolink command runs `npx @react-native-community/cli config`, which
+// executes node_modules/.bin/rnc-cli. That file is published without an execute bit,
+// so the default fails here with exit 126. Invoking node with the script path directly
+// does not depend on file permissions, and survives reinstalls.
+extensions.configure(com.facebook.react.ReactSettingsExtension){ ex ->
+  ex.autolinkLibrariesFromCommand([
+    "node",
+    "node_modules/@react-native-community/cli/build/bin.js",
+    "config",
+  ])
+}
 rootProject.name = 'DreamApp'
 include ':app'
 includeBuild('../node_modules/@react-native/gradle-plugin')

@@ -56,14 +56,20 @@ function collectTokens(value?: string) {
     .replace(/[^a-z0-9\s'-]/g, ' ')
     .split(/\s+/)
     .map(token => token.replace(/^[-']+|[-']+$/g, ''))
-    .filter(token => token.length >= 4 && !STOPWORDS.has(token) && !/^\d+$/.test(token));
+    .filter(
+      token =>
+        token.length >= 4 && !STOPWORDS.has(token) && !/^\d+$/.test(token),
+    );
 }
 
 function extractThemes(dream: Dream) {
   const themeMap = new Map<string, number>();
 
   dream.tags.forEach(tag => {
-    themeMap.set(tag.replace(/-/g, ' '), (themeMap.get(tag.replace(/-/g, ' ')) ?? 0) + 3);
+    themeMap.set(
+      tag.replace(/-/g, ' '),
+      (themeMap.get(tag.replace(/-/g, ' ')) ?? 0) + 3,
+    );
   });
 
   const transcriptTokens = collectTokens(dream.transcript);
@@ -115,7 +121,9 @@ export function analyzeDreamLocally(dream: Dream): DreamAnalysisResult {
   const themeFragment = themes.length
     ? `Likely themes: ${themes.join(', ')}.`
     : 'No strong recurring themes were extracted yet.';
-  const moodFragment = dream.mood ? `Mood after waking was marked as ${dream.mood}.` : undefined;
+  const moodFragment = dream.mood
+    ? `Mood after waking was marked as ${dream.mood}.`
+    : undefined;
   const contextFragment = describeContext(dream)
     ? `Pre-sleep context noted: ${describeContext(dream)}.`
     : undefined;
@@ -125,7 +133,13 @@ export function analyzeDreamLocally(dream: Dream): DreamAnalysisResult {
       : 'An original voice note is attached, but transcript detail is still limited.'
     : undefined;
 
-  const summary = [opener, themeFragment, moodFragment, contextFragment, audioFragment]
+  const summary = [
+    opener,
+    themeFragment,
+    moodFragment,
+    contextFragment,
+    audioFragment,
+  ]
     .filter(Boolean)
     .join(' ');
 
@@ -134,4 +148,3 @@ export function analyzeDreamLocally(dream: Dream): DreamAnalysisResult {
     themes,
   };
 }
-

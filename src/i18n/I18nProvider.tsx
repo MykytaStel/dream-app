@@ -10,8 +10,12 @@ type I18nContextValue = {
 
 const I18nContext = React.createContext<I18nContextValue | null>(null);
 
-export const I18nProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-  const [locale, setLocaleState] = React.useState<AppLocale>(() => getStoredLocale());
+export const I18nProvider: React.FC<React.PropsWithChildren> = ({
+  children,
+}) => {
+  const [locale, setLocaleState] = React.useState<AppLocale>(() =>
+    getStoredLocale(),
+  );
   const [, startTransition] = React.useTransition();
   const localeRef = React.useRef(locale);
 

@@ -44,7 +44,10 @@ export function BackupOnboardingModal({
     >
       <View style={styles.root}>
         <Pressable style={styles.backdrop} onPress={onClose} />
-        <Animated.View entering={FadeInDown.duration(220)} style={styles.sheetWrap}>
+        <Animated.View
+          entering={FadeInDown.duration(220)}
+          style={styles.sheetWrap}
+        >
           <Card style={styles.card}>
             <View pointerEvents="none" style={styles.glowLarge} />
             <View pointerEvents="none" style={styles.glowSmall} />
@@ -52,30 +55,50 @@ export function BackupOnboardingModal({
 
             <View style={styles.heroRow}>
               <View style={styles.heroIconWrap}>
-                <Ionicons name="cloud-upload-outline" size={22} color={theme.colors.ink} />
+                <Ionicons
+                  name="cloud-upload-outline"
+                  size={22}
+                  color={theme.colors.ink}
+                />
               </View>
               <View style={styles.heroCopy}>
-                <Text style={styles.eyebrow}>{copy.backupOnboardingEyebrow}</Text>
+                <Text style={styles.eyebrow}>
+                  {copy.backupOnboardingEyebrow}
+                </Text>
                 <Text style={styles.title}>{copy.backupOnboardingTitle}</Text>
-                <Text style={styles.description}>{copy.backupOnboardingDescription}</Text>
+                <Text style={styles.description}>
+                  {copy.backupOnboardingDescription}
+                </Text>
               </View>
             </View>
 
             <View style={styles.statRow}>
               <View style={styles.statChip}>
                 <Text style={styles.statValue}>{dreamCount}</Text>
-                <Text style={styles.statLabel}>{copy.backupOnboardingDreamsLabel}</Text>
+                <Text style={styles.statLabel}>
+                  {copy.backupOnboardingDreamsLabel}
+                </Text>
               </View>
               <View style={styles.statChip}>
-                <Text style={styles.statValue}>{BACKUP_ONBOARDING_DREAM_THRESHOLD}</Text>
-                <Text style={styles.statLabel}>{copy.backupOnboardingThresholdLabel}</Text>
+                <Text style={styles.statValue}>
+                  {BACKUP_ONBOARDING_DREAM_THRESHOLD}
+                </Text>
+                <Text style={styles.statLabel}>
+                  {copy.backupOnboardingThresholdLabel}
+                </Text>
               </View>
             </View>
 
             <View style={styles.valueCard}>
               <View style={styles.valueHeader}>
-                <Ionicons name="sparkles-outline" size={16} color={theme.colors.accent} />
-                <Text style={styles.valueTitle}>{copy.backupOnboardingValueTitle}</Text>
+                <Ionicons
+                  name="sparkles-outline"
+                  size={16}
+                  color={theme.colors.accent}
+                />
+                <Text style={styles.valueTitle}>
+                  {copy.backupOnboardingValueTitle}
+                </Text>
               </View>
               <Text style={styles.valueDescription}>
                 {copy.backupOnboardingValueDescription}
@@ -110,7 +133,7 @@ function createStyles(theme: Theme, bottomInset: number) {
       justifyContent: 'flex-end',
     },
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: 'rgba(6, 10, 26, 0.58)',
     },
     sheetWrap: {

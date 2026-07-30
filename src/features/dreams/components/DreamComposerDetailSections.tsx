@@ -67,7 +67,9 @@ export function DreamComposerMoodCard({
     <Card style={styles.card}>
       <View style={styles.sectionAccentRow}>
         <View style={styles.sectionAccentPrimary} />
-        <View style={[styles.sectionAccentSecondary, styles.sectionAccentAlt]} />
+        <View
+          style={[styles.sectionAccentSecondary, styles.sectionAccentAlt]}
+        />
       </View>
       <SectionHeader title={copy.moodTitle} subtitle={copy.moodDescription} />
 
@@ -186,12 +188,19 @@ export function DreamComposerContextCard({
     <Card style={styles.card}>
       <View style={styles.sectionAccentRow}>
         <View style={styles.sectionAccentPrimary} />
-        <View style={[styles.sectionAccentSecondary, styles.sectionAccentMuted]} />
+        <View
+          style={[styles.sectionAccentSecondary, styles.sectionAccentMuted]}
+        />
       </View>
-      <SectionHeader title={copy.sleepContextTitle} subtitle={copy.sleepContextDescription} />
+      <SectionHeader
+        title={copy.sleepContextTitle}
+        subtitle={copy.sleepContextDescription}
+      />
 
       <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{copy.preSleepEmotionsLabel}</Text>
+        <Text style={styles.contextFieldLabel}>
+          {copy.preSleepEmotionsLabel}
+        </Text>
         <View style={styles.tagsWrap}>
           {preSleepEmotionOptions.map(option => (
             <TagChip
@@ -282,7 +291,7 @@ export function DreamComposerContextCard({
   );
 }
 
-type ChoiceOption<T extends string | number | boolean> = {
+export type ChoiceOption<T extends string | number | boolean> = {
   label: string;
   value: T;
 };
@@ -350,7 +359,9 @@ export function DreamComposerLucidPracticeCard({
     <Card style={styles.card}>
       <View style={styles.sectionAccentRow}>
         <View style={styles.sectionAccentPrimary} />
-        <View style={[styles.sectionAccentSecondary, styles.sectionAccentAlt]} />
+        <View
+          style={[styles.sectionAccentSecondary, styles.sectionAccentAlt]}
+        />
       </View>
       <SectionHeader title={title} subtitle={subtitle} />
 
@@ -514,7 +525,9 @@ export function DreamComposerNightmareCard({
     <Card style={styles.card}>
       <View style={styles.sectionAccentRow}>
         <View style={styles.sectionAccentPrimary} />
-        <View style={[styles.sectionAccentSecondary, styles.sectionAccentMuted]} />
+        <View
+          style={[styles.sectionAccentSecondary, styles.sectionAccentMuted]}
+        />
       </View>
       <SectionHeader title={title} subtitle={subtitle} />
 
@@ -679,13 +692,23 @@ export function DreamComposerTagsCard({
           containerStyle={styles.tagField}
           inputStyle={styles.tagInput}
         />
-        <Button title={copy.addTag} size="sm" onPress={onSubmitTag} style={styles.tagButton} />
+        <Button
+          title={copy.addTag}
+          size="sm"
+          onPress={onSubmitTag}
+          style={styles.tagButton}
+        />
       </View>
 
       <View style={styles.tagsWrap}>
         {tags.length ? (
           tags.map(tag => (
-            <TagChip key={tag} label={tag} removable onPress={() => onRemoveTag(tag)} />
+            <TagChip
+              key={tag}
+              label={tag}
+              removable
+              onPress={() => onRemoveTag(tag)}
+            />
           ))
         ) : (
           <Text style={styles.emptyTags}>{copy.tagsEmpty}</Text>

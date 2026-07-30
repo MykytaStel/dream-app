@@ -22,15 +22,27 @@ export function DreamComposerChoiceChip({
     variant === 'mood'
       ? [styles.moodOption, selected ? styles.moodOptionSelected : null]
       : variant === 'intensity'
-        ? [styles.intensityOption, selected ? styles.intensityOptionSelected : null]
-        : [styles.contextOption, selected ? styles.contextOptionSelected : null];
+        ? [
+            styles.intensityOption,
+            selected ? styles.intensityOptionSelected : null,
+          ]
+        : [
+            styles.contextOption,
+            selected ? styles.contextOptionSelected : null,
+          ];
 
   const labelStyle =
     variant === 'mood'
       ? [styles.moodLabel, selected ? styles.moodLabelSelected : null]
       : variant === 'intensity'
-        ? [styles.intensityOptionLabel, selected ? styles.intensityOptionLabelSelected : null]
-        : [styles.contextOptionLabel, selected ? styles.contextOptionLabelSelected : null];
+        ? [
+            styles.intensityOptionLabel,
+            selected ? styles.intensityOptionLabelSelected : null,
+          ]
+        : [
+            styles.contextOptionLabel,
+            selected ? styles.contextOptionLabelSelected : null,
+          ];
 
   return (
     <Pressable onPress={onPress} style={containerStyle}>

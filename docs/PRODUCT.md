@@ -1,194 +1,81 @@
-# PRODUCT.md
+# Product
 
-## Product Summary
+## What this is
 
-**Kaleidoscope of Dreams** is a dream journaling app designed to help people capture, organize, revisit, and understand their dreams.
+Kaleidoscope of Dreams is a dream journal for people who want to remember more than
+last night. It captures a dream in the narrow window before it dissolves, keeps every
+entry on the device by default, and — as entries accumulate — surfaces the symbols,
+moods and situations that keep coming back.
 
-The product opportunity is not just “dream notes.”
-The opportunity is to create a product that feels:
-- beautiful
-- emotionally resonant
-- habit-forming without being gamified in an aggressive way
-- useful over time through pattern discovery
+The archive is the product. A single entry is a note; two hundred entries are a record
+of what a person's mind returns to.
 
----
+## Positioning
 
-## Product Goal
+> A private dream archive that gets smarter without leaving your phone.
 
-Build a dream journal that users keep because it becomes personally meaningful, visually satisfying, and more valuable with every entry.
+Most apps in this category compete on being a prettier notes app. That is a category,
+not a difference. The difference here is that the pattern-finding runs on the device,
+so depth costs the user no privacy.
 
-The product should create value in three layers:
-1. **capture value** — easy to record dreams quickly
-2. **reflection value** — entries feel worth revisiting
-3. **discovery value** — users see patterns they would otherwise miss
+What this product is **not**:
 
----
+- not a social network — there is no feed, no sharing to strangers, no public profile
+- not therapy — it never presents a reading of a dream as clinical fact
+- not a habit tracker — streaks exist to be noticed, not to punish a missed night
+- not an occult product — symbols are treated as personal recurrence, not prophecy
 
-## Target Audience
+## Who it is for
 
-### Primary Audience
-- people already interested in dreams, journaling, symbolism, self-reflection, or emotional awareness
-- users who want a calm, private, aesthetic mobile experience
-- users dissatisfied with existing journaling apps or generic note apps
+**Primary.** People already drawn to dreams, journaling, symbolism or emotional
+self-reflection, who want something calm and private, and who have found existing
+journaling apps shallow or cluttered.
 
-### Secondary Audience
-- people curious about lucid dreaming
-- users tracking nightmares or emotional sleep patterns
-- users interested in mental clarity and memory habits
-- design-conscious users who want a premium-feeling app
+**Secondary.** People practising lucid dreaming, people tracking nightmares or
+sleep-linked mood, and design-conscious users who simply want the daily ritual to
+feel good.
 
----
+## Three layers of value
 
-## Core User Jobs
+| Layer | What it means | State today |
+|---|---|---|
+| Capture | get the dream down before it is gone | strong |
+| Revisit | old entries stay worth returning to | works, lacks visual coherence |
+| Discovery | patterns surface without being hunted | heuristics only, AI planned |
 
-Users want to:
-- save dreams before they forget them
-- structure dream entries without friction
-- remember recurring themes and symbols
-- connect dreams to emotional states
-- feel that their entries are building toward insight
-- keep highly personal data in a safe place
+The order matters. An app that is bad at capture never accumulates the archive that
+makes discovery possible. Depth is earned from the bottom up.
 
----
+## Privacy model
 
-## Why Existing Apps Often Feel Weak
+Dream content is among the most personal text a person will ever write down. Privacy
+here is a product pillar, not a compliance checkbox.
 
-Common problems in the category:
-- generic journaling UI
-- low-quality design
-- weak search and organization
-- no strong retention loop
-- too much mystical fluff
-- too much scientific coldness
-- not enough progression from raw entry to meaningful insight
+**On the device, always.** Embeddings, symbol clustering and emotional trends run
+locally. They work offline, cost nothing per use, and transmit nothing.
 
-This product should win through:
-- emotional tone
-- premium UX
-- speed
-- privacy
-- pattern surfacing
+**In the cloud, only when asked.** Deeper summaries and interpretations require an
+explicit opt-in and a per-entry confirmation. The setting is off by default and states
+plainly what leaves the device.
 
----
+The seam for this already exists in the codebase: `DreamAnalysisProvider` in
+`src/features/analysis/model/dreamAnalysis.ts` carries a `provider` field and a separate
+`allowNetwork` flag, so no network path can be reached by accident.
 
-## Product Positioning
+Cloud sync and backup are likewise optional. The app is fully usable by someone who
+never creates an account.
 
-This app should feel like:
-- a premium dream journal
-- a private ritual space
-- a symbolic memory archive
-- an emotional reflection companion
+## Risks we actively avoid
 
-It should not feel like:
-- a generic note app
-- a habit app with forced gamification
-- a pseudo-therapy app
-- a fantasy gimmick app
+| Risk | How it shows up | Guard |
+|---|---|---|
+| Becoming generic | product reads as a notes app with a moon icon | positioning above is the test for every feature |
+| Slowing capture | one more required field at 6am | capture flow changes need an explicit speed argument |
+| Mystical drift | copy that tells users what a dream means | interpretations are offered as prompts, never verdicts |
+| Noisy dashboards | statistics competing for attention | insight surfaces show few things, chosen well |
+| Forced gamification | guilt for a missed night | streaks are shown, never demanded |
 
----
+## Where the roadmap lives
 
-## Unique Product Angles
-
-### 1. Beautiful Capture Flow
-Capture needs to feel frictionless, calm, and immediate.
-
-### 2. Symbol + Emotion Layer
-The product should give structure to memory through tags, emotions, and symbols.
-
-### 3. Insight Over Time
-Patterns should emerge naturally as users keep writing.
-
-### 4. Privacy as Product Value
-Optional lock, local-first behavior, and transparent cloud decisions should build trust.
-
-### 5. Tasteful Personalization
-Themes, cards, widgets, and visual identity should deepen attachment without making the app noisy.
-
----
-
-## MVP Definition
-
-### MVP Goal
-Validate that users enjoy the recording experience and return to revisit their entries.
-
-### MVP Must-Haves
-- create / edit / delete dream entry
-- title + body
-- dream date and time
-- mood / emotion tagging
-- custom tags
-- dream type
-- favorites
-- timeline or journal list
-- search
-- simple filters
-- notifications
-- local-first persistence
-
-### MVP Success Criteria
-- users can save a dream in under 30 seconds
-- users can find an old dream easily
-- users feel the product is more special than a basic note app
-- users want to return after the first week
-
----
-
-## Phase 2 Goals
-
-- cloud sync
-- optional account
-- export
-- symbol tracking
-- calendar view
-- widgets
-- insight cards
-- premium visual polish
-
----
-
-## Phase 3 Goals
-
-- AI-assisted summarization
-- AI-assisted symbol extraction
-- deeper pattern analysis
-- premium subscription
-- advanced reminders and rituals
-- richer personalization
-
----
-
-## Risks
-
-### Product Risks
-- becoming too generic
-- becoming too complex too early
-- weak onboarding value
-- no emotional differentiation
-- not enough reason to revisit entries
-
-### Technical Risks
-- overbuilding backend before validating core loop
-- slow or bloated app performance
-- poor offline handling
-- weak local storage architecture
-
-### UX Risks
-- too many fields during dream creation
-- visual direction becoming cliché
-- overuse of animations
-- cluttered home screen
-
----
-
-## Product Strategy Recommendation
-
-### Stage 1
-Create the most satisfying dream capture flow possible.
-
-### Stage 2
-Make reviewing old dreams beautiful and useful.
-
-### Stage 3
-Introduce insights and premium features after retention signals exist.
-
-This order matters because the product cannot become smart if users do not first love the basic writing experience.
+Horizons, exit criteria and what is deliberately out of scope: [ROADMAP.md](ROADMAP.md).
+What the product can do today, checked against the code: [CAPABILITIES.md](CAPABILITIES.md).

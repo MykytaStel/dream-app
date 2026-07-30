@@ -70,16 +70,18 @@ function isDreamDraftEntryMode(value: unknown): value is DreamDraftEntryMode {
   return value === 'default' || value === 'voice' || value === 'wake';
 }
 
-function hasDraftContext(draft: Pick<
-  DreamDraft,
-  | 'stressLevel'
-  | 'preSleepEmotions'
-  | 'alcoholTaken'
-  | 'caffeineLate'
-  | 'medications'
-  | 'importantEvents'
-  | 'healthNotes'
->) {
+function hasDraftContext(
+  draft: Pick<
+    DreamDraft,
+    | 'stressLevel'
+    | 'preSleepEmotions'
+    | 'alcoholTaken'
+    | 'caffeineLate'
+    | 'medications'
+    | 'importantEvents'
+    | 'healthNotes'
+  >,
+) {
   return (
     typeof draft.stressLevel === 'number' ||
     Boolean(draft.preSleepEmotions?.length) ||
@@ -97,7 +99,9 @@ function normalizeDraft(raw?: Partial<DreamDraft>): DreamDraft {
     text: raw?.text ?? '',
     sleepDate: raw?.sleepDate ?? '',
     audioUri: raw?.audioUri?.trim() || undefined,
-    entryMode: isDreamDraftEntryMode(raw?.entryMode) ? raw.entryMode : undefined,
+    entryMode: isDreamDraftEntryMode(raw?.entryMode)
+      ? raw.entryMode
+      : undefined,
     updatedAt:
       typeof raw?.updatedAt === 'number' && Number.isFinite(raw.updatedAt)
         ? raw.updatedAt
@@ -148,17 +152,20 @@ function normalizeDraft(raw?: Partial<DreamDraft>): DreamDraft {
     normalized.controlAreas = Array.from(new Set(raw.controlAreas));
   }
 
-  if (Array.isArray(raw?.stabilizationActions) && raw.stabilizationActions.length) {
-    normalized.stabilizationActions = Array.from(new Set(raw.stabilizationActions));
+  if (
+    Array.isArray(raw?.stabilizationActions) &&
+    raw.stabilizationActions.length
+  ) {
+    normalized.stabilizationActions = Array.from(
+      new Set(raw.stabilizationActions),
+    );
   }
 
   if (typeof raw?.recallScore === 'number') {
-    normalized.recallScore = Math.max(1, Math.min(5, Math.floor(raw.recallScore))) as
-      | 1
-      | 2
-      | 3
-      | 4
-      | 5;
+    normalized.recallScore = Math.max(
+      1,
+      Math.min(5, Math.floor(raw.recallScore)),
+    ) as 1 | 2 | 3 | 4 | 5;
   }
 
   if (typeof raw?.nightmareExplicit === 'boolean') {
@@ -166,12 +173,10 @@ function normalizeDraft(raw?: Partial<DreamDraft>): DreamDraft {
   }
 
   if (typeof raw?.nightmareDistress === 'number') {
-    normalized.nightmareDistress = Math.max(1, Math.min(5, Math.floor(raw.nightmareDistress))) as
-      | 1
-      | 2
-      | 3
-      | 4
-      | 5;
+    normalized.nightmareDistress = Math.max(
+      1,
+      Math.min(5, Math.floor(raw.nightmareDistress)),
+    ) as 1 | 2 | 3 | 4 | 5;
   }
 
   if (typeof raw?.nightmareRecurring === 'boolean') {
@@ -186,12 +191,22 @@ function normalizeDraft(raw?: Partial<DreamDraft>): DreamDraft {
     normalized.nightmareWokeFromDream = raw.nightmareWokeFromDream;
   }
 
-  if (Array.isArray(raw?.nightmareAftereffects) && raw.nightmareAftereffects.length) {
-    normalized.nightmareAftereffects = Array.from(new Set(raw.nightmareAftereffects));
+  if (
+    Array.isArray(raw?.nightmareAftereffects) &&
+    raw.nightmareAftereffects.length
+  ) {
+    normalized.nightmareAftereffects = Array.from(
+      new Set(raw.nightmareAftereffects),
+    );
   }
 
-  if (Array.isArray(raw?.nightmareGroundingUsed) && raw.nightmareGroundingUsed.length) {
-    normalized.nightmareGroundingUsed = Array.from(new Set(raw.nightmareGroundingUsed));
+  if (
+    Array.isArray(raw?.nightmareGroundingUsed) &&
+    raw.nightmareGroundingUsed.length
+  ) {
+    normalized.nightmareGroundingUsed = Array.from(
+      new Set(raw.nightmareGroundingUsed),
+    );
   }
 
   if (raw?.nightmareRewrittenEnding?.trim()) {
@@ -208,34 +223,34 @@ function normalizeDraft(raw?: Partial<DreamDraft>): DreamDraft {
 function hasDraftContent(draft: DreamDraft) {
   return Boolean(
     draft.title.trim() ||
-      draft.text.trim() ||
-      draft.audioUri ||
-      draft.mood ||
-      typeof draft.lucidity === 'number' ||
-      draft.wakeEmotions?.length ||
-      draft.tags.length ||
-      draft.medications.trim() ||
-      draft.importantEvents.trim() ||
-      draft.healthNotes.trim() ||
-      typeof draft.stressLevel === 'number' ||
-      draft.preSleepEmotions?.length ||
-      typeof draft.alcoholTaken === 'boolean' ||
-      typeof draft.caffeineLate === 'boolean' ||
-      draft.dreamSigns?.length ||
-      draft.lucidTrigger?.trim() ||
-      draft.controlAreas?.length ||
-      draft.stabilizationActions?.length ||
-      typeof draft.recallScore === 'number' ||
-      draft.lucidTechnique ||
-      typeof draft.nightmareExplicit === 'boolean' ||
-      typeof draft.nightmareDistress === 'number' ||
-      typeof draft.nightmareRecurring === 'boolean' ||
-      draft.nightmareRecurringKey?.trim() ||
-      typeof draft.nightmareWokeFromDream === 'boolean' ||
-      draft.nightmareAftereffects?.length ||
-      draft.nightmareGroundingUsed?.length ||
-      draft.nightmareRewrittenEnding?.trim() ||
-      draft.nightmareRescriptStatus,
+    draft.text.trim() ||
+    draft.audioUri ||
+    draft.mood ||
+    typeof draft.lucidity === 'number' ||
+    draft.wakeEmotions?.length ||
+    draft.tags.length ||
+    draft.medications.trim() ||
+    draft.importantEvents.trim() ||
+    draft.healthNotes.trim() ||
+    typeof draft.stressLevel === 'number' ||
+    draft.preSleepEmotions?.length ||
+    typeof draft.alcoholTaken === 'boolean' ||
+    typeof draft.caffeineLate === 'boolean' ||
+    draft.dreamSigns?.length ||
+    draft.lucidTrigger?.trim() ||
+    draft.controlAreas?.length ||
+    draft.stabilizationActions?.length ||
+    typeof draft.recallScore === 'number' ||
+    draft.lucidTechnique ||
+    typeof draft.nightmareExplicit === 'boolean' ||
+    typeof draft.nightmareDistress === 'number' ||
+    typeof draft.nightmareRecurring === 'boolean' ||
+    draft.nightmareRecurringKey?.trim() ||
+    typeof draft.nightmareWokeFromDream === 'boolean' ||
+    draft.nightmareAftereffects?.length ||
+    draft.nightmareGroundingUsed?.length ||
+    draft.nightmareRewrittenEnding?.trim() ||
+    draft.nightmareRescriptStatus,
   );
 }
 
@@ -287,14 +302,20 @@ export function getDreamDraftSnapshot(
   const hasAudio = Boolean(draft.audioUri);
   const hasText = Boolean(text);
   const hasWakeSignals = Boolean(
-    draft.mood || draft.wakeEmotions?.length || typeof draft.lucidity === 'number',
+    draft.mood ||
+    draft.wakeEmotions?.length ||
+    typeof draft.lucidity === 'number',
   );
   const hasContext = hasDraftContext(draft);
   const hasTags = draft.tags.length > 0;
   const wordCount = hasText ? text.split(/\s+/).length : 0;
   const resumeMode =
     draft.entryMode ??
-    (hasWakeSignals || hasContext ? 'wake' : hasAudio && !hasText ? 'voice' : 'default');
+    (hasWakeSignals || hasContext
+      ? 'wake'
+      : hasAudio && !hasText
+        ? 'voice'
+        : 'default');
 
   return {
     resumeMode,

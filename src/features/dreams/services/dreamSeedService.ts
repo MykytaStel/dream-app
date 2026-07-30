@@ -83,13 +83,16 @@ function getWakeEmotions(index: number) {
 }
 
 function getPreSleepEmotions(index: number) {
-  return [PRE_SLEEP_EMOTIONS[index % PRE_SLEEP_EMOTIONS.length]].filter(Boolean);
+  return [PRE_SLEEP_EMOTIONS[index % PRE_SLEEP_EMOTIONS.length]].filter(
+    Boolean,
+  );
 }
 
 function buildSeedDream(index: number, now: number): Dream {
   const createdAt = now - index * 1000 * 60 * 60 * 12;
   const textVariant = DREAM_TEXT_VARIANTS[index % DREAM_TEXT_VARIANTS.length];
-  const transcriptVariant = TRANSCRIPT_VARIANTS[index % TRANSCRIPT_VARIANTS.length];
+  const transcriptVariant =
+    TRANSCRIPT_VARIANTS[index % TRANSCRIPT_VARIANTS.length];
   const hasTranscriptOnly = index % 4 === 0;
   const hasAnalysis = index % 6 === 0;
 
@@ -101,7 +104,9 @@ function buildSeedDream(index: number, now: number): Dream {
     text: hasTranscriptOnly ? undefined : `${textVariant} ${transcriptVariant}`,
     transcript: hasTranscriptOnly ? transcriptVariant : undefined,
     transcriptSource: hasTranscriptOnly ? 'edited' : undefined,
-    transcriptUpdatedAt: hasTranscriptOnly ? createdAt + 1000 * 60 * 6 : undefined,
+    transcriptUpdatedAt: hasTranscriptOnly
+      ? createdAt + 1000 * 60 * 6
+      : undefined,
     tags: getTags(index),
     mood: MOODS[index % MOODS.length],
     wakeEmotions: getWakeEmotions(index),
@@ -130,16 +135,21 @@ function buildSeedDream(index: number, now: number): Dream {
 }
 
 export function countSeedDreams() {
-  return listDreams().filter(dream => dream.id.startsWith(SEED_ID_PREFIX)).length;
+  return listDreams().filter(dream => dream.id.startsWith(SEED_ID_PREFIX))
+    .length;
 }
 
 export function seedDreamSamples(targetCount: number) {
   const existingDreams = listDreams();
-  const preservedDreams = existingDreams.filter(dream => !dream.id.startsWith(SEED_ID_PREFIX));
+  const preservedDreams = existingDreams.filter(
+    dream => !dream.id.startsWith(SEED_ID_PREFIX),
+  );
   const currentSeedCount = existingDreams.length - preservedDreams.length;
   const nextSeedCount = Math.max(targetCount, currentSeedCount);
   const now = Date.now();
-  const seededDreams = Array.from({ length: nextSeedCount }, (_, index) => buildSeedDream(index, now));
+  const seededDreams = Array.from({ length: nextSeedCount }, (_, index) =>
+    buildSeedDream(index, now),
+  );
 
   replaceAllDreams([...preservedDreams, ...seededDreams]);
 
@@ -147,7 +157,9 @@ export function seedDreamSamples(targetCount: number) {
 }
 
 export function clearSeedDreams() {
-  const preservedDreams = listDreams().filter(dream => !dream.id.startsWith(SEED_ID_PREFIX));
+  const preservedDreams = listDreams().filter(
+    dream => !dream.id.startsWith(SEED_ID_PREFIX),
+  );
   replaceAllDreams(preservedDreams);
   return preservedDreams.length;
 }

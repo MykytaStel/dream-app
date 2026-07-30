@@ -15,8 +15,11 @@ type NativeAudioUploadModule = {
   }): Promise<void>;
 };
 
-const NativeAudioUpload: NativeAudioUploadModule | undefined =
-  (NativeModules as any).AudioUpload;
+// NativeModules is an untyped bag; assert only the one entry we know about.
+// This goes away once the module becomes a TurboModule and codegen types it.
+const NativeAudioUpload: NativeAudioUploadModule | undefined = (
+  NativeModules as { AudioUpload?: NativeAudioUploadModule }
+).AudioUpload;
 
 function decodeBase64ToUint8Array(input: string): Uint8Array {
   const binary = decodeBase64(input);

@@ -1,6 +1,4 @@
-import {
-  getReviewWorkspaceBackupCue,
-} from '../src/features/settings/model/backupCue';
+import { getReviewWorkspaceBackupCue } from '../src/features/settings/model/backupCue';
 
 const copy = {
   backupCueOpenAction: 'Open backup',

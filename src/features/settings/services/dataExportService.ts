@@ -9,7 +9,10 @@ import { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import { getDreamAnalysisSettings } from '../../analysis/services/dreamAnalysisSettingsService';
 import { Dream } from '../../dreams/model/dream';
 import { listDreams } from '../../dreams/repository/dreamsRepository';
-import { DreamDraft, getDreamDraft } from '../../dreams/services/dreamDraftService';
+import {
+  DreamDraft,
+  getDreamDraft,
+} from '../../dreams/services/dreamDraftService';
 import {
   DreamReminderSettings,
   getDreamReminderSettings,
@@ -122,23 +125,36 @@ export function buildDreamExportSnapshot(input: {
     appVersion: input.appVersion ?? APP_VERSION_LABEL,
     platform: input.platform ?? Platform.OS,
     locale: input.locale,
-    storageSchemaVersion: input.storageSchemaVersion ?? CURRENT_STORAGE_SCHEMA_VERSION,
+    storageSchemaVersion:
+      input.storageSchemaVersion ?? CURRENT_STORAGE_SCHEMA_VERSION,
     summary: {
       dreamCount: backupDreams.length,
-      archivedDreamCount: backupDreams.filter(dream => typeof dream.archivedAt === 'number').length,
-      audioDreamCount: backupDreams.filter(dream => Boolean(dream.audioUri?.trim())).length,
-      transcribedDreamCount: backupDreams.filter(dream => Boolean(dream.transcript?.trim())).length,
-      editedTranscriptCount: backupDreams.filter(dream => dream.transcriptSource === 'edited')
-        .length,
-      analyzedDreamCount: backupDreams.filter(dream => dream.analysis?.status === 'ready').length,
-      starredDreamCount: backupDreams.filter(dream => typeof dream.starredAt === 'number').length,
+      archivedDreamCount: backupDreams.filter(
+        dream => typeof dream.archivedAt === 'number',
+      ).length,
+      audioDreamCount: backupDreams.filter(dream =>
+        Boolean(dream.audioUri?.trim()),
+      ).length,
+      transcribedDreamCount: backupDreams.filter(dream =>
+        Boolean(dream.transcript?.trim()),
+      ).length,
+      editedTranscriptCount: backupDreams.filter(
+        dream => dream.transcriptSource === 'edited',
+      ).length,
+      analyzedDreamCount: backupDreams.filter(
+        dream => dream.analysis?.status === 'ready',
+      ).length,
+      starredDreamCount: backupDreams.filter(
+        dream => typeof dream.starredAt === 'number',
+      ).length,
       draftIncluded: Boolean(input.draft),
     },
     dreams: backupDreams,
     draft: input.draft,
     reminderSettings: input.reminderSettings,
     practiceReminderSettings:
-      input.practiceReminderSettings ?? DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS,
+      input.practiceReminderSettings ??
+      DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS,
     analysisSettings: input.analysisSettings,
     reviewState: input.reviewState,
   };
@@ -225,10 +241,15 @@ export async function exportDreamArchivePdf() {
   };
 }
 
-export async function exportDreamReadableArchive(format: DreamReadableExportFormat) {
+export async function exportDreamReadableArchive(
+  format: DreamReadableExportFormat,
+) {
   const payload = buildCurrentDreamExportSnapshot();
   const directoryPath = getExportDirectoryPath();
-  const fileName = createDreamReadableExportFileName(payload.exportedAt, format);
+  const fileName = createDreamReadableExportFileName(
+    payload.exportedAt,
+    format,
+  );
   const filePath = `${directoryPath}/${fileName}`;
   const document = buildDreamReadableExportDocument(payload, format);
 

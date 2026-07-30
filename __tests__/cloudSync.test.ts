@@ -34,9 +34,7 @@ import {
   setCloudSyncEnabled,
 } from '../src/services/auth/session';
 import type { DreamSyncBundle } from '../src/services/api/contracts/dreamSync';
-import {
-  createMockSupabaseClient,
-} from './helpers/cloudSyncTestUtils';
+import { createMockSupabaseClient } from './helpers/cloudSyncTestUtils';
 
 jest.mock('../src/services/api/supabase/client', () => ({
   getSupabaseClient: jest.fn(),
@@ -691,7 +689,9 @@ describe('cloud sync service', () => {
     expect(result.pulledCount).toBe(1);
     expect(result.conflictsResolvedCount).toBe(0);
     expect(getDream('remote-delete')).toBeUndefined();
-    expect(listDreamListItems().some(item => item.id === 'remote-delete')).toBe(false);
+    expect(listDreamListItems().some(item => item.id === 'remote-delete')).toBe(
+      false,
+    );
     expect(getDreamsMeta().totalCount).toBe(0);
     expect(getSavedMonthlyReportMonths()).toEqual([]);
     expect(getDreamDeletionTombstone('remote-delete')).toMatchObject({

@@ -10,7 +10,11 @@ import SettingsScreen from '../../features/settings/screens/SettingsScreen';
 import { useI18n } from '../../i18n/I18nProvider';
 import type { Theme } from '../../theme/theme';
 import { AppTabBar } from './AppTabBar';
-import { getTabRouteLabels, TAB_ROUTE_NAMES, type TabParamList } from './routes';
+import {
+  getTabRouteLabels,
+  TAB_ROUTE_NAMES,
+  type TabParamList,
+} from './routes';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
@@ -33,7 +37,11 @@ function createTabBarIcon(routeName: keyof TabParamList) {
     size: number;
   }) => (
     <Ionicons
-      name={focused && routeName === TAB_ROUTE_NAMES.New ? 'add-circle' : TAB_ICONS[routeName]}
+      name={
+        focused && routeName === TAB_ROUTE_NAMES.New
+          ? 'add-circle'
+          : TAB_ICONS[routeName]
+      }
       size={routeName === TAB_ROUTE_NAMES.New ? size + 5 : size}
       color={color}
     />
@@ -104,14 +112,26 @@ export default function Tabs() {
         },
       }}
     >
-      <Tab.Screen name={TAB_ROUTE_NAMES.Home} component={HomeScreen} options={homeOptions} />
+      <Tab.Screen
+        name={TAB_ROUTE_NAMES.Home}
+        component={HomeScreen}
+        options={homeOptions}
+      />
       <Tab.Screen
         name={TAB_ROUTE_NAMES.Archive}
         component={ArchiveScreen}
         options={archiveOptions}
       />
-      <Tab.Screen name={TAB_ROUTE_NAMES.New} component={NewDreamScreen} options={newOptions} />
-      <Tab.Screen name={TAB_ROUTE_NAMES.Stats} component={StatsScreen} options={statsOptions} />
+      <Tab.Screen
+        name={TAB_ROUTE_NAMES.New}
+        component={NewDreamScreen}
+        options={newOptions}
+      />
+      <Tab.Screen
+        name={TAB_ROUTE_NAMES.Stats}
+        component={StatsScreen}
+        options={statsOptions}
+      />
       <Tab.Screen
         name={TAB_ROUTE_NAMES.Settings}
         component={SettingsScreen}

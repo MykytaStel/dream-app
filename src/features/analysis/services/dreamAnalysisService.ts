@@ -1,4 +1,7 @@
-import { getDream, saveDreamAnalysis } from '../../dreams/repository/dreamsRepository';
+import {
+  getDream,
+  saveDreamAnalysis,
+} from '../../dreams/repository/dreamsRepository';
 import { getDreamAnalysisProvider } from './dreamAnalysisProvider';
 import { getDreamAnalysisSettings } from './dreamAnalysisSettingsService';
 
@@ -41,4 +44,3 @@ export async function generateDreamAnalysis(dreamId: string) {
     throw error;
   }
 }
-

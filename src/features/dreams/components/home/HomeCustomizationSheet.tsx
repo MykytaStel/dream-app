@@ -113,7 +113,8 @@ export function HomeCustomizationSheet({
               </Text>
               <View style={styles.filterRow}>
                 {HOME_LAYOUT_SECTIONS.map(section => {
-                  const isVisible = !preferences.hiddenSections.includes(section);
+                  const isVisible =
+                    !preferences.hiddenSections.includes(section);
 
                   return (
                     <Pressable
@@ -195,7 +196,9 @@ export function HomeCustomizationSheet({
                         </Pressable>
                         <Pressable
                           accessibilityRole="button"
-                          disabled={index === preferences.sectionOrder.length - 1}
+                          disabled={
+                            index === preferences.sectionOrder.length - 1
+                          }
                           style={({ pressed }) => [
                             styles.homeCustomizeOrderButton,
                             index === preferences.sectionOrder.length - 1

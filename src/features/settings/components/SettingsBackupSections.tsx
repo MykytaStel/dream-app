@@ -4,7 +4,10 @@ import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
-import { type DreamImportMode, type LocalDreamExportFile } from '../services/dataImportService';
+import {
+  type DreamImportMode,
+  type LocalDreamExportFile,
+} from '../services/dataImportService';
 import { SettingsActionRow } from './SettingsActionRow';
 import { SettingsMetaGrid, type SettingsMetaItem } from './SettingsMetaGrid';
 import { SettingsSectionHeader } from './SettingsSectionHeader';
@@ -32,7 +35,10 @@ function getRestoreActionState({
   importMode: DreamImportMode;
 }) {
   const ready = Boolean(
-    selectedImportPath && selectedImportPreview && !isLoadingImportPreview && !isRestoringImport,
+    selectedImportPath &&
+    selectedImportPreview &&
+    !isLoadingImportPreview &&
+    !isRestoringImport,
   );
 
   const title = isRestoringImport
@@ -50,7 +56,10 @@ function getRestoreActionState({
   return {
     ready,
     title,
-    guidance: importMode === 'merge' ? copy.restoreMergeGuidance : copy.restoreReplaceWarning,
+    guidance:
+      importMode === 'merge'
+        ? copy.restoreMergeGuidance
+        : copy.restoreReplaceWarning,
   };
 }
 
@@ -132,7 +141,10 @@ export function ExportSection({
 }) {
   return (
     <Card style={styles.sectionCard}>
-      <SettingsSectionHeader title={copy.exportTitle} description={copy.exportDescription} />
+      <SettingsSectionHeader
+        title={copy.exportTitle}
+        description={copy.exportDescription}
+      />
       <View style={styles.buttonRow}>
         <Button
           title={isExportingJson ? copy.exportButtonBusy : copy.exportButton}
@@ -143,7 +155,9 @@ export function ExportSection({
           disabled={isExportingJson || isExportingPdf}
         />
         <Button
-          title={isExportingPdf ? copy.exportPdfButtonBusy : copy.exportPdfButton}
+          title={
+            isExportingPdf ? copy.exportPdfButtonBusy : copy.exportPdfButton
+          }
           variant="ghost"
           size="sm"
           style={styles.buttonRowButton}
@@ -151,12 +165,20 @@ export function ExportSection({
           disabled={isExportingJson || isExportingPdf}
         />
       </View>
-      {lastExportName && lastExportSummaryTitle && lastExportSummaryDescription ? (
+      {lastExportName &&
+      lastExportSummaryTitle &&
+      lastExportSummaryDescription ? (
         <View style={styles.backupSuccessBlock}>
-          <Text style={styles.backupSuccessTitle}>{lastExportSummaryTitle}</Text>
-          <Text style={styles.backupSuccessText}>{lastExportSummaryDescription}</Text>
+          <Text style={styles.backupSuccessTitle}>
+            {lastExportSummaryTitle}
+          </Text>
+          <Text style={styles.backupSuccessText}>
+            {lastExportSummaryDescription}
+          </Text>
           <View style={styles.exportSummaryMeta}>
-            <Text style={styles.exportPathLabel}>{copy.exportLatestPathLabel}</Text>
+            <Text style={styles.exportPathLabel}>
+              {copy.exportLatestPathLabel}
+            </Text>
             <Text style={styles.exportPathValue}>{lastExportName}</Text>
           </View>
           {canOpenLastPdf || canShareLastExport ? (
@@ -330,7 +352,11 @@ export function PortableExportSection({
       />
       <View style={styles.buttonRow}>
         <Button
-          title={isExportingMarkdown ? copy.exportMarkdownButtonBusy : copy.exportMarkdownButton}
+          title={
+            isExportingMarkdown
+              ? copy.exportMarkdownButtonBusy
+              : copy.exportMarkdownButton
+          }
           variant="primary"
           size="sm"
           style={styles.buttonRowButton}
@@ -338,7 +364,9 @@ export function PortableExportSection({
           disabled={isBusy}
         />
         <Button
-          title={isExportingText ? copy.exportTextButtonBusy : copy.exportTextButton}
+          title={
+            isExportingText ? copy.exportTextButtonBusy : copy.exportTextButton
+          }
           variant="ghost"
           size="sm"
           style={styles.buttonRowButton}
@@ -483,7 +511,10 @@ export function RestoreSection({
 
   return (
     <Card style={styles.sectionCard}>
-      <SettingsSectionHeader title={copy.restoreTitle} description={copy.restoreDescription} />
+      <SettingsSectionHeader
+        title={copy.restoreTitle}
+        description={copy.restoreDescription}
+      />
 
       <View style={styles.restoreModeWrap}>
         <Text style={styles.restoreLabel}>{copy.restoreModeLabel}</Text>
@@ -496,20 +527,28 @@ export function RestoreSection({
           ]}
         />
         <Text style={styles.restoreHint}>
-          {importMode === 'merge' ? copy.restoreModeMergeHint : copy.restoreModeReplaceHint}
+          {importMode === 'merge'
+            ? copy.restoreModeMergeHint
+            : copy.restoreModeReplaceHint}
         </Text>
       </View>
 
       {localExportFiles.length ? (
         <>
-          <Text style={styles.restoreLabel}>{`${copy.restoreAvailableLabel} (${localExportFiles.length})`}</Text>
+          <Text
+            style={styles.restoreLabel}
+          >{`${copy.restoreAvailableLabel} (${localExportFiles.length})`}</Text>
           <View style={styles.restoreList}>
             {localExportFiles.slice(0, 4).map(file => (
               <SettingsActionRow
                 key={file.filePath}
                 title={formatBackupListTitle(file.modifiedAt)}
                 meta={formatBackupListMeta(file.fileName)}
-                value={selectedImportPath === file.filePath ? copy.restoreSelectedValue : undefined}
+                value={
+                  selectedImportPath === file.filePath
+                    ? copy.restoreSelectedValue
+                    : undefined
+                }
                 onPress={() => onSelectImportFile(file.filePath)}
               />
             ))}
@@ -556,7 +595,13 @@ export function RestoreSection({
       <View style={styles.buttonStack}>
         <Button
           title={restoreAction.title}
-          variant={restoreAction.ready ? (importMode === 'merge' ? 'primary' : 'danger') : 'ghost'}
+          variant={
+            restoreAction.ready
+              ? importMode === 'merge'
+                ? 'primary'
+                : 'danger'
+              : 'ghost'
+          }
           size="sm"
           style={styles.buttonStackButton}
           onPress={onRestoreImport}

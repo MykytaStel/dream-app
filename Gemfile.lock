@@ -107,6 +107,7 @@ PLATFORMS
 
 DEPENDENCIES
   cocoapods (~> 1.15)
+  nkf
 
 BUNDLED WITH
    2.4.22

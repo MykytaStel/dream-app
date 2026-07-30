@@ -297,12 +297,8 @@ export default function HomeScreen() {
           attentionValue={timeline.attentionValue}
           attentionHint={timeline.attentionHint}
           onOpenRevisitDream={openDreamDetail}
-          practiceShortcutTitle={
-            practiceCopy.homeLucidCtaTitle
-          }
-          practiceShortcutHint={
-            practiceCopy.homeLucidCtaHint
-          }
+          practiceShortcutTitle={practiceCopy.homeLucidCtaTitle}
+          practiceShortcutHint={practiceCopy.homeLucidCtaHint}
           nightmareShortcutTitle={practiceCopy.homeNightmareCtaTitle}
           nightmareShortcutHint={practiceCopy.homeNightmareCtaHint}
           lucidQuickFilterLabel={practiceCopy.filterLucid}

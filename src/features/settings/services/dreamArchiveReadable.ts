@@ -91,30 +91,53 @@ function formatDreamTitle(dream: Dream) {
 function buildDreamMeta(dream: Dream): NamedValue[] {
   const values: Array<NamedValue | null> = [
     { label: 'id', value: dream.id },
-    dream.sleepDate?.trim() ? { label: 'sleep_date', value: dream.sleepDate } : null,
+    dream.sleepDate?.trim()
+      ? { label: 'sleep_date', value: dream.sleepDate }
+      : null,
     { label: 'created_at', value: new Date(dream.createdAt).toISOString() },
     formatTimestamp(dream.updatedAt)
-      ? { label: 'updated_at', value: formatTimestamp(dream.updatedAt) as string }
+      ? {
+          label: 'updated_at',
+          value: formatTimestamp(dream.updatedAt) as string,
+        }
       : null,
     formatTimestamp(dream.archivedAt)
-      ? { label: 'archived_at', value: formatTimestamp(dream.archivedAt) as string }
+      ? {
+          label: 'archived_at',
+          value: formatTimestamp(dream.archivedAt) as string,
+        }
       : null,
     formatTimestamp(dream.starredAt)
-      ? { label: 'starred_at', value: formatTimestamp(dream.starredAt) as string }
+      ? {
+          label: 'starred_at',
+          value: formatTimestamp(dream.starredAt) as string,
+        }
       : null,
     { label: 'content', value: formatContentState(dream) },
     dream.mood ? { label: 'mood', value: dream.mood } : null,
     typeof dream.dreamIntensity === 'number'
       ? { label: 'dream_intensity', value: String(dream.dreamIntensity) }
       : null,
-    formatList(dream.wakeEmotions) ? { label: 'wake_emotions', value: formatList(dream.wakeEmotions) as string } : null,
-    formatList(dream.tags) ? { label: 'tags', value: formatList(dream.tags) as string } : null,
-    dream.audioUri?.trim() ? { label: 'audio_uri', value: dream.audioUri } : null,
+    formatList(dream.wakeEmotions)
+      ? {
+          label: 'wake_emotions',
+          value: formatList(dream.wakeEmotions) as string,
+        }
+      : null,
+    formatList(dream.tags)
+      ? { label: 'tags', value: formatList(dream.tags) as string }
+      : null,
+    dream.audioUri?.trim()
+      ? { label: 'audio_uri', value: dream.audioUri }
+      : null,
     dream.audioUri?.trim() || dream.transcript?.trim() || dream.transcriptStatus
       ? { label: 'transcript_status', value: formatTranscriptStatus(dream) }
       : null,
     formatTranscriptSource(dream)
-      ? { label: 'transcript_source', value: formatTranscriptSource(dream) as string }
+      ? {
+          label: 'transcript_source',
+          value: formatTranscriptSource(dream) as string,
+        }
       : null,
     formatTimestamp(dream.transcriptUpdatedAt)
       ? {
@@ -122,7 +145,9 @@ function buildDreamMeta(dream: Dream): NamedValue[] {
           value: formatTimestamp(dream.transcriptUpdatedAt) as string,
         }
       : null,
-    typeof dream.lucidity === 'number' ? { label: 'lucidity', value: String(dream.lucidity) } : null,
+    typeof dream.lucidity === 'number'
+      ? { label: 'lucidity', value: String(dream.lucidity) }
+      : null,
   ];
 
   return values.filter((value): value is NamedValue => Boolean(value));
@@ -144,16 +169,25 @@ function buildSleepContextSection(dream: Dream): NamedValue[] {
         }
       : null,
     formatBoolean(dream.sleepContext.alcoholTaken)
-      ? { label: 'alcohol_taken', value: formatBoolean(dream.sleepContext.alcoholTaken) as string }
+      ? {
+          label: 'alcohol_taken',
+          value: formatBoolean(dream.sleepContext.alcoholTaken) as string,
+        }
       : null,
     formatBoolean(dream.sleepContext.caffeineLate)
-      ? { label: 'caffeine_late', value: formatBoolean(dream.sleepContext.caffeineLate) as string }
+      ? {
+          label: 'caffeine_late',
+          value: formatBoolean(dream.sleepContext.caffeineLate) as string,
+        }
       : null,
     dream.sleepContext.medications?.trim()
       ? { label: 'medications', value: dream.sleepContext.medications.trim() }
       : null,
     dream.sleepContext.importantEvents?.trim()
-      ? { label: 'important_events', value: dream.sleepContext.importantEvents.trim() }
+      ? {
+          label: 'important_events',
+          value: dream.sleepContext.importantEvents.trim(),
+        }
       : null,
     dream.sleepContext.healthNotes?.trim()
       ? { label: 'health_notes', value: dream.sleepContext.healthNotes.trim() }
@@ -173,7 +207,10 @@ function buildLucidPracticeSection(dream: Dream): NamedValue[] {
       ? { label: 'technique', value: dream.lucidPractice.technique }
       : null,
     formatList(dream.lucidPractice.dreamSigns)
-      ? { label: 'dream_signs', value: formatList(dream.lucidPractice.dreamSigns) as string }
+      ? {
+          label: 'dream_signs',
+          value: formatList(dream.lucidPractice.dreamSigns) as string,
+        }
       : null,
     dream.lucidPractice.trigger?.trim()
       ? { label: 'trigger', value: dream.lucidPractice.trigger.trim() }
@@ -191,7 +228,10 @@ function buildLucidPracticeSection(dream: Dream): NamedValue[] {
         }
       : null,
     typeof dream.lucidPractice.recallScore === 'number'
-      ? { label: 'recall_score', value: String(dream.lucidPractice.recallScore) }
+      ? {
+          label: 'recall_score',
+          value: String(dream.lucidPractice.recallScore),
+        }
       : null,
   ];
 
@@ -205,28 +245,46 @@ function buildNightmareSection(dream: Dream): NamedValue[] {
 
   const values: Array<NamedValue | null> = [
     formatBoolean(dream.nightmare.explicit)
-      ? { label: 'explicit', value: formatBoolean(dream.nightmare.explicit) as string }
+      ? {
+          label: 'explicit',
+          value: formatBoolean(dream.nightmare.explicit) as string,
+        }
       : null,
     typeof dream.nightmare.distress === 'number'
       ? { label: 'distress', value: String(dream.nightmare.distress) }
       : null,
     formatBoolean(dream.nightmare.recurring)
-      ? { label: 'recurring', value: formatBoolean(dream.nightmare.recurring) as string }
+      ? {
+          label: 'recurring',
+          value: formatBoolean(dream.nightmare.recurring) as string,
+        }
       : null,
     dream.nightmare.recurringKey?.trim()
       ? { label: 'recurring_key', value: dream.nightmare.recurringKey.trim() }
       : null,
     formatBoolean(dream.nightmare.wokeFromDream)
-      ? { label: 'woke_from_dream', value: formatBoolean(dream.nightmare.wokeFromDream) as string }
+      ? {
+          label: 'woke_from_dream',
+          value: formatBoolean(dream.nightmare.wokeFromDream) as string,
+        }
       : null,
     formatList(dream.nightmare.aftereffects)
-      ? { label: 'aftereffects', value: formatList(dream.nightmare.aftereffects) as string }
+      ? {
+          label: 'aftereffects',
+          value: formatList(dream.nightmare.aftereffects) as string,
+        }
       : null,
     formatList(dream.nightmare.groundingUsed)
-      ? { label: 'grounding_used', value: formatList(dream.nightmare.groundingUsed) as string }
+      ? {
+          label: 'grounding_used',
+          value: formatList(dream.nightmare.groundingUsed) as string,
+        }
       : null,
     dream.nightmare.rewrittenEnding?.trim()
-      ? { label: 'rewritten_ending', value: dream.nightmare.rewrittenEnding.trim() }
+      ? {
+          label: 'rewritten_ending',
+          value: dream.nightmare.rewrittenEnding.trim(),
+        }
       : null,
     dream.nightmare.rescriptStatus
       ? { label: 'rescript_status', value: dream.nightmare.rescriptStatus }
@@ -245,7 +303,10 @@ function buildAnalysisSection(analysis?: DreamAnalysisRecord): NamedValue[] {
     { label: 'provider', value: analysis.provider },
     { label: 'status', value: analysis.status },
     formatTimestamp(analysis.generatedAt)
-      ? { label: 'generated_at', value: formatTimestamp(analysis.generatedAt) as string }
+      ? {
+          label: 'generated_at',
+          value: formatTimestamp(analysis.generatedAt) as string,
+        }
       : null,
     formatList(analysis.themes)
       ? { label: 'themes', value: formatList(analysis.themes) as string }
@@ -259,7 +320,11 @@ function buildAnalysisSection(analysis?: DreamAnalysisRecord): NamedValue[] {
 }
 
 function buildAudioNote(dream: Dream) {
-  if (!dream.audioUri?.trim() || dream.text?.trim() || dream.transcript?.trim()) {
+  if (
+    !dream.audioUri?.trim() ||
+    dream.text?.trim() ||
+    dream.transcript?.trim()
+  ) {
     return null;
   }
 
@@ -311,15 +376,27 @@ function buildDreamMarkdown(dream: Dream, index: number) {
   blocks.push(renderNamedValuesMarkdown(meta));
 
   if (sleepContext.length) {
-    blocks.push(renderMarkdownSection('Sleep context', renderNamedValuesMarkdown(sleepContext)));
+    blocks.push(
+      renderMarkdownSection(
+        'Sleep context',
+        renderNamedValuesMarkdown(sleepContext),
+      ),
+    );
   }
 
   if (lucidPractice.length) {
-    blocks.push(renderMarkdownSection('Lucid practice', renderNamedValuesMarkdown(lucidPractice)));
+    blocks.push(
+      renderMarkdownSection(
+        'Lucid practice',
+        renderNamedValuesMarkdown(lucidPractice),
+      ),
+    );
   }
 
   if (nightmare.length) {
-    blocks.push(renderMarkdownSection('Nightmare', renderNamedValuesMarkdown(nightmare)));
+    blocks.push(
+      renderMarkdownSection('Nightmare', renderNamedValuesMarkdown(nightmare)),
+    );
   }
 
   if (audioNote) {
@@ -354,19 +431,27 @@ function buildDreamText(dream: Dream, index: number) {
   const audioNote = buildAudioNote(dream);
 
   blocks.push(`DREAM ${index + 1}: ${formatDreamTitle(dream)}`);
-  blocks.push('-'.repeat(`DREAM ${index + 1}: ${formatDreamTitle(dream)}`.length));
+  blocks.push(
+    '-'.repeat(`DREAM ${index + 1}: ${formatDreamTitle(dream)}`.length),
+  );
   blocks.push(renderNamedValuesText(meta));
 
   if (sleepContext.length) {
-    blocks.push(renderTextSection('Sleep context', renderNamedValuesText(sleepContext)));
+    blocks.push(
+      renderTextSection('Sleep context', renderNamedValuesText(sleepContext)),
+    );
   }
 
   if (lucidPractice.length) {
-    blocks.push(renderTextSection('Lucid practice', renderNamedValuesText(lucidPractice)));
+    blocks.push(
+      renderTextSection('Lucid practice', renderNamedValuesText(lucidPractice)),
+    );
   }
 
   if (nightmare.length) {
-    blocks.push(renderTextSection('Nightmare', renderNamedValuesText(nightmare)));
+    blocks.push(
+      renderTextSection('Nightmare', renderNamedValuesText(nightmare)),
+    );
   }
 
   if (audioNote) {
@@ -397,15 +482,39 @@ function buildSummaryValues(payload: DreamReadablePayload): NamedValue[] {
     { label: 'app_version', value: payload.appVersion },
     { label: 'platform', value: payload.platform },
     { label: 'locale', value: payload.locale },
-    { label: 'storage_schema_version', value: String(payload.storageSchemaVersion) },
+    {
+      label: 'storage_schema_version',
+      value: String(payload.storageSchemaVersion),
+    },
     { label: 'dream_count', value: String(payload.summary.dreamCount) },
-    { label: 'archived_dream_count', value: String(payload.summary.archivedDreamCount) },
-    { label: 'audio_dream_count', value: String(payload.summary.audioDreamCount) },
-    { label: 'transcribed_dream_count', value: String(payload.summary.transcribedDreamCount) },
-    { label: 'edited_transcript_count', value: String(payload.summary.editedTranscriptCount) },
-    { label: 'analyzed_dream_count', value: String(payload.summary.analyzedDreamCount) },
-    { label: 'starred_dream_count', value: String(payload.summary.starredDreamCount) },
-    { label: 'draft_included_in_backup_json', value: payload.summary.draftIncluded ? 'yes' : 'no' },
+    {
+      label: 'archived_dream_count',
+      value: String(payload.summary.archivedDreamCount),
+    },
+    {
+      label: 'audio_dream_count',
+      value: String(payload.summary.audioDreamCount),
+    },
+    {
+      label: 'transcribed_dream_count',
+      value: String(payload.summary.transcribedDreamCount),
+    },
+    {
+      label: 'edited_transcript_count',
+      value: String(payload.summary.editedTranscriptCount),
+    },
+    {
+      label: 'analyzed_dream_count',
+      value: String(payload.summary.analyzedDreamCount),
+    },
+    {
+      label: 'starred_dream_count',
+      value: String(payload.summary.starredDreamCount),
+    },
+    {
+      label: 'draft_included_in_backup_json',
+      value: payload.summary.draftIncluded ? 'yes' : 'no',
+    },
   ];
 }
 
@@ -417,7 +526,9 @@ export function buildDreamReadableExportDocument(
 
   if (format === 'markdown') {
     const dreamsBlock = payload.dreams.length
-      ? payload.dreams.map((dream, index) => buildDreamMarkdown(dream, index)).join('\n\n---\n\n')
+      ? payload.dreams
+          .map((dream, index) => buildDreamMarkdown(dream, index))
+          .join('\n\n---\n\n')
       : 'No dreams were saved in this export.';
 
     return [
@@ -429,7 +540,9 @@ export function buildDreamReadableExportDocument(
   }
 
   const dreamsBlock = payload.dreams.length
-    ? payload.dreams.map((dream, index) => buildDreamText(dream, index)).join('\n\n\n')
+    ? payload.dreams
+        .map((dream, index) => buildDreamText(dream, index))
+        .join('\n\n\n')
     : 'No dreams were saved in this export.';
 
   return [

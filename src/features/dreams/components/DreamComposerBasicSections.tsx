@@ -39,7 +39,9 @@ export function DreamComposerHeroCard({
       ) : null}
       {hasRestoredDraft ? (
         <View style={styles.helperChip}>
-          <Text style={styles.helperChipLabel}>{copy.recordDraftRestoredTitle}</Text>
+          <Text style={styles.helperChipLabel}>
+            {copy.recordDraftRestoredTitle}
+          </Text>
         </View>
       ) : null}
     </View>
@@ -63,7 +65,9 @@ export function DreamComposerHeroCard({
       <View pointerEvents="none" style={styles.heroGlowSmall} />
       <View style={styles.heroTopRow}>
         <View style={styles.heroCopy}>
-          <Text style={styles.heroEyebrow}>{isEdit ? copy.editTitle : copy.createTitle}</Text>
+          <Text style={styles.heroEyebrow}>
+            {isEdit ? copy.editTitle : copy.createTitle}
+          </Text>
           <SectionHeader
             title={isEdit ? copy.editHeroTitle : copy.createHeroTitle}
             subtitle={isEdit ? copy.editSubtitle : copy.createSubtitle}
@@ -71,9 +75,15 @@ export function DreamComposerHeroCard({
           />
         </View>
         <View style={styles.kaleidoscopeShell}>
-          <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetPrimary]} />
-          <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAccent]} />
-          <View style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAlt]} />
+          <View
+            style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetPrimary]}
+          />
+          <View
+            style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAccent]}
+          />
+          <View
+            style={[styles.kaleidoscopeFacet, styles.kaleidoscopeFacetAlt]}
+          />
         </View>
       </View>
 
@@ -194,14 +204,22 @@ export function DreamComposerVoiceCard({
       </View>
       <SectionHeader
         title={copy.voiceTitle}
-        subtitle={audioUri || recording ? undefined : isWakeMode ? copy.wakeVoiceDescription : copy.voiceDescription}
+        subtitle={
+          audioUri || recording
+            ? undefined
+            : isWakeMode
+              ? copy.wakeVoiceDescription
+              : copy.voiceDescription
+        }
       />
 
       {recording ? (
         <>
           <View style={styles.voiceStatusRow}>
             <View style={styles.voiceStatusPill}>
-              <Text style={[styles.voiceStatusLabel, styles.recordingHint]}>{copy.recordingHint}</Text>
+              <Text style={[styles.voiceStatusLabel, styles.recordingHint]}>
+                {copy.recordingHint}
+              </Text>
             </View>
           </View>
           <Button
@@ -212,12 +230,18 @@ export function DreamComposerVoiceCard({
             disabled={isBusy}
           />
           {recordingDuration != null ? (
-            <Text style={styles.voiceRecordingTimer}>{formatRecordingDuration(recordingDuration)}</Text>
+            <Text style={styles.voiceRecordingTimer}>
+              {formatRecordingDuration(recordingDuration)}
+            </Text>
           ) : null}
         </>
       ) : audioUri ? (
         <View style={styles.attachedAudioCard}>
-          <ComposerAudioPlayback uri={audioUri} styles={styles} errorTitle={copy.audioErrorTitle} />
+          <ComposerAudioPlayback
+            uri={audioUri}
+            styles={styles}
+            errorTitle={copy.audioErrorTitle}
+          />
           <View style={styles.attachedAudioActions}>
             <Button
               title={copy.startRecording}
@@ -227,7 +251,12 @@ export function DreamComposerVoiceCard({
               size="sm"
               disabled={isBusy}
             />
-            <Button title={copy.removeAudio} variant="ghost" size="sm" onPress={onRemoveAudio} />
+            <Button
+              title={copy.removeAudio}
+              variant="ghost"
+              size="sm"
+              onPress={onRemoveAudio}
+            />
           </View>
         </View>
       ) : (
@@ -294,7 +323,10 @@ export function DreamComposerWakeCaptureCard({
         <View style={styles.sectionAccentPrimary} />
         <View style={styles.sectionAccentSecondary} />
       </View>
-      <SectionHeader title={copy.wakeCaptureTitle} subtitle={copy.wakeCaptureDescription} />
+      <SectionHeader
+        title={copy.wakeCaptureTitle}
+        subtitle={copy.wakeCaptureDescription}
+      />
 
       <FormField
         label={copy.wakeTextLabel}
@@ -311,13 +343,17 @@ export function DreamComposerWakeCaptureCard({
       <Text style={styles.refineHint}>{copy.wakeReadyHint}</Text>
 
       <View style={styles.captureAlternateBlock}>
-        <Text style={styles.captureAlternateLabel}>{copy.wakeCaptureAlternateTitle}</Text>
+        <Text style={styles.captureAlternateLabel}>
+          {copy.wakeCaptureAlternateTitle}
+        </Text>
 
         {recording ? (
           <>
             <View style={styles.voiceStatusRow}>
               <View style={styles.voiceStatusPill}>
-                <Text style={[styles.voiceStatusLabel, styles.recordingHint]}>{copy.recordingHint}</Text>
+                <Text style={[styles.voiceStatusLabel, styles.recordingHint]}>
+                  {copy.recordingHint}
+                </Text>
               </View>
             </View>
             <Button
@@ -328,12 +364,18 @@ export function DreamComposerWakeCaptureCard({
               disabled={isBusy}
             />
             {recordingDuration != null ? (
-              <Text style={styles.voiceRecordingTimer}>{formatRecordingDuration(recordingDuration)}</Text>
+              <Text style={styles.voiceRecordingTimer}>
+                {formatRecordingDuration(recordingDuration)}
+              </Text>
             ) : null}
           </>
         ) : audioUri ? (
           <View style={styles.attachedAudioCard}>
-            <ComposerAudioPlayback uri={audioUri} styles={styles} errorTitle={copy.audioErrorTitle} />
+            <ComposerAudioPlayback
+              uri={audioUri}
+              styles={styles}
+              errorTitle={copy.audioErrorTitle}
+            />
             <View style={styles.attachedAudioActions}>
               <Button
                 title={copy.startRecording}
@@ -343,14 +385,21 @@ export function DreamComposerWakeCaptureCard({
                 size="sm"
                 disabled={isBusy}
               />
-              <Button title={copy.removeAudio} variant="ghost" size="sm" onPress={onRemoveAudio} />
+              <Button
+                title={copy.removeAudio}
+                variant="ghost"
+                size="sm"
+                onPress={onRemoveAudio}
+              />
             </View>
           </View>
         ) : (
           <>
             <View style={styles.voiceStatusRow}>
               <View style={styles.voiceStatusPill}>
-                <Text style={styles.voiceStatusLabel}>{copy.wakeCaptureVoiceHint}</Text>
+                <Text style={styles.voiceStatusLabel}>
+                  {copy.wakeCaptureVoiceHint}
+                </Text>
               </View>
             </View>
             <Button
@@ -451,7 +500,9 @@ export function DreamComposerCoreCard({
             autoCapitalize="none"
             autoCorrect={false}
             invalid={hasInvalidSleepDate}
-            helperText={hasInvalidSleepDate ? copy.sleepDateInvalidDescription : undefined}
+            helperText={
+              hasInvalidSleepDate ? copy.sleepDateInvalidDescription : undefined
+            }
             helperTone={hasInvalidSleepDate ? 'error' : 'default'}
           />
           <FormField
@@ -495,7 +546,9 @@ export function DreamComposerRefineCard({
     <Card style={styles.card}>
       <SectionHeader
         title={isWakeMode ? copy.wakeRefineTitle : copy.refineTitle}
-        subtitle={isWakeMode ? copy.wakeRefineDescription : copy.refineDescription}
+        subtitle={
+          isWakeMode ? copy.wakeRefineDescription : copy.refineDescription
+        }
       />
 
       <View style={styles.refineActionsRow}>
@@ -547,7 +600,10 @@ export function DreamComposerWakeMetaCard({
 }: WakeMetaCardProps) {
   return (
     <Card style={styles.card}>
-      <SectionHeader title={copy.wakeMetaTitle} subtitle={copy.wakeMetaDescription} />
+      <SectionHeader
+        title={copy.wakeMetaTitle}
+        subtitle={copy.wakeMetaDescription}
+      />
       <FormField
         label={copy.titleLabel}
         placeholder={copy.titlePlaceholder}
@@ -562,7 +618,9 @@ export function DreamComposerWakeMetaCard({
         autoCapitalize="none"
         autoCorrect={false}
         invalid={hasInvalidSleepDate}
-        helperText={hasInvalidSleepDate ? copy.sleepDateInvalidDescription : undefined}
+        helperText={
+          hasInvalidSleepDate ? copy.sleepDateInvalidDescription : undefined
+        }
         helperTone={hasInvalidSleepDate ? 'error' : 'default'}
       />
     </Card>

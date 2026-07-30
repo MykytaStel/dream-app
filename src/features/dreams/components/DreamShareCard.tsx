@@ -32,9 +32,15 @@ export function DreamShareCard({ card, watermark }: Props) {
     <View style={styles.card}>
       {/* Gradient header strip */}
       <View style={styles.gradientStrip}>
-        <View style={[styles.gradientSegment, { backgroundColor: gradientStart }]} />
-        <View style={[styles.gradientSegment, { backgroundColor: gradientMid }]} />
-        <View style={[styles.gradientSegment, { backgroundColor: gradientEnd }]} />
+        <View
+          style={[styles.gradientSegment, { backgroundColor: gradientStart }]}
+        />
+        <View
+          style={[styles.gradientSegment, { backgroundColor: gradientMid }]}
+        />
+        <View
+          style={[styles.gradientSegment, { backgroundColor: gradientEnd }]}
+        />
       </View>
 
       <View style={styles.body}>
@@ -50,8 +56,12 @@ export function DreamShareCard({ card, watermark }: Props) {
         <View style={styles.metaRow}>
           <Text style={styles.date}>{card.dateLabel}</Text>
           {card.moodLabel ? (
-            <View style={[styles.moodPill, { borderColor: gradientStart + '80' }]}>
-              <View style={[styles.moodDot, { backgroundColor: gradientStart }]} />
+            <View
+              style={[styles.moodPill, { borderColor: gradientStart + '80' }]}
+            >
+              <View
+                style={[styles.moodDot, { backgroundColor: gradientStart }]}
+              />
               <Text style={styles.moodText}>{card.moodLabel}</Text>
             </View>
           ) : null}
@@ -80,7 +90,9 @@ export function DreamShareCard({ card, watermark }: Props) {
 
         {/* Footer watermark */}
         <View style={styles.footer}>
-          <View style={[styles.footerAccent, { backgroundColor: gradientMid }]} />
+          <View
+            style={[styles.footerAccent, { backgroundColor: gradientMid }]}
+          />
           <Text style={styles.footerText}>{watermark}</Text>
         </View>
       </View>

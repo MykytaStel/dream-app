@@ -7,10 +7,5 @@ import { getTextStyles } from './Text.styles';
 export const Text = ({ style, ...p }: TextProps) => {
   const t = useTheme<Theme>();
   const styles = getTextStyles(t);
-  return (
-    <RNText
-      style={[styles.base, style]}
-      {...p}
-    />
-  );
+  return <RNText style={[styles.base, style]} {...p} />;
 };

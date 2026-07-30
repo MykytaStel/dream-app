@@ -77,7 +77,11 @@ export function DreamDetailOverview({
               onPress={onEditDream}
               accessibilityLabel={copy.detailEdit}
             >
-              <Ionicons name="create-outline" size={17} color={theme.colors.text} />
+              <Ionicons
+                name="create-outline"
+                size={17}
+                color={theme.colors.text}
+              />
             </Pressable>
             <Pressable
               style={({ pressed }) => [
@@ -86,9 +90,15 @@ export function DreamDetailOverview({
                 pressed ? styles.heroIconButtonPressed : null,
               ]}
               onPress={onToggleStarDream}
-              accessibilityLabel={viewModel.starred ? copy.detailUnstar : copy.detailStar}
+              accessibilityLabel={
+                viewModel.starred ? copy.detailUnstar : copy.detailStar
+              }
             >
-              <Ionicons name="star-outline" size={17} color={theme.colors.text} />
+              <Ionicons
+                name="star-outline"
+                size={17}
+                color={theme.colors.text}
+              />
             </Pressable>
             <Pressable
               style={({ pressed }) => [
@@ -97,9 +107,15 @@ export function DreamDetailOverview({
                 pressed ? styles.heroIconButtonPressed : null,
               ]}
               onPress={onToggleArchiveDream}
-              accessibilityLabel={viewModel.archived ? copy.detailUnarchive : copy.detailArchive}
+              accessibilityLabel={
+                viewModel.archived ? copy.detailUnarchive : copy.detailArchive
+              }
             >
-              <Ionicons name="archive-outline" size={17} color={theme.colors.text} />
+              <Ionicons
+                name="archive-outline"
+                size={17}
+                color={theme.colors.text}
+              />
             </Pressable>
             <Pressable
               style={({ pressed }) => [
@@ -109,7 +125,11 @@ export function DreamDetailOverview({
               onPress={onShareDream}
               accessibilityLabel={copy.dreamCardShareAction}
             >
-              <Ionicons name="share-outline" size={17} color={theme.colors.text} />
+              <Ionicons
+                name="share-outline"
+                size={17}
+                color={theme.colors.text}
+              />
             </Pressable>
             <Pressable
               style={({ pressed }) => [
@@ -120,7 +140,11 @@ export function DreamDetailOverview({
               onPress={onDeleteDream}
               accessibilityLabel={copy.detailDelete}
             >
-              <Ionicons name="trash-outline" size={17} color={theme.colors.danger} />
+              <Ionicons
+                name="trash-outline"
+                size={17}
+                color={theme.colors.danger}
+              />
             </Pressable>
           </View>
         </View>
@@ -144,7 +168,9 @@ export function DreamDetailOverview({
           ) : null}
           {viewModel.showLucidityHeroChip && viewModel.lucidityLabel ? (
             <View style={styles.heroMetaChip}>
-              <Text style={styles.heroMetaChipLabel}>{viewModel.lucidityLabel}</Text>
+              <Text style={styles.heroMetaChipLabel}>
+                {viewModel.lucidityLabel}
+              </Text>
             </View>
           ) : null}
           {viewModel.starred ? (
@@ -159,7 +185,6 @@ export function DreamDetailOverview({
             </View>
           ))}
         </View>
-
       </Animated.View>
 
       {showSavedHighlight ? (
@@ -168,11 +193,17 @@ export function DreamDetailOverview({
             <View style={styles.savedHeader}>
               <View style={styles.savedLead}>
                 <View style={styles.savedIconShell}>
-                  <Ionicons name="checkmark" size={14} color={theme.colors.accent} />
+                  <Ionicons
+                    name="checkmark"
+                    size={14}
+                    color={theme.colors.accent}
+                  />
                 </View>
                 <View style={styles.savedCopy}>
                   <Text style={styles.savedTitle}>{copy.detailSavedTitle}</Text>
-                  <Text style={styles.savedDescription}>{copy.detailSavedDescription}</Text>
+                  <Text style={styles.savedDescription}>
+                    {copy.detailSavedDescription}
+                  </Text>
                 </View>
               </View>
               <Pressable
@@ -187,7 +218,9 @@ export function DreamDetailOverview({
             <View style={styles.savedMetaRow}>
               {viewModel.strongestSignal ? (
                 <View style={styles.savedMetaPill}>
-                  <Text style={styles.savedMetaLabel}>{copy.detailSavedPatternLabel}</Text>
+                  <Text style={styles.savedMetaLabel}>
+                    {copy.detailSavedPatternLabel}
+                  </Text>
                   <Text numberOfLines={1} style={styles.savedMetaValue}>
                     {viewModel.strongestSignal}
                   </Text>

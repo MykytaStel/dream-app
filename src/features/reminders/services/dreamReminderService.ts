@@ -36,7 +36,11 @@ export type DreamReminderSettings = {
   style: DreamReminderStyle;
 };
 
-export const REMINDER_TIME_OPTIONS: Array<{ label: string; hour: number; minute: number }> = [
+export const REMINDER_TIME_OPTIONS: Array<{
+  label: string;
+  hour: number;
+  minute: number;
+}> = [
   { label: '06:30', hour: 6, minute: 30 },
   { label: '07:00', hour: 7, minute: 0 },
   { label: '07:30', hour: 7, minute: 30 },
@@ -61,7 +65,9 @@ function normalizeReminderSettings(
   settings: Partial<DreamReminderSettings> | DreamReminderSettings,
 ): DreamReminderSettings {
   const rawHour =
-    typeof settings.hour === 'number' ? Math.trunc(settings.hour) : DEFAULT_REMINDER_SETTINGS.hour;
+    typeof settings.hour === 'number'
+      ? Math.trunc(settings.hour)
+      : DEFAULT_REMINDER_SETTINGS.hour;
   const rawMinute =
     typeof settings.minute === 'number'
       ? Math.trunc(settings.minute)
@@ -81,7 +87,9 @@ function parseSettings(raw?: string): DreamReminderSettings {
   }
 
   try {
-    return normalizeReminderSettings(JSON.parse(raw) as Partial<DreamReminderSettings>);
+    return normalizeReminderSettings(
+      JSON.parse(raw) as Partial<DreamReminderSettings>,
+    );
   } catch {
     return DEFAULT_REMINDER_SETTINGS;
   }
@@ -122,7 +130,10 @@ export function getDreamReminderSettings() {
 }
 
 export function saveDreamReminderSettings(settings: DreamReminderSettings) {
-  kv.set(REMINDER_SETTINGS_KEY, JSON.stringify(normalizeReminderSettings(settings)));
+  kv.set(
+    REMINDER_SETTINGS_KEY,
+    JSON.stringify(normalizeReminderSettings(settings)),
+  );
 }
 
 export async function requestReminderPermission() {
@@ -163,7 +174,9 @@ async function cancelDreamReminder() {
   await notifee.cancelNotification(REMINDER_NOTIFICATION_ID);
 }
 
-async function scheduleAuthorizedDreamReminder(settings: DreamReminderSettings) {
+async function scheduleAuthorizedDreamReminder(
+  settings: DreamReminderSettings,
+) {
   await ensureReminderChannel();
   const copy = getSettingsCopy(getStoredLocale());
   const notificationContent = getDreamReminderNotificationContent(
@@ -222,7 +235,9 @@ export async function scheduleDreamReminder(settings: DreamReminderSettings) {
   await scheduleAuthorizedDreamReminder(normalized);
 }
 
-export async function applyDreamReminderSettings(settings: DreamReminderSettings) {
+export async function applyDreamReminderSettings(
+  settings: DreamReminderSettings,
+) {
   const normalized = normalizeReminderSettings(settings);
 
   if (!normalized.enabled) {
@@ -251,7 +266,10 @@ export async function syncDreamReminderState() {
   return applyDreamReminderSettings(getDreamReminderSettings());
 }
 
-export function isReminderNotificationPress(eventType: EventType, detail?: EventDetail) {
+export function isReminderNotificationPress(
+  eventType: EventType,
+  detail?: EventDetail,
+) {
   if (eventType !== EventType.PRESS && eventType !== EventType.ACTION_PRESS) {
     return false;
   }
@@ -259,9 +277,11 @@ export function isReminderNotificationPress(eventType: EventType, detail?: Event
   return detail?.notification?.data?.target === REMINDER_TARGET_RECORD;
 }
 
-export function isReminderInitialNotificationTarget(initial: {
-  notification?: { data?: { [key: string]: string | object | number } };
-} | null) {
+export function isReminderInitialNotificationTarget(
+  initial: {
+    notification?: { data?: { [key: string]: string | object | number } };
+  } | null,
+) {
   return initial?.notification?.data?.target === REMINDER_TARGET_RECORD;
 }
 
@@ -296,7 +316,9 @@ export function getOptimalReminderTime(
 
   const modeMinutes = modeHour * 60;
   let bestPreset = REMINDER_TIME_OPTIONS[0];
-  let bestDistance = Math.abs(modeMinutes - (bestPreset.hour * 60 + bestPreset.minute));
+  let bestDistance = Math.abs(
+    modeMinutes - (bestPreset.hour * 60 + bestPreset.minute),
+  );
 
   for (const preset of REMINDER_TIME_OPTIONS) {
     const distance = Math.abs(modeMinutes - (preset.hour * 60 + preset.minute));

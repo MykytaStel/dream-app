@@ -52,12 +52,10 @@ type UseCloudBackupControllerArgs = {
   mode?: 'summary' | 'full';
 };
 
-type CloudActionFeedback =
-  | null
-  | {
-      title: string;
-      description: string;
-    };
+type CloudActionFeedback = null | {
+  title: string;
+  description: string;
+};
 
 export function useCloudBackupController({
   locale,
@@ -72,16 +70,15 @@ export function useCloudBackupController({
     getCloudSession(),
   );
   const [cloudIdentityEmail, setCloudIdentityEmail] = React.useState('');
-  const [cloudIdentityPassword, setCloudIdentityPassword] =
-    React.useState('');
+  const [cloudIdentityPassword, setCloudIdentityPassword] = React.useState('');
   const [cloudSyncEnabled, setCloudSyncEnabledState] = React.useState(() =>
     getCloudSyncEnabled(),
   );
   const [cloudDreams, setCloudDreams] = React.useState(() =>
     isFullMode ? listDreams() : [],
   );
-  const [reviewState, setReviewState] = React.useState<SavedReviewStateSnapshot>(
-    () =>
+  const [reviewState, setReviewState] =
+    React.useState<SavedReviewStateSnapshot>(() =>
       isFullMode
         ? getDerivedReviewStateSnapshot()
         : {
@@ -90,7 +87,7 @@ export function useCloudBackupController({
             savedThreads: [],
             syncStatus: 'synced',
           },
-  );
+    );
   const [cloudSyncSnapshot, setCloudSyncSnapshot] = React.useState(() =>
     getCloudSyncSnapshot(),
   );
@@ -100,8 +97,10 @@ export function useCloudBackupController({
     React.useState<DreamImportPreview | null>(null);
   const [latestLocalBackupPreviewError, setLatestLocalBackupPreviewError] =
     React.useState<string | null>(null);
-  const [isLoadingLatestLocalBackupPreview, setIsLoadingLatestLocalBackupPreview] =
-    React.useState(isFullMode);
+  const [
+    isLoadingLatestLocalBackupPreview,
+    setIsLoadingLatestLocalBackupPreview,
+  ] = React.useState(isFullMode);
   const [isConnectingCloud, setIsConnectingCloud] = React.useState(false);
   const [isSigningInCloudAccount, setIsSigningInCloudAccount] =
     React.useState(false);
@@ -255,7 +254,10 @@ export function useCloudBackupController({
       setLatestLocalBackupFile(latestFile);
       setLatestLocalBackupPreviewError(null);
 
-      const preview = await loadDreamImportPreview(latestFile.filePath, 'replace');
+      const preview = await loadDreamImportPreview(
+        latestFile.filePath,
+        'replace',
+      );
       setLatestLocalBackupPreview(preview);
     } catch (error) {
       setLatestLocalBackupPreview(null);
@@ -305,7 +307,10 @@ export function useCloudBackupController({
     const email = cloudIdentityEmail.trim();
 
     if (!email) {
-      Alert.alert(copy.cloudEmailMissingTitle, copy.cloudEmailMissingDescription);
+      Alert.alert(
+        copy.cloudEmailMissingTitle,
+        copy.cloudEmailMissingDescription,
+      );
       return null;
     }
 

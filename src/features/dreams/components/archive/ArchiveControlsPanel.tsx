@@ -2,7 +2,10 @@ import React from 'react';
 import { Pressable, ScrollView, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+} from 'react-native-reanimated';
 import { Card } from '../../../../components/ui/Card';
 import { FormField } from '../../../../components/ui/FormField';
 import { Text } from '../../../../components/ui/Text';
@@ -76,11 +79,18 @@ export function ArchiveControlsPanel({
 
   return (
     <>
-      <Animated.View entering={FadeInDown.delay(60).duration(220)} layout={archiveControlsLayoutTransition}>
+      <Animated.View
+        entering={FadeInDown.delay(60).duration(220)}
+        layout={archiveControlsLayoutTransition}
+      >
         <Card style={styles.controlsCard}>
           <View style={styles.searchRow}>
             <View style={styles.searchIconWrap}>
-              <Ionicons name="search-outline" size={16} color={theme.colors.textDim} />
+              <Ionicons
+                name="search-outline"
+                size={16}
+                color={theme.colors.textDim}
+              />
             </View>
             <FormField
               placeholder={copy.archiveSearchPlaceholder}
@@ -104,7 +114,10 @@ export function ArchiveControlsPanel({
                 <Pressable
                   key={option.key}
                   onPress={() => onSelectFilter(option.key)}
-                  style={[styles.filterChip, active ? styles.filterChipActive : null]}
+                  style={[
+                    styles.filterChip,
+                    active ? styles.filterChipActive : null,
+                  ]}
                 >
                   <Text
                     style={[
@@ -132,9 +145,17 @@ export function ArchiveControlsPanel({
                   <Pressable
                     key={option.key}
                     onPress={() => onSelectSpecialFilter(option.key)}
-                    style={[styles.tagChip, active ? styles.tagChipActive : null]}
+                    style={[
+                      styles.tagChip,
+                      active ? styles.tagChipActive : null,
+                    ]}
                   >
-                    <Text style={[styles.tagChipText, active ? styles.tagChipTextActive : null]}>
+                    <Text
+                      style={[
+                        styles.tagChipText,
+                        active ? styles.tagChipTextActive : null,
+                      ]}
+                    >
                       {option.label}
                     </Text>
                   </Pressable>
@@ -156,13 +177,26 @@ export function ArchiveControlsPanel({
                   return (
                     <Pressable
                       key={signal.tag}
-                      style={[styles.tagChip, active ? styles.tagChipActive : null]}
+                      style={[
+                        styles.tagChip,
+                        active ? styles.tagChipActive : null,
+                      ]}
                       onPress={() => onSelectTagFilter(signal.tag)}
                     >
-                      <Text style={[styles.tagChipText, active ? styles.tagChipTextActive : null]}>
+                      <Text
+                        style={[
+                          styles.tagChipText,
+                          active ? styles.tagChipTextActive : null,
+                        ]}
+                      >
                         {signal.tag}
                       </Text>
-                      <Text style={[styles.tagChipCount, active ? styles.tagChipCountActive : null]}>
+                      <Text
+                        style={[
+                          styles.tagChipCount,
+                          active ? styles.tagChipCountActive : null,
+                        ]}
+                      >
                         {signal.count}
                       </Text>
                     </Pressable>
@@ -176,13 +210,17 @@ export function ArchiveControlsPanel({
             <View style={styles.controlsFooterRow}>
               {hasHardReset ? (
                 <Pressable style={styles.controlsActionChip} onPress={onReset}>
-                  <Text style={styles.controlsActionChipText}>{copy.archiveResetView}</Text>
+                  <Text style={styles.controlsActionChipText}>
+                    {copy.archiveResetView}
+                  </Text>
                 </Pressable>
               ) : null}
 
               {isSearchPending ? (
                 <View style={styles.controlsMetaChip}>
-                  <Text style={styles.controlsMetaChipText}>{copy.timelineLoadingTitle}</Text>
+                  <Text style={styles.controlsMetaChipText}>
+                    {copy.timelineLoadingTitle}
+                  </Text>
                 </View>
               ) : null}
             </View>
@@ -235,7 +273,9 @@ export function ArchiveControlsPanel({
             onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
           >
             <View style={styles.revisitInlineMain}>
-              <Text style={styles.revisitInlineLabel}>{copy.archiveRevisitLabel}</Text>
+              <Text style={styles.revisitInlineLabel}>
+                {copy.archiveRevisitLabel}
+              </Text>
               <Text style={styles.revisitInlineTitle} numberOfLines={1}>
                 {revisitCue.title}
               </Text>
@@ -248,7 +288,9 @@ export function ArchiveControlsPanel({
                   size={12}
                   color={theme.colors.accent}
                 />
-                <Text style={styles.revisitBadgeText}>{revisitCue.contextLabel}</Text>
+                <Text style={styles.revisitBadgeText}>
+                  {revisitCue.contextLabel}
+                </Text>
               </View>
               <Ionicons
                 name="chevron-forward"

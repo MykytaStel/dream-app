@@ -81,10 +81,13 @@ function formatNightmareLatestValue(
     return copy.nightmareFrequencyLatestEmptyValue;
   }
 
-  return new Date(timestamp).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
+  return new Date(timestamp).toLocaleDateString(
+    locale === 'uk' ? 'uk-UA' : 'en-US',
+    {
+      month: 'short',
+      day: 'numeric',
+    },
+  );
 }
 
 function formatLucidCadence(
@@ -111,10 +114,13 @@ function formatInsightLatestValue(
     return emptyValue;
   }
 
-  return new Date(timestamp).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
+  return new Date(timestamp).toLocaleDateString(
+    locale === 'uk' ? 'uk-UA' : 'en-US',
+    {
+      month: 'short',
+      day: 'numeric',
+    },
+  );
 }
 
 export function useStatsOverviewContent(args: {
@@ -409,7 +415,10 @@ export function useStatsOverviewContent(args: {
     () => [
       {
         label: copy.lucidFrequencyCountLabel,
-        value: formatCoverageValue(scopedLucidStats.lucidCount, scopedLucidStats.totalDreams),
+        value: formatCoverageValue(
+          scopedLucidStats.lucidCount,
+          scopedLucidStats.totalDreams,
+        ),
         hint:
           scopedLucidStats.lucidCount > 0
             ? copy.lucidFrequencyCountHint
@@ -452,26 +461,24 @@ export function useStatsOverviewContent(args: {
         value:
           scopedLucidPracticeStats.byTechnique[0]?.technique ??
           copy.lucidTechniqueEmptyValue,
-        hint:
-          scopedLucidPracticeStats.byTechnique[0]?.count
-            ? formatDreamCountLabel(
-                scopedLucidPracticeStats.byTechnique[0].count,
-                locale,
-              )
-            : copy.lucidFrequencyCountEmptyHint,
+        hint: scopedLucidPracticeStats.byTechnique[0]?.count
+          ? formatDreamCountLabel(
+              scopedLucidPracticeStats.byTechnique[0].count,
+              locale,
+            )
+          : copy.lucidFrequencyCountEmptyHint,
       },
       {
         label: copy.lucidDreamSignsLabel,
         value:
           scopedLucidPracticeStats.topDreamSigns[0]?.sign ??
           copy.lucidDreamSignsEmptyValue,
-        hint:
-          scopedLucidPracticeStats.topDreamSigns[0]?.count
-            ? formatEntryCountLabel(
-                scopedLucidPracticeStats.topDreamSigns[0].count,
-                locale,
-              )
-            : copy.lucidFrequencyCountEmptyHint,
+        hint: scopedLucidPracticeStats.topDreamSigns[0]?.count
+          ? formatEntryCountLabel(
+              scopedLucidPracticeStats.topDreamSigns[0].count,
+              locale,
+            )
+          : copy.lucidFrequencyCountEmptyHint,
       },
     ],
     [copy, locale, scopedLucidPracticeStats, scopedLucidStats],
@@ -542,7 +549,8 @@ export function useStatsOverviewContent(args: {
             .filter(isLucidDream)
             .slice()
             .sort((left, right) => {
-              const byDate = getDreamDate(right).getTime() - getDreamDate(left).getTime();
+              const byDate =
+                getDreamDate(right).getTime() - getDreamDate(left).getTime();
               if (byDate !== 0) {
                 return byDate;
               }
@@ -555,7 +563,8 @@ export function useStatsOverviewContent(args: {
 
               return {
                 dreamId: dream.id,
-                title: dream.title?.trim() || copy.reviewWorkspaceDreamFallbackTitle,
+                title:
+                  dream.title?.trim() || copy.reviewWorkspaceDreamFallbackTitle,
                 meta: getDreamDate(dream).toLocaleDateString(
                   locale === 'uk' ? 'uk-UA' : 'en-US',
                   {
@@ -567,7 +576,13 @@ export function useStatsOverviewContent(args: {
                 levelLabel: lucidityLabels[level],
               };
             }),
-    [copy.reviewWorkspaceDreamFallbackTitle, isOverviewMode, locale, lucidityLabels, scopedDreams],
+    [
+      copy.reviewWorkspaceDreamFallbackTitle,
+      isOverviewMode,
+      locale,
+      lucidityLabels,
+      scopedDreams,
+    ],
   );
   const coverageGap =
     [
@@ -869,7 +884,7 @@ export function useStatsOverviewContent(args: {
   const milestoneSummaryHint =
     achievementSummary.unlockedCount === achievementSummary.totalCount
       ? copy.milestonesCompleteTitle
-      : highlightedAchievementTitle ?? copy.milestoneInProgress;
+      : (highlightedAchievementTitle ?? copy.milestoneInProgress);
 
   return {
     achievementSummary,

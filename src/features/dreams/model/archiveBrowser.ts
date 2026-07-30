@@ -39,9 +39,12 @@ export type ArchiveCalendarCell = {
 };
 
 // Aurora-derived mood dot colors — static, safe for off-screen rendering
-export const CALENDAR_MOOD_DOT_COLOR: Record<'positive' | 'neutral' | 'negative', string> = {
+export const CALENDAR_MOOD_DOT_COLOR: Record<
+  'positive' | 'neutral' | 'negative',
+  string
+> = {
   positive: '#63D9FF', // auroraStart — cyan
-  neutral: '#8D7CFF',  // auroraMid — purple
+  neutral: '#8D7CFF', // auroraMid — purple
   negative: '#C57EFF', // auroraEnd — magenta
 };
 
@@ -106,7 +109,9 @@ export function formatSelectedDate(dateKey: string, locale: string) {
 }
 
 export function getAvailableMonthKeys(dreams: Dream[]) {
-  return Array.from(new Set(dreams.map(getMonthKey))).sort((a, b) => b.localeCompare(a));
+  return Array.from(new Set(dreams.map(getMonthKey))).sort((a, b) =>
+    b.localeCompare(a),
+  );
 }
 
 export function getDistinctDayCount(dreams: Dream[]) {
@@ -227,7 +232,8 @@ export function formatArchivePreview(dream: Dream, copy: DreamCopy) {
       dream.transcriptSource === 'edited'
         ? `${copy.editedTranscriptPreviewPrefix}: `
         : `${copy.transcriptPreviewPrefix}: `;
-    const visible = transcript.length > 88 ? `${transcript.slice(0, 85)}...` : transcript;
+    const visible =
+      transcript.length > 88 ? `${transcript.slice(0, 85)}...` : transcript;
     return `${prefix}${visible}`;
   }
 
@@ -344,7 +350,10 @@ export function getQuickJumpMonthKeys(
 
   const windowSize = Math.min(size, monthKeys.length);
   const maxStart = Math.max(0, monthKeys.length - windowSize);
-  const start = Math.min(maxStart, Math.max(0, selectedIndex - Math.floor(windowSize / 2)));
+  const start = Math.min(
+    maxStart,
+    Math.max(0, selectedIndex - Math.floor(windowSize / 2)),
+  );
 
   return monthKeys.slice(start, start + windowSize);
 }
@@ -389,7 +398,9 @@ export function getArchiveRevisitCue(
       const hasTranscript = Boolean(dream.transcript?.trim());
       const isArchived = isDreamArchived(dream);
       const hasSignal = Boolean(
-        dream.tags.length || dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length,
+        dream.tags.length ||
+        dream.wakeEmotions?.length ||
+        dream.sleepContext?.preSleepEmotions?.length,
       );
       const score =
         (isImportant ? 40 : 0) +
@@ -482,7 +493,10 @@ function formatTagLabel(tag: string) {
   return tag.replace(/-/g, ' ');
 }
 
-export function getTopArchiveTags(dreams: Dream[], limit = 8): ArchiveTagSignal[] {
+export function getTopArchiveTags(
+  dreams: Dream[],
+  limit = 8,
+): ArchiveTagSignal[] {
   const counts = new Map<string, number>();
 
   dreams.forEach(dream => {
@@ -518,10 +532,7 @@ export function applyArchiveStatusFilter(
   }
 }
 
-export function searchArchiveMonthDreams(
-  dreams: Dream[],
-  query: string,
-) {
+export function searchArchiveMonthDreams(dreams: Dream[], query: string) {
   const normalizedQuery = query.trim().toLowerCase();
   const sortedDreams = sortDreamsForTimeline(dreams, 'newest');
 

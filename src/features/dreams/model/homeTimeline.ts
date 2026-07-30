@@ -11,10 +11,7 @@ import { resolveDreamSleepDate } from './dreamRules';
 export type HomeArchiveFilter = 'all' | 'active' | 'archived';
 export type HomeEntryTypeFilter = 'all' | 'text' | 'audio' | 'mixed';
 export type HomeTranscriptFilter =
-  | 'all'
-  | 'with-transcript'
-  | 'audio-only'
-  | 'edited-transcript';
+  'all' | 'with-transcript' | 'audio-only' | 'edited-transcript';
 export type HomeSortOrder = 'newest' | 'oldest';
 export type HomeDateRangeFilter = 'all' | '7d' | '30d' | '90d';
 export type HomeSpecialFilter =
@@ -24,7 +21,8 @@ export type HomeSpecialFilter =
   | 'recurring-nightmare'
   | 'control'
   | 'high-distress';
-export type DreamSearchMatchReason = 'title' | 'notes' | 'transcript' | 'tag' | 'context';
+export type DreamSearchMatchReason =
+  'title' | 'notes' | 'transcript' | 'tag' | 'context';
 
 export type HomeTimelineFilters = {
   archive: HomeArchiveFilter;
@@ -61,7 +59,9 @@ export function normalizeHomeTimelineFilters(
 
   return {
     archive:
-      filters.archive === 'active' || filters.archive === 'archived' ? filters.archive : 'active',
+      filters.archive === 'active' || filters.archive === 'archived'
+        ? filters.archive
+        : 'active',
     starredOnly: Boolean(filters.starredOnly),
     searchQuery: filters.searchQuery?.trim() ?? '',
     mood:
@@ -101,7 +101,10 @@ export function normalizeHomeTimelineFilters(
   };
 }
 
-export function matchesDreamSpecialFilter(dream: Dream, filter: HomeSpecialFilter) {
+export function matchesDreamSpecialFilter(
+  dream: Dream,
+  filter: HomeSpecialFilter,
+) {
   switch (filter) {
     case 'lucid':
       return isLucidDream(dream);
@@ -133,8 +136,7 @@ function getDateRangeCutoff(range: HomeDateRangeFilter, now: Date) {
     return null;
   }
 
-  const daysBack =
-    range === '7d' ? 6 : range === '30d' ? 29 : 89;
+  const daysBack = range === '7d' ? 6 : range === '30d' ? 29 : 89;
   const cutoff = new Date(now);
   cutoff.setHours(0, 0, 0, 0);
   cutoff.setDate(cutoff.getDate() - daysBack);
@@ -183,7 +185,8 @@ export function getDreamSearchMatchReasons(
   }
 
   const reasons: DreamSearchMatchReason[] = [];
-  const hasMatch = (value?: string) => value?.toLowerCase().includes(normalizedQuery);
+  const hasMatch = (value?: string) =>
+    value?.toLowerCase().includes(normalizedQuery);
 
   if (hasMatch(dream.title)) {
     reasons.push('title');
@@ -318,7 +321,10 @@ export function getDreamSearchScore(dream: Dream, query: string) {
   );
 }
 
-export function matchesDreamTranscriptFilter(dream: Dream, filter: HomeTranscriptFilter) {
+export function matchesDreamTranscriptFilter(
+  dream: Dream,
+  filter: HomeTranscriptFilter,
+) {
   const hasAudio = Boolean(dream.audioUri?.trim());
   const hasTranscript = Boolean(dream.transcript?.trim());
   const hasText = Boolean(dream.text?.trim());
@@ -339,9 +345,10 @@ export function matchesDreamTranscriptFilter(dream: Dream, filter: HomeTranscrip
 }
 
 function compareDreamsNewestFirst(a: Dream, b: Dream) {
-  const dateCompare = resolveDreamSleepDate(b.sleepDate, b.createdAt).localeCompare(
-    resolveDreamSleepDate(a.sleepDate, a.createdAt),
-  );
+  const dateCompare = resolveDreamSleepDate(
+    b.sleepDate,
+    b.createdAt,
+  ).localeCompare(resolveDreamSleepDate(a.sleepDate, a.createdAt));
   if (dateCompare !== 0) {
     return dateCompare;
   }
@@ -353,7 +360,10 @@ function compareDreamsNewestFirst(a: Dream, b: Dream) {
   return b.id.localeCompare(a.id);
 }
 
-export function sortDreamsForTimeline(dreams: Dream[], sortOrder: HomeSortOrder) {
+export function sortDreamsForTimeline(
+  dreams: Dream[],
+  sortOrder: HomeSortOrder,
+) {
   const newestFirst = [...dreams].sort(compareDreamsNewestFirst);
   return sortOrder === 'oldest' ? newestFirst.reverse() : newestFirst;
 }
@@ -387,7 +397,10 @@ export function applyHomeTimelineFilters(
       return false;
     }
 
-    if (filters.tags.length > 0 && !filters.tags.every(tag => dream.tags.includes(tag))) {
+    if (
+      filters.tags.length > 0 &&
+      !filters.tags.every(tag => dream.tags.includes(tag))
+    ) {
       return false;
     }
 
@@ -395,7 +408,10 @@ export function applyHomeTimelineFilters(
       return false;
     }
 
-    if (filters.entryType !== 'all' && getDreamEntryType(dream) !== filters.entryType) {
+    if (
+      filters.entryType !== 'all' &&
+      getDreamEntryType(dream) !== filters.entryType
+    ) {
       return false;
     }
 
@@ -430,7 +446,9 @@ export function applyHomeTimelineFilters(
     scoreCache.set(dream.id, getDreamSearchScore(dream, normalizedQuery));
   }
 
-  return [...sorted].sort((a, b) => (scoreCache.get(b.id) ?? 0) - (scoreCache.get(a.id) ?? 0));
+  return [...sorted].sort(
+    (a, b) => (scoreCache.get(b.id) ?? 0) - (scoreCache.get(a.id) ?? 0),
+  );
 }
 
 export function hasActiveTimelineFilters(filters: HomeTimelineFilters) {
@@ -448,7 +466,6 @@ export function hasActiveTimelineFilters(filters: HomeTimelineFilters) {
 
 export function hasActiveTimelineRefinements(filters: HomeTimelineFilters) {
   return (
-    Boolean(filters.searchQuery.trim()) ||
-    hasActiveTimelineFilters(filters)
+    Boolean(filters.searchQuery.trim()) || hasActiveTimelineFilters(filters)
   );
 }

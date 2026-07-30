@@ -14,7 +14,10 @@ import type { Dream } from '../model/dream';
 import { DreamComposer } from '../components/DreamComposer';
 import { listDreamListItems } from '../repository/dreamsRepository';
 import { getCurrentStreak } from '../model/dreamAnalytics';
-import { getStreakMilestoneToast, type StreakMilestoneToast as StreakMilestoneToastData } from '../../stats/model/achievements';
+import {
+  getStreakMilestoneToast,
+  type StreakMilestoneToast as StreakMilestoneToastData,
+} from '../../stats/model/achievements';
 import {
   getLastStreakCelebrated,
   saveLastStreakCelebrated,
@@ -53,29 +56,41 @@ function getPostSaveFocusSection(dream: Dream): DreamDetailFocusSection {
 
 export default function NewDreamScreen() {
   const route = useRoute<RouteProp<TabParamList, typeof TAB_ROUTE_NAMES.New>>();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const { locale } = useI18n();
   const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const widgetCopy = React.useMemo(() => getWidgetCopy(locale), [locale]);
   const entryMode = route.params?.entryMode ?? 'default';
   const shouldAutoStartRecording =
-    route.params?.entryMode === 'voice' && route.params?.autoStartRecording === true;
+    route.params?.entryMode === 'voice' &&
+    route.params?.autoStartRecording === true;
   const composerKey = React.useMemo(
     () =>
       `${entryMode}:${route.params?.source ?? 'none'}:${route.params?.launchKey ?? 'initial'}:${
         shouldAutoStartRecording ? 'autostart' : 'manual'
       }`,
-    [entryMode, route.params?.launchKey, route.params?.source, shouldAutoStartRecording],
+    [
+      entryMode,
+      route.params?.launchKey,
+      route.params?.source,
+      shouldAutoStartRecording,
+    ],
   );
-  const [streakToast, setStreakToast] = React.useState<StreakMilestoneToastData | null>(null);
+  const [streakToast, setStreakToast] =
+    React.useState<StreakMilestoneToastData | null>(null);
   const [showWidgetPinToast, setShowWidgetPinToast] = React.useState(false);
   const [canPinNatively, setCanPinNatively] = React.useState(false);
   const [pendingSavedDream, setPendingSavedDream] = React.useState<{
     dreamId: string;
     focusSection: DreamDetailFocusSection;
   } | null>(null);
-  const [autoStartRecordingKey, setAutoStartRecordingKey] = React.useState<number | undefined>(
-    shouldAutoStartRecording ? route.params?.launchKey ?? Date.now() : undefined,
+  const [autoStartRecordingKey, setAutoStartRecordingKey] = React.useState<
+    number | undefined
+  >(
+    shouldAutoStartRecording
+      ? (route.params?.launchKey ?? Date.now())
+      : undefined,
   );
 
   React.useEffect(() => {
@@ -85,7 +100,9 @@ export default function NewDreamScreen() {
     }
 
     const nextKey = route.params?.launchKey ?? Date.now();
-    setAutoStartRecordingKey(current => (current === nextKey ? current : nextKey));
+    setAutoStartRecordingKey(current =>
+      current === nextKey ? current : nextKey,
+    );
   }, [route.params?.launchKey, shouldAutoStartRecording]);
   React.useEffect(() => {
     if (!pendingSavedDream || streakToast) {
@@ -152,7 +169,11 @@ export default function NewDreamScreen() {
             const allDreams = listDreamListItems();
             const streak = getCurrentStreak(allDreams);
             const lastCelebrated = getLastStreakCelebrated();
-            const toast = getStreakMilestoneToast(streak, lastCelebrated, statsCopy);
+            const toast = getStreakMilestoneToast(
+              streak,
+              lastCelebrated,
+              statsCopy,
+            );
             if (toast) {
               saveLastStreakCelebrated(streak);
               setStreakToast(toast);
@@ -193,7 +214,9 @@ export default function NewDreamScreen() {
               : widgetCopy.pinPromptSubtitleAndroid
           }
           actionLabel={
-            Platform.OS === 'ios' ? widgetCopy.pinPromptGotIt : widgetCopy.pinPromptAction
+            Platform.OS === 'ios'
+              ? widgetCopy.pinPromptGotIt
+              : widgetCopy.pinPromptAction
           }
           dismissLabel={widgetCopy.pinPromptDismiss}
           onAddWidget={handleWidgetPinAction}

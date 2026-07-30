@@ -1462,13 +1462,15 @@ const DREAM_PRE_SLEEP_EMOTION_LABELS_UK: typeof DREAM_PRE_SLEEP_EMOTION_LABELS_E
     DREAM_PRE_SLEEP_EMOTIONS_UK.map(option => [option.value, option.label]),
   ) as Record<PreSleepEmotion, string>;
 
-const DREAM_LUCIDITY_LABELS_EN: Record<0 | 1 | 2 | 3, string> = Object.fromEntries(
-  DREAM_LUCIDITY_LEVELS_EN.map(option => [option.value, option.label]),
-) as Record<0 | 1 | 2 | 3, string>;
+const DREAM_LUCIDITY_LABELS_EN: Record<0 | 1 | 2 | 3, string> =
+  Object.fromEntries(
+    DREAM_LUCIDITY_LEVELS_EN.map(option => [option.value, option.label]),
+  ) as Record<0 | 1 | 2 | 3, string>;
 
-const DREAM_LUCIDITY_LABELS_UK: typeof DREAM_LUCIDITY_LABELS_EN = Object.fromEntries(
-  DREAM_LUCIDITY_LEVELS_UK.map(option => [option.value, option.label]),
-) as Record<0 | 1 | 2 | 3, string>;
+const DREAM_LUCIDITY_LABELS_UK: typeof DREAM_LUCIDITY_LABELS_EN =
+  Object.fromEntries(
+    DREAM_LUCIDITY_LEVELS_UK.map(option => [option.value, option.label]),
+  ) as Record<0 | 1 | 2 | 3, string>;
 
 export type DreamCopy = typeof DREAM_COPY_EN;
 
@@ -1491,15 +1493,11 @@ export function getDreamIntensityLevels(locale: AppLocale) {
 }
 
 export function getDreamLucidityLevels(locale: AppLocale) {
-  return locale === 'uk'
-    ? DREAM_LUCIDITY_LEVELS_UK
-    : DREAM_LUCIDITY_LEVELS_EN;
+  return locale === 'uk' ? DREAM_LUCIDITY_LEVELS_UK : DREAM_LUCIDITY_LEVELS_EN;
 }
 
 export function getDreamLucidityLabels(locale: AppLocale) {
-  return locale === 'uk'
-    ? DREAM_LUCIDITY_LABELS_UK
-    : DREAM_LUCIDITY_LABELS_EN;
+  return locale === 'uk' ? DREAM_LUCIDITY_LABELS_UK : DREAM_LUCIDITY_LABELS_EN;
 }
 
 export function getDreamStressLevels(locale: AppLocale) {

@@ -30,4 +30,3 @@ export async function ensureRecordAudioPermission(): Promise<AudioPermissionStat
 
   return 'unavailable';
 }
-

@@ -33,7 +33,10 @@ export function DreamDetailSectionCard({
     <Card style={styles.card}>
       <Pressable
         onPress={collapsible ? onToggle : undefined}
-        style={({ pressed }) => [styles.header, pressed ? styles.headerPressed : null]}
+        style={({ pressed }) => [
+          styles.header,
+          pressed ? styles.headerPressed : null,
+        ]}
         accessibilityRole={collapsible ? 'button' : undefined}
         accessibilityState={collapsible ? { expanded } : undefined}
       >
@@ -55,10 +58,7 @@ export function DreamDetailSectionCard({
       </Pressable>
 
       {expanded || !collapsible ? (
-        <Animated.View
-          layout={sectionLayoutTransition}
-          style={styles.content}
-        >
+        <Animated.View layout={sectionLayoutTransition} style={styles.content}>
           {children}
         </Animated.View>
       ) : null}

@@ -3,7 +3,10 @@ import { type AppLocale } from '../../../i18n/types';
 import { type getStatsCopy } from '../../../constants/copy/stats';
 import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type Dream } from '../../dreams/model/dream';
-import { getRecurringReflectionSignals, getRecurringWordSignals } from '../model/dreamReflection';
+import {
+  getRecurringReflectionSignals,
+  getRecurringWordSignals,
+} from '../model/dreamReflection';
 import {
   buildReflectionRecurringDashboardItems,
   buildSavedDreamThreadShelfItems,
@@ -38,7 +41,9 @@ export function useStatsThreadsContent(args: {
   const recurringThemes = React.useMemo(
     () =>
       isThreadsMode
-        ? getRecurringReflectionSignals(scopedDreams, { limit: RECURRING_GROUP_LIMIT })
+        ? getRecurringReflectionSignals(scopedDreams, {
+            limit: RECURRING_GROUP_LIMIT,
+          })
         : [],
     [isThreadsMode, scopedDreams],
   );
@@ -53,7 +58,10 @@ export function useStatsThreadsContent(args: {
     [isThreadsMode, scopedDreams],
   );
   const recurringWords = React.useMemo(
-    () => (isThreadsMode ? getRecurringWordSignals(scopedDreams, RECURRING_GROUP_LIMIT) : []),
+    () =>
+      isThreadsMode
+        ? getRecurringWordSignals(scopedDreams, RECURRING_GROUP_LIMIT)
+        : [],
     [isThreadsMode, scopedDreams],
   );
 

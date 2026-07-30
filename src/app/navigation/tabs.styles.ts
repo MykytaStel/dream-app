@@ -211,12 +211,13 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       justifyContent: 'flex-end',
     },
     quickAddBackdrop: {
-      ...StyleSheet.absoluteFillObject,
+      ...StyleSheet.absoluteFill,
       backgroundColor: 'rgba(6, 9, 16, 0.6)',
     },
     quickAddSheet: {
       marginHorizontal: TAB_BAR_SIDE_OFFSET,
-      marginBottom: TAB_BAR_BOTTOM_OFFSET + Math.max(bottomInset, theme.spacing.sm),
+      marginBottom:
+        TAB_BAR_BOTTOM_OFFSET + Math.max(bottomInset, theme.spacing.sm),
       paddingHorizontal: theme.spacing.lg,
       paddingTop: theme.spacing.md,
       paddingBottom: theme.spacing.lg,

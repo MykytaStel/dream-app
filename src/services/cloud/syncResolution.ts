@@ -83,9 +83,7 @@ type LocalUploadConflictDecision =
       conflict: boolean;
       winner?: 'local' | 'remote';
       syncedAt: number;
-      reason:
-        | 'mark-synced-equal-remote'
-        | 'mark-synced-equal-remote-delete';
+      reason: 'mark-synced-equal-remote' | 'mark-synced-equal-remote-delete';
     };
 
 export type ReviewStateConflictDecision =
@@ -143,15 +141,13 @@ function normalizeSavedMonths(
 function normalizeSavedThreads(
   savedThreads: SavedReviewStateSnapshot['savedThreads'],
 ) {
-  return savedThreads
-    .slice()
-    .sort((left, right) => {
-      const leftKey = `${left.kind}:${left.signal}`;
-      const rightKey = `${right.kind}:${right.signal}`;
-      return leftKey === rightKey
-        ? left.savedAt - right.savedAt
-        : leftKey.localeCompare(rightKey);
-    });
+  return savedThreads.slice().sort((left, right) => {
+    const leftKey = `${left.kind}:${left.signal}`;
+    const rightKey = `${right.kind}:${right.signal}`;
+    return leftKey === rightKey
+      ? left.savedAt - right.savedAt
+      : leftKey.localeCompare(rightKey);
+  });
 }
 
 function reviewStateContentEquals(
@@ -203,7 +199,7 @@ function hasPendingLocalDreamState(
 
   return Boolean(
     context.pendingDreamIds.has(dreamId) ||
-      (dream && dream.syncStatus !== 'synced'),
+    (dream && dream.syncStatus !== 'synced'),
   );
 }
 
@@ -218,7 +214,7 @@ function hasPendingLocalTombstoneState(
 
   return Boolean(
     context.pendingTombstoneIds.has(dreamId) ||
-      (tombstone && tombstone.syncStatus !== 'synced'),
+    (tombstone && tombstone.syncStatus !== 'synced'),
   );
 }
 
@@ -481,7 +477,8 @@ export function decideSavedReviewStateResolution(
   localSnapshot: SavedReviewStateSnapshot,
 ): ReviewStateConflictDecision {
   const localHasItems =
-    localSnapshot.savedMonths.length > 0 || localSnapshot.savedThreads.length > 0;
+    localSnapshot.savedMonths.length > 0 ||
+    localSnapshot.savedThreads.length > 0;
   const localPending = localSnapshot.syncStatus !== 'synced';
 
   if (!remoteRow) {
@@ -504,7 +501,8 @@ export function decideSavedReviewStateResolution(
     savedThreads: remoteRow.saved_threads ?? [],
   };
   const remoteHasItems =
-    remoteSnapshot.savedMonths.length > 0 || remoteSnapshot.savedThreads.length > 0;
+    remoteSnapshot.savedMonths.length > 0 ||
+    remoteSnapshot.savedThreads.length > 0;
   const sameContent = reviewStateContentEquals(localSnapshot, remoteSnapshot);
 
   if (!localHasItems && !localPending) {

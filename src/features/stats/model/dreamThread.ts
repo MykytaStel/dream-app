@@ -73,10 +73,7 @@ export type RecurringSignalDashboardItem = {
   latestSourceLabels: string[];
 };
 
-function formatPreview(
-  match: PatternDreamMatch,
-  dreamCopy: DreamCopy,
-) {
+function formatPreview(match: PatternDreamMatch, dreamCopy: DreamCopy) {
   const text = match.dream.text?.trim();
   if (text) {
     return text.length > 120 ? `${text.slice(0, 117)}...` : text;
@@ -88,7 +85,8 @@ function formatPreview(
       match.dream.transcriptSource === 'edited'
         ? `${dreamCopy.editedTranscriptPreviewPrefix}: `
         : `${dreamCopy.transcriptPreviewPrefix}: `;
-    const visible = transcript.length > 96 ? `${transcript.slice(0, 93)}...` : transcript;
+    const visible =
+      transcript.length > 96 ? `${transcript.slice(0, 93)}...` : transcript;
     return `${prefix}${visible}`;
   }
 
@@ -108,16 +106,16 @@ function formatDateLabel(value: number) {
 }
 
 function formatShortDateLabel(value: number, locale: AppLocale) {
-  return new Date(value).toLocaleDateString(locale === 'uk' ? 'uk-UA' : 'en-US', {
-    month: 'short',
-    day: 'numeric',
-  });
+  return new Date(value).toLocaleDateString(
+    locale === 'uk' ? 'uk-UA' : 'en-US',
+    {
+      month: 'short',
+      day: 'numeric',
+    },
+  );
 }
 
-function getPatternKindSubtitle(
-  kind: PatternMatchKind,
-  copy: StatsCopy,
-) {
+function getPatternKindSubtitle(kind: PatternMatchKind, copy: StatsCopy) {
   switch (kind) {
     case 'word':
       return copy.patternDetailWordDescription;
@@ -157,7 +155,12 @@ function getSourceLabel(source: PatternMatchSource, copy: StatsCopy) {
 
 function getReflectionSourceLabel(
   source: DreamReflectionSignal['source'],
-  copy: Pick<StatsCopy, 'reflectionSourceTag' | 'reflectionSourceTranscript' | 'reflectionSourceMixed'>,
+  copy: Pick<
+    StatsCopy,
+    | 'reflectionSourceTag'
+    | 'reflectionSourceTranscript'
+    | 'reflectionSourceMixed'
+  >,
 ) {
   switch (source) {
     case 'tag':
@@ -180,10 +183,7 @@ function formatRowMeta(
   return mood ? `${mood} · ${dateLabel}` : dateLabel;
 }
 
-function getDominantSourceLabel(
-  matches: PatternDreamMatch[],
-  copy: StatsCopy,
-) {
+function getDominantSourceLabel(matches: PatternDreamMatch[], copy: StatsCopy) {
   const counts = new Map<PatternMatchSource, number>();
 
   matches.forEach(match => {
@@ -203,14 +203,25 @@ function getDominantSourceLabel(
   return dominantSource ? getSourceLabel(dominantSource, copy) : copy.noData;
 }
 
-function getMatchesLabel(count: number, copy: Pick<StatsCopy, 'patternDetailMatchesSingle' | 'patternDetailMatchesPlural'>) {
+function getMatchesLabel(
+  count: number,
+  copy: Pick<
+    StatsCopy,
+    'patternDetailMatchesSingle' | 'patternDetailMatchesPlural'
+  >,
+) {
   return `${count} ${count === 1 ? copy.patternDetailMatchesSingle : copy.patternDetailMatchesPlural}`;
 }
 
 function formatMentionLabel(
   count: number,
   locale: AppLocale,
-  copy: Pick<StatsCopy, 'threadDetailMentionSingle' | 'threadDetailMentionPlural' | 'threadDetailMentionPluralUkFew'>,
+  copy: Pick<
+    StatsCopy,
+    | 'threadDetailMentionSingle'
+    | 'threadDetailMentionPlural'
+    | 'threadDetailMentionPluralUkFew'
+  >,
 ) {
   if (locale === 'uk') {
     const absolute = Math.abs(count);
@@ -240,11 +251,15 @@ function buildRecurringSignalDashboardItem(input: {
   kind: PatternDetailKind;
   rank: number;
   locale: AppLocale;
-  getMatches: (signalLabel: string, kind: PatternDetailKind) => PatternDreamMatch[];
+  getMatches: (
+    signalLabel: string,
+    kind: PatternDetailKind,
+  ) => PatternDreamMatch[];
   statsCopy: StatsCopy;
   dreamCopy: DreamCopy;
 }): RecurringSignalDashboardItem | null {
-  const { signal, kind, rank, locale, getMatches, statsCopy, dreamCopy } = input;
+  const { signal, kind, rank, locale, getMatches, statsCopy, dreamCopy } =
+    input;
   const matches = getMatches(signal.label, kind);
 
   if (!matches.length) {
@@ -278,11 +293,16 @@ function buildRecurringSignalDashboardItem(input: {
       ? formatMentionLabel(signal.hitCount, locale, statsCopy)
       : null,
     latestDreamId: latestMatch.dream.id,
-    latestDreamTitle: latestMatch.dream.title?.trim() || statsCopy.reviewWorkspaceDreamFallbackTitle,
+    latestDreamTitle:
+      latestMatch.dream.title?.trim() ||
+      statsCopy.reviewWorkspaceDreamFallbackTitle,
     latestDreamMeta:
-      latestMatch.dream.sleepDate ?? formatShortDateLabel(latestMatch.dream.createdAt, locale),
+      latestMatch.dream.sleepDate ??
+      formatShortDateLabel(latestMatch.dream.createdAt, locale),
     latestPreview: formatPreview(latestMatch, dreamCopy),
-    latestSourceLabels: latestMatch.sources.map(source => getSourceLabel(source, statsCopy)),
+    latestSourceLabels: latestMatch.sources.map(source =>
+      getSourceLabel(source, statsCopy),
+    ),
   };
 }
 
@@ -411,15 +431,17 @@ export function buildDreamThreadViewModel(input: {
       title: match.dream.title?.trim() || dreamCopy.untitled,
       meta: formatRowMeta(match, moodLabels),
       preview: formatPreview(match, dreamCopy),
-      sourceLabels: match.sources.map(source => getSourceLabel(source, statsCopy)),
+      sourceLabels: match.sources.map(source =>
+        getSourceLabel(source, statsCopy),
+      ),
       markerLabel:
         sortedMatches.length === 1
           ? statsCopy.threadDetailEntryOnly
           : index === 0
-          ? statsCopy.threadDetailEntryFirst
-          : index === sortedMatches.length - 1
-          ? statsCopy.threadDetailEntryLatest
-          : null,
+            ? statsCopy.threadDetailEntryFirst
+            : index === sortedMatches.length - 1
+              ? statsCopy.threadDetailEntryLatest
+              : null,
     })),
   };
 }

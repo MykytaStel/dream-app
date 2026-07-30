@@ -31,7 +31,9 @@ export function getLastViewedDream() {
   }
 
   try {
-    return normalizeLastViewedDream(JSON.parse(raw) as Partial<LastViewedDreamRecord>);
+    return normalizeLastViewedDream(
+      JSON.parse(raw) as Partial<LastViewedDreamRecord>,
+    );
   } catch {
     return null;
   }

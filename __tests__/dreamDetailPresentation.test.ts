@@ -1,7 +1,4 @@
-import {
-  getDreamCopy,
-  getDreamMoodLabels,
-} from '../src/constants/copy/dreams';
+import { getDreamCopy, getDreamMoodLabels } from '../src/constants/copy/dreams';
 import type { DreamAnalysisSettings } from '../src/features/analysis/model/dreamAnalysis';
 import type { Dream } from '../src/features/dreams/model/dream';
 import { getRelatedDreams } from '../src/features/dreams/model/relatedDreams';
@@ -66,8 +63,12 @@ describe('dreamDetailPresentation', () => {
       isTranscribingAudio: false,
     });
 
-    expect(viewModel.followUpPrompt?.title).toBe(copy.postSaveFollowUpTranscriptTitle);
-    expect(viewModel.followUpPrompt?.actionLabel).toBe(copy.detailTranscribeAudio);
+    expect(viewModel.followUpPrompt?.title).toBe(
+      copy.postSaveFollowUpTranscriptTitle,
+    );
+    expect(viewModel.followUpPrompt?.actionLabel).toBe(
+      copy.detailTranscribeAudio,
+    );
   });
 
   test('surfaces transcript cleanup as the next step when generated text was not edited yet', () => {
@@ -105,8 +106,7 @@ describe('dreamDetailPresentation', () => {
       createdAt: new Date('2026-02-09T08:00:00Z').getTime(),
       sleepDate: '2026-02-09',
       title: 'Airport gate',
-      text:
-        'Walking toward a gate that kept moving while the hall stayed empty, and every announcement felt delayed by a few seconds as if the whole airport was trying to hold me in one place. I remember the cold blue light, the silent floor buffer, the repeating boarding calls, the paper ticket in my hand, and a strong sense that I was already late for something important.',
+      text: 'Walking toward a gate that kept moving while the hall stayed empty, and every announcement felt delayed by a few seconds as if the whole airport was trying to hold me in one place. I remember the cold blue light, the silent floor buffer, the repeating boarding calls, the paper ticket in my hand, and a strong sense that I was already late for something important.',
       tags: [],
     };
 
@@ -127,7 +127,9 @@ describe('dreamDetailPresentation', () => {
         actionKind: 'edit',
       }),
     );
-    expect(viewModel.followUpPrompt?.body).toContain(copy.homeSpotlightRevisitTimeMonth);
+    expect(viewModel.followUpPrompt?.body).toContain(
+      copy.homeSpotlightRevisitTimeMonth,
+    );
   });
 
   test('surfaces a local-only audio sync hint when the voice note has not reached backup yet', () => {

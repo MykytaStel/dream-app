@@ -69,8 +69,12 @@ const MAX_CLOUD_SYNC_EVENTS = 12;
 export function getPendingReviewStateCount(
   snapshot = getStoredReviewStateSnapshot(),
 ) {
-  const hasItems = snapshot.savedMonths.length > 0 || snapshot.savedThreads.length > 0;
-  return snapshot.syncStatus !== 'synced' && (hasItems || snapshot.updatedAt > 0) ? 1 : 0;
+  const hasItems =
+    snapshot.savedMonths.length > 0 || snapshot.savedThreads.length > 0;
+  return snapshot.syncStatus !== 'synced' &&
+    (hasItems || snapshot.updatedAt > 0)
+    ? 1
+    : 0;
 }
 
 export function getLocalCloudSyncPendingCounts(args?: {
@@ -124,7 +128,9 @@ function normalizeCloudSyncEvent(
         ? value.id
         : `cloud-sync-${at}`,
     status:
-      value.status === 'syncing' || value.status === 'success' || value.status === 'error'
+      value.status === 'syncing' ||
+      value.status === 'success' ||
+      value.status === 'error'
         ? value.status
         : 'idle',
     reason:
@@ -134,8 +140,7 @@ function normalizeCloudSyncEvent(
     at,
     uploadedCount:
       typeof value.uploadedCount === 'number' ? value.uploadedCount : 0,
-    pulledCount:
-      typeof value.pulledCount === 'number' ? value.pulledCount : 0,
+    pulledCount: typeof value.pulledCount === 'number' ? value.pulledCount : 0,
     skippedCount:
       typeof value.skippedCount === 'number' ? value.skippedCount : 0,
     conflictsResolvedCount:
@@ -146,8 +151,7 @@ function normalizeCloudSyncEvent(
       typeof value.localWinsCount === 'number' ? value.localWinsCount : 0,
     remoteWinsCount:
       typeof value.remoteWinsCount === 'number' ? value.remoteWinsCount : 0,
-    failedCount:
-      typeof value.failedCount === 'number' ? value.failedCount : 0,
+    failedCount: typeof value.failedCount === 'number' ? value.failedCount : 0,
     pendingCount:
       typeof value.pendingCount === 'number' ? value.pendingCount : 0,
     pendingDreamCount:
@@ -267,9 +271,7 @@ export function getCloudSyncSnapshot(): CloudSyncSnapshot {
       localWinsCount:
         typeof parsed.localWinsCount === 'number' ? parsed.localWinsCount : 0,
       remoteWinsCount:
-        typeof parsed.remoteWinsCount === 'number'
-          ? parsed.remoteWinsCount
-          : 0,
+        typeof parsed.remoteWinsCount === 'number' ? parsed.remoteWinsCount : 0,
       failedCount:
         typeof parsed.failedCount === 'number' ? parsed.failedCount : 0,
       pendingCount:

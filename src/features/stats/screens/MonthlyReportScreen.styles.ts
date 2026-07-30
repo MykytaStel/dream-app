@@ -432,4 +432,6 @@ export function createMonthlyReportScreenStyles(theme: Theme) {
   });
 }
 
-export type MonthlyReportScreenStyles = ReturnType<typeof createMonthlyReportScreenStyles>;
+export type MonthlyReportScreenStyles = ReturnType<
+  typeof createMonthlyReportScreenStyles
+>;

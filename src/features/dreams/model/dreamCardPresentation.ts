@@ -15,18 +15,21 @@ export type DreamCardData = {
 };
 
 // Static palette — not theme-dynamic so capture works off-screen
-const GRADIENT_BY_VALENCE: Record<DreamCardValence, [string, string, string]> = {
-  positive: ['#63D9FF', '#8D7CFF', '#3D6B9F'],
-  neutral: ['#8D7CFF', '#C57EFF', '#2D1F5F'],
-  negative: ['#5F1F3D', '#C57EFF', '#8D7CFF'],
-};
+const GRADIENT_BY_VALENCE: Record<DreamCardValence, [string, string, string]> =
+  {
+    positive: ['#63D9FF', '#8D7CFF', '#3D6B9F'],
+    neutral: ['#8D7CFF', '#C57EFF', '#2D1F5F'],
+    negative: ['#5F1F3D', '#C57EFF', '#8D7CFF'],
+  };
 
 export function buildDreamCardData(
   dream: Dream,
   moodLabels: Record<string, string>,
   copy: { untitled: string },
 ): DreamCardData {
-  const valence: DreamCardValence = dream.mood ? getMoodValence(dream.mood) : 'neutral';
+  const valence: DreamCardValence = dream.mood
+    ? getMoodValence(dream.mood)
+    : 'neutral';
   const moodLabel = dream.mood ? (moodLabels[dream.mood] ?? null) : null;
 
   const date = getDreamDate(dream);
@@ -37,7 +40,8 @@ export function buildDreamCardData(
   });
 
   const rawText = dream.text ?? dream.transcript ?? '';
-  const excerpt = rawText.length > 120 ? rawText.slice(0, 117).trimEnd() + '…' : rawText;
+  const excerpt =
+    rawText.length > 120 ? rawText.slice(0, 117).trimEnd() + '…' : rawText;
 
   return {
     title: dream.title || copy.untitled,

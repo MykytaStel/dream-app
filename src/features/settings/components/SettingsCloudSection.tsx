@@ -26,7 +26,11 @@ function getCloudGuideSteps(
 ) {
   if (cloudSessionStatus === 'signed-out') {
     return backupEntryPath === 'first-device'
-      ? [copy.cloudGuideStepOne, copy.cloudGuideStepTwo, copy.cloudGuideStepThree]
+      ? [
+          copy.cloudGuideStepOne,
+          copy.cloudGuideStepTwo,
+          copy.cloudGuideStepThree,
+        ]
       : [
           copy.cloudGuideExistingStepOne,
           copy.cloudGuideExistingStepTwo,
@@ -40,7 +44,11 @@ function getCloudGuideSteps(
         copy.cloudGuideAnonymousStepTwo,
         copy.cloudGuideAnonymousStepThree,
       ]
-    : [copy.cloudGuideNamedStepOne, copy.cloudGuideNamedStepTwo, copy.cloudGuideNamedStepThree];
+    : [
+        copy.cloudGuideNamedStepOne,
+        copy.cloudGuideNamedStepTwo,
+        copy.cloudGuideNamedStepThree,
+      ];
 }
 
 function getCloudFootnote(
@@ -382,14 +390,19 @@ export function CloudSection({
   const showSaveBackupForm = cloudSessionIsAnonymous;
   const showNamedAccountActions =
     cloudSessionStatus === 'signed-in' && !cloudSessionIsAnonymous;
-  const showHighlights = cloudSessionStatus === 'signed-in' || showDeveloperCloudConfig;
+  const showHighlights =
+    cloudSessionStatus === 'signed-in' || showDeveloperCloudConfig;
   const backupGuideSteps = getCloudGuideSteps(
     copy,
     cloudSessionStatus,
     backupEntryPath,
     cloudSessionIsAnonymous,
   );
-  const cloudFootnote = getCloudFootnote(copy, showDeveloperCloudConfig, cloudConfigured);
+  const cloudFootnote = getCloudFootnote(
+    copy,
+    showDeveloperCloudConfig,
+    cloudConfigured,
+  );
 
   return (
     <Card style={styles.sectionCard}>
@@ -432,11 +445,16 @@ export function CloudSection({
       ) : null}
       <CloudGuideBlock copy={copy} styles={styles} steps={backupGuideSteps} />
       {cloudActionFeedback ? (
-        <Pressable style={styles.backupSuccessBlock} onPress={onDismissCloudActionFeedback}>
+        <Pressable
+          style={styles.backupSuccessBlock}
+          onPress={onDismissCloudActionFeedback}
+        >
           <Text style={styles.backupSuccessTitle}>
             {`${copy.cloudSuccessTitle}: ${cloudActionFeedback.title}`}
           </Text>
-          <Text style={styles.backupSuccessText}>{cloudActionFeedback.description}</Text>
+          <Text style={styles.backupSuccessText}>
+            {cloudActionFeedback.description}
+          </Text>
         </Pressable>
       ) : null}
       {showDeveloperCloudConfig ? (
@@ -461,7 +479,11 @@ export function CloudSection({
               description={copy.cloudFirstDeviceDescription}
             />
             <Button
-              title={isConnectingCloud ? copy.cloudConnectButtonBusy : copy.cloudConnectButton}
+              title={
+                isConnectingCloud
+                  ? copy.cloudConnectButtonBusy
+                  : copy.cloudConnectButton
+              }
               style={styles.buttonStackButton}
               disabled={!cloudConfigured || isBusy}
               onPress={onConnectCloud}
@@ -520,9 +542,15 @@ export function CloudSection({
           styles={styles}
           cloudConfigured={cloudConfigured}
           isBusy={isBusy}
-          syncActionTitle={isSyncingCloud ? copy.cloudSyncNowButtonBusy : copy.cloudSyncNowButton}
+          syncActionTitle={
+            isSyncingCloud
+              ? copy.cloudSyncNowButtonBusy
+              : copy.cloudSyncNowButton
+          }
           disconnectActionTitle={
-            isDisconnectingCloud ? copy.cloudDisconnectButtonBusy : copy.cloudDisconnectButton
+            isDisconnectingCloud
+              ? copy.cloudDisconnectButtonBusy
+              : copy.cloudDisconnectButton
           }
           onRunCloudSync={onRunCloudSync}
           onDisconnectCloud={onDisconnectCloud}

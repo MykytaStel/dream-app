@@ -1,12 +1,18 @@
 import React from 'react';
 import { Pressable, View } from 'react-native';
-import Animated, { FadeInDown, LinearTransition } from 'react-native-reanimated';
+import Animated, {
+  FadeInDown,
+  LinearTransition,
+} from 'react-native-reanimated';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import type { PatternDetailKind } from '../../../app/navigation/routes';
-import type { MonthlyReportCopyShape, MonthlyReportViewModel } from '../model/monthlyReportPresentation';
+import type {
+  MonthlyReportCopyShape,
+  MonthlyReportViewModel,
+} from '../model/monthlyReportPresentation';
 import type { MonthlyReportScreenStyles } from '../screens/MonthlyReportScreen.styles';
 
 const monthlyReportLayoutTransition = LinearTransition.springify()
@@ -39,16 +45,25 @@ export function MonthlyReportSections({
 
   return (
     <>
-      <Animated.View entering={FadeInDown.duration(220)} layout={monthlyReportLayoutTransition}>
+      <Animated.View
+        entering={FadeInDown.duration(220)}
+        layout={monthlyReportLayoutTransition}
+      >
         <Card style={styles.sectionCard}>
           <SectionHeader
             title={copy.monthlyReportHighlightsTitle}
             subtitle={copy.monthlyReportHighlightsDescription}
           />
           <View style={styles.metricLeadTile}>
-            <Text style={styles.metricLeadLabel}>{viewModel.leadMetric.label}</Text>
-            <Text style={styles.metricLeadValue}>{viewModel.leadMetric.value}</Text>
-            <Text style={styles.metricLeadHint}>{viewModel.leadMetric.hint}</Text>
+            <Text style={styles.metricLeadLabel}>
+              {viewModel.leadMetric.label}
+            </Text>
+            <Text style={styles.metricLeadValue}>
+              {viewModel.leadMetric.value}
+            </Text>
+            <Text style={styles.metricLeadHint}>
+              {viewModel.leadMetric.hint}
+            </Text>
           </View>
           <View style={styles.metricGrid}>
             {viewModel.secondaryMetrics.map(tile => (
@@ -63,7 +78,10 @@ export function MonthlyReportSections({
       </Animated.View>
 
       {revisitCue ? (
-        <Animated.View entering={FadeInDown.delay(20).duration(220)} layout={monthlyReportLayoutTransition}>
+        <Animated.View
+          entering={FadeInDown.delay(20).duration(220)}
+          layout={monthlyReportLayoutTransition}
+        >
           <Card style={styles.sectionCard}>
             <SectionHeader
               title={copy.monthlyReportRevisitTitle}
@@ -71,9 +89,13 @@ export function MonthlyReportSections({
             />
             <View style={styles.revisitCard}>
               <View style={styles.revisitBadge}>
-                <Text style={styles.revisitBadgeText}>{revisitCue.badgeLabel}</Text>
+                <Text style={styles.revisitBadgeText}>
+                  {revisitCue.badgeLabel}
+                </Text>
               </View>
-              <Text style={styles.revisitDreamTitle}>{revisitCue.dreamTitle}</Text>
+              <Text style={styles.revisitDreamTitle}>
+                {revisitCue.dreamTitle}
+              </Text>
               <Text style={styles.revisitReason}>{revisitCue.reason}</Text>
               <Button
                 title={revisitCue.actionLabel}
@@ -88,7 +110,10 @@ export function MonthlyReportSections({
       ) : null}
 
       {savedThreadItems.length ? (
-        <Animated.View entering={FadeInDown.delay(30).duration(220)} layout={monthlyReportLayoutTransition}>
+        <Animated.View
+          entering={FadeInDown.delay(30).duration(220)}
+          layout={monthlyReportLayoutTransition}
+        >
           <Card style={styles.sectionCard}>
             <SectionHeader
               title={copy.monthlyReportSavedThreadsTitle}
@@ -110,7 +135,9 @@ export function MonthlyReportSections({
                       {`${item.kindLabel} • ${item.matchesLabel}`}
                     </Text>
                   </View>
-                  <Text style={styles.signalAction}>{copy.monthlyReportOpenThreadAction}</Text>
+                  <Text style={styles.signalAction}>
+                    {copy.monthlyReportOpenThreadAction}
+                  </Text>
                 </Pressable>
               ))}
             </View>
@@ -118,7 +145,10 @@ export function MonthlyReportSections({
         </Animated.View>
       ) : null}
 
-      <Animated.View entering={FadeInDown.delay(40).duration(220)} layout={monthlyReportLayoutTransition}>
+      <Animated.View
+        entering={FadeInDown.delay(40).duration(220)}
+        layout={monthlyReportLayoutTransition}
+      >
         <Card style={styles.sectionCard}>
           <SectionHeader
             title={copy.monthlyReportSignalsTitle}
@@ -128,22 +158,33 @@ export function MonthlyReportSections({
             disabled={!viewModel.leadSignal.threadKind}
             style={({ pressed }) => [
               styles.signalLeadCard,
-              viewModel.leadSignal.threadKind ? styles.signalCardPressable : null,
-              pressed && viewModel.leadSignal.threadKind ? styles.signalCardPressed : null,
+              viewModel.leadSignal.threadKind
+                ? styles.signalCardPressable
+                : null,
+              pressed && viewModel.leadSignal.threadKind
+                ? styles.signalCardPressed
+                : null,
             ]}
             onPress={() => {
               if (!viewModel.leadSignal.threadKind) {
                 return;
               }
 
-              onOpenSignalThread(viewModel.leadSignal.value, viewModel.leadSignal.threadKind);
+              onOpenSignalThread(
+                viewModel.leadSignal.value,
+                viewModel.leadSignal.threadKind,
+              );
             }}
           >
             <Text style={styles.signalLabel}>{viewModel.leadSignal.label}</Text>
-            <Text style={styles.signalLeadValue}>{viewModel.leadSignal.value}</Text>
+            <Text style={styles.signalLeadValue}>
+              {viewModel.leadSignal.value}
+            </Text>
             <Text style={styles.signalMeta}>{viewModel.leadSignal.meta}</Text>
             {viewModel.leadSignal.threadKind ? (
-              <Text style={styles.signalAction}>{copy.monthlyReportOpenThreadAction}</Text>
+              <Text style={styles.signalAction}>
+                {copy.monthlyReportOpenThreadAction}
+              </Text>
             ) : null}
           </Pressable>
           <View style={styles.signalGrid}>
@@ -154,7 +195,9 @@ export function MonthlyReportSections({
                 style={({ pressed }) => [
                   styles.signalCard,
                   signal.threadKind ? styles.signalCardPressable : null,
-                  pressed && signal.threadKind ? styles.signalCardPressed : null,
+                  pressed && signal.threadKind
+                    ? styles.signalCardPressed
+                    : null,
                 ]}
                 onPress={() => {
                   if (!signal.threadKind) {
@@ -168,7 +211,9 @@ export function MonthlyReportSections({
                 <Text style={styles.signalValue}>{signal.value}</Text>
                 <Text style={styles.signalMeta}>{signal.meta}</Text>
                 {signal.threadKind ? (
-                  <Text style={styles.signalAction}>{copy.monthlyReportOpenThreadAction}</Text>
+                  <Text style={styles.signalAction}>
+                    {copy.monthlyReportOpenThreadAction}
+                  </Text>
                 ) : null}
               </Pressable>
             ))}
@@ -176,7 +221,10 @@ export function MonthlyReportSections({
         </Card>
       </Animated.View>
 
-      <Animated.View entering={FadeInDown.delay(70).duration(220)} layout={monthlyReportLayoutTransition}>
+      <Animated.View
+        entering={FadeInDown.delay(70).duration(220)}
+        layout={monthlyReportLayoutTransition}
+      >
         <Card style={styles.sectionCard}>
           <SectionHeader
             title={copy.monthlyReportGentleTitle}

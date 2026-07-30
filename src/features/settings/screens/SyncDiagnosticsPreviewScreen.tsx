@@ -5,7 +5,10 @@ import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { Text } from '../../../components/ui/Text';
-import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
@@ -23,7 +26,10 @@ import { createSettingsScreenStyles } from './SettingsScreen.styles';
 
 export default function SyncDiagnosticsPreviewScreen() {
   const theme = useTheme<Theme>();
-  const styles = React.useMemo(() => createSettingsScreenStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () => createSettingsScreenStyles(theme),
+    [theme],
+  );
   const { locale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
   const navigation =
@@ -60,7 +66,10 @@ export default function SyncDiagnosticsPreviewScreen() {
 
   const latestAttemptLabel =
     typeof snapshot.lastAttemptAt === 'number'
-      ? formatBackupTimestamp(new Date(snapshot.lastAttemptAt).toISOString(), locale)
+      ? formatBackupTimestamp(
+          new Date(snapshot.lastAttemptAt).toISOString(),
+          locale,
+        )
       : copy.cloudLastSyncNever;
 
   return (

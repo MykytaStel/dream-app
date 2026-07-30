@@ -1,7 +1,9 @@
 jest.mock('react-native-fs', () => ({
   DocumentDirectoryPath: '/documents',
   mkdir: jest.fn().mockResolvedValue(undefined),
-  exists: jest.fn(async path => path === '/documents/whisper-models/ggml-tiny.en.bin'),
+  exists: jest.fn(
+    async path => path === '/documents/whisper-models/ggml-tiny.en.bin',
+  ),
   stat: jest.fn().mockResolvedValue({ size: '0' }),
   unlink: jest.fn().mockResolvedValue(undefined),
   downloadFile: jest.fn(() => ({
@@ -11,26 +13,34 @@ jest.mock('react-native-fs', () => ({
 
 jest.mock('../src/features/dreams/services/whisperNative', () => ({
   initWhisper: jest.fn(async () => ({
-    transcribe: jest.fn((_filePath: string, options?: { onProgress?: (progress: number) => void }) => {
-      options?.onProgress?.(48);
-      options?.onProgress?.(100);
-      return {
-        stop: jest.fn(),
-        promise: Promise.resolve({
-          result: 'Glass hallway above the sea',
-          language: 'en',
-          segments: [],
-          isAborted: false,
-        }),
-      };
-    }),
+    transcribe: jest.fn(
+      (
+        _filePath: string,
+        options?: { onProgress?: (progress: number) => void },
+      ) => {
+        options?.onProgress?.(48);
+        options?.onProgress?.(100);
+        return {
+          stop: jest.fn(),
+          promise: Promise.resolve({
+            result: 'Glass hallway above the sea',
+            language: 'en',
+            segments: [],
+            isAborted: false,
+          }),
+        };
+      },
+    ),
   })),
 }));
 
 import RNFS from 'react-native-fs';
 import { initWhisper } from '../src/features/dreams/services/whisperNative';
 import { kv } from '../src/services/storage/mmkv';
-import { saveDream, getDream } from '../src/features/dreams/repository/dreamsRepository';
+import {
+  saveDream,
+  getDream,
+} from '../src/features/dreams/repository/dreamsRepository';
 import {
   __unsafeResetDreamTranscriptionContextForTests,
   deleteDreamTranscriptionModel,
@@ -115,13 +125,18 @@ describe('dreamTranscriptionService', () => {
     });
 
     await deleteDreamTranscriptionModel();
-    expect(RNFS.unlink).toHaveBeenCalledWith('/documents/whisper-models/ggml-tiny.en.bin');
+    expect(RNFS.unlink).toHaveBeenCalledWith(
+      '/documents/whisper-models/ggml-tiny.en.bin',
+    );
   });
 
   test('installs the model without starting transcription', async () => {
     const mockedExists = RNFS.exists as jest.MockedFunction<typeof RNFS.exists>;
     const mockedStat = RNFS.stat as jest.MockedFunction<typeof RNFS.stat>;
-    mockedExists.mockResolvedValueOnce(false).mockResolvedValueOnce(true).mockResolvedValueOnce(true);
+    mockedExists
+      .mockResolvedValueOnce(false)
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(true);
     mockedStat.mockResolvedValueOnce({ size: '73400320' } as never);
 
     const progressEvents: string[] = [];
@@ -151,7 +166,9 @@ describe('dreamTranscriptionService', () => {
       tags: [],
     });
 
-    await expect(transcribeDreamAudio('dream-audio-3')).rejects.toThrow('native-failure');
+    await expect(transcribeDreamAudio('dream-audio-3')).rejects.toThrow(
+      'native-failure',
+    );
     expect(getDream('dream-audio-3')).toMatchObject({
       transcriptStatus: 'error',
     });

@@ -13,7 +13,10 @@ import { Theme } from '../../../theme/theme';
 import { fontFamilies } from '../../../theme/fonts';
 import { getOnboardingCopy } from '../../../constants/copy/onboarding';
 import { markOnboardingSeen } from '../services/onboardingService';
-import { ROOT_ROUTE_NAMES, type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 
 type Slide = {
   id: string;
@@ -27,7 +30,8 @@ export default function OnboardingScreen() {
   const theme = useTheme<Theme>();
   const insets = useSafeAreaInsets();
   const { locale } = useI18n();
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getOnboardingCopy(locale), [locale]);
   const styles = React.useMemo(
     () => createStyles(theme, insets.top, insets.bottom),
@@ -92,7 +96,10 @@ export default function OnboardingScreen() {
         {!isLast ? (
           <Pressable
             onPress={finish}
-            style={({ pressed }) => [styles.skipButton, pressed ? styles.skipButtonPressed : null]}
+            style={({ pressed }) => [
+              styles.skipButton,
+              pressed ? styles.skipButtonPressed : null,
+            ]}
           >
             <Text style={styles.skipLabel}>{copy.skipAction}</Text>
           </Pressable>
@@ -102,12 +109,20 @@ export default function OnboardingScreen() {
       </View>
 
       {/* Slide content — key forces remount + FadeIn on index change */}
-      <Animated.View key={slide.id} entering={FadeIn.duration(260)} style={styles.content}>
+      <Animated.View
+        key={slide.id}
+        entering={FadeIn.duration(260)}
+        style={styles.content}
+      >
         <View style={styles.iconArea}>
           <View style={styles.glowOuter} />
           <View style={styles.glowInner} />
           <View style={styles.iconWrap}>
-            <Ionicons name={slide.icon} size={32} color={theme.colors.primary} />
+            <Ionicons
+              name={slide.icon}
+              size={32}
+              color={theme.colors.primary}
+            />
           </View>
         </View>
 
@@ -122,7 +137,10 @@ export default function OnboardingScreen() {
           {slides.map((s, i) => (
             <View
               key={s.id}
-              style={[styles.dot, i === index ? styles.dotActive : styles.dotInactive]}
+              style={[
+                styles.dot,
+                i === index ? styles.dotActive : styles.dotInactive,
+              ]}
             />
           ))}
         </View>

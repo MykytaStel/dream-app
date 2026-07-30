@@ -1,10 +1,7 @@
 import { type CloudSession } from '../../../services/auth/session';
 import { type Dream } from '../../dreams/model/dream';
 import { type SavedReviewStateSnapshot } from '../../stats/services/reviewStateStorageService';
-import {
-  fillTemplate,
-  type SettingsCopy,
-} from './backupPresentationShared';
+import { fillTemplate, type SettingsCopy } from './backupPresentationShared';
 
 export type BackupContentTrustItem = {
   key: 'audio' | 'transcript' | 'review';
@@ -29,7 +26,9 @@ export function buildBackupContentTrustItems(input: {
     ? audioDreams.filter(dream => !dream.audioRemotePath?.trim()).length
     : audioDreams.length;
 
-  const transcriptDreams = dreams.filter(dream => Boolean(dream.transcript?.trim()));
+  const transcriptDreams = dreams.filter(dream =>
+    Boolean(dream.transcript?.trim()),
+  );
   const editedTranscriptCount = transcriptDreams.filter(
     dream => dream.transcriptSource === 'edited',
   ).length;
@@ -48,14 +47,14 @@ export function buildBackupContentTrustItems(input: {
     audioDreams.length === 0
       ? copy.backupContentTrustAudioEmpty
       : !signedIn
-      ? copy.backupContentTrustLocalOnly
-      : audioStillLocalCount === 0
-      ? copy.backupContentTrustAudioAllBackedUp
-      : audioStillLocalCount === 1
-      ? copy.backupContentTrustAudioStillLocalSingle
-      : fillTemplate(copy.backupContentTrustAudioStillLocalPlural, {
-          count: audioStillLocalCount,
-        });
+        ? copy.backupContentTrustLocalOnly
+        : audioStillLocalCount === 0
+          ? copy.backupContentTrustAudioAllBackedUp
+          : audioStillLocalCount === 1
+            ? copy.backupContentTrustAudioStillLocalSingle
+            : fillTemplate(copy.backupContentTrustAudioStillLocalPlural, {
+                count: audioStillLocalCount,
+              });
   const audioMeta =
     audioDreams.length === 0
       ? copy.backupContentTrustAudioEmptyMeta
@@ -68,14 +67,14 @@ export function buildBackupContentTrustItems(input: {
     transcriptDreams.length === 0
       ? copy.backupContentTrustTranscriptEmpty
       : !signedIn
-      ? copy.backupContentTrustLocalOnly
-      : transcriptStillLocalCount === 0
-      ? copy.backupContentTrustTranscriptCaughtUp
-      : transcriptStillLocalCount === 1
-      ? copy.backupContentTrustTranscriptStillLocalSingle
-      : fillTemplate(copy.backupContentTrustTranscriptStillLocalPlural, {
-          count: transcriptStillLocalCount,
-        });
+        ? copy.backupContentTrustLocalOnly
+        : transcriptStillLocalCount === 0
+          ? copy.backupContentTrustTranscriptCaughtUp
+          : transcriptStillLocalCount === 1
+            ? copy.backupContentTrustTranscriptStillLocalSingle
+            : fillTemplate(copy.backupContentTrustTranscriptStillLocalPlural, {
+                count: transcriptStillLocalCount,
+              });
   const transcriptMeta =
     transcriptDreams.length === 0
       ? copy.backupContentTrustTranscriptEmptyMeta
@@ -90,10 +89,10 @@ export function buildBackupContentTrustItems(input: {
     totalReviewSetCount === 0
       ? copy.backupContentTrustReviewEmpty
       : !signedIn
-      ? copy.backupContentTrustLocalOnly
-      : reviewState.syncStatus === 'synced'
-      ? copy.backupContentTrustReviewCaughtUp
-      : copy.backupContentTrustReviewStillLocal;
+        ? copy.backupContentTrustLocalOnly
+        : reviewState.syncStatus === 'synced'
+          ? copy.backupContentTrustReviewCaughtUp
+          : copy.backupContentTrustReviewStillLocal;
   const reviewMeta =
     totalReviewSetCount === 0
       ? copy.backupContentTrustReviewEmptyMeta

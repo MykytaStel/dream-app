@@ -19,10 +19,18 @@ type IdleSchedulerShape = {
 export function useStatsCatalogState() {
   const hydrationRequestRef = React.useRef(0);
   const [meta, setMeta] = React.useState<DreamsMeta>(() => getDreamsMeta());
-  const [dreams, setDreams] = React.useState(() => [] as ReturnType<typeof listDreams>);
-  const [analysisSettings, setAnalysisSettings] = React.useState(() => getDreamAnalysisSettings());
-  const [savedThreadRecords, setSavedThreadRecords] = React.useState(() => getSavedDreamThreads());
-  const [savedMonths, setSavedMonths] = React.useState(() => getSavedMonthlyReportMonths());
+  const [dreams, setDreams] = React.useState(
+    () => [] as ReturnType<typeof listDreams>,
+  );
+  const [analysisSettings, setAnalysisSettings] = React.useState(() =>
+    getDreamAnalysisSettings(),
+  );
+  const [savedThreadRecords, setSavedThreadRecords] = React.useState(() =>
+    getSavedDreamThreads(),
+  );
+  const [savedMonths, setSavedMonths] = React.useState(() =>
+    getSavedMonthlyReportMonths(),
+  );
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);
 
@@ -102,7 +110,10 @@ export function useStatsCatalogState() {
     }
 
     return () => {
-      if (idleHandle !== null && typeof scheduler.cancelIdleCallback === 'function') {
+      if (
+        idleHandle !== null &&
+        typeof scheduler.cancelIdleCallback === 'function'
+      ) {
         scheduler.cancelIdleCallback(idleHandle);
       }
 

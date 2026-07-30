@@ -94,14 +94,19 @@ export function MonthlyReportEntryCard(props: MonthlyReportEntryCardProps) {
     onPress,
   } = props;
   const theme = useTheme<Theme>();
-  const styles = React.useMemo(() => createMonthlyReportEntryCardStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () => createMonthlyReportEntryCardStyles(theme),
+    [theme],
+  );
 
   return (
     <View style={styles.root}>
       <View style={styles.copy}>
         <Text style={styles.eyebrow}>{eyebrow}</Text>
         <Text style={styles.title}>{title}</Text>
-        {monthTitle ? <Text style={styles.monthTitle}>{monthTitle}</Text> : null}
+        {monthTitle ? (
+          <Text style={styles.monthTitle}>{monthTitle}</Text>
+        ) : null}
         <Text style={styles.description}>{description}</Text>
       </View>
 

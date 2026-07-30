@@ -524,4 +524,6 @@ export function createDreamDetailScreenStyles(theme: Theme) {
   });
 }
 
-export type DreamDetailScreenStyles = ReturnType<typeof createDreamDetailScreenStyles>;
+export type DreamDetailScreenStyles = ReturnType<
+  typeof createDreamDetailScreenStyles
+>;

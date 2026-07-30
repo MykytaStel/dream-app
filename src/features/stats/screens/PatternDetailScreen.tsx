@@ -19,14 +19,15 @@ import {
   ROOT_ROUTE_NAMES,
   type RootStackParamList,
 } from '../../../app/navigation/routes';
-import { getDreamCopy, getDreamMoodLabels } from '../../../constants/copy/dreams';
+import {
+  getDreamCopy,
+  getDreamMoodLabels,
+} from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { Dream } from '../../dreams/model/dream';
-import {
-  listDreams,
-} from '../../dreams/repository/dreamsRepository';
+import { listDreams } from '../../dreams/repository/dreamsRepository';
 import { getPatternDreamMatches } from '../model/patternMatches';
 import { buildDreamThreadViewModel } from '../model/dreamThread';
 import { createPatternDetailScreenStyles } from './PatternDetailScreen.styles';
@@ -56,7 +57,8 @@ const PatternMatchRow = React.memo(function PatternMatchRow({
       onPress={() =>
         navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
           dreamId: item.dreamId,
-        })}
+        })
+      }
     >
       <Card style={styles.rowCard}>
         <View style={styles.rowHeader}>
@@ -77,12 +79,11 @@ const PatternMatchRow = React.memo(function PatternMatchRow({
         </View>
 
         <View style={styles.sourcesRow}>
-          <Text style={styles.sourceLabel}>{statsCopy.patternDetailMatchedIn}</Text>
+          <Text style={styles.sourceLabel}>
+            {statsCopy.patternDetailMatchedIn}
+          </Text>
           {item.sourceLabels.map(source => (
-            <TagChip
-              key={`${item.dreamId}-${source}`}
-              label={source}
-            />
+            <TagChip key={`${item.dreamId}-${source}`} label={source} />
           ))}
         </View>
       </Card>
@@ -98,9 +99,12 @@ export default function PatternDetailScreen() {
   const statsCopy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = React.useMemo(() => createPatternDetailScreenStyles(t), [t]);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const route =
-    useRoute<RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.PatternDetail>>();
+    useRoute<
+      RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.PatternDetail>
+    >();
   const { signal, kind } = route.params;
   const [dreams, setDreams] = React.useState<Dream[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -208,7 +212,9 @@ export default function PatternDetailScreen() {
           }}
         >
           <Text style={styles.saveThreadButtonText}>
-            {isSavedThread ? statsCopy.threadSavedAction : statsCopy.threadSaveAction}
+            {isSavedThread
+              ? statsCopy.threadSavedAction
+              : statsCopy.threadSaveAction}
           </Text>
         </Pressable>
       </Card>
@@ -242,7 +248,11 @@ export default function PatternDetailScreen() {
   );
 
   const renderMatchItem = React.useCallback(
-    ({ item }: { item: ReturnType<typeof buildDreamThreadViewModel>['entries'][number] }) => (
+    ({
+      item,
+    }: {
+      item: ReturnType<typeof buildDreamThreadViewModel>['entries'][number];
+    }) => (
       <PatternMatchRow
         item={item}
         statsCopy={statsCopy}

@@ -16,7 +16,11 @@ import { type DreamPracticeFocus } from '../../../app/navigation/routes';
 
 const PRACTICE_REMINDER_CHANNEL_ID = 'dream-practice-reminders';
 const PRACTICE_NOTIFICATION_TARGET = 'dream-practice';
-const REALITY_CHECK_NOTIFICATION_IDS = ['practice-reality-check-0', 'practice-reality-check-1', 'practice-reality-check-2'] as const;
+const REALITY_CHECK_NOTIFICATION_IDS = [
+  'practice-reality-check-0',
+  'practice-reality-check-1',
+  'practice-reality-check-2',
+] as const;
 
 export type DreamPracticeReminderConfig = {
   enabled: boolean;
@@ -38,12 +42,18 @@ export type DreamPracticeReminderSettings = {
   wbtb: DreamPracticeReminderConfig;
 };
 
-export const DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS: DreamPracticeReminderSettings = {
-  morning_capture: { enabled: false, hour: 7, minute: 15 },
-  reality_checks: { enabled: false, startHour: 10, endHour: 18, intervalHours: 4 },
-  evening_intention: { enabled: false, hour: 21, minute: 15 },
-  wbtb: { enabled: false, hour: 4, minute: 30 },
-};
+export const DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS: DreamPracticeReminderSettings =
+  {
+    morning_capture: { enabled: false, hour: 7, minute: 15 },
+    reality_checks: {
+      enabled: false,
+      startHour: 10,
+      endHour: 18,
+      intervalHours: 4,
+    },
+    evening_intention: { enabled: false, hour: 21, minute: 15 },
+    wbtb: { enabled: false, hour: 4, minute: 30 },
+  };
 
 function normalizeHour(value: unknown, fallback: number) {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -75,10 +85,17 @@ function normalizeReminderConfig(
 function normalizeRealityCheckConfig(
   value: Partial<DreamPracticeRealityCheckSettings> | undefined,
 ): DreamPracticeRealityCheckSettings {
-  const startHour = normalizeHour(value?.startHour, DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.reality_checks.startHour);
-  const endHour = normalizeHour(value?.endHour, DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.reality_checks.endHour);
+  const startHour = normalizeHour(
+    value?.startHour,
+    DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.reality_checks.startHour,
+  );
+  const endHour = normalizeHour(
+    value?.endHour,
+    DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.reality_checks.endHour,
+  );
   const intervalHours =
-    typeof value?.intervalHours === 'number' && Number.isFinite(value.intervalHours)
+    typeof value?.intervalHours === 'number' &&
+    Number.isFinite(value.intervalHours)
       ? Math.min(8, Math.max(2, Math.floor(value.intervalHours)))
       : DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.reality_checks.intervalHours;
 
@@ -103,7 +120,10 @@ function normalizeSettings(
       value?.evening_intention,
       DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.evening_intention,
     ),
-    wbtb: normalizeReminderConfig(value?.wbtb, DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.wbtb),
+    wbtb: normalizeReminderConfig(
+      value?.wbtb,
+      DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS.wbtb,
+    ),
   };
 }
 
@@ -119,7 +139,10 @@ function getNextTriggerTimestamp(hour: number, minute: number) {
 }
 
 function isAuthorized(status: AuthorizationStatus) {
-  return status === AuthorizationStatus.AUTHORIZED || status === AuthorizationStatus.PROVISIONAL;
+  return (
+    status === AuthorizationStatus.AUTHORIZED ||
+    status === AuthorizationStatus.PROVISIONAL
+  );
 }
 
 async function ensurePracticeReminderChannel() {
@@ -135,7 +158,8 @@ async function ensurePracticeReminderChannel() {
 }
 
 function getNotificationCopy() {
-  const locale = typeof getStoredLocale === 'function' ? getStoredLocale() : 'en';
+  const locale =
+    typeof getStoredLocale === 'function' ? getStoredLocale() : 'en';
   return getPracticeCopy(locale);
 }
 
@@ -196,8 +220,12 @@ async function scheduleDailyReminder(
   );
 }
 
-async function scheduleRealityChecks(settings: DreamPracticeRealityCheckSettings) {
-  await Promise.all(REALITY_CHECK_NOTIFICATION_IDS.map(id => notifee.cancelNotification(id)));
+async function scheduleRealityChecks(
+  settings: DreamPracticeRealityCheckSettings,
+) {
+  await Promise.all(
+    REALITY_CHECK_NOTIFICATION_IDS.map(id => notifee.cancelNotification(id)),
+  );
   if (!settings.enabled) {
     return;
   }
@@ -205,7 +233,10 @@ async function scheduleRealityChecks(settings: DreamPracticeRealityCheckSettings
   const copy = getNotificationCopy();
   const slots: Array<{ hour: number; minute: number }> = [];
   let cursor = settings.startHour;
-  while (cursor <= settings.endHour && slots.length < REALITY_CHECK_NOTIFICATION_IDS.length) {
+  while (
+    cursor <= settings.endHour &&
+    slots.length < REALITY_CHECK_NOTIFICATION_IDS.length
+  ) {
     slots.push({ hour: cursor, minute: 0 });
     cursor += settings.intervalHours;
   }
@@ -237,14 +268,21 @@ export function getDreamPracticeReminderSettings() {
   }
 
   try {
-    return normalizeSettings(JSON.parse(raw) as Partial<DreamPracticeReminderSettings>);
+    return normalizeSettings(
+      JSON.parse(raw) as Partial<DreamPracticeReminderSettings>,
+    );
   } catch {
     return DEFAULT_DREAM_PRACTICE_REMINDER_SETTINGS;
   }
 }
 
-export function saveDreamPracticeReminderSettings(settings: DreamPracticeReminderSettings) {
-  kv.set(DREAM_PRACTICE_REMINDER_SETTINGS_KEY, JSON.stringify(normalizeSettings(settings)));
+export function saveDreamPracticeReminderSettings(
+  settings: DreamPracticeReminderSettings,
+) {
+  kv.set(
+    DREAM_PRACTICE_REMINDER_SETTINGS_KEY,
+    JSON.stringify(normalizeSettings(settings)),
+  );
 }
 
 export async function getDreamPracticeReminderPermissionGranted() {
@@ -252,7 +290,9 @@ export async function getDreamPracticeReminderPermissionGranted() {
   return isAuthorized(settings.authorizationStatus);
 }
 
-export async function applyDreamPracticeReminderSettings(settings: DreamPracticeReminderSettings) {
+export async function applyDreamPracticeReminderSettings(
+  settings: DreamPracticeReminderSettings,
+) {
   const normalized = normalizeSettings(settings);
   saveDreamPracticeReminderSettings(normalized);
 
@@ -306,7 +346,10 @@ export async function syncDreamPracticeReminderState() {
   return applyDreamPracticeReminderSettings(getDreamPracticeReminderSettings());
 }
 
-export function isPracticeNotificationPress(eventType: EventType, detail?: EventDetail) {
+export function isPracticeNotificationPress(
+  eventType: EventType,
+  detail?: EventDetail,
+) {
   if (eventType !== EventType.PRESS && eventType !== EventType.ACTION_PRESS) {
     return false;
   }
@@ -314,14 +357,20 @@ export function isPracticeNotificationPress(eventType: EventType, detail?: Event
   return detail?.notification?.data?.target === PRACTICE_NOTIFICATION_TARGET;
 }
 
-export function isPracticeInitialNotificationTarget(initial: {
-  notification?: { data?: { [key: string]: string | object | number } };
-} | null) {
+export function isPracticeInitialNotificationTarget(
+  initial: {
+    notification?: { data?: { [key: string]: string | object | number } };
+  } | null,
+) {
   return initial?.notification?.data?.target === PRACTICE_NOTIFICATION_TARGET;
 }
 
-export function getPracticeFocusFromNotification(detail?: {
-  notification?: { data?: { [key: string]: string | object | number } };
-} | null): DreamPracticeFocus {
-  return detail?.notification?.data?.practice_focus === 'nightmares' ? 'nightmares' : 'lucid';
+export function getPracticeFocusFromNotification(
+  detail?: {
+    notification?: { data?: { [key: string]: string | object | number } };
+  } | null,
+): DreamPracticeFocus {
+  return detail?.notification?.data?.practice_focus === 'nightmares'
+    ? 'nightmares'
+    : 'lucid';
 }

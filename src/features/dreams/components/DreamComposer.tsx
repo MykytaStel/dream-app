@@ -44,6 +44,7 @@ import {
   DreamComposerMoodCard,
   DreamComposerNightmareCard,
   DreamComposerTagsCard,
+  type ChoiceOption,
 } from './DreamComposerDetailSections';
 import { DreamComposerProps } from './DreamComposer.types';
 import {
@@ -53,6 +54,17 @@ import {
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 import { DreamComposerTemplateRow } from './DreamComposerTemplateRow';
 import { type DreamTemplate } from '../model/dreamTemplates';
+
+// Object.entries widens keys to string, which loses the union the option props
+// require. The record's own key type is the accurate one, so it is restored here
+// once instead of being cast away at every call site.
+function toChoiceOptions<K extends string>(
+  labels: Record<K, string>,
+): Array<ChoiceOption<K>> {
+  return (Object.entries(labels) as Array<[K, string]>).map(
+    ([value, label]) => ({ value, label }),
+  );
+}
 
 export function DreamComposer({
   mode,
@@ -65,18 +77,39 @@ export function DreamComposer({
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const moods = React.useMemo(() => getDreamMoods(locale), [locale]);
-  const intensityOptions = React.useMemo(() => getDreamIntensityLevels(locale), [locale]);
-  const lucidityOptions = React.useMemo(() => getDreamLucidityLevels(locale), [locale]);
-  const stressLevels = React.useMemo(() => getDreamStressLevels(locale), [locale]);
-  const wakeEmotionOptions = React.useMemo(() => getDreamWakeEmotions(locale), [locale]);
+  const intensityOptions = React.useMemo(
+    () => getDreamIntensityLevels(locale),
+    [locale],
+  );
+  const lucidityOptions = React.useMemo(
+    () => getDreamLucidityLevels(locale),
+    [locale],
+  );
+  const stressLevels = React.useMemo(
+    () => getDreamStressLevels(locale),
+    [locale],
+  );
+  const wakeEmotionOptions = React.useMemo(
+    () => getDreamWakeEmotions(locale),
+    [locale],
+  );
   const preSleepEmotionOptions = React.useMemo(
     () => getDreamPreSleepEmotions(locale),
     [locale],
   );
-  const styles = React.useMemo(() => createNewDreamScreenStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () => createNewDreamScreenStyles(theme),
+    [theme],
+  );
   const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
-  const lucidTechniqueLabels = React.useMemo(() => getLucidTechniqueLabels(locale), [locale]);
-  const lucidControlLabels = React.useMemo(() => getLucidControlAreaLabels(locale), [locale]);
+  const lucidTechniqueLabels = React.useMemo(
+    () => getLucidTechniqueLabels(locale),
+    [locale],
+  );
+  const lucidControlLabels = React.useMemo(
+    () => getLucidControlAreaLabels(locale),
+    [locale],
+  );
   const lucidStabilizationLabels = React.useMemo(
     () => getLucidStabilizationLabels(locale),
     [locale],
@@ -115,7 +148,9 @@ export function DreamComposer({
     () => getDreamDraftSummaryLabels(restoredDraftSnapshot, copy),
     [copy, restoredDraftSnapshot],
   );
-  const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(form.hasRestoredDraft);
+  const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(
+    form.hasRestoredDraft,
+  );
   const isCreateMode = mode === 'create';
   const isCreateVoiceFlow = isCreateMode && entryMode === 'voice';
   const isCreateTextFlow = isCreateMode && entryMode === 'default';
@@ -146,31 +181,35 @@ export function DreamComposer({
     [form],
   );
   const lucidTechniqueOptions = React.useMemo(
-    () => Object.entries(lucidTechniqueLabels).map(([value, label]) => ({ value, label })),
+    () => toChoiceOptions(lucidTechniqueLabels),
     [lucidTechniqueLabels],
   );
   const lucidControlOptions = React.useMemo(
-    () => Object.entries(lucidControlLabels).map(([value, label]) => ({ value, label })),
+    () => toChoiceOptions(lucidControlLabels),
     [lucidControlLabels],
   );
   const lucidStabilizationOptions = React.useMemo(
-    () => Object.entries(lucidStabilizationLabels).map(([value, label]) => ({ value, label })),
+    () => toChoiceOptions(lucidStabilizationLabels),
     [lucidStabilizationLabels],
   );
   const nightmareAftereffectOptions = React.useMemo(
-    () => Object.entries(nightmareAftereffectLabels).map(([value, label]) => ({ value, label })),
+    () => toChoiceOptions(nightmareAftereffectLabels),
     [nightmareAftereffectLabels],
   );
   const nightmareGroundingOptions = React.useMemo(
-    () => Object.entries(nightmareGroundingLabels).map(([value, label]) => ({ value, label })),
+    () => toChoiceOptions(nightmareGroundingLabels),
     [nightmareGroundingLabels],
   );
   const nightmareRescriptOptions = React.useMemo(
-    () => Object.entries(nightmareRescriptLabels).map(([value, label]) => ({ value, label })),
+    () => toChoiceOptions(nightmareRescriptLabels),
     [nightmareRescriptLabels],
   );
   const recallOptions = React.useMemo(
-    () => [1, 2, 3, 4, 5].map(value => ({ value: value as 1 | 2 | 3 | 4 | 5, label: String(value) })),
+    () =>
+      [1, 2, 3, 4, 5].map(value => ({
+        value: value as 1 | 2 | 3 | 4 | 5,
+        label: String(value),
+      })),
     [],
   );
   const yesNoOptions = React.useMemo(
@@ -181,49 +220,64 @@ export function DreamComposer({
     [copy.boolNo, copy.boolYes],
   );
 
-  const refineActions = React.useMemo(() => [
-    ...(!form.isWakeMode
-      ? [
-          {
-            key: 'mood',
-            label: form.showMoodSection ? copy.refineHideAction : copy.refineMoodAction,
-            active: form.showMoodSection,
-            onPress: () => form.setShowMoodSection(current => !current),
-          },
-        ]
-      : [
-          {
-            key: 'meta',
-            label: form.showMetaSection ? copy.refineHideAction : copy.wakeRefineMetaAction,
-            active: form.showMetaSection,
-            onPress: () => form.setShowMetaSection(current => !current),
-          },
-        ]),
-    {
-      key: 'context',
-      label: form.showContextSection ? copy.refineHideAction : copy.refineContextAction,
-      active: form.showContextSection,
-      onPress: () => form.setShowContextSection(current => !current),
-    },
-    {
-      key: 'tags',
-      label: form.showTagsSection ? copy.refineHideAction : copy.refineTagsAction,
-      active: form.showTagsSection,
-      onPress: () => form.setShowTagsSection(current => !current),
-    },
-    {
-      key: 'lucid',
-      label: form.showLucidPracticeSection ? copy.refineHideAction : practiceCopy.openLucid,
-      active: form.showLucidPracticeSection,
-      onPress: () => form.setShowLucidPracticeSection(current => !current),
-    },
-    {
-      key: 'nightmare',
-      label: form.showNightmareSection ? copy.refineHideAction : practiceCopy.openNightmares,
-      active: form.showNightmareSection,
-      onPress: () => form.setShowNightmareSection(current => !current),
-    },
-  ], [copy, form, practiceCopy]);
+  const refineActions = React.useMemo(
+    () => [
+      ...(!form.isWakeMode
+        ? [
+            {
+              key: 'mood',
+              label: form.showMoodSection
+                ? copy.refineHideAction
+                : copy.refineMoodAction,
+              active: form.showMoodSection,
+              onPress: () => form.setShowMoodSection(current => !current),
+            },
+          ]
+        : [
+            {
+              key: 'meta',
+              label: form.showMetaSection
+                ? copy.refineHideAction
+                : copy.wakeRefineMetaAction,
+              active: form.showMetaSection,
+              onPress: () => form.setShowMetaSection(current => !current),
+            },
+          ]),
+      {
+        key: 'context',
+        label: form.showContextSection
+          ? copy.refineHideAction
+          : copy.refineContextAction,
+        active: form.showContextSection,
+        onPress: () => form.setShowContextSection(current => !current),
+      },
+      {
+        key: 'tags',
+        label: form.showTagsSection
+          ? copy.refineHideAction
+          : copy.refineTagsAction,
+        active: form.showTagsSection,
+        onPress: () => form.setShowTagsSection(current => !current),
+      },
+      {
+        key: 'lucid',
+        label: form.showLucidPracticeSection
+          ? copy.refineHideAction
+          : practiceCopy.openLucid,
+        active: form.showLucidPracticeSection,
+        onPress: () => form.setShowLucidPracticeSection(current => !current),
+      },
+      {
+        key: 'nightmare',
+        label: form.showNightmareSection
+          ? copy.refineHideAction
+          : practiceCopy.openNightmares,
+        active: form.showNightmareSection,
+        onPress: () => form.setShowNightmareSection(current => !current),
+      },
+    ],
+    [copy, form, practiceCopy],
+  );
 
   const voiceCard = (
     <DreamComposerVoiceCard
@@ -236,9 +290,9 @@ export function DreamComposer({
       audioFileLabel={audioFileLabel}
       isBusy={form.isBusy}
       onToggleRecord={() => {
-        form.onToggleRecord().catch(e =>
-          logActionError('DreamComposer.onToggleRecord', e),
-        );
+        form
+          .onToggleRecord()
+          .catch(e => logActionError('DreamComposer.onToggleRecord', e));
       }}
       onRemoveAudio={() => form.setAudioUri(undefined)}
     />
@@ -351,9 +405,9 @@ export function DreamComposer({
             audioFileLabel={audioFileLabel}
             isBusy={form.isBusy}
             onToggleRecord={() => {
-              form.onToggleRecord().catch(e =>
-                logActionError('DreamComposer.onToggleRecord', e),
-              );
+              form
+                .onToggleRecord()
+                .catch(e => logActionError('DreamComposer.onToggleRecord', e));
             }}
             onRemoveAudio={() => form.setAudioUri(undefined)}
             text={form.text}
@@ -364,25 +418,23 @@ export function DreamComposer({
           />
           {inlineSaveButton}
         </>
+      ) : isCreateVoiceFlow ? (
+        <>
+          {voiceCard}
+          {inlineSaveButton}
+          {coreCard}
+        </>
+      ) : isCreateTextFlow ? (
+        <>
+          {coreCard}
+          {inlineSaveButton}
+          {voiceCard}
+        </>
       ) : (
-        isCreateVoiceFlow ? (
-          <>
-            {voiceCard}
-            {inlineSaveButton}
-            {coreCard}
-          </>
-        ) : isCreateTextFlow ? (
-          <>
-            {coreCard}
-            {inlineSaveButton}
-            {voiceCard}
-          </>
-        ) : (
-          <>
-            {voiceCard}
-            {coreCard}
-          </>
-        )
+        <>
+          {voiceCard}
+          {coreCard}
+        </>
       )}
 
       <DreamComposerRefineCard
@@ -416,7 +468,9 @@ export function DreamComposer({
           intensityOptions={intensityOptions}
           dreamIntensity={form.dreamIntensity}
           onToggleDreamIntensity={value =>
-            form.setDreamIntensity(current => (current === value ? undefined : value))
+            form.setDreamIntensity(current =>
+              current === value ? undefined : value,
+            )
           }
           lucidityOptions={lucidityOptions}
           lucidity={form.lucidity}
@@ -439,15 +493,21 @@ export function DreamComposer({
           stressLevels={stressLevels}
           stressLevel={form.stressLevel}
           onToggleStressLevel={value =>
-            form.setStressLevel(current => (current === value ? undefined : value))
+            form.setStressLevel(current =>
+              current === value ? undefined : value,
+            )
           }
           alcoholTaken={form.alcoholTaken}
           onToggleAlcoholTaken={value =>
-            form.setAlcoholTaken(current => (current === value ? undefined : value))
+            form.setAlcoholTaken(current =>
+              current === value ? undefined : value,
+            )
           }
           caffeineLate={form.caffeineLate}
           onToggleCaffeineLate={value =>
-            form.setCaffeineLate(current => (current === value ? undefined : value))
+            form.setCaffeineLate(current =>
+              current === value ? undefined : value,
+            )
           }
           medications={form.medications}
           onChangeMedications={form.setMedications}
@@ -477,20 +537,24 @@ export function DreamComposer({
           onChangeTrigger={form.setLucidTrigger}
           technique={form.lucidTechnique}
           onToggleTechnique={value =>
-            form.setLucidTechnique(current => (current === value ? undefined : value))
+            form.setLucidTechnique(current =>
+              current === value ? undefined : value,
+            )
           }
           recallScore={form.recallScore}
           onToggleRecallScore={value =>
-            form.setRecallScore(current => (current === value ? undefined : value))
+            form.setRecallScore(current =>
+              current === value ? undefined : value,
+            )
           }
           controlAreas={form.controlAreas}
           onToggleControlArea={form.toggleControlArea}
           stabilizationActions={form.stabilizationActions}
           onToggleStabilizationAction={form.toggleStabilizationAction}
-          techniqueOptions={lucidTechniqueOptions as any}
+          techniqueOptions={lucidTechniqueOptions}
           recallOptions={recallOptions}
-          controlOptions={lucidControlOptions as any}
-          stabilizationOptions={lucidStabilizationOptions as any}
+          controlOptions={lucidControlOptions}
+          stabilizationOptions={lucidStabilizationOptions}
         />
       ) : null}
 
@@ -511,21 +575,29 @@ export function DreamComposer({
           rewriteStatusLabel={practiceCopy.nightmareRewriteStatusLabel}
           explicit={form.nightmareExplicit}
           onToggleExplicit={value =>
-            form.setNightmareExplicit(current => (current === value ? undefined : value))
+            form.setNightmareExplicit(current =>
+              current === value ? undefined : value,
+            )
           }
           distress={form.nightmareDistress}
           onToggleDistress={value =>
-            form.setNightmareDistress(current => (current === value ? undefined : value))
+            form.setNightmareDistress(current =>
+              current === value ? undefined : value,
+            )
           }
           recurring={form.nightmareRecurring}
           onToggleRecurring={value =>
-            form.setNightmareRecurring(current => (current === value ? undefined : value))
+            form.setNightmareRecurring(current =>
+              current === value ? undefined : value,
+            )
           }
           recurringKey={form.nightmareRecurringKey}
           onChangeRecurringKey={form.setNightmareRecurringKey}
           wokeFromDream={form.nightmareWokeFromDream}
           onToggleWokeFromDream={value =>
-            form.setNightmareWokeFromDream(current => (current === value ? undefined : value))
+            form.setNightmareWokeFromDream(current =>
+              current === value ? undefined : value,
+            )
           }
           aftereffects={form.nightmareAftereffects}
           onToggleAftereffect={form.toggleNightmareAftereffect}
@@ -535,12 +607,14 @@ export function DreamComposer({
           onChangeRewrittenEnding={form.setNightmareRewrittenEnding}
           rescriptStatus={form.nightmareRescriptStatus}
           onToggleRescriptStatus={value =>
-            form.setNightmareRescriptStatus(current => (current === value ? undefined : value))
+            form.setNightmareRescriptStatus(current =>
+              current === value ? undefined : value,
+            )
           }
           distressOptions={recallOptions}
-          aftereffectOptions={nightmareAftereffectOptions as any}
-          groundingOptions={nightmareGroundingOptions as any}
-          rewriteStatusOptions={nightmareRescriptOptions as any}
+          aftereffectOptions={nightmareAftereffectOptions}
+          groundingOptions={nightmareGroundingOptions}
+          rewriteStatusOptions={nightmareRescriptOptions}
           yesNoOptions={yesNoOptions}
         />
       ) : null}

@@ -55,24 +55,17 @@ export function useBackupScreenController({
   setLocale,
   copy,
 }: UseBackupScreenControllerArgs) {
-  const [exportingFormat, setExportingFormat] =
-    React.useState<'json' | 'pdf' | 'markdown' | 'text' | null>(null);
+  const [exportingFormat, setExportingFormat] = React.useState<
+    'json' | 'pdf' | 'markdown' | 'text' | null
+  >(null);
   const [lastJsonExportArtifact, setLastJsonExportArtifact] =
-    React.useState<LocalDreamExportArtifact | null>(
-      null,
-    );
+    React.useState<LocalDreamExportArtifact | null>(null);
   const [lastMarkdownExportArtifact, setLastMarkdownExportArtifact] =
-    React.useState<LocalDreamExportArtifact | null>(
-      null,
-    );
+    React.useState<LocalDreamExportArtifact | null>(null);
   const [lastTextExportArtifact, setLastTextExportArtifact] =
-    React.useState<LocalDreamExportArtifact | null>(
-      null,
-    );
+    React.useState<LocalDreamExportArtifact | null>(null);
   const [lastPdfExportArtifact, setLastPdfExportArtifact] =
-    React.useState<LocalDreamExportArtifact | null>(
-      null,
-    );
+    React.useState<LocalDreamExportArtifact | null>(null);
   const [localExportFiles, setLocalExportFiles] = React.useState<
     LocalDreamExportFile[]
   >([]);
@@ -159,7 +152,7 @@ export function useBackupScreenController({
 
         return files.some(file => file.filePath === currentPath)
           ? currentPath
-          : files[0]?.filePath ?? null;
+          : (files[0]?.filePath ?? null);
       });
     } finally {
       setIsLoadingLocalExports(false);
@@ -222,7 +215,8 @@ export function useBackupScreenController({
         dreamCount: result.payload.summary.dreamCount,
       });
       setLastJsonExportArtifact({
-        fileName: result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
+        fileName:
+          result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
         filePath: result.filePath,
         modifiedAt: Date.now(),
         format: 'json' as const,
@@ -249,7 +243,8 @@ export function useBackupScreenController({
       try {
         const result = await exportDreamReadableArchive(format);
         const artifact = {
-          fileName: result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
+          fileName:
+            result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
           filePath: result.filePath,
           modifiedAt: Date.now(),
           format,
@@ -280,7 +275,8 @@ export function useBackupScreenController({
     try {
       const result = await exportDreamArchivePdf();
       setLastPdfExportArtifact({
-        fileName: result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
+        fileName:
+          result.filePath.split('/').filter(Boolean).pop() ?? result.filePath,
         filePath: result.filePath,
         modifiedAt: Date.now(),
         format: 'pdf' as const,

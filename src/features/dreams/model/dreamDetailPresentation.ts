@@ -95,7 +95,8 @@ export function moodColor(theme: Theme, mood?: Dream['mood']) {
 }
 
 export function formatMetaDate(value: number | string) {
-  const date = typeof value === 'string' ? new Date(`${value}T00:00:00`) : new Date(value);
+  const date =
+    typeof value === 'string' ? new Date(`${value}T00:00:00`) : new Date(value);
   return date.toLocaleDateString([], {
     day: 'numeric',
     month: 'short',
@@ -137,7 +138,9 @@ export function hasSleepContext(dream: Dream) {
 }
 
 export function hasEmotionSnapshot(dream: Dream) {
-  return Boolean(dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length);
+  return Boolean(
+    dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length,
+  );
 }
 
 function getLucidityLabel(level: 0 | 1 | 2 | 3, copy: DreamDetailCopy) {
@@ -167,15 +170,17 @@ export function createEmptyDetailSectionsState(): DreamDetailSectionsState {
   };
 }
 
-export function createDefaultExpandedSections(dream: Dream): DreamDetailSectionsState {
+export function createDefaultExpandedSections(
+  dream: Dream,
+): DreamDetailSectionsState {
   const hasRawText = Boolean(dream.text?.trim());
   const hasTranscriptSurface = Boolean(
     dream.audioUri || dream.transcript || dream.transcriptStatus === 'error',
   );
   const hasTranscriptContent = Boolean(
     dream.transcript ||
-      dream.transcriptStatus === 'processing' ||
-      dream.transcriptStatus === 'error',
+    dream.transcriptStatus === 'processing' ||
+    dream.transcriptStatus === 'error',
   );
 
   return {
@@ -207,7 +212,8 @@ export function getHeroPreview(dream: Dream, copy: DreamDetailCopy) {
       return null;
     }
 
-    const visible = transcript.length > 136 ? `${transcript.slice(0, 133)}...` : transcript;
+    const visible =
+      transcript.length > 136 ? `${transcript.slice(0, 133)}...` : transcript;
     return `${copy.transcriptPreviewPrefix}: ${visible}`;
   }
 
@@ -515,7 +521,10 @@ export function getDreamDetailReflectionPrompts({
       actionLabel: copy.detailReflectionActionEdit,
       actionKind: 'edit',
     });
-  } else if (dream.wakeEmotions?.length || dream.sleepContext?.preSleepEmotions?.length) {
+  } else if (
+    dream.wakeEmotions?.length ||
+    dream.sleepContext?.preSleepEmotions?.length
+  ) {
     prompts.push({
       key: 'emotion',
       icon: 'heart-outline',
@@ -610,7 +619,8 @@ export function getDreamDetailViewModel({
       : undefined;
   const hasContext = hasSleepContext(dream);
   const hasEmotions = hasEmotionSnapshot(dream);
-  const transcriptStatus = dream.transcriptStatus ?? (dream.transcript ? 'ready' : 'idle');
+  const transcriptStatus =
+    dream.transcriptStatus ?? (dream.transcript ? 'ready' : 'idle');
   const transcriptSourceLabel =
     dream.transcriptSource === 'edited'
       ? copy.detailGeneratedTranscriptSourceEdited
@@ -646,12 +656,16 @@ export function getDreamDetailViewModel({
   );
   const stateSignalsCount = countSleepSignals(dream);
   const wordsCount = countDreamWords(dream.text);
-  const tagCountLabel = dream.tags.length ? String(dream.tags.length) : undefined;
+  const tagCountLabel = dream.tags.length
+    ? String(dream.tags.length)
+    : undefined;
   const notesMetaLabel = wordsCount ? String(wordsCount) : undefined;
   const transcriptMetaLabel = hasTranscriptSurface
     ? getTranscriptSummaryLabel(dream, isTranscribingAudio, copy)
     : undefined;
-  const relatedMetaLabel = relatedDreams.length ? String(relatedDreams.length) : undefined;
+  const relatedMetaLabel = relatedDreams.length
+    ? String(relatedDreams.length)
+    : undefined;
   const analysisMetaLabel =
     dream.analysis?.status === 'ready'
       ? copy.detailAnalysisStatusReady
@@ -662,7 +676,9 @@ export function getDreamDetailViewModel({
           : analysisSettings.provider === 'openai'
             ? copy.detailAnalysisSummaryPlanned
             : undefined;
-  const stateMetaLabel = stateSignalsCount ? String(stateSignalsCount) : undefined;
+  const stateMetaLabel = stateSignalsCount
+    ? String(stateSignalsCount)
+    : undefined;
   const followUpPrompt = getDreamDetailFollowUpPrompt({
     dream,
     copy,
@@ -680,17 +696,20 @@ export function getDreamDetailViewModel({
   const glanceCards: DreamDetailGlanceCard[] = [
     {
       key: 'capture',
-      icon: dream.audioUri && dream.text?.trim()
-        ? 'layers-outline'
-        : dream.audioUri
-          ? 'mic-outline'
-          : 'document-text-outline',
+      icon:
+        dream.audioUri && dream.text?.trim()
+          ? 'layers-outline'
+          : dream.audioUri
+            ? 'mic-outline'
+            : 'document-text-outline',
       label: copy.detailGlanceCaptureLabel,
       value: getCaptureModeLabel(dream, copy),
     },
     {
       key: 'transcript',
-      icon: dream.transcript ? 'chatbubble-ellipses-outline' : 'sparkles-outline',
+      icon: dream.transcript
+        ? 'chatbubble-ellipses-outline'
+        : 'sparkles-outline',
       label: copy.detailGlanceTranscriptLabel,
       value: getTranscriptSummaryLabel(dream, isTranscribingAudio, copy),
     },

@@ -22,7 +22,9 @@ export function SettingsSectionHeader({
     <View style={styles.row}>
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
-        {description ? <Text style={styles.description}>{description}</Text> : null}
+        {description ? (
+          <Text style={styles.description}>{description}</Text>
+        ) : null}
       </View>
       {trailing}
     </View>

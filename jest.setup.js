@@ -1,5 +1,3 @@
-/* eslint-env jest */
-
 import 'react-native-gesture-handler/jestSetup';
 
 jest.mock('@notifee/react-native', () => {

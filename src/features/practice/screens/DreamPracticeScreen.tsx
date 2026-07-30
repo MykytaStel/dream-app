@@ -82,6 +82,48 @@ function formatReminderTime(
   });
 }
 
+// These sub-components take no theme, so their styles are static. Colours are
+// carried over verbatim from the inline versions; several are hardcoded rather
+// than themed, which is tracked separately.
+const cardStyles = StyleSheet.create({
+  stack: { gap: 10 },
+  stackTight: { gap: 4 },
+  stackSteps: { gap: 8 },
+  row: { flexDirection: 'row', gap: 8 },
+  rowSteps: { flexDirection: 'row', gap: 10 },
+  rowChecklist: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontWeight: '700' },
+  titleSteps: { fontWeight: '700', fontSize: 14 },
+  value: { fontSize: 12, opacity: 0.8 },
+  hint: { fontSize: 12, opacity: 0.7 },
+  stepBullet: {
+    width: 22,
+    height: 22,
+    borderRadius: 999,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(92, 191, 146, 0.14)',
+  },
+  stepBulletLabel: { fontSize: 12, fontWeight: '700' },
+  stepText: { flex: 1, fontSize: 13, lineHeight: 20 },
+  checklistDot: { width: 10, height: 10, borderRadius: 999 },
+  checklistDotOn: { backgroundColor: '#5CBF92' },
+  checklistDotOff: { backgroundColor: 'rgba(255,255,255,0.18)' },
+  checklistLabel: { flex: 1, fontSize: 13 },
+  metricCard: {
+    flexBasis: '31%',
+    flexGrow: 1,
+    gap: 6,
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.04)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.08)',
+  },
+  metricLabel: { fontSize: 12, opacity: 0.7 },
+  metricValue: { fontSize: 16, fontWeight: '700' },
+});
+
 function PracticeReminderCard({
   title,
   hint,
@@ -100,13 +142,13 @@ function PracticeReminderCard({
   onShiftLater: () => void;
 }) {
   return (
-    <View style={{ gap: 10 }}>
-      <View style={{ gap: 4 }}>
-        <Text style={{ fontWeight: '700' }}>{title}</Text>
-        <Text style={{ fontSize: 12, opacity: 0.8 }}>{value}</Text>
-        <Text style={{ fontSize: 12, opacity: 0.7 }}>{hint}</Text>
+    <View style={cardStyles.stack}>
+      <View style={cardStyles.stackTight}>
+        <Text style={cardStyles.title}>{title}</Text>
+        <Text style={cardStyles.value}>{value}</Text>
+        <Text style={cardStyles.hint}>{hint}</Text>
       </View>
-      <View style={{ flexDirection: 'row', gap: 8 }}>
+      <View style={cardStyles.row}>
         <Button title={toggleLabel} onPress={onToggle} size="sm" />
         <Button
           title={shiftLabel}
@@ -127,31 +169,15 @@ function PracticeStepsCard({
   steps: string[];
 }) {
   return (
-    <View style={{ gap: 10 }}>
-      <Text style={{ fontWeight: '700', fontSize: 14 }}>{title}</Text>
-      <View style={{ gap: 8 }}>
+    <View style={cardStyles.stack}>
+      <Text style={cardStyles.titleSteps}>{title}</Text>
+      <View style={cardStyles.stackSteps}>
         {steps.map((step, index) => (
-          <View
-            key={`${title}-${index}`}
-            style={{ flexDirection: 'row', gap: 10 }}
-          >
-            <View
-              style={{
-                width: 22,
-                height: 22,
-                borderRadius: 999,
-                alignItems: 'center',
-                justifyContent: 'center',
-                backgroundColor: 'rgba(92, 191, 146, 0.14)',
-              }}
-            >
-              <Text style={{ fontSize: 12, fontWeight: '700' }}>
-                {index + 1}
-              </Text>
+          <View key={`${title}-${index}`} style={cardStyles.rowSteps}>
+            <View style={cardStyles.stepBullet}>
+              <Text style={cardStyles.stepBulletLabel}>{index + 1}</Text>
             </View>
-            <Text style={{ flex: 1, fontSize: 13, lineHeight: 20 }}>
-              {step}
-            </Text>
+            <Text style={cardStyles.stepText}>{step}</Text>
           </View>
         ))}
       </View>
@@ -729,36 +755,23 @@ function ChecklistItem({
   checked: boolean;
 }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+    <View style={cardStyles.rowChecklist}>
       <View
-        style={{
-          width: 10,
-          height: 10,
-          borderRadius: 999,
-          backgroundColor: checked ? '#5CBF92' : 'rgba(255,255,255,0.18)',
-        }}
+        style={[
+          cardStyles.checklistDot,
+          checked ? cardStyles.checklistDotOn : cardStyles.checklistDotOff,
+        ]}
       />
-      <Text style={{ flex: 1, fontSize: 13 }}>{label}</Text>
+      <Text style={cardStyles.checklistLabel}>{label}</Text>
     </View>
   );
 }
 
 function MetricCard({ label, value }: { label: string; value: string }) {
   return (
-    <View
-      style={{
-        flexBasis: '31%',
-        flexGrow: 1,
-        gap: 6,
-        padding: 12,
-        borderRadius: 16,
-        backgroundColor: 'rgba(255,255,255,0.04)',
-        borderWidth: 1,
-        borderColor: 'rgba(255,255,255,0.08)',
-      }}
-    >
-      <Text style={{ fontSize: 12, opacity: 0.7 }}>{label}</Text>
-      <Text style={{ fontSize: 16, fontWeight: '700' }}>{value}</Text>
+    <View style={cardStyles.metricCard}>
+      <Text style={cardStyles.metricLabel}>{label}</Text>
+      <Text style={cardStyles.metricValue}>{value}</Text>
     </View>
   );
 }

@@ -39,10 +39,15 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
   React.useEffect(() => {
     try {
       runStorageMigrations();
-      void syncDreamWidgetSnapshot();
     } catch (error) {
       reportError(error, { event: 'storage_migration_failed' });
     }
+
+    // Kept outside the try: it is async, so a rejection would never have
+    // reached that catch. Its own failure is reported separately.
+    syncDreamWidgetSnapshot().catch(error => {
+      reportError(error, { event: 'widget_snapshot_sync_failed' });
+    });
 
     observability.trackEvent(OBS_EVENTS.AppOpened);
     syncDreamReminderState().catch(error => {

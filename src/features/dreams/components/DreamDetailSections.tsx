@@ -116,7 +116,13 @@ function AudioPlayerWidget({
           ]}
           onPress={onToggle}
         >
-          <View style={{ marginLeft: isPlaying ? 0 : 2 }}>
+          <View
+            style={
+              isPlaying
+                ? styles.audioPlayIconPlaying
+                : styles.audioPlayIconPaused
+            }
+          >
             <Ionicons
               name={isPlaying ? 'pause' : 'play'}
               size={18}

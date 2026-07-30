@@ -1523,6 +1523,28 @@ PODS:
     - Yoga
   - react-native-biometrics (3.0.1):
     - React-Core
+  - react-native-libsodium (1.7.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - react-native-safe-area-context (5.8.0):
     - hermes-engine
     - RCTRequired
@@ -2057,6 +2079,28 @@ PODS:
     - ReactCommon/turbomodule/core
     - ReactNativeDependencies
     - Yoga
+  - RNKeychain (10.0.0):
+    - hermes-engine
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-Core-prebuilt
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - ReactNativeDependencies
+    - Yoga
   - RNNotifee (9.1.8):
     - React-Core
     - RNNotifee/NotifeeCore (= 9.1.8)
@@ -2418,6 +2462,7 @@ DEPENDENCIES:
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - React-mutationobservernativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver`)
   - react-native-biometrics (from `../node_modules/react-native-biometrics`)
+  - react-native-libsodium (from `../node_modules/react-native-libsodium`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-networking (from `../node_modules/react-native/ReactCommon/react/networking`)
@@ -2458,6 +2503,7 @@ DEPENDENCIES:
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
+  - RNKeychain (from `../node_modules/react-native-keychain`)
   - "RNNotifee (from `../node_modules/@notifee/react-native`)"
   - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNReanimated (from `../node_modules/react-native-reanimated`)
@@ -2562,6 +2608,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/mutationobserver"
   react-native-biometrics:
     :path: "../node_modules/react-native-biometrics"
+  react-native-libsodium:
+    :path: "../node_modules/react-native-libsodium"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
   React-NativeModulesApple:
@@ -2642,6 +2690,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
+  RNKeychain:
+    :path: "../node_modules/react-native-keychain"
   RNNotifee:
     :path: "../node_modules/@notifee/react-native"
   RNReactNativeHapticFeedback:
@@ -2707,6 +2757,7 @@ SPEC CHECKSUMS:
   React-microtasksnativemodule: f413ee411341fb3c34d20e85e9f6f524921fab15
   React-mutationobservernativemodule: 58f6d2adf7d98e72b241608dfa2ddce414d2a4e7
   react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
+  react-native-libsodium: 2704943436a7317ab1f21502ec263436b13cbf70
   react-native-safe-area-context: fb5c8ee9f6dd62ef710611b3d370c501f42a4ac0
   React-NativeModulesApple: 167e532fb9bae30f3c66636b8ee0092bab263667
   React-networking: 89f6b69755a3176f30e56ba1ba8e214b1518ecfb
@@ -2747,6 +2798,7 @@ SPEC CHECKSUMS:
   RNDateTimePicker: b9e20c2a3af26f4ab10646359777205bbad1fdac
   RNFS: 89de7d7f4c0f6bafa05343c578f61118c8282ed8
   RNGestureHandler: a426f18ab9021991fe2cbc8bf1677b740e20e70c
+  RNKeychain: 6778b35b5bd067c322f8479526ac09b1d61f31d0
   RNNotifee: 5e3b271e8ea7456a36eec994085543c9adca9168
   RNReactNativeHapticFeedback: 576e23c1ad2d800ded4502be3f66b767308b63a1
   RNReanimated: 5aa9e73d0f8d3c40d5c9bec396d6a61098db31f0

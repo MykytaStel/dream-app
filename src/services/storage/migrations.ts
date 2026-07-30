@@ -1,4 +1,5 @@
 import { AppLocale } from '../../i18n/types';
+import { reportError } from '../observability/errorReporting';
 import {
   Dream,
   DreamIntensity,
@@ -329,28 +330,43 @@ function coerceLegacyDream(entry: unknown, index: number): Dream | undefined {
   };
 }
 
+/**
+ * Raised when the stored dreams cannot be read. The archive is the product, so
+ * a migration that cannot understand it must stop rather than replace it:
+ * unreadable data can still be recovered, overwritten data cannot.
+ */
+export class UnreadableDreamStoreError extends Error {
+  constructor(readonly cause: unknown) {
+    super('Stored dreams could not be parsed, so the migration was aborted.');
+    this.name = 'UnreadableDreamStoreError';
+  }
+}
+
 function migrateDreamsFromLegacyShape() {
   const raw = kv.getString(DREAMS_STORAGE_KEY);
   if (!raw) {
     return;
   }
 
+  let parsed: unknown;
   try {
-    const parsed = JSON.parse(raw) as unknown;
-    if (!Array.isArray(parsed)) {
-      kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
-      return;
-    }
-
-    const migrated = parsed
-      .map(coerceLegacyDream)
-      .filter((dream): dream is Dream => Boolean(dream))
-      .map(sanitizeDream);
-
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
-  } catch {
-    kv.set(DREAMS_STORAGE_KEY, JSON.stringify([]));
+    parsed = JSON.parse(raw);
+  } catch (error) {
+    throw new UnreadableDreamStoreError(error);
   }
+
+  if (!Array.isArray(parsed)) {
+    throw new UnreadableDreamStoreError(
+      `Expected an array, received ${typeof parsed}.`,
+    );
+  }
+
+  const migrated = parsed
+    .map(coerceLegacyDream)
+    .filter((dream): dream is Dream => Boolean(dream))
+    .map(sanitizeDream);
+
+  kv.set(DREAMS_STORAGE_KEY, JSON.stringify(sortDreamsStable(migrated)));
 }
 
 function migrateDreamsToV2() {
@@ -572,6 +588,22 @@ function readStorageSchemaVersion() {
 }
 
 export function runStorageMigrations() {
+  try {
+    return runStorageMigrationSteps();
+  } catch (error) {
+    if (error instanceof UnreadableDreamStoreError) {
+      // The stored value is left exactly as it was, and the schema version is
+      // not advanced, so the next launch tries again instead of treating the
+      // unreadable data as already migrated.
+      reportError(error, { event: 'storage_migration_aborted' });
+      return readStorageSchemaVersion();
+    }
+
+    throw error;
+  }
+}
+
+function runStorageMigrationSteps() {
   const currentVersion = readStorageSchemaVersion();
   if (currentVersion >= CURRENT_STORAGE_SCHEMA_VERSION) {
     return currentVersion;

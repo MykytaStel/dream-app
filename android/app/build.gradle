@@ -2,6 +2,13 @@ apply plugin: "com.android.application"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
+// Release signing comes from the environment so no key material ever sits in
+// the repository. When these are unset — which is the case until a keystore
+// exists — the release build produces an unsigned artifact instead of falling
+// back to the debug key.
+def releaseKeystorePath = System.getenv('ANDROID_KEYSTORE_PATH')
+def hasReleaseKeystore = releaseKeystorePath != null && !releaseKeystorePath.isEmpty()
+
 ext {
     // String, not File — see the note in the root build.gradle.
     REACT_NATIVE_NODE_MODULES_DIR = file("../../node_modules/react-native").absolutePath
@@ -99,15 +106,36 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+
+        // Only defined when a real keystore is supplied. Absent, the release
+        // build stays unsigned and says why, rather than quietly using the one
+        // below it.
+        if (hasReleaseKeystore) {
+            release {
+                storeFile file(releaseKeystorePath)
+                storePassword System.getenv('ANDROID_KEYSTORE_PASSWORD')
+                keyAlias System.getenv('ANDROID_KEY_ALIAS')
+                keyPassword System.getenv('ANDROID_KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
+            // This used to read `signingConfigs.debug`, which is the template's
+            // default and the single most expensive mistake available here: an
+            // app published under the debug key — whose password is the public
+            // string 'android' — can never be updated, because Play binds the
+            // listing to the signing key forever.
+            //
+            // Now it signs with a real keystore when one is supplied through the
+            // environment, and produces an unsigned artifact otherwise. Unsigned
+            // is not a lesser evil, it is the correct outcome: it cannot be
+            // installed and cannot be uploaded, so the mistake is impossible to
+            // make by accident.
+            signingConfig hasReleaseKeystore ? signingConfigs.release : null
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }

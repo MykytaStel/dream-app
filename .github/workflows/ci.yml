@@ -49,3 +49,120 @@ jobs:
       # same suites and additionally enforces the coverage floor.
       - name: Unit tests with coverage
         run: yarn test:coverage
+
+  # The gap these two close: a green suite says nothing about whether the app
+  # compiles. Three times in one working session the build broke where every
+  # test was passing — a native module that would not codegen, a Gradle type
+  # error, a C++ binding. None of that is reachable from Jest.
+  android:
+    name: Android build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@3.6.4 --activate
+
+      # --immutable so a lockfile that drifted from package.json fails here
+      # rather than resolving to something nobody has run locally. The patched
+      # react-native-libsodium is applied by resolution, not a postinstall
+      # script, so it lands before any native build starts.
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      # Debug rather than release: it compiles the same native graph, including
+      # the C++ that no other check touches, and needs no signing key.
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Confirm the patched secretstream binding is compiled in
+        run: |
+          set -euo pipefail
+          # The patch is what makes streamed audio encryption possible. If it
+          # ever stops applying, the build still succeeds and the failure
+          # surfaces only at runtime, on a user's recording.
+          if ! grep -q "crypto_secretstream" \
+            node_modules/react-native-libsodium/cpp/react-native-libsodium.cpp; then
+            echo "The libsodium patch did not apply." >&2
+            exit 1
+          fi
+
+  ios:
+    name: iOS build
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          bundler-cache: true
+
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@3.6.4 --activate
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      # Pods are gitignored while Podfile.lock is committed, so the lock is the
+      # right cache key: a pod install from cold is several minutes of the most
+      # expensive runner we use.
+      - name: Cache Pods
+        uses: actions/cache@v4
+        with:
+          path: ios/Pods
+          key: pods-${{ runner.os }}-${{ hashFiles('ios/Podfile.lock') }}
+          restore-keys: pods-${{ runner.os }}-
+
+      - name: Install pods
+        working-directory: ios
+        env:
+          LANG: en_US.UTF-8
+        run: bundle exec pod install
+
+      # CODE_SIGNING_ALLOWED=NO because this proves the code compiles and links,
+      # which needs no certificate. Signing belongs to release, not to a PR.
+      - name: Build for simulator
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -workspace ios/DreamApp.xcworkspace \
+            -scheme DreamApp \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            build

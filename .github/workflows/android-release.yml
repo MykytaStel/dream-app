@@ -49,9 +49,46 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
+      # Refuses to build rather than producing something that looks shippable.
+      #
+      # Until a keystore exists this workflow would otherwise emit an unsigned
+      # AAB — and before the signing fix, one signed with the debug key, which
+      # Play would have bound to the listing forever. Both are artifacts whose
+      # only safe use is being thrown away, so the run stops here instead.
+      - name: Require a real signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          if [ -z "${KEYSTORE_BASE64}" ]; then
+            echo "::error::No ANDROID_KEYSTORE_BASE64 secret is configured."
+            echo "A release cannot be signed, and an unsigned or debug-signed"
+            echo "AAB must never reach Play: the first upload fixes the signing"
+            echo "key permanently. Generate a keystore, add it and its three"
+            echo "passwords as repository secrets, then run this again."
+            exit 1
+          fi
+
+      - name: Decode signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          set -euo pipefail
+          # Written outside the checkout so it cannot be committed by accident.
+          echo "${KEYSTORE_BASE64}" | base64 --decode > "${RUNNER_TEMP}/release.keystore"
+
       - name: Build release bundle
         working-directory: android
+        env:
+          ANDROID_KEYSTORE_PATH: ${{ runner.temp }}/release.keystore
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: ./gradlew bundleRelease --no-daemon
+
+      - name: Remove the decoded key
+        if: always()
+        run: rm -f "${RUNNER_TEMP}/release.keystore"
 
       - name: Upload AAB artifact
         uses: actions/upload-artifact@v4

@@ -140,10 +140,14 @@ jest.mock('react-native-fs', () => ({
   CachesDirectoryPath: '/caches',
   mkdir: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockResolvedValue(''),
+  // Partial reads and appends: what chunked encryption is built on.
+  read: jest.fn().mockResolvedValue(''),
+  appendFile: jest.fn().mockResolvedValue(undefined),
   writeFile: jest.fn().mockResolvedValue(undefined),
   exists: jest.fn().mockResolvedValue(false),
   unlink: jest.fn().mockResolvedValue(undefined),
   stat: jest.fn().mockResolvedValue({ size: '0' }),
+  moveFile: jest.fn().mockResolvedValue(undefined),
   downloadFile: jest.fn(() => ({
     promise: Promise.resolve({ statusCode: 200 }),
   })),
@@ -212,6 +216,110 @@ jest.mock('react-native-libsodium', () => {
 
   return { ...sodium, default: sodium };
 });
+
+// The secretstream binding is native, so the suites run against a stand-in.
+//
+// It is not encryption. What it does reproduce is the one property the file
+// format leans on: each chunk's authenticator depends on every chunk before it.
+// Without that chaining, the tests for reordered and dropped chunks would pass
+// against a format that does not actually detect either.
+(() => {
+  const HEADER_BYTES = 24;
+  const TAG_BYTES = 17; // 1 tag byte + 16 of authenticator, as in the real one
+  const TAG_MESSAGE = 0;
+  const TAG_FINAL = 3;
+
+  let headerCounter = 0;
+
+  // Depends on the key as well as the chain. An earlier version did not, and
+  // the suite caught it: a wrong key produced garbage plaintext whose
+  // authenticator still verified, so "another key cannot open it" passed
+  // against a stand-in that could not actually tell.
+  const chainFrom = (previous, body, tag, key) => {
+    const next = new Uint8Array(16);
+    for (let index = 0; index < 16; index += 1) {
+      // eslint-disable-next-line no-bitwise
+      let value = (previous[index] ^ tag ^ key[index % key.length]) & 0xff;
+      for (let step = index; step < body.length; step += 16) {
+        // eslint-disable-next-line no-bitwise
+        value = (value + body[step] * (step + 1)) & 0xff;
+      }
+      next[index] = value;
+    }
+    return next;
+  };
+
+  const mask = (bytes, key, chain) =>
+    Uint8Array.from(bytes, (byte, index) =>
+      // eslint-disable-next-line no-bitwise
+      byte ^ key[index % key.length] ^ chain[index % chain.length],
+    );
+
+  global.jsi_crypto_secretstream_xchacha20poly1305_HEADERBYTES = HEADER_BYTES;
+  global.jsi_crypto_secretstream_xchacha20poly1305_ABYTES = TAG_BYTES;
+  global.jsi_crypto_secretstream_xchacha20poly1305_KEYBYTES = 32;
+  global.jsi_crypto_secretstream_xchacha20poly1305_TAG_MESSAGE = TAG_MESSAGE;
+  global.jsi_crypto_secretstream_xchacha20poly1305_TAG_FINAL = TAG_FINAL;
+
+  global.jsi_crypto_secretstream_xchacha20poly1305_init_push = keyBuffer => {
+    const key = new Uint8Array(keyBuffer);
+    headerCounter += 1;
+    const header = Uint8Array.from(
+      { length: HEADER_BYTES },
+      // eslint-disable-next-line no-bitwise
+      (_, index) => (index * 7 + headerCounter) & 0xff,
+    );
+    let chain = header.slice(0, 16);
+
+    return {
+      header: header.buffer.slice(0),
+      push(messageBuffer, tag = TAG_MESSAGE) {
+        const message = new Uint8Array(messageBuffer);
+        const body = mask(message, key, chain);
+        const authenticator = chainFrom(chain, body, tag, key);
+        chain = authenticator;
+
+        const out = new Uint8Array(body.length + TAG_BYTES);
+        out[0] = tag;
+        out.set(body, 1);
+        out.set(authenticator, 1 + body.length);
+        return out.buffer;
+      },
+    };
+  };
+
+  global.jsi_crypto_secretstream_xchacha20poly1305_init_pull = (
+    headerBuffer,
+    keyBuffer,
+  ) => {
+    const key = new Uint8Array(keyBuffer);
+    let chain = new Uint8Array(headerBuffer).slice(0, 16);
+
+    return {
+      pull(ciphertextBuffer) {
+        const ciphertext = new Uint8Array(ciphertextBuffer);
+        if (ciphertext.length < TAG_BYTES) {
+          throw new Error('chunk too short');
+        }
+
+        const tag = ciphertext[0];
+        const body = ciphertext.slice(1, ciphertext.length - 16);
+        const authenticator = ciphertext.slice(ciphertext.length - 16);
+        const expected = chainFrom(chain, body, tag, key);
+
+        for (let index = 0; index < 16; index += 1) {
+          if (authenticator[index] !== expected[index]) {
+            throw new Error('authentication failed');
+          }
+        }
+
+        const message = mask(body, key, chain);
+        chain = expected;
+        return { message: message.buffer.slice(0), tag };
+      },
+    };
+  };
+})();
 
 jest.mock('react-native-keychain', () => {
   const store = new Map();

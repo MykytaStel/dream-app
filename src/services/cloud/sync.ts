@@ -158,9 +158,9 @@ async function ensureDreamAudioUploaded(
     throw new Error('local-audio-file-missing');
   }
 
-  // The 100 MB ceiling that used to live here is gone: encryption enforces a
-  // stricter one and reports it more precisely, so keeping both would leave a
-  // limit that can never be reached and a second stat call to find out.
+  // No size ceiling any more. The old 100 MB check guarded against loading a
+  // whole file into memory, and streamed encryption removed the reason: memory
+  // is one chunk however long the recording is.
   const filename = getAudioFilename(dream.audioUri, dream.id);
   const remotePath =
     dream.audioRemotePath ??
@@ -175,7 +175,7 @@ async function ensureDreamAudioUploaded(
   // were widened for exactly this in the same migration.
   const encryptedPath = await encryptAudioFileForUpload(
     audioFilePath,
-    sealer.sealBytes,
+    sealer.key,
   );
 
   try {

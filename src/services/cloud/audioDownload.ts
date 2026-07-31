@@ -4,7 +4,6 @@ import { DREAM_AUDIO_BUCKET } from '../api/contracts/dreamSync';
 import { decryptDownloadedAudioFile } from './audioCipher';
 import {
   ArchiveKeyRequiredError,
-  createArchiveSealer,
   getArchiveKey,
 } from '../crypto/archiveKeyService';
 
@@ -49,10 +48,7 @@ export async function downloadDreamAudio(
   }
 
   try {
-    await decryptDownloadedAudioFile(
-      localPath,
-      createArchiveSealer(key).openBytes,
-    );
+    await decryptDownloadedAudioFile(localPath, key);
   } catch (decryptionError) {
     // The file on disk is a sealed blob, not a recording. Leaving it there
     // would hand the player something unplayable, which reads as "your dream is

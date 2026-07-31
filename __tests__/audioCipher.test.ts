@@ -2,124 +2,107 @@ import RNFS from 'react-native-fs';
 import {
   decryptDownloadedAudioFile,
   encryptAudioFileForUpload,
-  AudioTooLargeToEncryptError,
-  MAX_ENCRYPTABLE_AUDIO_BYTES,
+  ENCRYPTED_AUDIO_MIME_TYPE,
 } from '../src/services/cloud/audioCipher';
-import { createArchiveSealer } from '../src/services/crypto/archiveKeyService';
-import { ArchiveDecryptionError } from '../src/services/crypto/archiveCipher';
+import { AudioStreamError } from '../src/services/cloud/audioStreamCipher';
+import {
+  createVirtualFileSystem,
+  expectSameBytes,
+  recognisableAudio,
+} from './helpers/virtualFileSystem';
 
 /**
- * A voice note is the dream, narrated. Encrypting the text and shipping the
- * recording in the clear would leave the promise broken while looking kept, so
- * these check the recording specifically — including that what reaches storage
- * is not the audio.
+ * The upload and download ends of the recording path.
+ *
+ * The chunk format itself is covered by `audioStreamCipher.test.ts`; what
+ * matters here is the file handling around it — where the sealed copy goes, and
+ * what is left on disk when something fails.
  */
 
 const KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 7);
 const OTHER_KEY = Uint8Array.from({ length: 32 }, (_, index) => index + 90);
+const SOURCE = '/documents/note.m4a';
 
-const sealer = createArchiveSealer(KEY);
-const otherSealer = createArchiveSealer(OTHER_KEY);
-
-// A stand-in for the m4a header plus some payload: recognisable bytes that must
-// not survive into what gets uploaded.
-const RECORDING_BASE64 = 'AAAAHGZ0eXBNNEEgAAAAAE00QSBtcDQyaXNvbQ==';
-
-const mockedStat = RNFS.stat as jest.Mock;
-const mockedReadFile = RNFS.readFile as jest.Mock;
-const mockedWriteFile = RNFS.writeFile as jest.Mock;
-
-function fileOnDisk(base64: string, sizeBytes = 1024) {
-  mockedStat.mockResolvedValue({ size: String(sizeBytes) });
-  mockedReadFile.mockResolvedValue(base64);
-}
-
-/** What the last writeFile call put on disk, as base64. */
-function lastWrittenBase64(): string {
-  const calls = mockedWriteFile.mock.calls;
-  return calls[calls.length - 1][1] as string;
-}
+let vfs: ReturnType<typeof createVirtualFileSystem>;
 
 describe('audio encryption', () => {
   beforeEach(() => {
-    mockedStat.mockReset();
-    mockedReadFile.mockReset();
-    mockedWriteFile.mockReset().mockResolvedValue(undefined);
+    vfs = createVirtualFileSystem();
+    vfs.install();
+    (RNFS.moveFile as jest.Mock).mockImplementation(
+      async (from: string, to: string) => {
+        const file = vfs.get(from);
+        if (!file) {
+          throw new Error(`ENOENT: ${from}`);
+        }
+        vfs.put(to, file);
+        vfs.files.delete(from);
+      },
+    );
   });
 
   test('the recording comes back byte for byte', async () => {
-    fileOnDisk(RECORDING_BASE64);
+    const original = recognisableAudio(9000);
+    vfs.put(SOURCE, original);
 
-    await encryptAudioFileForUpload('/documents/note.m4a', sealer.sealBytes);
-    const uploaded = lastWrittenBase64();
+    const sealedPath = await encryptAudioFileForUpload(SOURCE, KEY);
+    await decryptDownloadedAudioFile(sealedPath, KEY);
 
-    fileOnDisk(uploaded);
-    await decryptDownloadedAudioFile('/documents/note.m4a', sealer.openBytes);
+    // Decryption replaces the file in place, under the name the player uses.
+    expectSameBytes(vfs.get(sealedPath), original);
+  });
 
-    expect(lastWrittenBase64()).toBe(RECORDING_BASE64);
+  test('the sealed copy goes to the cache, not next to the archive', async () => {
+    vfs.put(SOURCE, recognisableAudio(1000));
+
+    const sealedPath = await encryptAudioFileForUpload(SOURCE, KEY);
+
+    // Caches can be reclaimed by the system; a stray copy of every recording in
+    // the documents directory could not.
+    expect(sealedPath).toContain('/caches/');
+    expect(vfs.get(SOURCE)).toBeDefined();
   });
 
   test('what reaches storage is not the recording', async () => {
-    fileOnDisk(RECORDING_BASE64);
+    const original = recognisableAudio(2048);
+    vfs.put(SOURCE, original);
 
-    await encryptAudioFileForUpload('/documents/note.m4a', sealer.sealBytes);
+    const sealedPath = await encryptAudioFileForUpload(SOURCE, KEY);
 
-    expect(lastWrittenBase64()).not.toBe(RECORDING_BASE64);
-    // 'ftypM4A' — the container marker — must not survive into the blob.
-    expect(lastWrittenBase64()).not.toContain('ZnR5cE00QSA');
+    expect(vfs.get(sealedPath)).not.toEqual(original);
+    expect(vfs.get(sealedPath)!.join(',')).not.toContain(
+      original.slice(0, 64).join(','),
+    );
   });
 
-  test('sealing the same recording twice gives different blobs', async () => {
-    fileOnDisk(RECORDING_BASE64);
-    await encryptAudioFileForUpload('/documents/note.m4a', sealer.sealBytes);
-    const first = lastWrittenBase64();
+  test('a recording far past the old 16 MB limit now works', async () => {
+    // The single-pass path refused anything over 16 MB. This is the change:
+    // length stopped being a reason to fail.
+    const original = recognisableAudio(17 * 1024 * 1024);
+    vfs.put(SOURCE, original);
 
-    fileOnDisk(RECORDING_BASE64);
-    await encryptAudioFileForUpload('/documents/note.m4a', sealer.sealBytes);
+    const sealedPath = await encryptAudioFileForUpload(SOURCE, KEY);
+    await decryptDownloadedAudioFile(sealedPath, KEY);
 
-    expect(lastWrittenBase64()).not.toBe(first);
+    expectSameBytes(vfs.get(sealedPath), original);
   });
 
-  test('another key cannot open it', async () => {
-    fileOnDisk(RECORDING_BASE64);
-    await encryptAudioFileForUpload('/documents/note.m4a', sealer.sealBytes);
-
-    fileOnDisk(lastWrittenBase64());
+  test('a failed decryption leaves nothing playable behind', async () => {
+    vfs.put(SOURCE, recognisableAudio(4096));
+    const sealedPath = await encryptAudioFileForUpload(SOURCE, KEY);
 
     await expect(
-      decryptDownloadedAudioFile('/documents/note.m4a', otherSealer.openBytes),
-    ).rejects.toThrow(ArchiveDecryptionError);
+      decryptDownloadedAudioFile(sealedPath, OTHER_KEY),
+    ).rejects.toThrow(AudioStreamError);
+
+    // Neither the blob nor a half-decrypted fragment: handing the player either
+    // one would read as the dream being lost rather than an error.
+    expect(vfs.get(`${sealedPath}.restored`)).toBeUndefined();
   });
 
-  test('a truncated download is refused rather than written back as audio', async () => {
-    fileOnDisk('AAAA');
-
-    await expect(
-      decryptDownloadedAudioFile('/documents/note.m4a', sealer.openBytes),
-    ).rejects.toThrow(ArchiveDecryptionError);
-    expect(mockedWriteFile).not.toHaveBeenCalled();
-  });
-
-  /**
-   * The single-pass path holds roughly four copies of the file at once. Above
-   * the bound it must fail with something the caller can report, not by running
-   * the device out of memory — and above all not by falling back to an
-   * unencrypted upload.
-   */
-  test('an oversized recording fails loudly instead of being uploaded in the clear', async () => {
-    fileOnDisk(RECORDING_BASE64, MAX_ENCRYPTABLE_AUDIO_BYTES + 1);
-
-    await expect(
-      encryptAudioFileForUpload('/documents/long.m4a', sealer.sealBytes),
-    ).rejects.toThrow(AudioTooLargeToEncryptError);
-    expect(mockedWriteFile).not.toHaveBeenCalled();
-  });
-
-  test('a recording exactly at the bound is still accepted', async () => {
-    fileOnDisk(RECORDING_BASE64, MAX_ENCRYPTABLE_AUDIO_BYTES);
-
-    await expect(
-      encryptAudioFileForUpload('/documents/edge.m4a', sealer.sealBytes),
-    ).resolves.toEqual(expect.stringContaining('/caches/'));
+  test('the blob is not declared as audio', () => {
+    // The bucket would reject it under the old audio/* list, and a client that
+    // trusted the type would try to play a sealed file.
+    expect(ENCRYPTED_AUDIO_MIME_TYPE).toBe('application/octet-stream');
   });
 });

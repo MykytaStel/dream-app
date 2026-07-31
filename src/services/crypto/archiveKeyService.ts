@@ -23,7 +23,9 @@ import type {
   OpenContent,
   SealContent,
 } from '../api/contracts/dreamSyncCipher';
-import type { OpenBytes, SealBytes } from '../cloud/audioCipher';
+/** Byte-level sealing, used by paths that already hold binary data. */
+export type SealBytes = (plaintext: Uint8Array) => Uint8Array;
+export type OpenBytes = (sealed: Uint8Array) => Uint8Array;
 
 /**
  * The one place that knows which key this device is using.
@@ -127,9 +129,12 @@ export function createArchiveSealer(key: Uint8Array): {
   open: OpenContent;
   sealBytes: SealBytes;
   openBytes: OpenBytes;
+  /** Handed to the streaming audio path, which needs the key itself. */
+  key: Uint8Array;
   cipherVersion: number;
 } {
   return {
+    key,
     seal: content => encryptRecord(content, key, aead),
     open: ciphertext => decryptRecord(ciphertext, key, aead),
     // Audio takes the byte path: it is already binary, so routing it through

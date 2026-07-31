@@ -185,6 +185,13 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       backgroundColor: 'transparent',
     },
     tabIconShellActive: {
+      // The radius is repeated from `tabIconShell` on purpose. On Android the
+      // rounded outline is baked into the background drawable when the view is
+      // created; a background colour added later, on a style update, arrives
+      // without it. The result was that the tab focused at mount rendered a
+      // circle and every tab focused by tapping rendered a square — four of
+      // five, on Android only, and invisible to every test.
+      borderRadius: 13,
       backgroundColor: theme.colors.primary,
       shadowColor: theme.colors.glow,
       shadowOffset: { width: 0, height: 4 },

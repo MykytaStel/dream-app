@@ -123,6 +123,22 @@ android {
             }
         }
     }
+    // Post-quantum lookup tables, shipped to every user for nothing.
+    //
+    // react-native-html-to-pdf pulls in pdfbox-android, which pulls in
+    // BouncyCastle, which carries ~8 MB of parameter tables for SIKE and
+    // Picnic — measured as 28% of the 28 MB an Android user actually
+    // downloads. Generating a PDF of someone's dream archive does not sign it,
+    // encrypt it, or negotiate a key with anything, so none of it is reachable.
+    //
+    // SIKE was broken and withdrawn in 2022, which is a reasonable summary of
+    // how much this code was ever going to be used here.
+    packagingOptions {
+        resources {
+            excludes += ['org/bouncycastle/pqc/**']
+        }
+    }
+
     buildTypes {
         debug {
             signingConfig signingConfigs.debug

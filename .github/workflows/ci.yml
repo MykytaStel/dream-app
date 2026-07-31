@@ -124,13 +124,20 @@ jobs:
         with:
           node-version: '20'
 
-      # Version pinned here rather than in a .ruby-version file: that file would
-      # also switch every developer's local shell, and this only needs to say
-      # what CI runs. CocoaPods 1.15 is what Gemfile.lock resolves against.
+      # 3.1, not something newer: Gemfile.lock was resolved on this project's
+      # local Ruby 2.7 and pins CFPropertyList 3.0.9, which declares ruby < 3.2.
+      # Ruby 3.3 fails at `bundle install` before anything is built.
+      #
+      # The real debt is the lockfile being tied to an end-of-life Ruby. Bumping
+      # it means regenerating Gemfile.lock on a modern Ruby, which changes what
+      # every developer resolves — a separate change, not a CI detail.
+      #
+      # Pinned here rather than in a .ruby-version file, which would also switch
+      # every local shell to satisfy CI.
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.3'
+          ruby-version: '3.1'
           bundler-cache: true
 
       - name: Enable Corepack

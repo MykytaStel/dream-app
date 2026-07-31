@@ -1,32 +1,33 @@
 import Foundation
 
-@objc(AudioUpload)
-class AudioUpload: NSObject {
-  @objc
-  static func requiresMainQueueSetup() -> Bool {
-    false
-  }
-
+/**
+ * The upload itself, still in Swift.
+ *
+ * Named `Impl` because the module name belongs to the `.mm` beside it, which
+ * conforms to the generated TurboModule protocol and forwards here.
+ *
+ * The parameters used to arrive as an `NSDictionary` and be pulled out with
+ * `as? String` one key at a time — five casts that could each fail at runtime
+ * over names typed twice, once here and once in JavaScript. Codegen types the
+ * boundary now, so they arrive as strings and the guard only has to check that
+ * they are not empty.
+ */
+@objc(AudioUploadImpl)
+class AudioUploadImpl: NSObject {
   @objc
   func upload(
-    _ options: NSDictionary,
+    uploadUrl: String,
+    localPath: String,
+    mimeType: String,
+    anonKey: String,
+    accessToken: String?,
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
-    guard
-      let uploadUrl = options["uploadUrl"] as? String,
-      let localPath = options["localPath"] as? String,
-      let mimeType = options["mimeType"] as? String,
-      let anonKey = options["anonKey"] as? String,
-      !uploadUrl.isEmpty,
-      !localPath.isEmpty,
-      !anonKey.isEmpty
-    else {
+    guard !uploadUrl.isEmpty, !localPath.isEmpty, !anonKey.isEmpty else {
       reject("invalid_arguments", "uploadUrl, localPath, and anonKey are required.", nil)
       return
     }
-
-    let accessToken = options["accessToken"] as? String
 
     let fileUrl = URL(fileURLWithPath: localPath)
     let requestUrl = URL(string: uploadUrl)

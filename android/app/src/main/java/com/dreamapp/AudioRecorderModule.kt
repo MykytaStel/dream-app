@@ -7,10 +7,9 @@ import android.net.Uri
 import android.util.Log
 import com.facebook.react.bridge.*
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
-import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.LifecycleEventListener
+import com.dreamapp.specs.NativeAudioRecorderSpec
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -18,7 +17,7 @@ import java.util.Locale
 
 class AudioRecorderModule(
   reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
+) : NativeAudioRecorderSpec(reactContext), LifecycleEventListener {
 
   private var mediaRecorder: MediaRecorder? = null
   private var mediaPlayer: MediaPlayer? = null
@@ -29,8 +28,6 @@ class AudioRecorderModule(
   init {
     reactContext.addLifecycleEventListener(this)
   }
-
-  override fun getName(): String = "AudioRecorder"
 
   private fun getAudioDirectory(context: Context): File {
     val dir = File(context.filesDir, "audio")
@@ -54,8 +51,7 @@ class AudioRecorderModule(
     return path.startsWith(audioDir)
   }
 
-  @ReactMethod
-  fun cleanupOrphanedAudioFiles(maxAgeDays: Double, promise: Promise) {
+  override fun cleanupOrphanedAudioFiles(maxAgeDays: Double, promise: Promise) {
     val context = reactApplicationContext
     try {
       val dir = getAudioDirectory(context)
@@ -76,8 +72,7 @@ class AudioRecorderModule(
     }
   }
 
-  @ReactMethod
-  fun startRecording(promise: Promise) {
+  override fun startRecording(promise: Promise) {
     val context = reactApplicationContext
 
     if (isRecording) {
@@ -128,8 +123,7 @@ class AudioRecorderModule(
     }
   }
 
-  @ReactMethod
-  fun stopRecording(promise: Promise) {
+  override fun stopRecording(promise: Promise) {
     if (!isRecording || mediaRecorder == null) {
       promise.reject("not_recording", "No active audio recording to stop.")
       return
@@ -169,8 +163,7 @@ class AudioRecorderModule(
     }
   }
 
-  @ReactMethod
-  fun play(filePath: String, promise: Promise) {
+  override fun play(filePath: String, promise: Promise) {
     if (filePath.isBlank()) {
       promise.reject("invalid_path", "Audio file path is empty.")
       return
@@ -219,8 +212,7 @@ class AudioRecorderModule(
     }
   }
 
-  @ReactMethod
-  fun stop(promise: Promise) {
+  override fun stop(promise: Promise) {
     if (!isPlaying || mediaPlayer == null) {
       promise.resolve(null)
       return

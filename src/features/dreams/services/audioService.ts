@@ -4,7 +4,8 @@ import AudioRecorderPlayer, {
   AVEncoderAudioQualityIOSType,
   OutputFormatAndroidType,
 } from 'react-native-audio-recorder-player';
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
+import NativeAudioRecorder from '../../../specs/NativeAudioRecorder';
 import RNFS from 'react-native-fs';
 import { ensureRecordAudioPermission } from './audioPermissions';
 import {
@@ -30,19 +31,9 @@ export class AudioPermissionError extends Error {
   }
 }
 
-type NativeAudioRecorderModule = {
-  startRecording(): Promise<string>;
-  stopRecording(): Promise<string | null>;
-  play(path: string): Promise<void>;
-  stop(): Promise<void>;
-  cleanupOrphanedAudioFiles(maxAgeDays: number): Promise<number>;
-};
-
-// NativeModules is an untyped bag; assert only the one entry we know about.
-// This goes away once the module becomes a TurboModule and codegen types it.
-const NativeAudioRecorder: NativeAudioRecorderModule | undefined = (
-  NativeModules as { AudioRecorder?: NativeAudioRecorderModule }
-).AudioRecorder;
+// Typed by codegen from src/specs/NativeAudioRecorder.ts. Android-only, so the
+// spec uses `get`: null on iOS, where recording goes through the library
+// instead. That is a real platform difference rather than a missing module.
 
 function normalizeUriForStorage(value: string | null | undefined): string {
   if (!value) {

@@ -3,7 +3,7 @@ package com.dreamapp
 import android.util.Log
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.dreamapp.specs.NativeAudioUploadSpec
 import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.ReadableMap
 import java.io.BufferedInputStream
@@ -15,9 +15,7 @@ import java.net.URL
 
 class AudioUploadModule(
   reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
-
-  override fun getName(): String = "AudioUpload"
+) : NativeAudioUploadSpec(reactContext) {
 
   private fun uploadFileStreaming(
     uploadUrl: String,
@@ -85,8 +83,7 @@ class AudioUploadModule(
     }
   }
 
-  @ReactMethod
-  fun upload(options: ReadableMap, promise: Promise) {
+  override fun upload(options: ReadableMap, promise: Promise) {
     try {
       val uploadUrl = options.getString("uploadUrl") ?: ""
       val localPath = options.getString("localPath") ?: ""

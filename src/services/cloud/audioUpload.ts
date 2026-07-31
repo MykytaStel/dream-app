@@ -1,25 +1,14 @@
-import { NativeModules, Platform } from 'react-native';
+import { Platform } from 'react-native';
+import NativeAudioUpload from '../../specs/NativeAudioUpload';
 import RNFS from 'react-native-fs';
 import { decode as decodeBase64 } from 'base-64';
 import { getSupabaseRestConfig } from '../api/supabase/restConfig';
 import { getSupabaseClient } from '../api/supabase/client';
 import { DREAM_AUDIO_BUCKET } from '../api/contracts/dreamSync';
 
-type NativeAudioUploadModule = {
-  upload(options: {
-    uploadUrl: string;
-    localPath: string;
-    mimeType: string;
-    anonKey: string;
-    accessToken?: string | null;
-  }): Promise<void>;
-};
-
-// NativeModules is an untyped bag; assert only the one entry we know about.
-// This goes away once the module becomes a TurboModule and codegen types it.
-const NativeAudioUpload: NativeAudioUploadModule | undefined = (
-  NativeModules as { AudioUpload?: NativeAudioUploadModule }
-).AudioUpload;
+// Typed by codegen from src/specs/NativeAudioUpload.ts. `get` rather than
+// `getEnforcing` because the JS fallback below is a real path, not a fallback
+// for a mistake: this module is absent wherever it has not been built.
 
 function decodeBase64ToUint8Array(input: string): Uint8Array {
   const binary = decodeBase64(input);
@@ -52,7 +41,10 @@ export async function uploadDreamAudio(
       localPath,
       mimeType,
       anonKey: restConfig.anonKey,
-      accessToken: restConfig.accessToken,
+      // The spec says optional, not nullable: codegen has no way to express a
+      // property that may be explicitly null, and the native side reads an
+      // absent key the same way it read a null one.
+      accessToken: restConfig.accessToken ?? undefined,
     });
     return;
   }

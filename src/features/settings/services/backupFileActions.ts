@@ -1,20 +1,16 @@
-import { Linking, NativeModules, Platform, Share } from 'react-native';
+import { Linking, Platform, Share } from 'react-native';
+import NativeBackupFileIntent from '../../../specs/NativeBackupFileIntent';
 
-type BackupFileIntentModule = {
-  open: (filePath: string, mimeType: string) => Promise<void>;
-  share: (filePath: string, mimeType: string, title?: string) => Promise<void>;
-};
-
-const backupFileIntentModule = NativeModules.BackupFileIntent as
-  BackupFileIntentModule | undefined;
+// Android-only, so the spec uses `get` and this is null on iOS — which the
+// branches below already handle by falling back to Linking and the share sheet.
 
 function createShareableFileUrl(filePath: string) {
   return filePath.startsWith('file://') ? filePath : `file://${filePath}`;
 }
 
 export async function openLocalBackupFile(filePath: string, mimeType: string) {
-  if (Platform.OS === 'android' && backupFileIntentModule?.open) {
-    await backupFileIntentModule.open(filePath, mimeType);
+  if (Platform.OS === 'android' && NativeBackupFileIntent?.open) {
+    await NativeBackupFileIntent.open(filePath, mimeType);
     return;
   }
 
@@ -26,8 +22,8 @@ export async function shareLocalBackupFile(
   mimeType: string,
   title?: string,
 ) {
-  if (Platform.OS === 'android' && backupFileIntentModule?.share) {
-    await backupFileIntentModule.share(filePath, mimeType, title);
+  if (Platform.OS === 'android' && NativeBackupFileIntent?.share) {
+    await NativeBackupFileIntent.share(filePath, mimeType, title);
     return;
   }
 

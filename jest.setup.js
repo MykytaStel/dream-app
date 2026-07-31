@@ -148,6 +148,7 @@ jest.mock('react-native-fs', () => ({
   unlink: jest.fn().mockResolvedValue(undefined),
   stat: jest.fn().mockResolvedValue({ size: '0' }),
   moveFile: jest.fn().mockResolvedValue(undefined),
+  readDir: jest.fn().mockResolvedValue([]),
   downloadFile: jest.fn(() => ({
     promise: Promise.resolve({ statusCode: 200 }),
   })),

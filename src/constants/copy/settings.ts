@@ -352,8 +352,6 @@ const SETTINGS_COPY_EN = {
   cloudSyncStateSuccess: 'Synced',
   cloudSyncStateError: 'Needs attention',
   cloudSyncManualErrorTitle: 'Backup sync failed',
-  cloudSyncAudioTooLarge:
-    'A voice note is too large for backup (max 100 MB). Use a shorter recording or export the dream locally.',
   cloudConfigMissingTitle: 'Supabase config missing',
   cloudConfigMissingDescription:
     'Add a valid project URL and anon key before connecting cloud.',
@@ -930,8 +928,6 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   cloudSyncStateSuccess: 'Синхронізовано',
   cloudSyncStateError: 'Потрібна увага',
   cloudSyncManualErrorTitle: 'Помилка синхронізації backup',
-  cloudSyncAudioTooLarge:
-    'Голосова нотатка занадто велика для backup (макс. 100 МБ). Запиши коротший фрагмент або експортуй сон локально.',
   cloudConfigMissingTitle: 'Немає Supabase-конфігу',
   cloudConfigMissingDescription:
     'Додай валідний URL проєкту та anon key перед підключенням хмари.',

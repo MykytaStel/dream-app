@@ -141,11 +141,7 @@ export default function SyncDiagnosticsPreviewScreen() {
         />
         <SettingsActionRow
           title={copy.devSyncSnapshotErrorsTitle}
-          meta={
-            snapshot.errorMessage === 'audio-file-too-large'
-              ? copy.cloudSyncAudioTooLarge
-              : (snapshot.errorMessage ?? copy.devSyncHistoryEmptyDescription)
-          }
+          meta={snapshot.errorMessage ?? copy.devSyncHistoryEmptyDescription}
           value={String(snapshot.failedCount)}
           variant="inline"
         />

@@ -104,6 +104,11 @@ That request contains no dream data — it is an ordinary file download — but 
 reveal your IP address to that host, in the same way visiting any website does. After
 the download, transcription is fully offline.
 
+Which model is downloaded follows the app's language, because a model trained only on
+English transcribes Ukrainian into confident nonsense rather than failing. English
+downloads about 74 MB, Ukrainian about 141 MB. Changing the language downloads the
+other one and deletes the one no longer used, so only one is ever kept.
+
 ## What never leaves the device
 
 - The dreams themselves, when cloud sync is off

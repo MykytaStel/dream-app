@@ -5,11 +5,25 @@ import {
   updateDreamTranscriptState,
 } from '../repository/dreamsRepository';
 import { initWhisper, WhisperNativeContext } from './whisperNative';
+import {
+  listTranscriptionModelFilenames,
+  selectTranscriptionModel,
+  type WhisperModel,
+} from '../model/transcriptionModel';
+import { getStoredLocale } from '../../../i18n/localeStore';
 
 const DREAM_TRANSCRIPTION_MODEL_DIRECTORY = 'whisper-models';
-const DREAM_TRANSCRIPTION_MODEL_FILENAME = 'ggml-tiny.en.bin';
-const DREAM_TRANSCRIPTION_MODEL_URL =
-  'https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-tiny.en.bin';
+
+/**
+ * Which model this device should be using, right now.
+ *
+ * Read on every call rather than captured once: the language can change in
+ * settings while the app is running, and a transcript produced by the previous
+ * language's model would be nonsense with no sign of why.
+ */
+function getActiveTranscriptionModel(): WhisperModel {
+  return selectTranscriptionModel(getStoredLocale());
+}
 
 export type DreamTranscriptionProgressPhase =
   'preparing-model' | 'transcribing';
@@ -24,13 +38,47 @@ export type DreamTranscriptionModelStatus = {
 };
 
 let whisperContextPromise: Promise<WhisperNativeContext> | null = null;
+/** Which model the cached context was built from, so a language change is seen. */
+let loadedModelFilename: string | null = null;
 
 function getDreamTranscriptionModelDirectoryPath() {
   return `${RNFS.DocumentDirectoryPath}/${DREAM_TRANSCRIPTION_MODEL_DIRECTORY}`;
 }
 
 export function getDreamTranscriptionModelFilePath() {
-  return `${getDreamTranscriptionModelDirectoryPath()}/${DREAM_TRANSCRIPTION_MODEL_FILENAME}`;
+  return `${getDreamTranscriptionModelDirectoryPath()}/${getActiveTranscriptionModel().filename}`;
+}
+
+/**
+ * Removes models the app is no longer going to use.
+ *
+ * Switching language changes which file is wanted, and the old one is 74 to
+ * 141 MB of a user's storage that nothing will ever read again. Worse, leaving
+ * it means the settings screen reports a model as installed while the one
+ * actually needed is missing.
+ */
+export async function pruneUnusedTranscriptionModels(): Promise<string[]> {
+  const directoryPath = getDreamTranscriptionModelDirectoryPath();
+  if (!(await RNFS.exists(directoryPath))) {
+    return [];
+  }
+
+  const keep = getActiveTranscriptionModel().filename;
+  const known = new Set(listTranscriptionModelFilenames());
+  const removed: string[] = [];
+
+  for (const entry of await RNFS.readDir(directoryPath)) {
+    // Only files this app is known to have downloaded. Deleting anything else
+    // found in the directory would be someone else's data.
+    if (entry.name === keep || !known.has(entry.name)) {
+      continue;
+    }
+
+    await RNFS.unlink(entry.path).catch(() => undefined);
+    removed.push(entry.name);
+  }
+
+  return removed;
 }
 
 export async function getDreamTranscriptionModelStatus(): Promise<DreamTranscriptionModelStatus> {
@@ -67,6 +115,7 @@ export async function deleteDreamTranscriptionModel() {
     await RNFS.unlink(filePath);
   }
   whisperContextPromise = null;
+  loadedModelFilename = null;
 }
 
 async function ensureDreamTranscriptionModel(
@@ -87,7 +136,7 @@ async function ensureDreamTranscriptionModel(
   });
 
   const download = RNFS.downloadFile({
-    fromUrl: DREAM_TRANSCRIPTION_MODEL_URL,
+    fromUrl: getActiveTranscriptionModel().url,
     toFile: filePath,
     discretionary: true,
     progressInterval: 250,
@@ -115,6 +164,11 @@ async function ensureDreamTranscriptionModel(
     if (result.statusCode >= 400) {
       throw new Error(`model-download-failed:${result.statusCode}`);
     }
+
+    // Only once the replacement is on disk. Pruning first would leave someone
+    // who switched language with no model at all if the download then failed.
+    await pruneUnusedTranscriptionModels().catch(() => undefined);
+
     return filePath;
   } catch (error) {
     if (await RNFS.exists(filePath)) {
@@ -137,7 +191,16 @@ export async function ensureDreamTranscriptionModelInstalled(
 async function getWhisperContext(
   onProgress?: (progress: DreamTranscriptionProgress) => void,
 ) {
+  const model = getActiveTranscriptionModel();
+
+  // A context built from the English model would keep being reused after the
+  // user switched to Ukrainian, and whisper would go on producing English.
+  if (loadedModelFilename && loadedModelFilename !== model.filename) {
+    whisperContextPromise = null;
+  }
+
   if (!whisperContextPromise) {
+    loadedModelFilename = model.filename;
     whisperContextPromise = ensureDreamTranscriptionModel(onProgress)
       .then(filePath =>
         initWhisper({
@@ -148,6 +211,7 @@ async function getWhisperContext(
       )
       .catch(error => {
         whisperContextPromise = null;
+        loadedModelFilename = null;
         throw error;
       });
   }
@@ -173,7 +237,9 @@ export async function transcribeDreamAudio(
   try {
     const whisperContext = await getWhisperContext(onProgress);
     const { promise } = whisperContext.transcribe(dream.audioUri, {
-      language: 'en',
+      // Was hardcoded to 'en'. Ukrainian speech fed to an English model does
+      // not fail — it returns confident English nonsense.
+      language: getActiveTranscriptionModel().language,
       onProgress: (progress: number) => {
         onProgress?.({
           phase: 'transcribing',
@@ -205,4 +271,5 @@ export async function transcribeDreamAudio(
 
 export function __unsafeResetDreamTranscriptionContextForTests() {
   whisperContextPromise = null;
+  loadedModelFilename = null;
 }

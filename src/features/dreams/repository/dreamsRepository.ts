@@ -602,6 +602,29 @@ export function markDreamSyncError(id: string, errorMessage?: string) {
   );
 }
 
+/**
+ * Marks every already-synced dream for upload again.
+ *
+ * Used once, when the cloud copy turns out to be empty of this archive: the
+ * encryption migration discarded the server's plaintext records, so dreams that
+ * are locally "synced" have nothing behind them any more.
+ *
+ * Deliberately touches only `syncStatus` — `updatedAt` stays put, because
+ * bumping it would make every dream look freshly edited to conflict resolution
+ * on the user's other devices.
+ */
+export function markAllDreamsPendingUpload() {
+  const all = listDreams();
+  const pending = all.map(dream =>
+    dream.syncStatus === 'synced'
+      ? { ...dream, syncStatus: 'local' as const }
+      : dream,
+  );
+
+  persistDreams(pending);
+  return pending.length;
+}
+
 export function upsertDreamFromSyncBundle(bundle: DreamSyncBundle) {
   const nextDream = hydrateDreamFromSyncBundle(bundle);
   const all = listDreams();

@@ -182,6 +182,39 @@ export function encryptRecord(
   return toBase64(framed);
 }
 
+/**
+ * A value every device can decrypt only if it holds the archive key.
+ *
+ * Without it, two devices that each generated their own key would both sync
+ * happily and quietly write records the other cannot read — the archive would
+ * split in half with no error anywhere. Checking a known plaintext before
+ * uploading turns that into a question the user can answer.
+ */
+export const KEY_CHECK_CONTENT = {
+  purpose: 'kaleidoscope-archive-key',
+  version: 1,
+} as const;
+
+export function createKeyCheck(key: Uint8Array, aead: AeadPrimitive): string {
+  return encryptRecord(KEY_CHECK_CONTENT, key, aead);
+}
+
+export function isKeyCheckValid(
+  check: string,
+  key: Uint8Array,
+  aead: AeadPrimitive,
+): boolean {
+  try {
+    const opened = decryptRecord<typeof KEY_CHECK_CONTENT>(check, key, aead);
+    return (
+      opened?.purpose === KEY_CHECK_CONTENT.purpose &&
+      opened?.version === KEY_CHECK_CONTENT.version
+    );
+  } catch {
+    return false;
+  }
+}
+
 export function decryptRecord<T = unknown>(
   ciphertext: string,
   key: Uint8Array,

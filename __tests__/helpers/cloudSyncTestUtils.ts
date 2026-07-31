@@ -1,11 +1,49 @@
 import type { DreamSyncBundle } from '../../src/services/api/contracts/dreamSync';
+import { sealDreamSyncBundle } from '../../src/services/api/contracts/dreamSyncCipher';
+import {
+  createArchiveKeyCheck,
+  createArchiveSealer,
+  forgetArchiveKey,
+} from '../../src/services/crypto/archiveKeyService';
+import { saveArchiveKey } from '../../src/services/security/archiveKeyStorage';
+import type { syncCloudSessionFromAuth } from '../../src/services/auth/cloudAuth';
+import type { CloudSession } from '../../src/services/auth/session';
+import { CIPHER_VERSION } from '../../src/services/crypto/archiveCipher';
+
+/**
+ * The key the fake server's archive is sealed with.
+ *
+ * Tests that want a second device holding the wrong key pass a different one as
+ * `archiveKey`; the default matches whatever the device generates, because the
+ * helper seals the remote rows with the same key it advertises in the profile.
+ */
+export const TEST_ARCHIVE_KEY = Uint8Array.from(
+  { length: 32 },
+  (_, index) => index + 1,
+);
+
+/**
+ * Puts a known key on the device, the way a restore or a previous run would.
+ *
+ * Without this each suite would generate its own key and every remote row would
+ * be unreadable — which is the correct behaviour, and exactly what
+ * `installTestArchiveKey(OTHER)` is used to assert.
+ */
+export async function installTestArchiveKey(key = TEST_ARCHIVE_KEY) {
+  forgetArchiveKey();
+  await saveArchiveKey(key);
+  forgetArchiveKey();
+}
 
 export function createMockSupabaseClient(options?: {
   dreamEntryError?: Error | null;
-  tagInsertError?: Error | null;
   uploadError?: Error | null;
   reviewSavedStateUpsertError?: Error | null;
   remoteBundles?: DreamSyncBundle[];
+  /** Seals the remote rows and answers the profile check. Null = unclaimed. */
+  archiveKey?: Uint8Array | null;
+  /** Rows returned as-is, for cases the sealing path cannot produce. */
+  extraRemoteRows?: unknown[];
   tombstoneUpsertError?: Error | null;
   remoteDeletionTombstones?: Array<{
     dream_id: string;
@@ -25,26 +63,31 @@ export function createMockSupabaseClient(options?: {
 }) {
   const remoteBundles = options?.remoteBundles ?? [];
   const remoteDeletionTombstones = options?.remoteDeletionTombstones ?? [];
-  const remoteDreamRows = remoteBundles.map(bundle => bundle.dream);
-  const remoteTags = remoteBundles.flatMap(bundle => bundle.tags);
-  const remoteWakeEmotions = remoteBundles.flatMap(
-    bundle => bundle.wakeEmotions,
+  const archiveKey =
+    options?.archiveKey === undefined ? TEST_ARCHIVE_KEY : options.archiveKey;
+  // The stored check is what a real profile row would hold; a device whose key
+  // does not open it must refuse to sync rather than write a second archive.
+  let storedKeyCheck = archiveKey ? createArchiveKeyCheck(archiveKey) : null;
+  const remoteDreamRows = archiveKey
+    ? remoteBundles.map(bundle =>
+        sealDreamSyncBundle(
+          bundle,
+          createArchiveSealer(archiveKey).seal,
+          CIPHER_VERSION,
+        ),
+      )
+    : [];
+  const dreamEntriesUpsert = jest.fn(
+    async (_row: unknown, _options?: unknown) => ({
+      error: options?.dreamEntryError ?? null,
+    }),
   );
-  const remotePreSleepEmotions = remoteBundles.flatMap(
-    bundle => bundle.preSleepEmotions,
-  );
-  const remoteSleepContexts = remoteBundles.flatMap(bundle =>
-    bundle.sleepContext ? [bundle.sleepContext] : [],
-  );
-  const dreamEntriesUpsert = jest.fn(async () => ({
-    error: options?.dreamEntryError ?? null,
-  }));
   const dreamEntriesDeleteEqUser = jest.fn(async () => ({ error: null }));
   const dreamEntriesDeleteEqId = jest.fn(() => ({
     eq: dreamEntriesDeleteEqUser,
   }));
   const dreamEntriesSelectOrder = jest.fn(async () => ({
-    data: remoteDreamRows,
+    data: [...remoteDreamRows, ...(options?.extraRemoteRows ?? [])],
     error: null,
   }));
   const dreamEntriesSelectQuery: {
@@ -58,31 +101,28 @@ export function createMockSupabaseClient(options?: {
   dreamEntriesSelectQuery.in = jest.fn(() => dreamEntriesSelectQuery);
   dreamEntriesSelectQuery.order = dreamEntriesSelectOrder;
   const dreamEntriesSelect = jest.fn(() => dreamEntriesSelectQuery);
-  const makeDeleteChain = (error: Error | null = null) => ({
-    eq: jest.fn(async () => ({ error })),
-  });
-  const makeSelectInChain = (rows: unknown[]) => ({
-    in: jest.fn(async () => ({
-      data: rows,
-      error: null,
-    })),
-  });
-  const tagsDelete = jest.fn(() => makeDeleteChain());
-  const tagsInsert = jest.fn(async () => ({
-    error: options?.tagInsertError ?? null,
+  const profilesMaybeSingle = jest.fn(async () => ({
+    data: { archive_key_check: storedKeyCheck },
+    error: null,
   }));
-  const tagsSelect = jest.fn(() => makeSelectInChain(remoteTags));
-  const wakeDelete = jest.fn(() => makeDeleteChain());
-  const wakeInsert = jest.fn(async () => ({ error: null }));
-  const wakeSelect = jest.fn(() => makeSelectInChain(remoteWakeEmotions));
-  const preSleepDelete = jest.fn(() => makeDeleteChain());
-  const preSleepInsert = jest.fn(async () => ({ error: null }));
-  const preSleepSelect = jest.fn(() =>
-    makeSelectInChain(remotePreSleepEmotions),
-  );
-  const sleepDelete = jest.fn(() => makeDeleteChain());
-  const sleepUpsert = jest.fn(async () => ({ error: null }));
-  const sleepSelect = jest.fn(() => makeSelectInChain(remoteSleepContexts));
+  const profilesSelect = jest.fn(() => ({
+    eq: jest.fn(() => ({ maybeSingle: profilesMaybeSingle })),
+  }));
+  // Mirrors the conditional update the client uses to claim an unsealed
+  // archive: it only takes effect while the column is still null.
+  const profilesUpdateIs = jest.fn(async (_column: string, _value: null) => ({
+    error: null,
+  }));
+  const profilesUpdate = jest.fn((patch: { archive_key_check: string }) => ({
+    eq: jest.fn(() => ({
+      is: jest.fn(async (column: string, value: null) => {
+        if (storedKeyCheck === null) {
+          storedKeyCheck = patch.archive_key_check;
+        }
+        return profilesUpdateIs(column, value);
+      }),
+    })),
+  }));
   const tombstonesUpsert = jest.fn(async () => ({
     error: options?.tombstoneUpsertError ?? null,
   }));
@@ -127,29 +167,10 @@ export function createMockSupabaseClient(options?: {
             select: dreamEntriesSelect,
             upsert: dreamEntriesUpsert,
           };
-        case 'dream_tags':
+        case 'profiles':
           return {
-            delete: tagsDelete,
-            insert: tagsInsert,
-            select: tagsSelect,
-          };
-        case 'dream_wake_emotions':
-          return {
-            delete: wakeDelete,
-            insert: wakeInsert,
-            select: wakeSelect,
-          };
-        case 'dream_pre_sleep_emotions':
-          return {
-            delete: preSleepDelete,
-            insert: preSleepInsert,
-            select: preSleepSelect,
-          };
-        case 'dream_sleep_contexts':
-          return {
-            delete: sleepDelete,
-            upsert: sleepUpsert,
-            select: sleepSelect,
+            select: profilesSelect,
+            update: profilesUpdate,
           };
         case 'dream_entry_tombstones':
           return {
@@ -176,22 +197,20 @@ export function createMockSupabaseClient(options?: {
     client,
     dreamEntriesUpsert,
     dreamEntriesSelectQuery,
+    profilesUpdate,
     reviewSavedStateUpsert,
-    tagsInsert,
     tombstonesUpsert,
     tombstonesSelectQuery,
     upload,
+    getStoredKeyCheck: () => storedKeyCheck,
   };
 }
 
 export function mockSignedInCloudSession(
-  mockedSyncCloudSessionFromAuth: jest.Mock,
-  overrides?: Partial<{
-    provider: 'supabase';
-    userId: string;
-    isAnonymous: boolean;
-    email: string;
-  }>,
+  mockedSyncCloudSessionFromAuth: jest.MockedFunction<
+    typeof syncCloudSessionFromAuth
+  >,
+  overrides?: Partial<Extract<CloudSession, { status: 'signed-in' }>>,
 ) {
   mockedSyncCloudSessionFromAuth.mockResolvedValue({
     status: 'signed-in',

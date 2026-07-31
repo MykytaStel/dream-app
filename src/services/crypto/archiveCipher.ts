@@ -161,17 +161,16 @@ function decodeUtf8(bytes: Uint8Array): string {
  * a repeated nonce with the same key is the one failure XChaCha20 does not
  * survive.
  */
-export function encryptRecord(
-  content: unknown,
+export function encryptBytes(
+  plaintext: Uint8Array,
   key: Uint8Array,
   aead: AeadPrimitive,
-): string {
+): Uint8Array {
   if (key.length !== ARCHIVE_KEY_BYTES) {
     throw new ArchiveDecryptionError('malformed', 'wrong key size');
   }
 
   const nonce = aead.randomBytes(ARCHIVE_NONCE_BYTES);
-  const plaintext = encodeUtf8(JSON.stringify(content));
   const sealed = aead.encrypt(plaintext, nonce, key);
 
   const framed = new Uint8Array(1 + nonce.length + sealed.length);
@@ -179,7 +178,41 @@ export function encryptRecord(
   framed.set(nonce, 1);
   framed.set(sealed, 1 + nonce.length);
 
-  return toBase64(framed);
+  return framed;
+}
+
+export function decryptBytes(
+  framed: Uint8Array,
+  key: Uint8Array,
+  aead: AeadPrimitive,
+): Uint8Array {
+  if (framed.length <= 1 + ARCHIVE_NONCE_BYTES) {
+    throw new ArchiveDecryptionError('malformed', 'too short');
+  }
+
+  const version = framed[0];
+  if (version !== CIPHER_VERSION) {
+    throw new ArchiveDecryptionError('version', version);
+  }
+
+  const nonce = framed.slice(1, 1 + ARCHIVE_NONCE_BYTES);
+  const sealed = framed.slice(1 + ARCHIVE_NONCE_BYTES);
+
+  try {
+    return aead.decrypt(sealed, nonce, key);
+  } catch (error) {
+    // A wrong key and a tampered payload are indistinguishable here, and that
+    // is correct: both mean this must not be trusted.
+    throw new ArchiveDecryptionError('authentication', error);
+  }
+}
+
+export function encryptRecord(
+  content: unknown,
+  key: Uint8Array,
+  aead: AeadPrimitive,
+): string {
+  return toBase64(encryptBytes(encodeUtf8(JSON.stringify(content)), key, aead));
 }
 
 /**
@@ -227,26 +260,7 @@ export function decryptRecord<T = unknown>(
     throw new ArchiveDecryptionError('malformed', error);
   }
 
-  if (framed.length <= 1 + ARCHIVE_NONCE_BYTES) {
-    throw new ArchiveDecryptionError('malformed', 'too short');
-  }
-
-  const version = framed[0];
-  if (version !== CIPHER_VERSION) {
-    throw new ArchiveDecryptionError('version', version);
-  }
-
-  const nonce = framed.slice(1, 1 + ARCHIVE_NONCE_BYTES);
-  const sealed = framed.slice(1 + ARCHIVE_NONCE_BYTES);
-
-  let plaintext: Uint8Array;
-  try {
-    plaintext = aead.decrypt(sealed, nonce, key);
-  } catch (error) {
-    // A wrong key and a tampered payload are indistinguishable here, and that
-    // is correct: both mean this record must not be trusted.
-    throw new ArchiveDecryptionError('authentication', error);
-  }
+  const plaintext = decryptBytes(framed, key, aead);
 
   try {
     return JSON.parse(decodeUtf8(plaintext)) as T;

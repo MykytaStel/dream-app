@@ -84,7 +84,7 @@ const SETTINGS_COPY_EN = {
   privacyLeavesTitle: 'What can leave, and when',
   privacyCloudTitle: 'Cloud backup, if you turn it on',
   privacyCloudBody:
-    'Uploads your dream text, transcripts and recordings so another device can read them. They are stored unencrypted today, which means the server can read them. End-to-end encryption is planned before release.',
+    'Uploads your dream text, transcripts and recordings, encrypted on this device with a key the server never receives. The server can see how many dreams you have and when you last changed one — nothing about what is in them. The key travels to your other devices through iCloud Keychain or Android backup, and a recovery code is in these settings if you ever need it.',
   privacyCrashTitle: 'Crash reports, in builds set up for them',
   privacyCrashBody:
     'Sends the error, the app version and which screen was open. Dream text, titles, transcripts, tags and your identity are stripped out before anything is sent.',
@@ -633,7 +633,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   privacyLeavesTitle: 'Що може вийти назовні та коли',
   privacyCloudTitle: 'Хмарна копія, якщо ви її ввімкнете',
   privacyCloudBody:
-    'Вивантажує текст снів, розшифровки й записи, щоб їх бачив інший пристрій. Сьогодні вони зберігаються без шифрування, тобто сервер може їх прочитати. Наскрізне шифрування заплановане до релізу.',
+    'Вивантажує текст снів, розшифровки й записи, зашифровані на цьому пристрої ключем, якого сервер ніколи не отримує. Сервер бачить, скільки у вас снів і коли ви востаннє щось змінювали, — і нічого про їхній зміст. Ключ переїжджає на ваші інші пристрої через iCloud Keychain або резервну копію Android, а код відновлення є в цих налаштуваннях, якщо він знадобиться.',
   privacyCrashTitle: 'Звіти про збої, у складаннях із цією опцією',
   privacyCrashBody:
     'Надсилає помилку, версію застосунку й екран, який був відкритий. Текст снів, заголовки, розшифровки, теги та ваша особа вирізаються до надсилання.',

@@ -23,6 +23,10 @@ import { syncCloudSessionFromAuth } from '../auth/cloudAuth';
 import { getCloudSyncEnabled } from '../auth/session';
 import { uploadDreamAudio } from './audioUpload';
 import {
+  encryptAudioFileForUpload,
+  ENCRYPTED_AUDIO_MIME_TYPE,
+} from './audioCipher';
+import {
   listDreams,
   applyRemoteDreamDeletion,
   markAllDreamsPendingUpload,
@@ -89,24 +93,6 @@ function getAudioFilename(audioUri: string, dreamId: string) {
   return lastSegment?.trim() || `${dreamId}.m4a`;
 }
 
-function getAudioMimeType(filename: string) {
-  const normalized = filename.toLowerCase();
-
-  if (normalized.endsWith('.wav')) {
-    return 'audio/wav';
-  }
-
-  if (normalized.endsWith('.mp3')) {
-    return 'audio/mpeg';
-  }
-
-  if (normalized.endsWith('.aac')) {
-    return 'audio/aac';
-  }
-
-  return 'audio/mp4';
-}
-
 function decodeBase64ToUint8Array(input: string): Uint8Array {
   const binary = decodeBase64(input);
   const bytes = new Uint8Array(binary.length);
@@ -147,6 +133,7 @@ function getCurrentPendingCounts(
 async function ensureDreamAudioUploaded(
   userId: string,
   dream: ReturnType<typeof listDreams>[number],
+  sealer: ArchiveSealer,
 ) {
   if (!dream.audioUri?.trim()) {
     return dream.audioRemotePath;
@@ -171,12 +158,9 @@ async function ensureDreamAudioUploaded(
     throw new Error('local-audio-file-missing');
   }
 
-  const MAX_AUDIO_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
-  const stat = await RNFS.stat(audioFilePath);
-  if (Number(stat.size) > MAX_AUDIO_UPLOAD_BYTES) {
-    throw new Error('audio-file-too-large');
-  }
-
+  // The 100 MB ceiling that used to live here is gone: encryption enforces a
+  // stricter one and reports it more precisely, so keeping both would leave a
+  // limit that can never be reached and a second stat call to find out.
   const filename = getAudioFilename(dream.audioUri, dream.id);
   const remotePath =
     dream.audioRemotePath ??
@@ -186,9 +170,20 @@ async function ensureDreamAudioUploaded(
       filename,
     });
 
-  const mimeType = getAudioMimeType(filename);
+  // The recording is sealed before it leaves, and what goes up is no longer an
+  // audio file — so it stops being declared as one. The bucket's allowed types
+  // were widened for exactly this in the same migration.
+  const encryptedPath = await encryptAudioFileForUpload(
+    audioFilePath,
+    sealer.sealBytes,
+  );
+
   try {
-    await uploadDreamAudio(remotePath, audioFilePath, mimeType);
+    await uploadDreamAudio(
+      remotePath,
+      encryptedPath,
+      ENCRYPTED_AUDIO_MIME_TYPE,
+    );
   } catch (error) {
     // If native upload is unavailable for some reason, fall back to JS upload.
     const message = error instanceof Error ? error.message : String(error);
@@ -200,18 +195,22 @@ async function ensureDreamAudioUploaded(
       throw error;
     }
 
-    const base64 = await RNFS.readFile(audioFilePath, 'base64');
+    const base64 = await RNFS.readFile(encryptedPath, 'base64');
     const bytes = decodeBase64ToUint8Array(base64);
     const { error: uploadError } = await client.storage
       .from(DREAM_AUDIO_BUCKET)
       .upload(remotePath, bytes, {
-        contentType: mimeType,
+        contentType: ENCRYPTED_AUDIO_MIME_TYPE,
         upsert: true,
       });
 
     if (uploadError) {
       throw uploadError;
     }
+  } finally {
+    // The sealed copy is a duplicate of the recording; leaving it behind would
+    // quietly double what the app stores on disk with every sync.
+    await RNFS.unlink(encryptedPath).catch(() => undefined);
   }
 
   return remotePath;
@@ -229,7 +228,7 @@ async function uploadDream(
     throw new Error('Supabase runtime config is missing.');
   }
 
-  const audioRemotePath = await ensureDreamAudioUploaded(userId, dream);
+  const audioRemotePath = await ensureDreamAudioUploaded(userId, dream, sealer);
   const bundle = createDreamSyncBundle(
     {
       ...dream,

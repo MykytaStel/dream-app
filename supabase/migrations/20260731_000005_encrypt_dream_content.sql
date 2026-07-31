@@ -84,7 +84,17 @@ drop trigger if exists set_dream_entries_updated_at on public.dream_entries;
 create index if not exists dream_entries_user_updated_idx
   on public.dream_entries (user_id, updated_at desc);
 
--- 5. A value that proves a device holds the right key.
+-- 5. Recordings stop being audio, as far as storage is concerned.
+--
+-- A voice note is the dream, narrated. Sealing the text while uploading the
+-- audio in the clear would leave the promise broken and only look kept. What
+-- goes up is now a blob, so the bucket must stop insisting on audio/* — with
+-- the old list every upload would be rejected outright.
+update storage.buckets
+set allowed_mime_types = array['application/octet-stream']
+where id = 'dream-audio';
+
+-- 6. A value that proves a device holds the right key.
 --
 -- Two devices that each generated their own key would otherwise both sync
 -- happily, each writing records the other cannot read, and nothing would report

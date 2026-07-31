@@ -19,9 +19,14 @@ jest.mock('../src/i18n/I18nProvider', () => ({
 
 /**
  * A privacy screen is only worth having if it is accurate. These tests pin the
- * claims that are easy to quietly break — above all the admission that cloud
- * sync is currently unencrypted, which is the one a rewrite would be tempted to
- * soften.
+ * claims that are easy to quietly break.
+ *
+ * Until sync was encrypted, the pinned claim here was the admission that it was
+ * not. That admission is now false and has been replaced — but the test was not
+ * simply deleted, because the temptation it guards against did not go away, it
+ * inverted. "Encrypted" invites a page that says only the flattering half. What
+ * is pinned now is the unflattering half: that the server still learns how many
+ * dreams there are and when they changed.
  */
 async function renderScreen() {
   return render(
@@ -44,11 +49,27 @@ describe('PrivacyScreen', () => {
     expect(getByText(copy.privacyModelTitle)).toBeTruthy();
   });
 
-  test('says plainly that cloud sync is not encrypted', async () => {
+  test('says the content is encrypted, and that the key never reaches the server', async () => {
     const { getByText } = await renderScreen();
 
     expect(getByText(copy.privacyCloudBody)).toBeTruthy();
-    expect(copy.privacyCloudBody.toLowerCase()).toContain('unencrypted');
+    const body = copy.privacyCloudBody.toLowerCase();
+
+    expect(body).toContain('encrypted');
+    expect(body).toContain('key the server never receives');
+    // The claim it replaced was an admission. A page that no longer admits
+    // anything is a page that started selling.
+    expect(body).not.toContain('unencrypted');
+  });
+
+  test('still admits what the server does learn', async () => {
+    // Encryption hides the content, not the shape of the archive. Sync rows
+    // keep `updated_at` in the clear so conflicts can be resolved before
+    // anything is decrypted, which means the timing is genuinely visible.
+    const body = copy.privacyCloudBody.toLowerCase();
+
+    expect(body).toContain('how many dreams');
+    expect(body).toContain('when you last changed');
   });
 
   test('states that crash reports exclude dream content', async () => {

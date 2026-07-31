@@ -137,6 +137,7 @@ jest.mock('react-native-mmkv', () => {
 jest.mock('react-native-fs', () => ({
   DocumentDirectoryPath: '/documents',
   ExternalDirectoryPath: '/external',
+  CachesDirectoryPath: '/caches',
   mkdir: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockResolvedValue(''),
   writeFile: jest.fn().mockResolvedValue(undefined),

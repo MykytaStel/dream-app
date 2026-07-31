@@ -31,18 +31,43 @@ an internet connection.
 
 ### 1. Cloud backup and sync — off by default
 
-If you turn on cloud backup, these are uploaded to the project's Supabase instance so a
-second device can read them:
+If you turn on cloud backup, your dreams are uploaded to the project's Supabase
+instance so a second device can read them. **Everything that is content is encrypted
+on your device first, with a key the server never receives:** titles, text,
+transcripts, tags, moods, sleep notes, analysis, and the voice recordings.
 
-- dream titles and text
-- transcripts
-- voice recordings
-- the timestamps and flags needed to resolve conflicts between devices
+The server stores one sealed blob per dream. It cannot open them. Neither can anyone
+with access to that database, including whoever runs it.
 
-**These are stored unencrypted.** The server can read them, and so can anyone with
-access to that database. This is the honest current state, not a design goal:
-end-to-end encryption is planned before the first release, and until it ships, cloud
-sync trades privacy for the ability to recover an archive if a phone is lost.
+### What the server can still see
+
+Encryption hides what is in your dreams. It does not hide that they exist:
+
+| Visible | Why it has to be |
+|---|---|
+| How many dreams you have | each is a row |
+| When each was last changed | conflict resolution compares this before anything is decrypted |
+| Your account id | it is what separates your rows from anyone else's |
+| That a recording exists, and its size | the file has to be stored somewhere |
+
+So someone with database access could tell that you wrote four dreams last week and
+none for the month before. They could not tell you anything about a single one of
+them. This is a real limit, and it is stated here rather than left out.
+
+### The key
+
+The key is 32 random bytes generated on your device. It is never sent to the server.
+
+It reaches your other devices on its own — through iCloud Keychain on iOS, or Android's
+backup of a single file that holds nothing else. You do not have to do anything, and
+turning on sync does not ask you to write anything down.
+
+A recovery code — 24 words — is available in settings. You need it in two situations:
+moving between iOS and Android, or restoring a device that had no backup. The app asks
+for it at the moment it is actually needed rather than warning you in advance.
+
+**If you lose both the key and the code, the archive cannot be recovered.** Not by us,
+not by anyone. That is what "the server never receives the key" means.
 
 Turning sync off stops the uploads. It does not delete what was already uploaded;
 deleting a dream does, through a deletion record that propagates to other devices.

@@ -1,6 +1,8 @@
 import {
   createKeyCheck,
+  decryptBytes,
   decryptRecord,
+  encryptBytes,
   encryptRecord,
   isKeyCheckValid,
   CIPHER_VERSION,
@@ -21,6 +23,7 @@ import type {
   OpenContent,
   SealContent,
 } from '../api/contracts/dreamSyncCipher';
+import type { OpenBytes, SealBytes } from '../cloud/audioCipher';
 
 /**
  * The one place that knows which key this device is using.
@@ -122,11 +125,17 @@ export function archiveKeyMatchesCheck(
 export function createArchiveSealer(key: Uint8Array): {
   seal: SealContent;
   open: OpenContent;
+  sealBytes: SealBytes;
+  openBytes: OpenBytes;
   cipherVersion: number;
 } {
   return {
     seal: content => encryptRecord(content, key, aead),
     open: ciphertext => decryptRecord(ciphertext, key, aead),
+    // Audio takes the byte path: it is already binary, so routing it through
+    // JSON and base64 would triple the memory for nothing.
+    sealBytes: plaintext => encryptBytes(plaintext, key, aead),
+    openBytes: sealed => decryptBytes(sealed, key, aead),
     cipherVersion: CIPHER_VERSION,
   };
 }

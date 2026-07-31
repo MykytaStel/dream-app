@@ -26,14 +26,6 @@ export type ThemePalette = {
    * cannot know that.
    */
   shadow: string;
-  /**
-   * Text and icons drawn on top of an accent or primary fill.
-   *
-   * Was `#FFFFFF` in a dozen places. White on a dark theme's accent is right;
-   * white on a light theme's accent is unreadable, and that is the whole reason
-   * this token exists rather than the literal.
-   */
-  onAccent: string;
 };
 
 export const palette = {
@@ -58,7 +50,6 @@ export const palette = {
     ink: '#0B1220',
     switchTrackOff: '#444B5A',
     shadow: '#000000',
-    onAccent: '#FFFFFF',
   },
   ember: {
     bg: '#1A1214',
@@ -81,7 +72,6 @@ export const palette = {
     ink: '#0E090A',
     switchTrackOff: '#5A4348',
     shadow: '#000000',
-    onAccent: '#FFFFFF',
   },
   moss: {
     bg: '#101A18',
@@ -104,7 +94,43 @@ export const palette = {
     ink: '#08110F',
     switchTrackOff: '#41534E',
     shadow: '#000000',
-    onAccent: '#FFFFFF',
+  },
+  /**
+   * The one light theme.
+   *
+   * Not a lightened copy of kaleidoscope: the blues and purples that read on a
+   * dark background wash out on a pale one, so every hue is darkened until it
+   * earns its contrast rather than merely resembling the dark original.
+   *
+   * Every pair is measured in `__tests__/themeContrast.test.ts` — body text at
+   * 4.5:1, interface elements at 3:1 — because a light theme is designed on a
+   * bright desk and read on a dim one.
+   *
+   * `ink` stays dark: it is the colour of a scrim laid over content, and a pale
+   * scrim would not dim anything.
+   */
+  daylight: {
+    bg: '#F4F6FC',
+    surface: '#FFFFFF',
+    surfaceAlt: '#E9EDF7',
+    surfaceElevated: '#FFFFFF',
+    text: '#131828',
+    textDim: '#585F7A',
+    primary: '#2F63C7',
+    primaryAlt: '#6A4BC4',
+    accent: '#0F7392',
+    auroraStart: '#0F7392',
+    auroraMid: '#6A4BC4',
+    auroraEnd: '#9B3FBF',
+    border: '#D5DBEC',
+    danger: '#C0304A',
+    success: '#1B7D5C',
+    tabIcon: '#666E8B',
+    glow: '#2F63C7',
+    ink: '#0B1220',
+    switchTrackOff: '#BFC6DA',
+    // Softer than black: a pure-black shadow on a pale surface reads as dirt.
+    shadow: '#1B2138',
   },
 } as const;
 

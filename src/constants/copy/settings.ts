@@ -65,6 +65,7 @@ const SETTINGS_COPY_EN = {
   themeOptionKaleido: 'Kaleido',
   themeOptionEmber: 'Ember',
   themeOptionMoss: 'Moss',
+  themeOptionDaylight: 'Daylight',
   privacyTitle: 'Privacy and storage',
   privacyDescription:
     'Dream data stays on your device by default. Cloud stays optional and does not block first capture.',
@@ -635,6 +636,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   themeOptionKaleido: 'Kaleido',
   themeOptionEmber: 'Ember',
   themeOptionMoss: 'Moss',
+  themeOptionDaylight: 'Денне',
   privacyTitle: 'Приватність і зберігання',
   privacyDescription:
     'Дані про сни лишаються на пристрої за замовчуванням. Хмара лишається опційною і не блокує перший запис.',

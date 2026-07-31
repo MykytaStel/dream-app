@@ -7,7 +7,12 @@ import {
   type ThemePalette,
 } from './tokens';
 
-export const APP_THEME_IDS = ['kaleidoscope', 'ember', 'moss'] as const;
+export const APP_THEME_IDS = [
+  'kaleidoscope',
+  'ember',
+  'moss',
+  'daylight',
+] as const;
 
 export type AppThemeId = (typeof APP_THEME_IDS)[number];
 export type AppThemeAppearance = 'dark' | 'light';
@@ -41,7 +46,6 @@ function createAppTheme(colors: ThemePalette) {
       ink: colors.ink,
       switchTrackOff: colors.switchTrackOff,
       shadow: colors.shadow,
-      onAccent: colors.onAccent,
     },
     ...sharedTheme,
   });
@@ -53,6 +57,7 @@ export const themes = {
   kaleidoscope: createAppTheme(palette.kaleidoscope),
   ember: createAppTheme(palette.ember),
   moss: createAppTheme(palette.moss),
+  daylight: createAppTheme(palette.daylight),
 } as const;
 
 export const appThemeMetadata: Record<
@@ -64,6 +69,7 @@ export const appThemeMetadata: Record<
   kaleidoscope: { appearance: 'dark' },
   ember: { appearance: 'dark' },
   moss: { appearance: 'dark' },
+  daylight: { appearance: 'light' },
 };
 
 export const theme = themes[DEFAULT_THEME_ID];

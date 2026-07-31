@@ -305,6 +305,10 @@ export function ThemeSection({
           value: 'moss',
           label: copy.themeOptionMoss,
         },
+        {
+          value: 'daylight',
+          label: copy.themeOptionDaylight,
+        },
       ] satisfies Array<{ value: AppThemeId; label: string }>,
     [copy],
   );
@@ -319,7 +323,9 @@ export function ThemeSection({
         options={options}
         selectedValue={themeId}
         onChange={onSelectTheme}
-        columns={3}
+        // Two columns rather than three: with a fourth theme, three would leave
+        // one option stranded on its own row.
+        columns={2}
         minWidth={92}
       />
       <Text style={styles.themeFootnote}>{copy.themeFootnote}</Text>

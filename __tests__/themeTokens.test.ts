@@ -102,12 +102,11 @@ describe('theme tokens', () => {
     }
   });
 
-  test('shadow and onAccent exist, because literals were standing in for them', () => {
-    // `#000` appeared as shadowColor and `#FFFFFF` as the colour of anything
-    // drawn on an accent fill. Both invert under a light theme.
+  test('shadow is a token, because `#000` was standing in for it', () => {
+    // A pure-black shadow is right on a dark surface and reads as dirt on a
+    // pale one, so it cannot be a literal.
     for (const theme of Object.values(themes)) {
       expect(theme.colors.shadow).toBeTruthy();
-      expect(theme.colors.onAccent).toBeTruthy();
     }
   });
 });

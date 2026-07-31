@@ -472,7 +472,13 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
         leftThreshold={layout.swipeThreshold}
         rightThreshold={layout.swipeThreshold}
         dragOffsetFromLeft={layout.swipeDragOffset}
-        dragOffsetFromRight={layout.swipeDragOffset}
+        // Negative, because gesture-handler 3 made the sign directional: this
+        // is an offset to the left, and the library rejects a positive one.
+        // Version 2 took a magnitude, so the upgrade silently inverted the
+        // meaning of this line — in development it throws a render error, and
+        // in a release build the check is compiled out and the threshold is
+        // simply wrong.
+        dragOffsetFromRight={-layout.swipeDragOffset}
         friction={1.9}
         renderLeftActions={renderLeftActions}
         renderRightActions={renderRightActions}

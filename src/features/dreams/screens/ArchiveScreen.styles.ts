@@ -505,7 +505,12 @@ export function createArchiveScreenStyles(theme: Theme) {
       color: theme.colors.primary,
     },
     calendarCellDayMuted: {
-      color: `${theme.colors.textDim}88`,
+      // Muted by weight, not by fading the colour. At 53% alpha these dates
+      // measured 2.92 on kaleidoscope and 2.32 on the light theme, against the
+      // 4.5 that 12px text needs — every theme failed, the light one worst.
+      // The lighter weight keeps the hierarchy without making a date
+      // unreadable on the day someone is looking for it.
+      color: theme.colors.textDim,
       fontWeight: '500',
     },
     calendarMoodDot: {

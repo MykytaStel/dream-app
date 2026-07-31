@@ -82,3 +82,21 @@ describe('Android release signing', () => {
     expect(gradle).toContain("storeFile file('debug.keystore')");
   });
 });
+
+/**
+ * Machine-specific paths are invisible to whoever committed them.
+ *
+ * `nodeExecutableAndArgs` held an absolute path into one developer's nvm
+ * install. Every local build worked; the first CI run that ever compiled
+ * Android failed on it, and so would any second developer's checkout. Nothing
+ * short of building somewhere else can catch this, so it is pinned here.
+ */
+describe('build files are portable', () => {
+  test('no absolute path into a home directory', () => {
+    expect(code).not.toMatch(/["'](\/Users\/|\/home\/|C:\\)/);
+  });
+
+  test('the node binary comes from the environment', () => {
+    expect(code).toContain("System.getenv('NODE_BINARY')");
+  });
+});

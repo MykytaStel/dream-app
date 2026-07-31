@@ -20,7 +20,11 @@ ext {
  * By default you don't need to apply any configuration, just uncomment the lines you need.
  */
 react {
-    nodeExecutableAndArgs = ["/Users/mykyta/.nvm/versions/node/v20.19.4/bin/node"]
+    // Was an absolute path to one developer's nvm install, which built on that
+    // machine and nowhere else — CI caught it on the first run it ever did.
+    // NODE_BINARY keeps the escape hatch for launching from an IDE that does
+    // not inherit a shell PATH, without pinning the repo to one home directory.
+    nodeExecutableAndArgs = [System.getenv('NODE_BINARY') ?: 'node']
     /* Folders */
     //   The root of your project, i.e. where "package.json" lives. Default is '../..'
     // root = file("../../")

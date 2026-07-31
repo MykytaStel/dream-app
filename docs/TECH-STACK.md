@@ -118,6 +118,7 @@ by construction, in CI as well as locally.
 | Package | Why |
 |---|---|
 | `react-native-libsodium@1.7.0` | Adds JSI bindings for `crypto_secretstream_xchacha20poly1305`. The algorithm was already compiled into the vendored libsodium — `nm libsodium.a` shows all sixteen symbols defined — but the binding layer exposed none of them. Without it, encrypting a recording means holding the whole file in memory, which is what capped audio at 16 MB. |
+| `react-native-html-to-pdf@1.3.0` | Removes `pdfbox-android`, and with it BouncyCastle. The library renders through Android's own WebView and PrintDocumentAdapter; PDFBox was used solely to count pages, a field this app never reads. `PdfRenderer` has been in the framework since API 21 and gives the same number. Measured: 4 MB off what every Android user downloads. |
 
 The patch touches **one C++ file and nothing else**. TypeScript for the new
 functions lives in `src/services/crypto/libsodiumSecretStream.ts` rather than in

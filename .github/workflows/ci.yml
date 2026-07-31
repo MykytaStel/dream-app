@@ -112,7 +112,12 @@ jobs:
 
   ios:
     name: iOS build
-    runs-on: macos-15
+    # macos-15 defaults to Xcode 16.4, and `pod install` dies there with
+    # "[Xcodeproj] Unable to find compatibility version string for object
+    # version 70" — the project format Xcode 26 writes. The same gem versions
+    # generate the Pods project fine on a machine with Xcode 26, so this is the
+    # image, not the lockfile.
+    runs-on: macos-26
     timeout-minutes: 60
 
     steps:

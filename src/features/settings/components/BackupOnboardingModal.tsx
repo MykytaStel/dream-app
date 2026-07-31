@@ -1,6 +1,7 @@
 import React from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
+import { hexToRgba } from '../../../theme/color';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Animated, { FadeInDown } from 'react-native-reanimated';
@@ -141,7 +142,7 @@ function createStyles(theme: Theme, bottomInset: number) {
     },
     backdrop: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: 'rgba(6, 10, 26, 0.58)',
+      backgroundColor: hexToRgba(theme.colors.ink, 0.58),
     },
     sheetWrap: {
       paddingHorizontal: theme.spacing.md,
@@ -194,7 +195,7 @@ function createStyles(theme: Theme, bottomInset: number) {
       justifyContent: 'center',
       backgroundColor: theme.colors.primary,
       borderWidth: 1,
-      borderColor: 'rgba(255,255,255,0.12)',
+      borderColor: hexToRgba(theme.colors.text, 0.12),
       shadowColor: theme.colors.glow,
       shadowOffset: { width: 0, height: 6 },
       shadowOpacity: 0.2,

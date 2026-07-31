@@ -37,12 +37,10 @@ type TrendCopy = {
   emotionalTrendEmptyLabel: string;
 };
 
-// Aurora-derived valence colors (static, not theme-dynamic — safe for off-screen capture)
-export const TREND_VALENCE_COLOR: Record<EmotionalTrendValence, string> = {
-  positive: '#63D9FF', // auroraStart — cyan
-  neutral: '#8D7CFF', // auroraMid — purple
-  negative: '#C57EFF', // auroraEnd — magenta
-};
+// The colour is the active theme's, resolved where it is drawn. The comment
+// this replaced claimed the values were safe because rendering happens
+// off-screen — but this section draws on screen, so they were simply fixed.
+export { VALENCE_COLOR_TOKEN as TREND_VALENCE_COLOR_TOKEN } from '../../../theme/valence';
 
 function toISOWeek(date: Date): string {
   const d = new Date(date);

@@ -40,6 +40,8 @@ function createAppTheme(colors: ThemePalette) {
       glow: colors.glow,
       ink: colors.ink,
       switchTrackOff: colors.switchTrackOff,
+      shadow: colors.shadow,
+      onAccent: colors.onAccent,
     },
     ...sharedTheme,
   });

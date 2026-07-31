@@ -28,7 +28,15 @@ export function StreakMilestoneToast({ title, subtitle, onDismiss }: Props) {
     <Animated.View
       entering={SlideInDown.duration(380).springify()}
       exiting={SlideOutDown.duration(280)}
-      style={[styles.container, { backgroundColor: theme.colors.surface }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: theme.colors.surface,
+          // With backgroundColor rather than in the static sheet, for the same
+          // reason: a light theme casts a different shadow than a dark one.
+          shadowColor: theme.colors.shadow,
+        },
+      ]}
       pointerEvents="box-none"
     >
       {/* Aurora gradient border accent (top edge) */}
@@ -90,7 +98,6 @@ const styles = StyleSheet.create({
     right: 16,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 12,

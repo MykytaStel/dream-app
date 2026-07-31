@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
+import { hexToRgba } from '../../../theme/color';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Text } from '../../../components/ui/Text';
 import { createSoftTile } from '../../../theme/surfaces';
@@ -64,7 +65,7 @@ function createStyles(theme: Theme, active: boolean, danger: boolean) {
   const iconShellBackground = danger
     ? `${theme.colors.danger}20`
     : active
-      ? 'rgba(8, 14, 31, 0.18)'
+      ? hexToRgba(theme.colors.ink, 0.18)
       : theme.colors.surface;
   const labelColor = danger
     ? theme.colors.danger

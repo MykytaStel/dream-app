@@ -43,10 +43,10 @@ export function createButtonStyles(
           ? theme.colors.danger
           : hexToRgba(theme.colors.surfaceElevated, 0.9),
       borderColor: isPrimary
-        ? hexToRgba('#FFFFFF', 0.14)
+        ? hexToRgba(theme.colors.text, 0.14)
         : isDanger
-          ? hexToRgba('#FFFFFF', 0.08)
-          : hexToRgba('#FFFFFF', 0.06),
+          ? hexToRgba(theme.colors.text, 0.08)
+          : hexToRgba(theme.colors.text, 0.06),
     },
     contentRow: {
       flexDirection: 'row',

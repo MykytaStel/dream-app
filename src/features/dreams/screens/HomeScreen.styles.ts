@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { hexToRgba } from '../../../theme/color';
 import { fontFamilies } from '../../../theme/fonts';
 import { Theme } from '../../../theme/theme';
 import { createControlPill, createSoftTile } from '../../../theme/surfaces';
@@ -382,7 +383,7 @@ export function createHomeScreenStyles(theme: Theme) {
       width: 44,
       height: 44,
       borderRadius: 13,
-      backgroundColor: 'rgba(28, 34, 53, 0.82)',
+      backgroundColor: hexToRgba(theme.colors.surfaceAlt, 0.82),
       borderWidth: 1,
       borderColor: theme.colors.border,
       alignItems: 'center',

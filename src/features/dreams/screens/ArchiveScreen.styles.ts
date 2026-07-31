@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { hexToRgba } from '../../../theme/color';
 import { Theme } from '../../../theme/theme';
 import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 
@@ -74,7 +75,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 4,
         paddingHorizontal: 8,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
     },
     controlsActionChipText: {
       color: theme.colors.text,
@@ -93,7 +94,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       paddingLeft: 8,
       overflow: 'hidden',
       borderColor: `${theme.colors.border}C8`,
-      backgroundColor: 'rgba(20, 24, 38, 0.28)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.28),
     },
     searchIconWrap: {
       width: 20,
@@ -122,7 +123,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 3,
         paddingHorizontal: 9,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
     },
     filterChipActive: {
       borderColor: theme.colors.primary,
@@ -207,7 +208,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       borderRadius: theme.borderRadii.pill,
       borderWidth: 1,
       borderColor: `${theme.colors.border}C8`,
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
       flexDirection: 'row',
       gap: 4,
       flexWrap: 'wrap',
@@ -225,7 +226,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       justifyContent: 'space-between',
       gap: 10,
       borderColor: `${theme.colors.accent}55`,
-      backgroundColor: 'rgba(20, 24, 38, 0.26)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.26),
     },
     revisitInlineMain: {
       flex: 1,
@@ -282,7 +283,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 6,
       borderColor: `${theme.colors.accent}55`,
-      backgroundColor: 'rgba(124, 200, 255, 0.08)',
+      backgroundColor: hexToRgba(theme.colors.primary, 0.08),
     },
     revisitBadgeText: {
       color: theme.colors.accent,
@@ -374,7 +375,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 4,
         paddingHorizontal: 8,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
     },
     quickJumpChipActive: {
       borderColor: theme.colors.primary,
@@ -404,7 +405,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       height: 34,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
     },
     monthPagerButtonDisabled: {
       opacity: 0.45,
@@ -432,7 +433,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 4,
         paddingHorizontal: 10,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
@@ -530,7 +531,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 6,
         paddingHorizontal: 10,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
     },
     selectedDateText: {
       color: theme.colors.text,
@@ -543,7 +544,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 6,
         paddingHorizontal: 10,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
     },
     clearDateChipText: {
       color: theme.colors.textDim,
@@ -693,7 +694,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 11,
         paddingHorizontal: 12,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.38)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.38),
       borderColor: `${theme.colors.border}CC`,
       flexDirection: 'row',
       gap: 10,
@@ -768,7 +769,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 4,
         paddingHorizontal: 8,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.34)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.34),
     },
     pillText: {
       color: theme.colors.textDim,
@@ -779,7 +780,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       width: 52,
       minHeight: 52,
       borderRadius: 16,
-      backgroundColor: 'rgba(20, 24, 38, 0.52)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.52),
       borderWidth: 1,
       borderColor: `${theme.colors.border}CC`,
       alignItems: 'center',
@@ -853,7 +854,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 3,
         paddingHorizontal: 7,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.3)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.3),
     },
     compactTagText: {
       color: theme.colors.textDim,
@@ -883,7 +884,7 @@ export function createArchiveScreenStyles(theme: Theme) {
         paddingVertical: 4,
         paddingHorizontal: 9,
       }),
-      backgroundColor: 'rgba(20, 24, 38, 0.42)',
+      backgroundColor: hexToRgba(theme.colors.background, 0.42),
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,

@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import { hexToRgba } from '../../../theme/color';
 import { Theme } from '../../../theme/theme';
 import { createControlPill, createSoftTile } from '../../../theme/surfaces';
 
@@ -283,7 +284,7 @@ export function createStatsScreenStyles(theme: Theme) {
       alignItems: 'center',
       gap: 6,
       borderColor: `${theme.colors.accent}55`,
-      backgroundColor: 'rgba(124, 200, 255, 0.08)',
+      backgroundColor: hexToRgba(theme.colors.primary, 0.08),
     },
     memoryNudgeBadgeText: {
       color: theme.colors.accent,

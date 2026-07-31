@@ -20,6 +20,20 @@ export type ThemePalette = {
   glow: string;
   ink: string;
   switchTrackOff: string;
+  /**
+   * What a shadow is cast in. Always near-black today, but a light theme casts
+   * softer, warmer shadows than a dark one, and `#000` hardcoded in a stylesheet
+   * cannot know that.
+   */
+  shadow: string;
+  /**
+   * Text and icons drawn on top of an accent or primary fill.
+   *
+   * Was `#FFFFFF` in a dozen places. White on a dark theme's accent is right;
+   * white on a light theme's accent is unreadable, and that is the whole reason
+   * this token exists rather than the literal.
+   */
+  onAccent: string;
 };
 
 export const palette = {
@@ -43,6 +57,8 @@ export const palette = {
     glow: '#78B8FF',
     ink: '#0B1220',
     switchTrackOff: '#444B5A',
+    shadow: '#000000',
+    onAccent: '#FFFFFF',
   },
   ember: {
     bg: '#1A1214',
@@ -64,6 +80,8 @@ export const palette = {
     glow: '#FF9A7A',
     ink: '#0E090A',
     switchTrackOff: '#5A4348',
+    shadow: '#000000',
+    onAccent: '#FFFFFF',
   },
   moss: {
     bg: '#101A18',
@@ -85,6 +103,8 @@ export const palette = {
     glow: '#7DE3C0',
     ink: '#08110F',
     switchTrackOff: '#41534E',
+    shadow: '#000000',
+    onAccent: '#FFFFFF',
   },
 } as const;
 

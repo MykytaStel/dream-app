@@ -60,7 +60,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       justifyContent: 'center',
       backgroundColor: hexToRgba(theme.colors.surfaceElevated, 0.92),
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.08),
+      borderColor: hexToRgba(theme.colors.text, 0.08),
     },
     closeButtonPressed: {
       opacity: 0.78,
@@ -107,7 +107,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       paddingHorizontal: 18,
       backgroundColor: theme.colors.primary,
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.08),
+      borderColor: hexToRgba(theme.colors.text, 0.08),
       shadowColor: theme.colors.glow,
       shadowOffset: { width: 0, height: 18 },
       shadowOpacity: 0.2,
@@ -175,7 +175,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       paddingHorizontal: 14,
       backgroundColor: hexToRgba(theme.colors.surfaceElevated, 0.92),
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.08),
+      borderColor: hexToRgba(theme.colors.text, 0.08),
     },
     actionCardPressed: {
       opacity: 0.86,

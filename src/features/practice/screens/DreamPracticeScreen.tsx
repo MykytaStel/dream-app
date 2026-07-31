@@ -8,6 +8,7 @@ import {
 } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import { hexToRgba } from '../../../theme/color';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
@@ -83,46 +84,49 @@ function formatReminderTime(
 }
 
 // These sub-components take no theme, so their styles are static. Colours are
-// carried over verbatim from the inline versions; several are hardcoded rather
-// than themed, which is tracked separately.
-const cardStyles = StyleSheet.create({
-  stack: { gap: 10 },
-  stackTight: { gap: 4 },
-  stackSteps: { gap: 8 },
-  row: { flexDirection: 'row', gap: 8 },
-  rowSteps: { flexDirection: 'row', gap: 10 },
-  rowChecklist: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { fontWeight: '700' },
-  titleSteps: { fontWeight: '700', fontSize: 14 },
-  value: { fontSize: 12, opacity: 0.8 },
-  hint: { fontSize: 12, opacity: 0.7 },
-  stepBullet: {
-    width: 22,
-    height: 22,
-    borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(92, 191, 146, 0.14)',
-  },
-  stepBulletLabel: { fontSize: 12, fontWeight: '700' },
-  stepText: { flex: 1, fontSize: 13, lineHeight: 20 },
-  checklistDot: { width: 10, height: 10, borderRadius: 999 },
-  checklistDotOn: { backgroundColor: '#5CBF92' },
-  checklistDotOff: { backgroundColor: 'rgba(255,255,255,0.18)' },
-  checklistLabel: { flex: 1, fontSize: 13 },
-  metricCard: {
-    flexBasis: '31%',
-    flexGrow: 1,
-    gap: 6,
-    padding: 12,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255,255,255,0.04)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-  },
-  metricLabel: { fontSize: 12, opacity: 0.7 },
-  metricValue: { fontSize: 16, fontWeight: '700' },
-});
+// Carried over verbatim from the inline versions. The hardcoded colours that
+// used to live here are gone: they are now theme tokens, which is what made a
+// light theme impossible while they sat in a static sheet.
+function createCardStyles(theme: Theme) {
+  return StyleSheet.create({
+    stack: { gap: 10 },
+    stackTight: { gap: 4 },
+    stackSteps: { gap: 8 },
+    row: { flexDirection: 'row', gap: 8 },
+    rowSteps: { flexDirection: 'row', gap: 10 },
+    rowChecklist: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+    title: { fontWeight: '700' },
+    titleSteps: { fontWeight: '700', fontSize: 14 },
+    value: { fontSize: 12, opacity: 0.8 },
+    hint: { fontSize: 12, opacity: 0.7 },
+    stepBullet: {
+      width: 22,
+      height: 22,
+      borderRadius: 999,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: hexToRgba(theme.colors.success, 0.14),
+    },
+    stepBulletLabel: { fontSize: 12, fontWeight: '700' },
+    stepText: { flex: 1, fontSize: 13, lineHeight: 20 },
+    checklistDot: { width: 10, height: 10, borderRadius: 999 },
+    checklistDotOn: { backgroundColor: theme.colors.success },
+    checklistDotOff: { backgroundColor: hexToRgba(theme.colors.text, 0.18) },
+    checklistLabel: { flex: 1, fontSize: 13 },
+    metricCard: {
+      flexBasis: '31%',
+      flexGrow: 1,
+      gap: 6,
+      padding: 12,
+      borderRadius: 16,
+      backgroundColor: hexToRgba(theme.colors.text, 0.04),
+      borderWidth: 1,
+      borderColor: hexToRgba(theme.colors.text, 0.08),
+    },
+    metricLabel: { fontSize: 12, opacity: 0.7 },
+    metricValue: { fontSize: 16, fontWeight: '700' },
+  });
+}
 
 function PracticeReminderCard({
   title,
@@ -141,6 +145,8 @@ function PracticeReminderCard({
   onToggle: () => void;
   onShiftLater: () => void;
 }) {
+  const theme = useTheme<Theme>();
+  const cardStyles = React.useMemo(() => createCardStyles(theme), [theme]);
   return (
     <View style={cardStyles.stack}>
       <View style={cardStyles.stackTight}>
@@ -168,6 +174,8 @@ function PracticeStepsCard({
   title: string;
   steps: string[];
 }) {
+  const theme = useTheme<Theme>();
+  const cardStyles = React.useMemo(() => createCardStyles(theme), [theme]);
   return (
     <View style={cardStyles.stack}>
       <Text style={cardStyles.titleSteps}>{title}</Text>
@@ -755,6 +763,8 @@ function ChecklistItem({
   label: string;
   checked: boolean;
 }) {
+  const theme = useTheme<Theme>();
+  const cardStyles = React.useMemo(() => createCardStyles(theme), [theme]);
   return (
     <View style={cardStyles.rowChecklist}>
       <View
@@ -769,6 +779,8 @@ function ChecklistItem({
 }
 
 function MetricCard({ label, value }: { label: string; value: string }) {
+  const theme = useTheme<Theme>();
+  const cardStyles = React.useMemo(() => createCardStyles(theme), [theme]);
   return (
     <View style={cardStyles.metricCard}>
       <Text style={cardStyles.metricLabel}>{label}</Text>

@@ -31,9 +31,9 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       paddingHorizontal: 12,
       backgroundColor: hexToRgba(theme.colors.surface, 0.96),
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.07),
+      borderColor: hexToRgba(theme.colors.text, 0.07),
       borderRadius: 24,
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 7 },
       shadowOpacity: 0.22,
       shadowRadius: 18,
@@ -66,7 +66,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       right: 16,
       top: 0,
       height: 1,
-      backgroundColor: hexToRgba('#FFFFFF', 0.14),
+      backgroundColor: hexToRgba(theme.colors.text, 0.14),
       borderRadius: 999,
     },
     tabBarRow: {
@@ -123,10 +123,10 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       height: 54,
       borderRadius: 999,
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.08),
+      borderColor: hexToRgba(theme.colors.text, 0.08),
     },
     centerButtonAuraInnerActive: {
-      borderColor: hexToRgba('#FFFFFF', 0.14),
+      borderColor: hexToRgba(theme.colors.text, 0.14),
     },
     centerButton: {
       width: 48,
@@ -136,7 +136,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       justifyContent: 'center',
       backgroundColor: theme.colors.primary,
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.12),
+      borderColor: hexToRgba(theme.colors.text, 0.12),
     },
     centerButtonActive: {
       shadowColor: theme.colors.glow,
@@ -212,7 +212,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
     },
     quickAddBackdrop: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: 'rgba(6, 9, 16, 0.6)',
+      backgroundColor: hexToRgba(theme.colors.ink, 0.6),
     },
     quickAddSheet: {
       marginHorizontal: TAB_BAR_SIDE_OFFSET,
@@ -224,9 +224,9 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       gap: theme.spacing.md,
       borderRadius: 30,
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.08),
+      borderColor: hexToRgba(theme.colors.text, 0.08),
       backgroundColor: hexToRgba(theme.colors.surfaceAlt, 0.98),
-      shadowColor: '#000',
+      shadowColor: theme.colors.shadow,
       shadowOffset: { width: 0, height: 10 },
       shadowOpacity: 0.36,
       shadowRadius: 28,
@@ -259,7 +259,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       width: 56,
       height: 4,
       borderRadius: 999,
-      backgroundColor: hexToRgba('#FFFFFF', 0.16),
+      backgroundColor: hexToRgba(theme.colors.text, 0.16),
     },
     quickAddHeader: {
       flexDirection: 'row',
@@ -297,7 +297,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       justifyContent: 'center',
       backgroundColor: hexToRgba(theme.colors.surfaceElevated, 0.78),
       borderWidth: 1,
-      borderColor: hexToRgba('#FFFFFF', 0.06),
+      borderColor: hexToRgba(theme.colors.text, 0.06),
     },
     quickAddClosePressed: {
       opacity: 0.86,
@@ -320,7 +320,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
     },
     quickAddOptionSecondary: {
       backgroundColor: hexToRgba(theme.colors.surfaceElevated, 0.8),
-      borderColor: hexToRgba('#FFFFFF', 0.06),
+      borderColor: hexToRgba(theme.colors.text, 0.06),
     },
     quickAddOptionPressed: {
       opacity: 0.92,
@@ -334,7 +334,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       backgroundColor: hexToRgba(theme.colors.primary, 0.12),
     },
     quickAddOptionIconWrapPrimary: {
-      backgroundColor: hexToRgba('#FFFFFF', 0.2),
+      backgroundColor: hexToRgba(theme.colors.text, 0.2),
     },
     quickAddOptionCopy: {
       flex: 1,

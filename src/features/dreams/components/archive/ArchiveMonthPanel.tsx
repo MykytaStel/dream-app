@@ -12,7 +12,7 @@ import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { Theme } from '../../../../theme/theme';
 import {
   formatSelectedDate,
-  getCalendarMoodDotColor,
+  getCalendarMoodDotToken,
   getMonthChipLabel,
   getMonthLabel,
   type ArchiveCalendarCell,
@@ -199,9 +199,12 @@ export function ArchiveMonthPanel({
                 {row.map(cell => {
                   const isSelected = cell.date === selectedDate;
                   const isInteractive = Boolean(cell.date && cell.count > 0);
-                  const moodDotColor = getCalendarMoodDotColor(
+                  const moodDotToken = getCalendarMoodDotToken(
                     cell.dominantMood,
                   );
+                  const moodDotColor = moodDotToken
+                    ? theme.colors[moodDotToken]
+                    : null;
 
                   return (
                     <Pressable

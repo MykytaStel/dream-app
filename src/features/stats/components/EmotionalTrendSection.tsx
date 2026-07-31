@@ -7,7 +7,7 @@ import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import {
-  TREND_VALENCE_COLOR,
+  TREND_VALENCE_COLOR_TOKEN,
   type EmotionalTrendEntry,
 } from '../model/emotionalTrends';
 
@@ -61,7 +61,7 @@ export function EmotionalTrendSection({
         >
           {series.map(entry => {
             const barColor = entry.valence
-              ? TREND_VALENCE_COLOR[entry.valence]
+              ? theme.colors[TREND_VALENCE_COLOR_TOKEN[entry.valence]]
               : theme.colors.border;
             const barHeight = Math.max(
               MIN_BAR_HEIGHT,
@@ -100,7 +100,10 @@ export function EmotionalTrendSection({
               <View
                 style={[
                   styles.legendDot,
-                  { backgroundColor: TREND_VALENCE_COLOR[valence] },
+                  {
+                    backgroundColor:
+                      theme.colors[TREND_VALENCE_COLOR_TOKEN[valence]],
+                  },
                 ]}
               />
             </View>

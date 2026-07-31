@@ -1,6 +1,7 @@
 import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type AppLocale } from '../../../i18n/types';
 import { Dream, Mood } from './dream';
+import { VALENCE_COLOR_TOKEN, type Valence } from '../../../theme/valence';
 import { getDreamDate, getMoodValence } from './dreamAnalytics';
 import {
   getDreamSearchMatchReasons,
@@ -39,23 +40,17 @@ export type ArchiveCalendarCell = {
   isToday: boolean;
 };
 
-// Aurora-derived mood dot colors — static, safe for off-screen rendering
-export const CALENDAR_MOOD_DOT_COLOR: Record<
-  'positive' | 'neutral' | 'negative',
-  string
-> = {
-  positive: '#63D9FF', // auroraStart — cyan
-  neutral: '#8D7CFF', // auroraMid — purple
-  negative: '#C57EFF', // auroraEnd — magenta
-};
+// Calendar mood dots. Same three values as the trend chart had, copied
+// separately; both now name the token and let the theme supply the colour.
 
-export function getCalendarMoodDotColor(mood: Mood | null): string | null {
+export function getCalendarMoodDotToken(
+  mood: Mood | null,
+): (typeof VALENCE_COLOR_TOKEN)[Valence] | null {
   if (!mood) {
     return null;
   }
 
-  const valence = getMoodValence(mood);
-  return CALENDAR_MOOD_DOT_COLOR[valence];
+  return VALENCE_COLOR_TOKEN[getMoodValence(mood)];
 }
 
 export function getArchiveMoodLabel(

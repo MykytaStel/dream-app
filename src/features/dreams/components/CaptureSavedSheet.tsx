@@ -92,7 +92,11 @@ export function CaptureSavedSheet({
               <View style={styles.successPulseWrap}>
                 <Pulse size={52} active={visible} />
                 <View style={styles.successOrb}>
-                  <Ionicons name="checkmark" size={22} color={t.colors.ink} />
+                  <Ionicons
+                    name="checkmark"
+                    size={22}
+                    color={t.colors.background}
+                  />
                 </View>
               </View>
             </View>

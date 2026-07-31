@@ -104,7 +104,10 @@ export function WidgetPinToast({
                 accessibilityRole="button"
               >
                 <Text
-                  style={[styles.primaryBtnLabel, { color: theme.colors.ink }]}
+                  style={[
+                    styles.primaryBtnLabel,
+                    { color: theme.colors.background },
+                  ]}
                 >
                   {actionLabel}
                 </Text>

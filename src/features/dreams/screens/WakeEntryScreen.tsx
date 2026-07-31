@@ -155,7 +155,7 @@ export default function WakeEntryScreen() {
                     <Ionicons
                       name={draftPrimaryIcon}
                       size={20}
-                      color={t.colors.ink}
+                      color={t.colors.background}
                     />
                   </View>
                   <View style={styles.primaryActionCopy}>
@@ -167,7 +167,7 @@ export default function WakeEntryScreen() {
                   <Ionicons
                     name="chevron-forward"
                     size={20}
-                    color={t.colors.ink}
+                    color={t.colors.background}
                   />
                 </View>
                 {draftSummary.length ? (
@@ -198,7 +198,7 @@ export default function WakeEntryScreen() {
                     <Ionicons
                       name="mic-outline"
                       size={20}
-                      color={t.colors.ink}
+                      color={t.colors.background}
                     />
                   </View>
                   <View style={styles.primaryActionCopy}>
@@ -212,7 +212,7 @@ export default function WakeEntryScreen() {
                   <Ionicons
                     name="chevron-forward"
                     size={20}
-                    color={t.colors.ink}
+                    color={t.colors.background}
                   />
                 </View>
                 <View style={styles.primaryActionMetaRow}>

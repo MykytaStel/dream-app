@@ -66,7 +66,7 @@ export function BackupOnboardingModal({
                 <Ionicons
                   name="cloud-upload-outline"
                   size={22}
-                  color={theme.colors.ink}
+                  color={theme.colors.background}
                 />
               </View>
               <View style={styles.heroCopy}>

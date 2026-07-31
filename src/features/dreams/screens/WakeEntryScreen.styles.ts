@@ -136,7 +136,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       gap: 2,
     },
     primaryActionTitle: {
-      color: theme.colors.ink,
+      color: theme.colors.background,
       fontSize: 22,
       lineHeight: 28,
       fontWeight: '800',
@@ -158,7 +158,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       backgroundColor: hexToRgba(theme.colors.ink, 0.12),
     },
     primaryActionMetaLabel: {
-      color: theme.colors.ink,
+      color: theme.colors.background,
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '700',

@@ -101,7 +101,7 @@ decision.
 | Item | Detail |
 |---|---|
 | `react-native-fs` | 2.20.0, effectively unmaintained. Works today; a candidate to break on newer React Native. |
-| `react-native-html-to-pdf` | 1.3.0, unmaintained for years. Same risk. |
+| `react-native-html-to-pdf` | 1.3.0, unmaintained for years. Same risk, and now patched — see Patched dependencies. |
 | `@react-native-async-storage/async-storage` | Pinned at `^2.2.0`. Version 3.x was tried and did not build; the cause has not been diagnosed yet. |
 | `jest` | Pinned at 29. Jest 30 breaks every suite: `@react-native/jest-preset@0.86.2` depends on jest 29 packages and nests `jest-mock@29.7.0`, while `jest-runtime@30` calls an API only jest-mock 30 has. Moves when react native ships a preset built against 30. |
 | `eslint` | Pinned at 9. `@react-native/eslint-config@0.86.2` declares `eslint: "^8.0.0 \|\| ^9.0.0"`, so 10 is not an option yet. A `resolutions` entry forces `eslint-plugin-ft-flow` to 3.0.11, because the upstream config nests 2.0.3, which calls an API eslint 9 removed. |
@@ -109,7 +109,7 @@ decision.
 
 ## Patched dependencies
 
-One dependency is patched. Patches are applied by Yarn's own `patch:` protocol
+Two dependencies are patched. Patches are applied by Yarn's own `patch:` protocol
 (`resolutions` in `package.json`, patch file in `.yarn/patches/`), not by a
 `postinstall` script: the patch is part of dependency resolution, so it cannot
 silently fail to apply the way a lifecycle hook can. It survives `yarn install`
@@ -120,18 +120,19 @@ by construction, in CI as well as locally.
 | `react-native-libsodium@1.7.0` | Adds JSI bindings for `crypto_secretstream_xchacha20poly1305`. The algorithm was already compiled into the vendored libsodium — `nm libsodium.a` shows all sixteen symbols defined — but the binding layer exposed none of them. Without it, encrypting a recording means holding the whole file in memory, which is what capped audio at 16 MB. |
 | `react-native-html-to-pdf@1.3.0` | Removes `pdfbox-android`, and with it BouncyCastle. The library renders through Android's own WebView and PrintDocumentAdapter; PDFBox was used solely to count pages, a field this app never reads. `PdfRenderer` has been in the framework since API 21 and gives the same number. Measured: 4 MB off what every Android user downloads. |
 
-The patch touches **one C++ file and nothing else**. TypeScript for the new
-functions lives in `src/services/crypto/libsodiumSecretStream.ts` rather than in
-a patch of the package's own types: everything expressible in TypeScript belongs
-in this repo, where it is reviewed and tested. That also keeps the patch small
-enough to re-apply by hand if upstream moves.
+Both are deliberately small enough to re-apply by hand if upstream moves. The
+libsodium patch touches **one C++ file and nothing else** — TypeScript for the
+new functions lives in `src/services/crypto/libsodiumSecretStream.ts` instead,
+where it is reviewed and tested like the rest of the code. The PDF patch is four
+lines and a removed dependency line.
 
-To change it: `yarn patch react-native-libsodium`, edit the folder it prints,
-then `yarn patch-commit -s <folder>`.
+To change either: `yarn patch <package>`, edit the folder it prints, then
+`yarn patch-commit -s <folder>`.
 
-If upstream ever ships secretstream bindings, delete the `resolutions` entry and
-the patch file; `libsodiumSecretStream.ts` keeps working, since it only reads
-JSI globals.
+Both are worth offering upstream, and both stop being needed the moment they are
+accepted: delete the `resolutions` entry and the patch file.
+`libsodiumSecretStream.ts` keeps working either way, since it only reads JSI
+globals.
 
 ## Upgrade policy
 

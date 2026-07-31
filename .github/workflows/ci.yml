@@ -129,21 +129,31 @@ jobs:
         with:
           node-version: '20'
 
-      # 3.1, not something newer: Gemfile.lock was resolved on this project's
-      # local Ruby 2.7 and pins CFPropertyList 3.0.9, which declares ruby < 3.2.
-      # Ruby 3.3 fails at `bundle install` before anything is built.
-      #
-      # The real debt is the lockfile being tied to an end-of-life Ruby. Bumping
-      # it means regenerating Gemfile.lock on a modern Ruby, which changes what
-      # every developer resolves — a separate change, not a CI detail.
-      #
-      # Pinned here rather than in a .ruby-version file, which would also switch
-      # every local shell to satisfy CI.
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.1'
-          bundler-cache: true
+          ruby-version: '3.3'
+
+      # CocoaPods is installed directly rather than through the Gemfile.
+      #
+      # Gemfile.lock was resolved on this project's local Ruby 2.7 and pins gems
+      # that will not install on anything modern — CFPropertyList 3.0.9 declares
+      # ruby < 3.2 — and, on 3.1, `pod install` died with "[Xcodeproj] Unable to
+      # find compatibility version string for object version 70" even though the
+      # locked xcodeproj 1.27.0 handles 70 correctly on a developer machine.
+      #
+      # Rather than keep guessing at that, CI resolves CocoaPods fresh. The
+      # version it picks is printed, so the next failure comes with evidence
+      # instead of a hypothesis.
+      #
+      # The debt underneath is real and stays: Gemfile.lock is tied to an
+      # end-of-life Ruby, and regenerating it changes what every developer
+      # resolves. That is its own change, not a line in a workflow.
+      - name: Install CocoaPods
+        run: |
+          gem install cocoapods -N
+          pod --version
+          ruby -e "require 'xcodeproj'; puts 'xcodeproj ' + Xcodeproj::VERSION"
 
       - name: Enable Corepack
         run: |
@@ -167,7 +177,7 @@ jobs:
         working-directory: ios
         env:
           LANG: en_US.UTF-8
-        run: bundle exec pod install
+        run: pod install
 
       # CODE_SIGNING_ALLOWED=NO because this proves the code compiles and links,
       # which needs no certificate. Signing belongs to release, not to a PR.

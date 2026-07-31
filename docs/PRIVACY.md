@@ -48,7 +48,14 @@ Encryption hides what is in your dreams. It does not hide that they exist:
 | How many dreams you have | each is a row |
 | When each was last changed | conflict resolution compares this before anything is decrypted |
 | Your account id | it is what separates your rows from anyone else's |
-| That a recording exists, and its size | the file has to be stored somewhere |
+| That a recording exists, and roughly how long | the file has to be stored somewhere |
+| Roughly how long each dream is | the encrypted blob grows with the text inside it |
+
+That last row is measured, not theoretical: a one-line dream seals to about 770
+characters and a two-page one to about 9,300. So the server can tell a jotted
+note from a long entry, without being able to read either. Closing that would mean
+padding every record to a fixed size, which costs storage and bandwidth for
+everyone; it has not been done, and this page says so rather than leaving it out.
 
 So someone with database access could tell that you wrote four dreams last week and
 none for the month before. They could not tell you anything about a single one of

@@ -34,7 +34,11 @@ import {
   setCloudSyncEnabled,
 } from '../src/services/auth/session';
 import type { DreamSyncBundle } from '../src/services/api/contracts/dreamSync';
-import { createMockSupabaseClient } from './helpers/cloudSyncTestUtils';
+import {
+  createMockSupabaseClient,
+  installTestArchiveKey,
+  mockSignedInCloudSession,
+} from './helpers/cloudSyncTestUtils';
 
 jest.mock('../src/services/api/supabase/client', () => ({
   getSupabaseClient: jest.fn(),
@@ -53,17 +57,19 @@ describe('cloud sync service', () => {
       typeof syncCloudSessionFromAuth
     >;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     kv.clearAll();
     mockedGetSupabaseClient.mockReset();
     mockedSyncCloudSessionFromAuth.mockReset();
     (RNFS.exists as jest.Mock).mockResolvedValue(false);
     (RNFS.readFile as jest.Mock).mockResolvedValue('');
+    // The device already holds the archive key, as it would after the first
+    // sync or a restore. Suites that need a device without it say so.
+    await installTestArchiveKey();
   });
 
   test('uploads pending dreams and marks them synced', async () => {
-    const { client, dreamEntriesUpsert, tagsInsert, upload } =
-      createMockSupabaseClient();
+    const { client, dreamEntriesUpsert, upload } = createMockSupabaseClient();
     mockedGetSupabaseClient.mockReturnValue(client as never);
     mockedSyncCloudSessionFromAuth.mockResolvedValue({
       status: 'signed-in',
@@ -103,13 +109,16 @@ describe('cloud sync service', () => {
       expect.objectContaining({ upsert: true }),
     );
     expect(dreamEntriesUpsert).toHaveBeenCalledTimes(1);
-    expect(tagsInsert).toHaveBeenCalledWith([
-      {
-        dream_id: 'sync-1',
-        position: 0,
-        tag: 'lucid',
-      },
-    ]);
+    // The tag rode inside the blob rather than into a `dream_tags` row, so the
+    // word itself must not appear anywhere in what was sent.
+    const uploadedRow = dreamEntriesUpsert.mock.calls[0][0];
+    expect(JSON.stringify(uploadedRow)).not.toContain('lucid');
+    expect(JSON.stringify(uploadedRow)).not.toContain('Sync me');
+    expect(uploadedRow).toMatchObject({
+      id: 'sync-1',
+      user_id: 'user-1',
+      cipher_version: 1,
+    });
     expect(getCloudSyncSnapshot().status).toBe('success');
     expect(getCloudSyncEvents()[0]).toMatchObject({
       status: 'success',
@@ -957,6 +966,166 @@ describe('cloud sync service', () => {
       status: 'error',
       errorMessage: 'dream-upsert-failed',
       lastSuccessAt: previousLastSuccessAt,
+    });
+  });
+
+  describe('encrypted archive', () => {
+    /**
+     * The step the spec called the riskiest in the whole change.
+     *
+     * After the encryption migration the server holds nothing. A device whose
+     * dreams are all marked "synced" must read that as "upload again", never as
+     * "these were deleted elsewhere" — the same mistake that cost data twice
+     * before, arriving through a new door.
+     */
+    test('an empty server re-queues the local archive instead of erasing it', async () => {
+      const { client, dreamEntriesUpsert, getStoredKeyCheck } =
+        createMockSupabaseClient({ archiveKey: null });
+      mockedGetSupabaseClient.mockReturnValue(client as never);
+      mockSignedInCloudSession(mockedSyncCloudSessionFromAuth);
+
+      saveDream({
+        id: 'survivor-1',
+        createdAt: 1710000000000,
+        sleepDate: '2026-03-06',
+        text: 'Written before encryption existed',
+        tags: ['ліс'],
+      });
+      saveDream({
+        id: 'survivor-2',
+        createdAt: 1710000100000,
+        sleepDate: '2026-03-07',
+        text: 'Also written before',
+        tags: [],
+      });
+      markDreamSynced('survivor-1');
+      markDreamSynced('survivor-2');
+
+      const result = await runCloudSync({ reason: 'manual' });
+
+      expect(getDream('survivor-1')?.text).toBe(
+        'Written before encryption existed',
+      );
+      expect(getDream('survivor-2')?.text).toBe('Also written before');
+      expect(result.uploadedCount).toBe(2);
+      expect(dreamEntriesUpsert).toHaveBeenCalledTimes(2);
+      // Having claimed the archive, the device leaves a check behind so the
+      // next one can tell whether it holds the same key.
+      expect(getStoredKeyCheck()).toEqual(expect.any(String));
+    });
+
+    test('re-queuing does not make dreams look freshly edited to other devices', async () => {
+      const { client } = createMockSupabaseClient({ archiveKey: null });
+      mockedGetSupabaseClient.mockReturnValue(client as never);
+      mockSignedInCloudSession(mockedSyncCloudSessionFromAuth);
+
+      saveDream({
+        id: 'untouched-timestamp',
+        createdAt: 1710000000000,
+        sleepDate: '2026-03-06',
+        text: 'Old dream',
+        tags: [],
+      });
+      markDreamSynced('untouched-timestamp');
+      const updatedAtBefore = getDream('untouched-timestamp')?.updatedAt;
+
+      await runCloudSync({ reason: 'manual' });
+
+      // A bumped updatedAt would win every conflict on the user's other phone
+      // and overwrite edits made there.
+      expect(getDream('untouched-timestamp')?.updatedAt).toBe(updatedAtBefore);
+    });
+
+    /**
+     * Two devices, two keys, one account. Without the check on the profile both
+     * would sync without complaint and the archive would silently split in
+     * half, each device able to read only what it wrote.
+     */
+    test('a device holding the wrong key stops instead of writing a second archive', async () => {
+      const { client, dreamEntriesUpsert } = createMockSupabaseClient();
+      mockedGetSupabaseClient.mockReturnValue(client as never);
+      mockSignedInCloudSession(mockedSyncCloudSessionFromAuth);
+      await installTestArchiveKey(
+        Uint8Array.from({ length: 32 }, (_, index) => index + 200),
+      );
+
+      saveDream({
+        id: 'not-uploaded',
+        createdAt: 1710000000000,
+        sleepDate: '2026-03-06',
+        text: 'Stays here',
+        tags: [],
+      });
+
+      const result = await runCloudSync({ reason: 'manual' });
+
+      expect(result.status).toBe('error');
+      expect(result.errorMessage).toBe('archive-key-required');
+      expect(dreamEntriesUpsert).not.toHaveBeenCalled();
+      // Nothing was pulled, nothing was deleted, nothing was marked synced.
+      expect(getDream('not-uploaded')?.text).toBe('Stays here');
+      expect(getDream('not-uploaded')?.syncStatus).not.toBe('synced');
+    });
+
+    test('one unreadable record does not strand the rest of the archive', async () => {
+      const readable: DreamSyncBundle = {
+        dream: {
+          id: 'readable',
+          user_id: 'user-1',
+          created_at: new Date(1710000000000).toISOString(),
+          updated_at: new Date(1710000200000).toISOString(),
+          sleep_date: '2026-03-06',
+          title: null,
+          raw_text: 'This one opens',
+          audio_storage_path: null,
+          transcript: null,
+          transcript_status: null,
+          transcript_source: null,
+          transcript_updated_at: null,
+          mood: null,
+          lucidity: null,
+          archived_at: null,
+          starred_at: null,
+          analysis_provider: null,
+          analysis_status: null,
+          analysis_summary: null,
+          analysis_themes: [],
+          analysis_generated_at: null,
+          analysis_error_message: null,
+        },
+        tags: [],
+        wakeEmotions: [],
+        preSleepEmotions: [],
+        sleepContext: null,
+      };
+
+      const { client } = createMockSupabaseClient({
+        remoteBundles: [readable],
+        // A row no key opens — corruption, or a record sealed with a key that
+        // was since replaced. The pull must carry on past it.
+        extraRemoteRows: [
+          {
+            id: 'corrupt',
+            user_id: 'user-1',
+            updated_at: new Date(1710000300000).toISOString(),
+            audio_storage_path: null,
+            ciphertext: 'AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA',
+            cipher_version: 1,
+          },
+        ],
+      });
+
+      mockedGetSupabaseClient.mockReturnValue(client as never);
+      mockSignedInCloudSession(mockedSyncCloudSessionFromAuth);
+
+      const result = await runCloudSync({ reason: 'manual' });
+
+      expect(result.status).toBe('error');
+      expect(result.errorMessage).toBe('archive-record-unreadable');
+      expect(result.failedCount).toBe(1);
+      expect(getDream('corrupt')).toBeUndefined();
+      // The readable one still landed, which is the whole point.
+      expect(getDream('readable')?.text).toBe('This one opens');
     });
   });
 });

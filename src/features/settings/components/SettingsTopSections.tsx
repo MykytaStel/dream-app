@@ -432,10 +432,12 @@ export function PrivacySection({
   copy,
   styles,
   privacyHighlights,
+  onOpenPrivacy,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
   privacyHighlights: SettingsMetaItem[];
+  onOpenPrivacy: () => void;
 }) {
   return (
     <Card style={styles.sectionCard}>
@@ -450,6 +452,10 @@ export function PrivacySection({
           meta={item.value}
         />
       ))}
+      <SettingsActionRow
+        title={copy.privacyOpenAction}
+        onPress={onOpenPrivacy}
+      />
       <Text style={styles.privacyFootnote}>{copy.privacyFootnote}</Text>
     </Card>
   );

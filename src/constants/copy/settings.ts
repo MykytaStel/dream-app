@@ -74,6 +74,54 @@ const SETTINGS_COPY_EN = {
   privacyReminderValue: 'Local notifications only',
   privacyFootnote:
     'If you delete the app, local entries, downloaded transcription model, and drafts may be removed with it until export or sync exists.',
+  privacyOpenAction: 'How your data is handled',
+  privacyScreenTitle: 'Your data',
+  privacyScreenIntro:
+    'Your dreams are stored on this device. Nothing is sent anywhere unless you turn on a feature that sends it, and each of those starts off.',
+  privacyLocalTitle: 'Stays on this device',
+  privacyLocalBody:
+    'Dream text, titles, tags, moods, voice recordings and transcripts. Patterns, streaks and statistics are worked out here too, never on a server.',
+  privacyLeavesTitle: 'What can leave, and when',
+  privacyCloudTitle: 'Cloud backup, if you turn it on',
+  privacyCloudBody:
+    'Uploads your dream text, transcripts and recordings, encrypted on this device with a key the server never receives. The server can see how many dreams you have and when you last changed one — nothing about what is in them. The key travels to your other devices through iCloud Keychain or Android backup, and a recovery code is in these settings if you ever need it.',
+  privacyCrashTitle: 'Crash reports, in builds set up for them',
+  privacyCrashBody:
+    'Sends the error, the app version and which screen was open. Dream text, titles, transcripts, tags and your identity are stripped out before anything is sent.',
+  privacyModelTitle: 'The speech model, once',
+  privacyModelBody:
+    'Transcription runs on this device, but the model is downloaded the first time you use it. That request carries no dream data. Afterwards transcription works offline.',
+  privacyLockTitle: 'The lock',
+  privacyLockBody:
+    'Biometrics are checked by the system; the app only learns whether it was accepted. The lock hides the screens — it does not encrypt the stored files.',
+  privacyDeleteTitle: 'Deleting everything',
+  privacyDeleteBody:
+    'Removing the app deletes what is stored here, including recordings and drafts. Export first if you want to keep them. Anything already uploaded stays until you delete those dreams while backup is on.',
+  privacyNoAccountNote:
+    'There is no account, no profile and no analytics service. Offline, the app is complete.',
+  archiveKeyTitle: 'The key to your archive',
+  archiveKeyDescription:
+    'Your dreams are encrypted before they are uploaded. This is the key that opens them.',
+  archiveKeyTravelsIcloud:
+    'Carried to your other Apple devices by iCloud Keychain. Nothing for you to do.',
+  archiveKeyTravelsAndroid:
+    'Carried to your next Android device by Google backup. Nothing for you to do.',
+  archiveKeyStranded:
+    'This key cannot leave this phone on its own — device backup is off. Save the recovery code, or the archive will only ever open here.',
+  archiveKeyMissingForArchive:
+    'The archive in the cloud was encrypted with a different key. Enter its recovery code to read it here. Nothing on this phone has been changed or deleted.',
+  archiveKeyNotYetCreated:
+    'The key is created the first time you sync. Until then there is nothing to keep.',
+  archiveKeyRevealAction: 'Show recovery code',
+  archiveKeyHideAction: 'Hide recovery code',
+  archiveKeyCodeIntro:
+    'Twenty-four words, in this order. They are the key itself — anyone who has them can read your archive. You need them only to move between iPhone and Android, or to restore a phone that had no backup.',
+  archiveKeyEntryLabel: 'Recovery code',
+  archiveKeyEntryPlaceholder: 'Paste or type the twenty-four words',
+  archiveKeyEntryAction: 'Use this code',
+  archiveKeyEntryInvalid:
+    'That is not a complete code. Check for a missing or mistyped word — the code carries a checksum, so it can tell.',
+  archiveKeyEntryAccepted: 'Key accepted. Sync again to read the archive.',
   cloudTitle: 'Cloud backup',
   cloudDescription: 'Optional device-to-device sync for one archive.',
   cloudConfigLabel: 'Runtime config',
@@ -598,6 +646,55 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   privacyReminderValue: 'Локальні сповіщення',
   privacyFootnote:
     'Якщо видалити застосунок, локальні записи, завантажена модель транскрипції і чернетки можуть зникнути, доки не зʼявиться експорт або синхронізація.',
+  privacyOpenAction: 'Як ми поводимось з даними',
+  privacyScreenTitle: 'Ваші дані',
+  privacyScreenIntro:
+    'Ваші сни зберігаються на цьому пристрої. Нікуди нічого не надсилається, доки ви самі не ввімкнете відповідну функцію, а кожна з них вимкнена від початку.',
+  privacyLocalTitle: 'Лишається на пристрої',
+  privacyLocalBody:
+    'Текст снів, заголовки, теги, настрої, голосові записи й розшифровки. Патерни, серії та статистика теж обчислюються тут, а не на сервері.',
+  privacyLeavesTitle: 'Що може вийти назовні та коли',
+  privacyCloudTitle: 'Хмарна копія, якщо ви її ввімкнете',
+  privacyCloudBody:
+    'Вивантажує текст снів, розшифровки й записи, зашифровані на цьому пристрої ключем, якого сервер ніколи не отримує. Сервер бачить, скільки у вас снів і коли ви востаннє щось змінювали, — і нічого про їхній зміст. Ключ переїжджає на ваші інші пристрої через iCloud Keychain або резервну копію Android, а код відновлення є в цих налаштуваннях, якщо він знадобиться.',
+  privacyCrashTitle: 'Звіти про збої, у складаннях із цією опцією',
+  privacyCrashBody:
+    'Надсилає помилку, версію застосунку й екран, який був відкритий. Текст снів, заголовки, розшифровки, теги та ваша особа вирізаються до надсилання.',
+  privacyModelTitle: 'Модель розпізнавання, один раз',
+  privacyModelBody:
+    'Розшифровка працює на цьому пристрої, але модель завантажується під час першого використання. Той запит не містить даних про сни. Далі розшифровка працює офлайн.',
+  privacyLockTitle: 'Замок',
+  privacyLockBody:
+    'Біометрію перевіряє система; застосунок дізнається лише, чи її прийнято. Замок ховає екрани — він не шифрує збережені файли.',
+  privacyDeleteTitle: 'Як видалити все',
+  privacyDeleteBody:
+    'Видалення застосунку прибирає все, що зберігається тут, разом із записами й чернетками. Спершу зробіть експорт, якщо хочете зберегти. Те, що вже вивантажено, лишається, доки ви не видалите ті сни з увімкненою копією.',
+  privacyNoAccountNote:
+    'Немає ані облікового запису, ані профілю, ані аналітики. Офлайн застосунок повноцінний.',
+  archiveKeyTitle: 'Ключ до вашого архіву',
+  archiveKeyDescription:
+    'Ваші сни шифруються перед вивантаженням. Це ключ, який їх відкриває.',
+  archiveKeyTravelsIcloud:
+    'iCloud Keychain переносить його на ваші інші пристрої Apple. Робити нічого не треба.',
+  archiveKeyTravelsAndroid:
+    'Резервна копія Google переносить його на ваш наступний пристрій Android. Робити нічого не треба.',
+  archiveKeyStranded:
+    'Цей ключ не може виїхати з телефона сам — резервне копіювання вимкнене. Збережіть код відновлення, інакше архів відкриватиметься лише тут.',
+  archiveKeyMissingForArchive:
+    'Архів у хмарі зашифрований іншим ключем. Введіть його код відновлення, щоб прочитати архів тут. На цьому телефоні нічого не змінено й не видалено.',
+  archiveKeyNotYetCreated:
+    'Ключ створюється під час першої синхронізації. Доти зберігати нічого.',
+  archiveKeyRevealAction: 'Показати код відновлення',
+  archiveKeyHideAction: 'Сховати код відновлення',
+  archiveKeyCodeIntro:
+    'Двадцять чотири слова, саме в такому порядку. Це і є ключ — хто має ці слова, той прочитає ваш архів. Вони потрібні лише для переходу між iPhone та Android або для відновлення телефона без резервної копії.',
+  archiveKeyEntryLabel: 'Код відновлення',
+  archiveKeyEntryPlaceholder: 'Вставте або введіть двадцять чотири слова',
+  archiveKeyEntryAction: 'Використати цей код',
+  archiveKeyEntryInvalid:
+    'Це неповний код. Перевірте, чи не пропущено або не переплутано слово — код має контрольну суму, тож це видно.',
+  archiveKeyEntryAccepted:
+    'Ключ прийнято. Синхронізуйте ще раз, щоб прочитати архів.',
   cloudTitle: 'Хмарний backup',
   cloudDescription: 'Опційний sync одного архіву між пристроями.',
   cloudConfigLabel: 'Runtime-конфіг',

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Backup exists for exactly one reason: to carry the archive key to the user's
+  next device, so turning on cloud sync does not demand that they write down a
+  recovery code.
+
+  Everything else is excluded, deliberately and by name. Android's default is to
+  back up all app data, which here would upload the MMKV store — the dream text
+  itself — to Google Drive in the clear. That is the very leak this feature
+  exists to close, so the rules start by excluding the whole domain and then
+  add back only the key file.
+
+  A test parses this file and fails if anything other than the key is included.
+-->
+<data-extraction-rules>
+  <cloud-backup>
+    <exclude domain="root" />
+    <exclude domain="file" />
+    <exclude domain="database" />
+    <exclude domain="sharedpref" />
+    <exclude domain="external" />
+    <include domain="file" path="archive-key/" />
+  </cloud-backup>
+
+  <device-transfer>
+    <exclude domain="root" />
+    <exclude domain="file" />
+    <exclude domain="database" />
+    <exclude domain="sharedpref" />
+    <exclude domain="external" />
+    <include domain="file" path="archive-key/" />
+  </device-transfer>
+</data-extraction-rules>

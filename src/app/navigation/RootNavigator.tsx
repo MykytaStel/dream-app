@@ -16,6 +16,7 @@ import ProgressScreen from '../../features/stats/screens/ProgressScreen';
 import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
+import PrivacyScreen from '../../features/settings/screens/PrivacyScreen';
 import OnboardingScreen from '../../features/onboarding/screens/OnboardingScreen';
 import DreamPracticeScreen from '../../features/practice/screens/DreamPracticeScreen';
 import { hasSeenOnboarding } from '../../features/onboarding/services/onboardingService';
@@ -215,6 +216,11 @@ export default function RootNavigator() {
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.DreamEditor}
           component={EditDreamScreen}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.Privacy}
+          component={PrivacyScreen}
+          options={{ headerShown: true, title: 'Privacy' }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.Progress}

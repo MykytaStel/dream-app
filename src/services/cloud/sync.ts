@@ -4,19 +4,32 @@ import {
   createDreamAudioStoragePath,
   createDreamSyncBundle,
   DREAM_AUDIO_BUCKET,
-  type DreamEntryRow,
-  type DreamPreSleepEmotionRow,
-  type DreamSleepContextRow,
-  type DreamTagRow,
-  type DreamWakeEmotionRow,
 } from '../api/contracts/dreamSync';
+import {
+  openDreamSyncBundle,
+  sealDreamSyncBundle,
+  type EncryptedDreamEntryRow,
+} from '../api/contracts/dreamSyncCipher';
+import {
+  archiveKeyMatchesCheck,
+  ArchiveKeyRequiredError,
+  createArchiveKeyCheck,
+  createArchiveSealer,
+  getOrCreateArchiveKey,
+} from '../crypto/archiveKeyService';
 import { getSupabaseClient } from '../api/supabase/client';
+import { reportError } from '../observability/errorReporting';
 import { syncCloudSessionFromAuth } from '../auth/cloudAuth';
 import { getCloudSyncEnabled } from '../auth/session';
 import { uploadDreamAudio } from './audioUpload';
 import {
+  encryptAudioFileForUpload,
+  ENCRYPTED_AUDIO_MIME_TYPE,
+} from './audioCipher';
+import {
   listDreams,
   applyRemoteDreamDeletion,
+  markAllDreamsPendingUpload,
   markDreamSynced,
   markDreamSyncError,
   markDreamSyncing,
@@ -80,24 +93,6 @@ function getAudioFilename(audioUri: string, dreamId: string) {
   return lastSegment?.trim() || `${dreamId}.m4a`;
 }
 
-function getAudioMimeType(filename: string) {
-  const normalized = filename.toLowerCase();
-
-  if (normalized.endsWith('.wav')) {
-    return 'audio/wav';
-  }
-
-  if (normalized.endsWith('.mp3')) {
-    return 'audio/mpeg';
-  }
-
-  if (normalized.endsWith('.aac')) {
-    return 'audio/aac';
-  }
-
-  return 'audio/mp4';
-}
-
 function decodeBase64ToUint8Array(input: string): Uint8Array {
   const binary = decodeBase64(input);
   const bytes = new Uint8Array(binary.length);
@@ -138,6 +133,7 @@ function getCurrentPendingCounts(
 async function ensureDreamAudioUploaded(
   userId: string,
   dream: ReturnType<typeof listDreams>[number],
+  sealer: ArchiveSealer,
 ) {
   if (!dream.audioUri?.trim()) {
     return dream.audioRemotePath;
@@ -162,12 +158,9 @@ async function ensureDreamAudioUploaded(
     throw new Error('local-audio-file-missing');
   }
 
-  const MAX_AUDIO_UPLOAD_BYTES = 100 * 1024 * 1024; // 100 MB
-  const stat = await RNFS.stat(audioFilePath);
-  if (Number(stat.size) > MAX_AUDIO_UPLOAD_BYTES) {
-    throw new Error('audio-file-too-large');
-  }
-
+  // The 100 MB ceiling that used to live here is gone: encryption enforces a
+  // stricter one and reports it more precisely, so keeping both would leave a
+  // limit that can never be reached and a second stat call to find out.
   const filename = getAudioFilename(dream.audioUri, dream.id);
   const remotePath =
     dream.audioRemotePath ??
@@ -177,9 +170,20 @@ async function ensureDreamAudioUploaded(
       filename,
     });
 
-  const mimeType = getAudioMimeType(filename);
+  // The recording is sealed before it leaves, and what goes up is no longer an
+  // audio file — so it stops being declared as one. The bucket's allowed types
+  // were widened for exactly this in the same migration.
+  const encryptedPath = await encryptAudioFileForUpload(
+    audioFilePath,
+    sealer.sealBytes,
+  );
+
   try {
-    await uploadDreamAudio(remotePath, audioFilePath, mimeType);
+    await uploadDreamAudio(
+      remotePath,
+      encryptedPath,
+      ENCRYPTED_AUDIO_MIME_TYPE,
+    );
   } catch (error) {
     // If native upload is unavailable for some reason, fall back to JS upload.
     const message = error instanceof Error ? error.message : String(error);
@@ -191,89 +195,40 @@ async function ensureDreamAudioUploaded(
       throw error;
     }
 
-    const base64 = await RNFS.readFile(audioFilePath, 'base64');
+    const base64 = await RNFS.readFile(encryptedPath, 'base64');
     const bytes = decodeBase64ToUint8Array(base64);
     const { error: uploadError } = await client.storage
       .from(DREAM_AUDIO_BUCKET)
       .upload(remotePath, bytes, {
-        contentType: mimeType,
+        contentType: ENCRYPTED_AUDIO_MIME_TYPE,
         upsert: true,
       });
 
     if (uploadError) {
       throw uploadError;
     }
+  } finally {
+    // The sealed copy is a duplicate of the recording; leaving it behind would
+    // quietly double what the app stores on disk with every sync.
+    await RNFS.unlink(encryptedPath).catch(() => undefined);
   }
 
   return remotePath;
 }
 
-async function replaceDreamRelationRows(
-  tableName: 'dream_tags' | 'dream_wake_emotions' | 'dream_pre_sleep_emotions',
-  dreamId: string,
-  rows: Array<Record<string, unknown>>,
-) {
-  const client = getSupabaseClient();
-  if (!client) {
-    throw new Error('Supabase runtime config is missing.');
-  }
-
-  const { error: deleteError } = await client
-    .from(tableName)
-    .delete()
-    .eq('dream_id', dreamId);
-  if (deleteError) {
-    throw deleteError;
-  }
-
-  if (!rows.length) {
-    return;
-  }
-
-  const { error: insertError } = await client.from(tableName).insert(rows);
-  if (insertError) {
-    throw insertError;
-  }
-}
-
-async function replaceDreamSleepContext(
-  dreamId: string,
-  row: Record<string, unknown> | null,
-) {
-  const client = getSupabaseClient();
-  if (!client) {
-    throw new Error('Supabase runtime config is missing.');
-  }
-
-  if (!row) {
-    const { error } = await client
-      .from('dream_sleep_contexts')
-      .delete()
-      .eq('dream_id', dreamId);
-    if (error) {
-      throw error;
-    }
-    return;
-  }
-
-  const { error } = await client.from('dream_sleep_contexts').upsert(row, {
-    onConflict: 'dream_id',
-  });
-  if (error) {
-    throw error;
-  }
-}
+type ArchiveSealer = ReturnType<typeof createArchiveSealer>;
 
 async function uploadDream(
   userId: string,
   dream: ReturnType<typeof listDreams>[number],
+  sealer: ArchiveSealer,
 ) {
   const client = getSupabaseClient();
   if (!client) {
     throw new Error('Supabase runtime config is missing.');
   }
 
-  const audioRemotePath = await ensureDreamAudioUploaded(userId, dream);
+  const audioRemotePath = await ensureDreamAudioUploaded(userId, dream, sealer);
   const bundle = createDreamSyncBundle(
     {
       ...dream,
@@ -282,29 +237,17 @@ async function uploadDream(
     userId,
   );
 
+  // One row, one write. The four relation tables this used to fan out to are
+  // gone: their contents ride inside the sealed blob, which also removed the
+  // window where an entry was uploaded but its tags were not.
   const { error: dreamError } = await client
     .from('dream_entries')
-    .upsert(bundle.dream, {
+    .upsert(sealDreamSyncBundle(bundle, sealer.seal, sealer.cipherVersion), {
       onConflict: 'id',
     });
   if (dreamError) {
     throw dreamError;
   }
-
-  await Promise.all([
-    replaceDreamRelationRows('dream_tags', dream.id, bundle.tags),
-    replaceDreamRelationRows(
-      'dream_wake_emotions',
-      dream.id,
-      bundle.wakeEmotions,
-    ),
-    replaceDreamRelationRows(
-      'dream_pre_sleep_emotions',
-      dream.id,
-      bundle.preSleepEmotions,
-    ),
-    replaceDreamSleepContext(dream.id, bundle.sleepContext),
-  ]);
 
   return {
     audioRemotePath,
@@ -373,32 +316,9 @@ async function uploadSavedReviewStateSnapshot(
   }
 }
 
-async function fetchRowsByDreamIds<T extends { dream_id: string }>(
-  tableName: string,
-  dreamIds: string[],
-) {
-  const client = getSupabaseClient();
-  if (!client) {
-    throw new Error('Supabase runtime config is missing.');
-  }
-
-  if (!dreamIds.length) {
-    return [] as T[];
-  }
-
-  const { data, error } = await client
-    .from(tableName)
-    .select('*')
-    .in('dream_id', dreamIds);
-  if (error) {
-    throw error;
-  }
-
-  return (data ?? []) as T[];
-}
-
 async function fetchRemoteDreamBundles(
   userId: string,
+  sealer: ArchiveSealer,
   options?: { updatedAtOrAfter?: number },
 ) {
   const client = getSupabaseClient();
@@ -427,74 +347,98 @@ async function fetchRemoteDreamBundles(
     throw dreamRowsError;
   }
 
-  const normalizedDreamRows = (dreamRows ?? []) as DreamEntryRow[];
+  const normalizedDreamRows = (dreamRows ?? []) as EncryptedDreamEntryRow[];
   if (!normalizedDreamRows.length) {
-    return [];
+    return { bundles: [], unreadableCount: 0 };
   }
 
-  const dreamIds = normalizedDreamRows.map(row => row.id);
-  const [tags, wakeEmotions, preSleepEmotions, sleepContexts] =
-    await Promise.all([
-      fetchRowsByDreamIds<DreamTagRow>('dream_tags', dreamIds),
-      fetchRowsByDreamIds<DreamWakeEmotionRow>('dream_wake_emotions', dreamIds),
-      fetchRowsByDreamIds<DreamPreSleepEmotionRow>(
-        'dream_pre_sleep_emotions',
-        dreamIds,
-      ),
-      fetchRowsByDreamIds<DreamSleepContextRow>(
-        'dream_sleep_contexts',
-        dreamIds,
-      ),
-    ]);
+  const bundles = [];
+  let unreadableCount = 0;
 
-  const tagsByDreamId = new Map<string, DreamTagRow[]>();
-  tags.forEach(item => {
-    const current = tagsByDreamId.get(item.dream_id);
-    if (current) {
-      current.push(item);
-      return;
+  for (const row of normalizedDreamRows) {
+    try {
+      bundles.push(openDreamSyncBundle(row, sealer.open));
+    } catch (error) {
+      // One unreadable record must not abort the pull: the rest of the archive
+      // is still readable, and stopping here would strand it. It is reported
+      // rather than swallowed, because a record this device cannot open is
+      // either tampered with or sealed under a different key — both worth
+      // knowing about, neither a reason to lose the other 400 dreams.
+      unreadableCount += 1;
+      reportError(error, {
+        event: 'archive_record_unreadable',
+        dreamId: row.id,
+        cipherVersion: row.cipher_version,
+      });
+    }
+  }
+
+  return { bundles, unreadableCount };
+}
+
+/**
+ * Settles which key this account's archive is sealed with, before a single byte
+ * is written.
+ *
+ * The check value on the profile is claimed with a conditional update, so two
+ * devices racing to set it up cannot both win: the loser reads back a value its
+ * own key cannot open and stops, instead of uploading records the other device
+ * will never be able to read.
+ */
+async function establishArchiveKey(userId: string) {
+  const client = getSupabaseClient();
+  if (!client) {
+    throw new Error('Supabase runtime config is missing.');
+  }
+
+  const key = await getOrCreateArchiveKey();
+
+  const { data: profile, error: profileError } = await client
+    .from('profiles')
+    .select('archive_key_check')
+    .eq('id', userId)
+    .maybeSingle();
+  if (profileError) {
+    throw profileError;
+  }
+
+  const existingCheck = (
+    profile as { archive_key_check?: string | null } | null
+  )?.archive_key_check;
+
+  if (existingCheck) {
+    if (!archiveKeyMatchesCheck(key, existingCheck)) {
+      throw new ArchiveKeyRequiredError('mismatch');
     }
 
-    tagsByDreamId.set(item.dream_id, [item]);
-  });
+    return { sealer: createArchiveSealer(key), isUnclaimedArchive: false };
+  }
 
-  const wakeEmotionsByDreamId = new Map<string, DreamWakeEmotionRow[]>();
-  wakeEmotions.forEach(item => {
-    const current = wakeEmotionsByDreamId.get(item.dream_id);
-    if (current) {
-      current.push(item);
-      return;
-    }
+  const { error: claimError } = await client
+    .from('profiles')
+    .update({ archive_key_check: createArchiveKeyCheck(key) })
+    .eq('id', userId)
+    .is('archive_key_check', null);
+  if (claimError) {
+    throw claimError;
+  }
 
-    wakeEmotionsByDreamId.set(item.dream_id, [item]);
-  });
+  const { data: claimed, error: claimedError } = await client
+    .from('profiles')
+    .select('archive_key_check')
+    .eq('id', userId)
+    .maybeSingle();
+  if (claimedError) {
+    throw claimedError;
+  }
 
-  const preSleepEmotionsByDreamId = new Map<
-    string,
-    DreamPreSleepEmotionRow[]
-  >();
-  preSleepEmotions.forEach(item => {
-    const current = preSleepEmotionsByDreamId.get(item.dream_id);
-    if (current) {
-      current.push(item);
-      return;
-    }
+  const claimedCheck = (claimed as { archive_key_check?: string | null } | null)
+    ?.archive_key_check;
+  if (!claimedCheck || !archiveKeyMatchesCheck(key, claimedCheck)) {
+    throw new ArchiveKeyRequiredError('mismatch');
+  }
 
-    preSleepEmotionsByDreamId.set(item.dream_id, [item]);
-  });
-
-  const sleepContextByDreamId = new Map<string, DreamSleepContextRow>();
-  sleepContexts.forEach(item => {
-    sleepContextByDreamId.set(item.dream_id, item);
-  });
-
-  return normalizedDreamRows.map(dream => ({
-    dream,
-    tags: tagsByDreamId.get(dream.id) ?? [],
-    wakeEmotions: wakeEmotionsByDreamId.get(dream.id) ?? [],
-    preSleepEmotions: preSleepEmotionsByDreamId.get(dream.id) ?? [],
-    sleepContext: sleepContextByDreamId.get(dream.id) ?? null,
-  }));
+  return { sealer: createArchiveSealer(key), isUnclaimedArchive: true };
 }
 
 async function fetchRemoteDreamRevisions(userId: string, dreamIds?: string[]) {
@@ -636,9 +580,29 @@ async function performCloudSync(
       throw new Error('cloud-session-required');
     }
 
+    // Before anything is read or written. A key mismatch here throws, which
+    // ends the sync with an error the settings screen can act on — and, more
+    // importantly, leaves the local archive untouched.
+    const { sealer, isUnclaimedArchive } = await establishArchiveKey(
+      session.userId,
+    );
+
+    // Nobody has sealed this account's archive yet, which is what the server
+    // looks like after the encryption migration discarded the plaintext copy.
+    // Dreams marked "synced" locally now have nothing behind them, so they are
+    // queued again. The reverse — deleting local dreams because the server is
+    // empty — is exactly the mistake this must not make.
+    const dreamsToUpload = isUnclaimedArchive
+      ? (markAllDreamsPendingUpload(),
+        listDreams().filter(dream => dream.syncStatus !== 'synced'))
+      : pendingDreams;
+    dreamsToUpload.forEach(dream =>
+      conflictContext.pendingDreamIds.add(dream.id),
+    );
+
     const pendingRemoteLookupIds = Array.from(
       new Set([
-        ...pendingDreams.map(dream => dream.id),
+        ...dreamsToUpload.map(dream => dream.id),
         ...pendingTombstones.map(tombstone => tombstone.dreamId),
       ]),
     );
@@ -671,7 +635,7 @@ async function performCloudSync(
       ...pendingCounts,
     });
 
-    for (const dream of pendingDreams) {
+    for (const dream of dreamsToUpload) {
       const localUploadDecision = decideLocalDreamUploadResolution(
         dream,
         remoteDreamRevisionMap.get(dream.id) ?? null,
@@ -702,7 +666,7 @@ async function performCloudSync(
       markDreamSyncing(dream.id);
 
       try {
-        const uploadResult = await uploadDream(session.userId, dream);
+        const uploadResult = await uploadDream(session.userId, dream, sealer);
         markDreamSynced(dream.id, {
           audioRemotePath: uploadResult.audioRemotePath,
           syncedAt: Date.now(),
@@ -790,9 +754,14 @@ async function performCloudSync(
       pulledCount += 1;
     }
 
-    const remoteBundles = await fetchRemoteDreamBundles(session.userId, {
-      updatedAtOrAfter: remoteChangesSince,
-    });
+    const { bundles: remoteBundles, unreadableCount } =
+      await fetchRemoteDreamBundles(session.userId, sealer, {
+        updatedAtOrAfter: remoteChangesSince,
+      });
+    failedCount += unreadableCount;
+    if (unreadableCount) {
+      lastErrorMessage = 'archive-record-unreadable';
+    }
     for (const bundle of remoteBundles) {
       const decision = decideRemoteBundleResolution(bundle, conflictContext);
       ({ conflictsResolvedCount, localWinsCount, remoteWinsCount } =

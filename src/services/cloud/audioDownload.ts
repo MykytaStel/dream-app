@@ -1,6 +1,12 @@
 import RNFS from 'react-native-fs';
 import { getSupabaseClient } from '../api/supabase/client';
 import { DREAM_AUDIO_BUCKET } from '../api/contracts/dreamSync';
+import { decryptDownloadedAudioFile } from './audioCipher';
+import {
+  ArchiveKeyRequiredError,
+  createArchiveSealer,
+  getArchiveKey,
+} from '../crypto/archiveKeyService';
 
 export async function downloadDreamAudio(
   remotePath: string,
@@ -9,6 +15,14 @@ export async function downloadDreamAudio(
   const client = getSupabaseClient();
   if (!client) {
     throw new Error('Supabase runtime config is missing.');
+  }
+
+  // Checked before the download rather than after: fetching several megabytes
+  // that cannot then be opened wastes the user's data and ends in the same
+  // error either way.
+  const key = await getArchiveKey();
+  if (!key) {
+    throw new ArchiveKeyRequiredError('missing');
   }
 
   const { data, error } = await client.storage
@@ -32,6 +46,19 @@ export async function downloadDreamAudio(
 
   if (result.statusCode !== 200) {
     throw new Error(`Audio download failed with status ${result.statusCode}.`);
+  }
+
+  try {
+    await decryptDownloadedAudioFile(
+      localPath,
+      createArchiveSealer(key).openBytes,
+    );
+  } catch (decryptionError) {
+    // The file on disk is a sealed blob, not a recording. Leaving it there
+    // would hand the player something unplayable, which reads as "your dream is
+    // gone" rather than "this could not be decrypted".
+    await RNFS.unlink(localPath).catch(() => undefined);
+    throw decryptionError;
   }
 
   return `file://${localPath}`;

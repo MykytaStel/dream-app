@@ -187,6 +187,7 @@ export default function SettingsScreen() {
         copy={copy}
         styles={styles}
         privacyHighlights={controller.privacyHighlights}
+        onOpenPrivacy={() => navigation.navigate(ROOT_ROUTE_NAMES.Privacy)}
       />
 
       <AnalysisSection

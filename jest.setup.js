@@ -137,6 +137,7 @@ jest.mock('react-native-mmkv', () => {
 jest.mock('react-native-fs', () => ({
   DocumentDirectoryPath: '/documents',
   ExternalDirectoryPath: '/external',
+  CachesDirectoryPath: '/caches',
   mkdir: jest.fn().mockResolvedValue(undefined),
   readFile: jest.fn().mockResolvedValue(''),
   writeFile: jest.fn().mockResolvedValue(undefined),
@@ -147,6 +148,90 @@ jest.mock('react-native-fs', () => ({
     promise: Promise.resolve({ statusCode: 200 }),
   })),
 }));
+
+// libsodium is native, so the suites cannot run the real XChaCha20. What they
+// can run — and what mistakes actually live in — is the framing around it:
+// version byte, nonce placement, base64, JSON. This stand-in keeps that path
+// real while replacing only the primitive.
+//
+// It is not encryption and is not pretending to be. It has the two properties
+// the framing relies on: a wrong key fails loudly, and output differs from
+// input. `__tests__/archiveCipher.test.ts` states the same thing at its own
+// level; the real primitive is exercised on device, not here.
+jest.mock('react-native-libsodium', () => {
+  let counter = 0;
+
+  const xor = (bytes, key, nonce) =>
+    Uint8Array.from(bytes, (byte, index) =>
+      // eslint-disable-next-line no-bitwise
+      byte ^ key[index % key.length] ^ nonce[index % nonce.length],
+    );
+
+  const tagOf = (bytes, key) =>
+    // eslint-disable-next-line no-bitwise
+    bytes.reduce((sum, byte) => (sum + byte) & 0xff, key[0]);
+
+  const sodium = {
+    ready: Promise.resolve(),
+    crypto_aead_xchacha20poly1305_ietf_KEYBYTES: 32,
+    crypto_aead_xchacha20poly1305_ietf_NPUBBYTES: 24,
+    randombytes_buf: length => {
+      counter += 1;
+      return Uint8Array.from({ length }, (_, index) =>
+        // eslint-disable-next-line no-bitwise
+        index === 0 ? counter & 0xff : (index * 31 + counter) & 0xff,
+      );
+    },
+    crypto_aead_xchacha20poly1305_ietf_encrypt: (
+      plaintext,
+      _additional,
+      _secret,
+      nonce,
+      key,
+    ) => {
+      const body = xor(plaintext, key, nonce);
+      const sealed = new Uint8Array(body.length + 1);
+      sealed.set(body, 0);
+      sealed[body.length] = tagOf(body, key);
+      return sealed;
+    },
+    crypto_aead_xchacha20poly1305_ietf_decrypt: (
+      _secret,
+      ciphertext,
+      _additional,
+      nonce,
+      key,
+    ) => {
+      const body = ciphertext.slice(0, -1);
+      if (ciphertext[ciphertext.length - 1] !== tagOf(body, key)) {
+        throw new Error('authentication failed');
+      }
+      return xor(body, key, nonce);
+    },
+  };
+
+  return { ...sodium, default: sodium };
+});
+
+jest.mock('react-native-keychain', () => {
+  const store = new Map();
+
+  return {
+    ACCESSIBLE: { AFTER_FIRST_UNLOCK: 'AfterFirstUnlock' },
+    setGenericPassword: jest.fn(async (username, password, options) => {
+      store.set(options?.service ?? 'default', { username, password });
+      return true;
+    }),
+    getGenericPassword: jest.fn(
+      async options => store.get(options?.service ?? 'default') ?? false,
+    ),
+    resetGenericPassword: jest.fn(async options => {
+      store.delete(options?.service ?? 'default');
+      return true;
+    }),
+    getSupportedBiometryType: jest.fn(async () => null),
+  };
+});
 
 jest.mock('@react-native-async-storage/async-storage', () => {
   const store = new Map();

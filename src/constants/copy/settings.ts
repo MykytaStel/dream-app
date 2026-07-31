@@ -99,6 +99,29 @@ const SETTINGS_COPY_EN = {
     'Removing the app deletes what is stored here, including recordings and drafts. Export first if you want to keep them. Anything already uploaded stays until you delete those dreams while backup is on.',
   privacyNoAccountNote:
     'There is no account, no profile and no analytics service. Offline, the app is complete.',
+  archiveKeyTitle: 'The key to your archive',
+  archiveKeyDescription:
+    'Your dreams are encrypted before they are uploaded. This is the key that opens them.',
+  archiveKeyTravelsIcloud:
+    'Carried to your other Apple devices by iCloud Keychain. Nothing for you to do.',
+  archiveKeyTravelsAndroid:
+    'Carried to your next Android device by Google backup. Nothing for you to do.',
+  archiveKeyStranded:
+    'This key cannot leave this phone on its own — device backup is off. Save the recovery code, or the archive will only ever open here.',
+  archiveKeyMissingForArchive:
+    'The archive in the cloud was encrypted with a different key. Enter its recovery code to read it here. Nothing on this phone has been changed or deleted.',
+  archiveKeyNotYetCreated:
+    'The key is created the first time you sync. Until then there is nothing to keep.',
+  archiveKeyRevealAction: 'Show recovery code',
+  archiveKeyHideAction: 'Hide recovery code',
+  archiveKeyCodeIntro:
+    'Twenty-four words, in this order. They are the key itself — anyone who has them can read your archive. You need them only to move between iPhone and Android, or to restore a phone that had no backup.',
+  archiveKeyEntryLabel: 'Recovery code',
+  archiveKeyEntryPlaceholder: 'Paste or type the twenty-four words',
+  archiveKeyEntryAction: 'Use this code',
+  archiveKeyEntryInvalid:
+    'That is not a complete code. Check for a missing or mistyped word — the code carries a checksum, so it can tell.',
+  archiveKeyEntryAccepted: 'Key accepted. Sync again to read the archive.',
   cloudTitle: 'Cloud backup',
   cloudDescription: 'Optional device-to-device sync for one archive.',
   cloudConfigLabel: 'Runtime config',
@@ -648,6 +671,30 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Видалення застосунку прибирає все, що зберігається тут, разом із записами й чернетками. Спершу зробіть експорт, якщо хочете зберегти. Те, що вже вивантажено, лишається, доки ви не видалите ті сни з увімкненою копією.',
   privacyNoAccountNote:
     'Немає ані облікового запису, ані профілю, ані аналітики. Офлайн застосунок повноцінний.',
+  archiveKeyTitle: 'Ключ до вашого архіву',
+  archiveKeyDescription:
+    'Ваші сни шифруються перед вивантаженням. Це ключ, який їх відкриває.',
+  archiveKeyTravelsIcloud:
+    'iCloud Keychain переносить його на ваші інші пристрої Apple. Робити нічого не треба.',
+  archiveKeyTravelsAndroid:
+    'Резервна копія Google переносить його на ваш наступний пристрій Android. Робити нічого не треба.',
+  archiveKeyStranded:
+    'Цей ключ не може виїхати з телефона сам — резервне копіювання вимкнене. Збережіть код відновлення, інакше архів відкриватиметься лише тут.',
+  archiveKeyMissingForArchive:
+    'Архів у хмарі зашифрований іншим ключем. Введіть його код відновлення, щоб прочитати архів тут. На цьому телефоні нічого не змінено й не видалено.',
+  archiveKeyNotYetCreated:
+    'Ключ створюється під час першої синхронізації. Доти зберігати нічого.',
+  archiveKeyRevealAction: 'Показати код відновлення',
+  archiveKeyHideAction: 'Сховати код відновлення',
+  archiveKeyCodeIntro:
+    'Двадцять чотири слова, саме в такому порядку. Це і є ключ — хто має ці слова, той прочитає ваш архів. Вони потрібні лише для переходу між iPhone та Android або для відновлення телефона без резервної копії.',
+  archiveKeyEntryLabel: 'Код відновлення',
+  archiveKeyEntryPlaceholder: 'Вставте або введіть двадцять чотири слова',
+  archiveKeyEntryAction: 'Використати цей код',
+  archiveKeyEntryInvalid:
+    'Це неповний код. Перевірте, чи не пропущено або не переплутано слово — код має контрольну суму, тож це видно.',
+  archiveKeyEntryAccepted:
+    'Ключ прийнято. Синхронізуйте ще раз, щоб прочитати архів.',
   cloudTitle: 'Хмарний backup',
   cloudDescription: 'Опційний sync одного архіву між пристроями.',
   cloudConfigLabel: 'Runtime-конфіг',

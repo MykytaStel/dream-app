@@ -17,6 +17,8 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
 import { SettingsActionRow } from '../components/SettingsActionRow';
 import { CloudSection } from '../components/SettingsCloudSection';
+import { SettingsArchiveKeySection } from '../components/SettingsArchiveKeySection';
+import { useArchiveKeyController } from '../hooks/useArchiveKeyController';
 import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import {
   BackupFlowGuideSection,
@@ -49,6 +51,11 @@ export default function BackupScreen() {
     copy,
   });
   const [showStatusDetails, setShowStatusDetails] = React.useState(false);
+  // Fed the last sync error so the section can tell "the key is fine" from
+  // "the archive is sealed with a key this phone does not have".
+  const archiveKey = useArchiveKeyController(
+    controller.cloudSyncSnapshot?.errorMessage,
+  );
 
   React.useLayoutEffect(() => {
     navigation.setOptions({
@@ -252,6 +259,7 @@ export default function BackupScreen() {
         onToggleCloudSync={controller.onToggleCloudSync}
         onDismissCloudActionFeedback={controller.clearCloudActionFeedback}
       />
+      <SettingsArchiveKeySection copy={copy} controller={archiveKey} />
       <Card style={styles.sectionCard}>
         <SectionHeader
           title={copy.backupStatusTitle}

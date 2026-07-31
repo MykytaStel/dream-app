@@ -7,6 +7,11 @@ import AudioRecorderPlayer, {
 import { NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 import { ensureRecordAudioPermission } from './audioPermissions';
+import {
+  AUDIO_BIT_RATE,
+  AUDIO_CHANNELS,
+  AUDIO_SAMPLE_RATE_HZ,
+} from '../model/audioRecordingSettings';
 
 const arp = AudioRecorderPlayer;
 
@@ -87,6 +92,10 @@ export async function startRecording(): Promise<string> {
       AVFormatIDKeyIOS: 'aac',
       AVEncodingOptionIOS: 'aac',
       AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+      // Without these the library falls back to 44.1 kHz stereo — a duplicated
+      // channel from a single microphone, at three times the size.
+      AVSampleRateKeyIOS: AUDIO_SAMPLE_RATE_HZ,
+      AVNumberOfChannelsKeyIOS: AUDIO_CHANNELS,
     });
     return normalizeUriForStorage(path);
   }
@@ -96,13 +105,20 @@ export async function startRecording(): Promise<string> {
   const timestamp = Date.now();
   const suffix = Math.random().toString(36).slice(2, 9);
   const path = `${audioDir}/dream_audio_${timestamp}_${suffix}.mp4`;
+  // The JS fallback, used when the native Android recorder is unavailable.
+  // Left unset, MediaRecorder picks its own defaults, which differ by device.
   await arp.startRecorder(path, {
     AudioSourceAndroid: AudioSourceAndroidType.VOICE_RECOGNITION,
     OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
     AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
+    AudioSamplingRate: AUDIO_SAMPLE_RATE_HZ,
+    AudioChannels: AUDIO_CHANNELS,
+    AudioEncodingBitRate: AUDIO_BIT_RATE,
     AVFormatIDKeyIOS: 'aac',
     AVEncodingOptionIOS: 'aac',
     AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
+    AVSampleRateKeyIOS: AUDIO_SAMPLE_RATE_HZ,
+    AVNumberOfChannelsKeyIOS: AUDIO_CHANNELS,
   });
   return normalizeUriForStorage(path);
 }

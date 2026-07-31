@@ -101,9 +101,13 @@ class AudioRecorderModule(
       recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
       recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
       recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+      // Kept in step with src/features/dreams/model/audioRecordingSettings.ts,
+      // which explains the numbers and the measurements behind them. A test
+      // reads both files and fails if they drift, because the two platforms
+      // silently recording at different sizes is exactly how this started.
       recorder.setAudioChannels(1)
-      recorder.setAudioSamplingRate(44100)
-      recorder.setAudioEncodingBitRate(128_000)
+      recorder.setAudioSamplingRate(22050)
+      recorder.setAudioEncodingBitRate(32_000)
       recorder.setOutputFile(outputFile.absolutePath)
 
       recorder.prepare()

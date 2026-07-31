@@ -1,4 +1,5 @@
 import {
+  blend,
   contrastRatio,
   CONTRAST_BODY_TEXT,
   CONTRAST_LARGE_TEXT,
@@ -133,6 +134,38 @@ describe('theme contrast', () => {
       // its background is a border nobody can see.
       expect(ratio).toBeGreaterThan(1.15);
       expect(ratio).toBeLessThan(4);
+    });
+  });
+
+  /**
+   * Where the real defect hid.
+   *
+   * The quick-add icon sits on `rgba(text, 0.2)` laid over `rgba(primary,
+   * 0.16)` laid over a surface. Every layer moves with the theme, so checking
+   * tokens against each other says nothing about what reaches the eye — the
+   * composite came out at 1.75:1 on the light theme while every token-pair
+   * assertion passed.
+   */
+  describe.each(Object.entries(themes))('%s composites', (_name, theme) => {
+    test('an icon on the quick-add tint stays legible', () => {
+      const row = blend(
+        theme.colors.primary,
+        0.16,
+        theme.colors.surfaceElevated,
+      );
+      const circle = blend(theme.colors.text, 0.2, row);
+
+      expect(contrastRatio(theme.colors.text, circle)).toBeGreaterThanOrEqual(
+        CONTRAST_LARGE_TEXT,
+      );
+    });
+
+    test('text on a subtle surface tint is still body text', () => {
+      const tinted = blend(theme.colors.text, 0.06, theme.colors.surface);
+
+      expect(contrastRatio(theme.colors.text, tinted)).toBeGreaterThanOrEqual(
+        CONTRAST_BODY_TEXT,
+      );
     });
   });
 

@@ -70,7 +70,7 @@ function QuickAddOption({
         <Ionicons
           name={icon}
           size={18}
-          color={primary ? t.colors.background : t.colors.primary}
+          color={primary ? t.colors.text : t.colors.primary}
         />
       </View>
       <View style={styles.quickAddOptionCopy}>
@@ -80,7 +80,7 @@ function QuickAddOption({
       <Ionicons
         name="chevron-forward"
         size={18}
-        color={primary ? t.colors.background : t.colors.textDim}
+        color={primary ? t.colors.text : t.colors.textDim}
       />
     </Pressable>
   );

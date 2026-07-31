@@ -46,3 +46,43 @@ export function contrastRatio(foreground: string, background: string): number {
 
 export const CONTRAST_BODY_TEXT = 4.5;
 export const CONTRAST_LARGE_TEXT = 3;
+
+/**
+ * The colour that actually reaches the eye when a translucent layer sits on
+ * something else.
+ *
+ * Token pairs cannot express this, and the gap is where a real defect hid: the
+ * quick-add icon sits on `rgba(text, 0.2)` over `rgba(primary, 0.16)` over a
+ * surface, and every one of those layers moves when the theme does. Checking
+ * the tokens in isolation says nothing about the result.
+ */
+export function blend(
+  foreground: string,
+  alpha: number,
+  background: string,
+): string {
+  const parse = (hex: string) => {
+    const normalized = hex.replace('#', '');
+    const expanded =
+      normalized.length === 3
+        ? normalized
+            .split('')
+            .map(value => `${value}${value}`)
+            .join('')
+        : normalized;
+    return [0, 2, 4].map(index =>
+      Number.parseInt(expanded.slice(index, index + 2), 16),
+    );
+  };
+
+  const front = parse(foreground);
+  const back = parse(background);
+
+  return `#${front
+    .map((channel, index) =>
+      Math.round(channel * alpha + back[index] * (1 - alpha))
+        .toString(16)
+        .padStart(2, '0'),
+    )
+    .join('')}`;
+}

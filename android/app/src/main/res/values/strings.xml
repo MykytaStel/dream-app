@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">DreamApp</string>
+    <string name="app_name">Kaleidoscope</string>
     <string name="dream_widget_label">Dream widget</string>
     <string name="dream_widget_brand">Kaleidoscope</string>
     <string name="dream_widget_fallback_title">Wake capture</string>

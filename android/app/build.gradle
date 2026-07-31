@@ -97,7 +97,7 @@ android {
 
     namespace "com.dreamapp"
     defaultConfig {
-        applicationId "com.dreamapp"
+        applicationId "com.kaleidoscopedreams"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 39

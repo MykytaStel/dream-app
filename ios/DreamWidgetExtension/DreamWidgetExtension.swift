@@ -3,7 +3,7 @@ import SwiftUI
 
 // MARK: - Constants
 
-private let appGroupID = "group.com.cherven.dreamapp"
+private let appGroupID = "group.com.kaleidoscopedreams"
 private let snapshotKey = "widget-snapshot"
 
 // MARK: - Snapshot Model

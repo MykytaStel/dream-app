@@ -10,7 +10,7 @@ import SwiftUI
 import WidgetKit
 
 struct DreamWidgetExtensionControl: ControlWidget {
-    static let kind: String = "org.reactjs.native.example.DreamApp.DreamWidgetExtension"
+    static let kind: String = "com.kaleidoscopedreams.widget"
 
     var body: some ControlWidgetConfiguration {
         AppIntentControlConfiguration(

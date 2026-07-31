@@ -58,9 +58,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     completionHandler: @escaping (Bool) -> Void
   ) {
     let urlMap: [String: String] = [
-      "com.dreamapp.capture": "dreamapp://capture",
-      "com.dreamapp.draft":   "dreamapp://draft",
-      "com.dreamapp.memory":  "dreamapp://memory",
+      "com.kaleidoscopedreams.capture": "dreamapp://capture",
+      "com.kaleidoscopedreams.draft":   "dreamapp://draft",
+      "com.kaleidoscopedreams.memory":  "dreamapp://memory",
     ]
     guard let urlString = urlMap[shortcutItem.type],
           let url = URL(string: urlString) else {

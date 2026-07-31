@@ -107,6 +107,31 @@ decision.
 | `eslint` | Pinned at 9. `@react-native/eslint-config@0.86.2` declares `eslint: "^8.0.0 \|\| ^9.0.0"`, so 10 is not an option yet. A `resolutions` entry forces `eslint-plugin-ft-flow` to 3.0.11, because the upstream config nests 2.0.3, which calls an API eslint 9 removed. |
 | `react-native-mmkv` / `react-native-nitro-modules` | Both pinned below the latest release. `react-native-audio-recorder-player@4.5.0` — the newest published version — ships nitrogen-generated Kotlin built against `react-native-nitro-modules@^0.29.2`, and calls `updateNative`, which no longer exists in nitro 0.36.x. Upgrading nitro breaks the Android build at `:react-native-audio-recorder-player:compileDebugKotlin`. Since mmkv 4.3.2 is itself generated against nitro 0.35.9, mmkv and nitro cannot move until audio-recorder-player is rebuilt against modern nitro, or is replaced. All three declare `react-native-nitro-modules: "*"` as a peer, so no tool warns about this. |
 
+## Patched dependencies
+
+One dependency is patched. Patches are applied by Yarn's own `patch:` protocol
+(`resolutions` in `package.json`, patch file in `.yarn/patches/`), not by a
+`postinstall` script: the patch is part of dependency resolution, so it cannot
+silently fail to apply the way a lifecycle hook can. It survives `yarn install`
+by construction, in CI as well as locally.
+
+| Package | Why |
+|---|---|
+| `react-native-libsodium@1.7.0` | Adds JSI bindings for `crypto_secretstream_xchacha20poly1305`. The algorithm was already compiled into the vendored libsodium — `nm libsodium.a` shows all sixteen symbols defined — but the binding layer exposed none of them. Without it, encrypting a recording means holding the whole file in memory, which is what capped audio at 16 MB. |
+
+The patch touches **one C++ file and nothing else**. TypeScript for the new
+functions lives in `src/services/crypto/libsodiumSecretStream.ts` rather than in
+a patch of the package's own types: everything expressible in TypeScript belongs
+in this repo, where it is reviewed and tested. That also keeps the patch small
+enough to re-apply by hand if upstream moves.
+
+To change it: `yarn patch react-native-libsodium`, edit the folder it prints,
+then `yarn patch-commit -s <folder>`.
+
+If upstream ever ships secretstream bindings, delete the `resolutions` entry and
+the patch file; `libsodiumSecretStream.ts` keeps working, since it only reads
+JSI globals.
+
 ## Upgrade policy
 
 Upgrades go in waves, never all at once:

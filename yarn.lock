@@ -8673,6 +8673,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-libsodium@patch:react-native-libsodium@npm%3A1.7.0#./.yarn/patches/react-native-libsodium-npm-1.7.0-53efb176c1.patch::locator=dream-app%40workspace%3A.":
+  version: 1.7.0
+  resolution: "react-native-libsodium@patch:react-native-libsodium@npm%3A1.7.0#./.yarn/patches/react-native-libsodium-npm-1.7.0-53efb176c1.patch::version=1.7.0&hash=193fef&locator=dream-app%40workspace%3A."
+  dependencies:
+    "@noble/hashes": ^1.3.2
+    libsodium-wrappers: ^0.8.2
+    libsodium-wrappers-sumo: ^0.8.2
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 478c54ea794e80b42aff3e9f9235abbf3696bb5aa5e66b098b62ef98adbaf222e46574f6dc30eb158a02796b45c76f7abc3e2341d8f727cc616dc2ea284de110
+  languageName: node
+  linkType: hard
+
 "react-native-mmkv@npm:4.1.2":
   version: 4.1.2
   resolution: "react-native-mmkv@npm:4.1.2"

@@ -1,0 +1,270 @@
+diff --git a/cpp/react-native-libsodium.cpp b/cpp/react-native-libsodium.cpp
+index a97e74b23936377c8279bf99defe4389d8e0ff8e..8315b5027081b92c12ff7191f0f359264664a6d0 100644
+--- a/cpp/react-native-libsodium.cpp
++++ b/cpp/react-native-libsodium.cpp
+@@ -183,8 +183,265 @@ namespace ReactNativeLibsodium
+         }
+     }
+ 
++
++    // --- crypto_secretstream ---------------------------------------------
++    //
++    // Every other binding here is stateless: buffers in, buffer out. A stream
++    // is not — its state must survive between chunks, and that state carries
++    // key material.
++    //
++    // The state is held by a HostObject so its lifetime follows the JS object
++    // and the garbage collector frees it. The alternative, handing JS an
++    // integer handle into a C++ map, leaks the state whenever an exception
++    // interrupts the loop before the matching free.
++    //
++    // enable_shared_from_this is load-bearing rather than decorative. The push
++    // function is handed to JS as an ordinary function value, and JS may keep
++    // that function after dropping the object it came from. Capturing a raw
++    // `this` would then be a use-after-free on a buffer holding a key;
++    // capturing the shared_ptr keeps the state alive exactly as long as any
++    // reference to it exists.
++
++    class SecretStreamPush : public jsi::HostObject,
++                             public std::enable_shared_from_this<SecretStreamPush>
++    {
++    public:
++        explicit SecretStreamPush(const unsigned char *key)
++        {
++            header.resize(crypto_secretstream_xchacha20poly1305_HEADERBYTES);
++            if (crypto_secretstream_xchacha20poly1305_init_push(&state, header.data(), key) != 0)
++            {
++                throw std::runtime_error("crypto_secretstream_xchacha20poly1305_init_push failed");
++            }
++        }
++
++        ~SecretStreamPush() override
++        {
++            sodium_memzero(&state, sizeof state);
++        }
++
++        std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime &runtime) override
++        {
++            std::vector<jsi::PropNameID> names;
++            names.push_back(jsi::PropNameID::forUtf8(runtime, "header"));
++            names.push_back(jsi::PropNameID::forUtf8(runtime, "push"));
++            return names;
++        }
++
++        jsi::Value get(jsi::Runtime &runtime, const jsi::PropNameID &name) override
++        {
++            const std::string property = name.utf8(runtime);
++
++            if (property == "header")
++            {
++                return arrayBufferAsObject(runtime, header);
++            }
++
++            if (property == "push")
++            {
++                auto self = shared_from_this();
++                return jsi::Function::createFromHostFunction(
++                    runtime,
++                    jsi::PropNameID::forUtf8(runtime, "push"),
++                    2,
++                    [self](jsi::Runtime &rt, const jsi::Value &, const jsi::Value *args, size_t count) -> jsi::Value
++                    {
++                        const std::string functionName = "crypto_secretstream_xchacha20poly1305_push";
++
++                        std::string messageArgumentName = "message";
++                        validateIsArrayBuffer(functionName, rt, args[0], messageArgumentName, true);
++
++                        auto messageArrayBuffer = args[0].asObject(rt).getArrayBuffer(rt);
++                        unsigned char tag = crypto_secretstream_xchacha20poly1305_TAG_MESSAGE;
++                        if (count > 1 && args[1].isNumber())
++                        {
++                            tag = static_cast<unsigned char>(args[1].asNumber());
++                        }
++
++                        std::vector<uint8_t> ciphertext(
++                            messageArrayBuffer.length(rt) + crypto_secretstream_xchacha20poly1305_ABYTES);
++                        unsigned long long ciphertextLength = 0;
++
++                        int result = crypto_secretstream_xchacha20poly1305_push(
++                            &self->state,
++                            ciphertext.data(),
++                            &ciphertextLength,
++                            messageArrayBuffer.data(rt),
++                            messageArrayBuffer.length(rt),
++                            NULL,
++                            0,
++                            tag);
++
++                        throwOnBadResult(functionName, rt, result);
++                        ciphertext.resize(static_cast<size_t>(ciphertextLength));
++                        return arrayBufferAsObject(rt, ciphertext);
++                    });
++            }
++
++            return jsi::Value::undefined();
++        }
++
++    private:
++        crypto_secretstream_xchacha20poly1305_state state;
++        std::vector<uint8_t> header;
++    };
++
++    class SecretStreamPull : public jsi::HostObject,
++                             public std::enable_shared_from_this<SecretStreamPull>
++    {
++    public:
++        SecretStreamPull(const unsigned char *header, const unsigned char *key)
++        {
++            if (crypto_secretstream_xchacha20poly1305_init_pull(&state, header, key) != 0)
++            {
++                // A header that libsodium refuses is not a decryption failure to
++                // report later: nothing after it can be trusted.
++                throw std::runtime_error("crypto_secretstream_xchacha20poly1305_init_pull failed");
++            }
++        }
++
++        ~SecretStreamPull() override
++        {
++            sodium_memzero(&state, sizeof state);
++        }
++
++        std::vector<jsi::PropNameID> getPropertyNames(jsi::Runtime &runtime) override
++        {
++            std::vector<jsi::PropNameID> names;
++            names.push_back(jsi::PropNameID::forUtf8(runtime, "pull"));
++            return names;
++        }
++
++        jsi::Value get(jsi::Runtime &runtime, const jsi::PropNameID &name) override
++        {
++            const std::string property = name.utf8(runtime);
++
++            if (property == "pull")
++            {
++                auto self = shared_from_this();
++                return jsi::Function::createFromHostFunction(
++                    runtime,
++                    jsi::PropNameID::forUtf8(runtime, "pull"),
++                    1,
++                    [self](jsi::Runtime &rt, const jsi::Value &, const jsi::Value *args, size_t) -> jsi::Value
++                    {
++                        const std::string functionName = "crypto_secretstream_xchacha20poly1305_pull";
++
++                        std::string ciphertextArgumentName = "ciphertext";
++                        validateIsArrayBuffer(functionName, rt, args[0], ciphertextArgumentName, true);
++
++                        auto ciphertextArrayBuffer = args[0].asObject(rt).getArrayBuffer(rt);
++                        if (ciphertextArrayBuffer.length(rt) < crypto_secretstream_xchacha20poly1305_ABYTES)
++                        {
++                            throw jsi::JSError(rt, "[react-native-libsodium][" + functionName + "] ciphertext is too short to be a chunk");
++                        }
++
++                        std::vector<uint8_t> message(
++                            ciphertextArrayBuffer.length(rt) - crypto_secretstream_xchacha20poly1305_ABYTES);
++                        unsigned long long messageLength = 0;
++                        unsigned char tag = 0;
++
++                        int result = crypto_secretstream_xchacha20poly1305_pull(
++                            &self->state,
++                            message.data(),
++                            &messageLength,
++                            &tag,
++                            ciphertextArrayBuffer.data(rt),
++                            ciphertextArrayBuffer.length(rt),
++                            NULL,
++                            0);
++
++                        throwOnBadResult(functionName, rt, result);
++                        message.resize(static_cast<size_t>(messageLength));
++
++                        // The tag comes back alongside the plaintext because the
++                        // caller cannot otherwise tell the final chunk from a
++                        // stream that was cut short.
++                        jsi::Object out(rt);
++                        out.setProperty(rt, "message", arrayBufferAsObject(rt, message));
++                        out.setProperty(rt, "tag", jsi::Value(static_cast<int>(tag)));
++                        return out;
++                    });
++            }
++
++            return jsi::Value::undefined();
++        }
++
++    private:
++        crypto_secretstream_xchacha20poly1305_state state;
++    };
++
+     void installLibsodium(jsi::Runtime &jsiRuntime)
+     {
++        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_HEADERBYTES", static_cast<int>(crypto_secretstream_xchacha20poly1305_HEADERBYTES));
++        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_ABYTES", static_cast<int>(crypto_secretstream_xchacha20poly1305_ABYTES));
++        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_KEYBYTES", static_cast<int>(crypto_secretstream_xchacha20poly1305_KEYBYTES));
++        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_TAG_MESSAGE", static_cast<int>(crypto_secretstream_xchacha20poly1305_TAG_MESSAGE));
++        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_TAG_FINAL", static_cast<int>(crypto_secretstream_xchacha20poly1305_TAG_FINAL));
++
++        auto jsi_crypto_secretstream_xchacha20poly1305_init_push = jsi::Function::createFromHostFunction(
++            jsiRuntime,
++            jsi::PropNameID::forUtf8(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_init_push"),
++            1,
++            [](jsi::Runtime &runtime, const jsi::Value &, const jsi::Value *arguments, size_t) -> jsi::Value
++            {
++                const std::string functionName = "crypto_secretstream_xchacha20poly1305_init_push";
++
++                std::string keyArgumentName = "key";
++                validateIsArrayBuffer(functionName, runtime, arguments[0], keyArgumentName, true);
++
++                auto keyArrayBuffer = arguments[0].asObject(runtime).getArrayBuffer(runtime);
++                if (keyArrayBuffer.length(runtime) != crypto_secretstream_xchacha20poly1305_KEYBYTES)
++                {
++                    throw jsi::JSError(runtime, "invalid key length");
++                }
++
++                return jsi::Object::createFromHostObject(
++                    runtime, std::make_shared<SecretStreamPush>(keyArrayBuffer.data(runtime)));
++            });
++
++        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_init_push", std::move(jsi_crypto_secretstream_xchacha20poly1305_init_push));
++
++        auto jsi_crypto_secretstream_xchacha20poly1305_init_pull = jsi::Function::createFromHostFunction(
++            jsiRuntime,
++            jsi::PropNameID::forUtf8(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_init_pull"),
++            2,
++            [](jsi::Runtime &runtime, const jsi::Value &, const jsi::Value *arguments, size_t) -> jsi::Value
++            {
++                const std::string functionName = "crypto_secretstream_xchacha20poly1305_init_pull";
++
++                std::string headerArgumentName = "header";
++                validateIsArrayBuffer(functionName, runtime, arguments[0], headerArgumentName, true);
++                std::string keyArgumentName = "key";
++                validateIsArrayBuffer(functionName, runtime, arguments[1], keyArgumentName, true);
++
++                auto headerArrayBuffer = arguments[0].asObject(runtime).getArrayBuffer(runtime);
++                auto keyArrayBuffer = arguments[1].asObject(runtime).getArrayBuffer(runtime);
++
++                if (headerArrayBuffer.length(runtime) != crypto_secretstream_xchacha20poly1305_HEADERBYTES)
++                {
++                    throw jsi::JSError(runtime, "invalid header length");
++                }
++                if (keyArrayBuffer.length(runtime) != crypto_secretstream_xchacha20poly1305_KEYBYTES)
++                {
++                    throw jsi::JSError(runtime, "invalid key length");
++                }
++
++                try
++                {
++                    return jsi::Object::createFromHostObject(
++                        runtime,
++                        std::make_shared<SecretStreamPull>(
++                            headerArrayBuffer.data(runtime), keyArrayBuffer.data(runtime)));
++                }
++                catch (const std::runtime_error &error)
++                {
++                    throw jsi::JSError(runtime, std::string("[react-native-libsodium][") + functionName + "] " + error.what());
++                }
++            });
++
++        jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretstream_xchacha20poly1305_init_pull", std::move(jsi_crypto_secretstream_xchacha20poly1305_init_pull));
++
+         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretbox_KEYBYTES", static_cast<int>(crypto_secretbox_KEYBYTES));
+         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_secretbox_NONCEBYTES", static_cast<int>(crypto_secretbox_NONCEBYTES));
+         jsiRuntime.global().setProperty(jsiRuntime, "jsi_crypto_pwhash_SALTBYTES", static_cast<int>(crypto_pwhash_SALTBYTES));

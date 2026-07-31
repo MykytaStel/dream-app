@@ -81,5 +81,13 @@
   "resolutions": {
     "eslint-plugin-ft-flow": "3.0.11",
     "react-native-libsodium@1.7.0": "patch:react-native-libsodium@npm%3A1.7.0#./.yarn/patches/react-native-libsodium-npm-1.7.0-53efb176c1.patch"
+  },
+  "codegenConfig": {
+    "name": "AppSpecs",
+    "type": "modules",
+    "jsSrcsDir": "src/specs",
+    "android": {
+      "javaPackageName": "com.dreamapp.specs"
+    }
   }
 }

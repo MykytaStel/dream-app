@@ -322,6 +322,23 @@ jest.mock('react-native-libsodium', () => {
   };
 })();
 
+// The widget TurboModule.
+//
+// `TurboModuleRegistry.getEnforcing` throws when the module is absent, which is
+// the point of it — a missing native module should fail loudly rather than
+// producing an object of undefined methods, as the old `NativeModules.X`
+// lookup did. In Jest there is no native binary at all, so the module is
+// supplied here.
+jest.mock('./src/specs/NativeDreamWidget', () => ({
+  __esModule: true,
+  default: {
+    updateSnapshot: jest.fn(async () => undefined),
+    getWidgetStatus: jest.fn(async () => ({ hasWidget: false })),
+    isPinSupported: jest.fn(async () => false),
+    requestPinWidget: jest.fn(async () => false),
+  },
+}));
+
 jest.mock('react-native-keychain', () => {
   const store = new Map();
 

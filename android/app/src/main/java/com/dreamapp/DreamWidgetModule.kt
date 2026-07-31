@@ -3,20 +3,23 @@ package com.dreamapp
 import android.appwidget.AppWidgetManager
 import android.content.ComponentName
 import android.os.Build
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.Promise
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.bridge.ReactContextBaseJavaModule
-import com.facebook.react.bridge.ReactMethod
+import com.dreamapp.specs.NativeDreamWidgetSpec
 import org.json.JSONObject
 
+/**
+ * Extends the class codegen writes from `src/specs/NativeDreamWidget.ts`, so
+ * the compiler rejects any drift between this file and the TypeScript. The name
+ * is no longer a string returned from `getName()` that had to match one written
+ * separately in JavaScript.
+ */
 class DreamWidgetModule(
   reactContext: ReactApplicationContext,
-) : ReactContextBaseJavaModule(reactContext) {
+) : NativeDreamWidgetSpec(reactContext) {
 
-  override fun getName(): String = "DreamWidget"
-
-  @ReactMethod
-  fun updateSnapshot(snapshotJson: String, promise: Promise) {
+  override fun updateSnapshot(snapshotJson: String, promise: Promise) {
     try {
       JSONObject(snapshotJson)
       DreamWidgetSnapshotStore.save(reactApplicationContext, snapshotJson)
@@ -28,8 +31,7 @@ class DreamWidgetModule(
     }
   }
 
-  @ReactMethod
-  fun isPinSupported(promise: Promise) {
+  override fun isPinSupported(promise: Promise) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val manager = AppWidgetManager.getInstance(reactApplicationContext)
       promise.resolve(manager.isRequestPinAppWidgetSupported)
@@ -38,8 +40,7 @@ class DreamWidgetModule(
     }
   }
 
-  @ReactMethod
-  fun requestPinWidget(promise: Promise) {
+  override fun requestPinWidget(promise: Promise) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
       val manager = AppWidgetManager.getInstance(reactApplicationContext)
       if (manager.isRequestPinAppWidgetSupported) {
@@ -51,6 +52,31 @@ class DreamWidgetModule(
       }
     } else {
       promise.resolve(false)
+    }
+  }
+
+  /**
+   * Was never exported on Android, and JavaScript hard-coded `false` for it —
+   * so Android could invite someone to add a widget they already had. The spec
+   * requires it, and AppWidgetManager knows the answer.
+   */
+  override fun getWidgetStatus(promise: Promise) {
+    try {
+      val manager = AppWidgetManager.getInstance(reactApplicationContext)
+      val placed = listOf(
+        DreamWidgetProvider::class.java,
+        DreamLastDreamWidgetProvider::class.java,
+      ).any { provider ->
+        manager
+          .getAppWidgetIds(ComponentName(reactApplicationContext, provider))
+          .isNotEmpty()
+      }
+
+      promise.resolve(
+        Arguments.createMap().apply { putBoolean("hasWidget", placed) },
+      )
+    } catch (error: Exception) {
+      promise.reject("widget_status_failed", error.message, error)
     }
   }
 }

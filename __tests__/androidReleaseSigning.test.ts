@@ -84,6 +84,43 @@ describe('Android release signing', () => {
 });
 
 /**
+ * Shrinking is a setting that silently reverts.
+ *
+ * `enableProguardInReleaseBuilds` ships as `false` in the React Native
+ * template, and turning it on is worth 5.1 MB of every download — a quarter of
+ * the app. Nothing about a build failing or an app crashing would tell anyone
+ * it had gone back to `false`; the release would simply be five megabytes
+ * bigger than it needed to be, for as long as nobody measured again.
+ *
+ * The keep rules are pinned alongside it for the same reason. Without the two
+ * attributes below, R8 renames classes and drops line numbers, and every crash
+ * report arrives as anonymous frames — the shrinking still works, so the loss
+ * shows up only when someone is trying to read a stack trace and it is already
+ * too late.
+ */
+describe('release builds are shrunk', () => {
+  test('R8 is on', () => {
+    expect(code).toMatch(/enableProguardInReleaseBuilds\s*=\s*true/);
+  });
+
+  test('the release build type actually applies it', () => {
+    expect(releaseBuildType()).toContain(
+      'minifyEnabled enableProguardInReleaseBuilds',
+    );
+  });
+
+  test('shrinking keeps crash reports symbolicatable', () => {
+    const rules = readFileSync(
+      join(__dirname, '..', 'android', 'app', 'proguard-rules.pro'),
+      'utf8',
+    );
+
+    expect(rules).toContain('-keepattributes SourceFile,LineNumberTable');
+    expect(rules).toContain('-renamesourcefileattribute SourceFile');
+  });
+});
+
+/**
  * Machine-specific paths are invisible to whoever committed them.
  *
  * `nodeExecutableAndArgs` held an absolute path into one developer's nvm

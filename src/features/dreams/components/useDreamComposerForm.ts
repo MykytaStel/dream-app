@@ -561,9 +561,9 @@ export function useDreamComposerForm({
       setRecording(false);
       const code = (error as { code?: string })?.code;
       let message: string;
-      if (code === 'android-audio-permission-denied') {
+      if (code === 'audio-permission-denied') {
         message = copy.audioPermissionDenied;
-      } else if (code === 'android-audio-permission-unavailable') {
+      } else if (code === 'audio-permission-unavailable') {
         message = copy.audioPermissionUnavailable;
       } else {
         const rawMessage =

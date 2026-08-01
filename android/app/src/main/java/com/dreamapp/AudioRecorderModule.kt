@@ -4,6 +4,8 @@ import android.content.Context
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import com.facebook.react.bridge.*
 import com.facebook.react.bridge.ReactApplicationContext
@@ -25,8 +27,63 @@ class AudioRecorderModule(
   private var isRecording: Boolean = false
   private var isPlaying: Boolean = false
 
+  /**
+   * Drives the playback progress events.
+   *
+   * MediaPlayer has no progress callback — it can only be asked where it is —
+   * so position has to be polled. Four times a second, matching the iOS timer,
+   * because two platforms reporting progress at different rates makes the same
+   * progress bar behave differently for no reason anyone could find in the UI
+   * code.
+   */
+  private val progressHandler = Handler(Looper.getMainLooper())
+  private val progressTicker =
+    object : Runnable {
+      override fun run() {
+        val player = mediaPlayer
+        if (!isPlaying || player == null) {
+          return
+        }
+
+        try {
+          emitPlaybackProgress(
+            player.currentPosition.toDouble(),
+            player.duration.toDouble(),
+          )
+        } catch (error: IllegalStateException) {
+          // The player was torn down between the check and the read. Nothing to
+          // report and nothing to fix; the next stop call cleans up.
+          return
+        }
+
+        progressHandler.postDelayed(this, PROGRESS_INTERVAL_MS)
+      }
+    }
+
+  private companion object {
+    const val PROGRESS_INTERVAL_MS = 250L
+  }
+
   init {
     reactContext.addLifecycleEventListener(this)
+  }
+
+  private fun emitPlaybackProgress(positionMs: Double, durationMs: Double) {
+    val payload = Arguments.createMap()
+    payload.putDouble("positionMs", positionMs)
+    // MediaPlayer reports -1 for a duration it does not know. Zero is the
+    // honest translation for a consumer dividing by it.
+    payload.putDouble("durationMs", if (durationMs < 0) 0.0 else durationMs)
+    emitOnPlaybackProgress(payload)
+  }
+
+  private fun startProgressTicker() {
+    stopProgressTicker()
+    progressHandler.postDelayed(progressTicker, PROGRESS_INTERVAL_MS)
+  }
+
+  private fun stopProgressTicker() {
+    progressHandler.removeCallbacks(progressTicker)
   }
 
   private fun getAudioDirectory(context: Context): File {
@@ -191,6 +248,10 @@ class AudioRecorderModule(
       player.setOnCompletionListener {
         isPlaying = false
         releasePlayer()
+        // Only the natural end emits. `stop()` goes through
+        // stopPlaybackInternal, which clears the listener first, so pressing
+        // stop and reaching the end stay two different events.
+        emitOnPlaybackFinished()
       }
       player.setOnErrorListener { _, what, extra ->
         Log.e("AudioRecorderModule", "MediaPlayer error: what=$what extra=$extra")
@@ -202,6 +263,7 @@ class AudioRecorderModule(
       player.prepare()
       player.start()
       isPlaying = true
+      startProgressTicker()
 
       promise.resolve(null)
     } catch (error: Exception) {
@@ -251,12 +313,17 @@ class AudioRecorderModule(
   }
 
   private fun stopPlaybackInternal() {
+    stopProgressTicker()
+
     if (!isPlaying || mediaPlayer == null) {
       return
     }
 
     try {
       mediaPlayer?.apply {
+        // Cleared before stopping so the completion listener cannot fire and
+        // report a finish that was really a stop.
+        setOnCompletionListener(null)
         try {
           stop()
         } catch (error: IllegalStateException) {
@@ -284,6 +351,7 @@ class AudioRecorderModule(
   }
 
   private fun releasePlayer() {
+    stopProgressTicker()
     try {
       mediaPlayer?.release()
     } catch (ignored: Exception) {

@@ -73,9 +73,21 @@ react {
 }
 
 /**
- * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
+ * Run R8 on release builds, shrinking and obfuscating the Java and Kotlin
+ * bytecode. Off in the React Native template, and off here until the dex was
+ * measured: three files, 22.3 MB uncompressed, in an app whose own Java is a
+ * few thousand lines. Nearly all of it is library code no path reaches.
+ *
+ * This only touches the JVM side. The JavaScript is already Hermes bytecode and
+ * R8 never sees it, so nothing here can shrink the bundle — and nothing here can
+ * break it either.
+ *
+ * The failure mode is worth stating, because it is not the usual one: R8 removes
+ * classes nothing statically references, and everything reached by reflection or
+ * from JNI looks exactly like that. A build that succeeds proves nothing. The
+ * app has to be run.
  */
-def enableProguardInReleaseBuilds = false
+def enableProguardInReleaseBuilds = true
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)

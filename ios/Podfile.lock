@@ -26,30 +26,6 @@ PODS:
     - ReactNativeDependencies
     - Yoga
   - MMKVCore (2.2.4)
-  - NitroAudioRecorderPlayer (4.5.0):
-    - hermes-engine
-    - NitroModules
-    - RCTRequired
-    - RCTTypeSafety
-    - React-callinvoker
-    - React-Core
-    - React-Core-prebuilt
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - ReactNativeDependencies
-    - Yoga
   - NitroMmkv (4.1.2):
     - hermes-engine
     - MMKVCore (= 2.2.4)
@@ -2420,7 +2396,6 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - HtmlToPdf (from `../node_modules/react-native-html-to-pdf`)
-  - NitroAudioRecorderPlayer (from `../node_modules/react-native-audio-recorder-player`)
   - NitroMmkv (from `../node_modules/react-native-mmkv`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
@@ -2526,8 +2501,6 @@ EXTERNAL SOURCES:
     :tag: hermes-v250829098.0.16
   HtmlToPdf:
     :path: "../node_modules/react-native-html-to-pdf"
-  NitroAudioRecorderPlayer:
-    :path: "../node_modules/react-native-audio-recorder-player"
   NitroMmkv:
     :path: "../node_modules/react-native-mmkv"
   NitroModules:
@@ -2716,7 +2689,6 @@ SPEC CHECKSUMS:
   hermes-engine: dcd3bac1ac954bfc8ca807a13a674b1acbc7ec82
   HtmlToPdf: 32f1a9bc86f222c5e9288c06ffad44925be76393
   MMKVCore: f2dd4c9befea04277a55e84e7812f930537993df
-  NitroAudioRecorderPlayer: fa2333b181d8d86b8c11099d5446867971c01698
   NitroMmkv: 04c4054edf9b42c19b22853da9aaa3c89812a843
   NitroModules: c6f69d4bf4e96cb701819de0868cf7bdde9016d9
   RCTDeprecation: bccb6545c26db881ecddfd83a3f9ea82aba1605f

@@ -64,6 +64,39 @@ describe('app identity', () => {
     );
   });
 
+  test('permission prompts name the app the user installed', () => {
+    // The microphone prompt read "Give $(PRODUCT_NAME) permission", and
+    // PRODUCT_NAME is still DreamApp — the target name, which is not something
+    // a user has ever seen. So the dialog's title said Kaleidoscope and its
+    // body said DreamApp, on the one screen where a stranger is deciding
+    // whether to trust the app with a microphone.
+    //
+    // Found by running it. A build variable in a plist string is invisible in
+    // the file and only resolves at packaging time.
+    const prompts = [
+      ...appInfoPlist.matchAll(
+        /UsageDescription<\/key>\s*<string>([^<]*)<\/string>/g,
+      ),
+    ];
+
+    expect(prompts.length).toBeGreaterThan(0);
+    for (const [, text] of prompts) {
+      expect(text).not.toContain('$(');
+      expect(text).not.toContain('DreamApp');
+      // An empty purpose string is worse than a missing key: it declares a
+      // reason for access and then gives none. The location one sat empty
+      // here, for a permission nothing in the app ever requests.
+      expect(text.trim().length).toBeGreaterThan(0);
+    }
+  });
+
+  test('no permission is declared that the app never asks for', () => {
+    // Location was declared and used nowhere. Every purpose string is a
+    // promise to a reviewer, and one the code cannot keep is a reason to be
+    // asked why.
+    expect(appInfoPlist).not.toContain('NSLocationWhenInUseUsageDescription');
+  });
+
   test('no personal handle is baked into a shared identifier', () => {
     // The App Group was `group.com.cherven.dreamapp`. Identifiers outlive the
     // reason they were named that way.

@@ -409,6 +409,43 @@ class AudioRecorderImpl: NSObject {
     deactivateSession()
   }
 
+  // MARK: - Metadata
+
+  @objc
+  func getDuration(
+    _ filePath: String,
+    resolver resolve: @escaping RCTPromiseResolveBlock,
+    rejecter reject: @escaping RCTPromiseRejectBlock
+  ) {
+    let path =
+      filePath.hasPrefix("file://")
+      ? String(filePath.dropFirst("file://".count))
+      : filePath
+
+    guard !path.isEmpty, FileManager.default.fileExists(atPath: path) else {
+      resolve(0)
+      return
+    }
+
+    // AVURLAsset reads the container's own duration rather than decoding the
+    // audio, so this stays cheap on a file of any length. The synchronous
+    // property is deprecated on iOS 16+, but the async replacement would make
+    // this method a bridge to Swift concurrency for one number — and the
+    // deployment target here is 15.1, where the async one does not exist.
+    let asset = AVURLAsset(url: URL(fileURLWithPath: path))
+    let seconds = CMTimeGetSeconds(asset.duration)
+
+    // A container that never wrote its duration reports NaN or infinity. Zero
+    // is what the caller is told to expect for "unknown", and it is what the
+    // label reads as `--:--` rather than as a wrong number.
+    guard seconds.isFinite, seconds > 0 else {
+      resolve(0)
+      return
+    }
+
+    resolve(seconds * 1000)
+  }
+
   // MARK: - Housekeeping
 
   @objc

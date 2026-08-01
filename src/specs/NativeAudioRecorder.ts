@@ -51,6 +51,20 @@ export interface Spec extends TurboModule {
   stopRecording(): Promise<string | null>;
   play(filePath: string): Promise<void>;
   stop(): Promise<void>;
+
+  /**
+   * How long a recording is, in milliseconds, without playing it.
+   *
+   * The player used to learn the duration only from the progress events, so a
+   * saved voice note read `--:--` until it was played through once. Both
+   * platforms can answer this from the file's own metadata — a container that
+   * did not record its duration is the only case that has to guess.
+   *
+   * Zero when the file cannot be read or carries no duration, rather than
+   * rejecting: a missing timestamp is not a reason to fail the screen it is
+   * displayed on.
+   */
+  getDuration(filePath: string): Promise<number>;
   /** Returns how many files were removed. */
   cleanupOrphanedAudioFiles(maxAgeDays: number): Promise<number>;
 }

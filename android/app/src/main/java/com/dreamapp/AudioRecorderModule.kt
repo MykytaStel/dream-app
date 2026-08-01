@@ -1,6 +1,7 @@
 package com.dreamapp
 
 import android.content.Context
+import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
@@ -126,6 +127,42 @@ class AudioRecorderModule(
     } catch (e: Exception) {
       Log.e("AudioRecorderModule", "cleanupOrphanedAudioFiles failed", e)
       promise.reject("cleanup_failed", e.message, e)
+    }
+  }
+
+  override fun getDuration(filePath: String, promise: Promise) {
+    if (filePath.isBlank()) {
+      promise.resolve(0.0)
+      return
+    }
+
+    val cleanPath =
+      if (filePath.startsWith("file://")) filePath.removePrefix("file://") else filePath
+
+    if (!File(cleanPath).exists()) {
+      promise.resolve(0.0)
+      return
+    }
+
+    // MediaMetadataRetriever holds a native handle, so it is released whatever
+    // happens — leaking one per saved dream would be a slow drip nothing points
+    // at later.
+    val retriever = MediaMetadataRetriever()
+    try {
+      retriever.setDataSource(cleanPath)
+      val raw = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
+      promise.resolve(raw?.toDoubleOrNull() ?: 0.0)
+    } catch (error: Exception) {
+      // A file that cannot be read has no duration to report, and this is
+      // called to label a button. Zero says "unknown" and the screen carries on.
+      Log.e("AudioRecorderModule", "getDuration failed", error)
+      promise.resolve(0.0)
+    } finally {
+      try {
+        retriever.release()
+      } catch (ignored: Exception) {
+        // Best effort.
+      }
     }
   }
 

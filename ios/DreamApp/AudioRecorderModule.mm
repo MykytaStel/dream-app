@@ -86,6 +86,13 @@ RCT_EXPORT_MODULE()
   [_impl stop:resolve rejecter:reject];
 }
 
+- (void)getDuration:(NSString *)filePath
+            resolve:(RCTPromiseResolveBlock)resolve
+             reject:(RCTPromiseRejectBlock)reject
+{
+  [_impl getDuration:filePath resolver:resolve rejecter:reject];
+}
+
 - (void)cleanupOrphanedAudioFiles:(double)maxAgeDays
                           resolve:(RCTPromiseResolveBlock)resolve
                            reject:(RCTPromiseRejectBlock)reject

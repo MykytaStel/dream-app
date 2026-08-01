@@ -26,7 +26,7 @@ import {
 } from '../model/dreamDetailPresentation';
 import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionService';
 import type { DreamDetailScreenStyles } from '../screens/DreamDetailScreen.styles';
-import { play, stop } from '../services/audioService';
+import { getDuration, play, stop } from '../services/audioService';
 
 const detailLayoutTransition = LinearTransition.duration(160);
 
@@ -59,6 +59,24 @@ function AudioPlayerWidget({
   const [playError, setPlayError] = React.useState<string | null>(null);
   const isBusyRef = React.useRef(false);
 
+  // Read from the file rather than waited for — the same fix as the composer's
+  // player, which had the same bug: the length arrived only with the first
+  // progress event, so a saved recording read `--:--` until it had been played
+  // through once.
+  React.useEffect(() => {
+    let cancelled = false;
+
+    getDuration(uri).then(ms => {
+      if (!cancelled && ms > 0) {
+        setDurationMs(ms);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
+
   useFocusEffect(
     React.useCallback(() => {
       return () => {
@@ -84,7 +102,6 @@ function AudioPlayerWidget({
 
       setPlayError(null);
       setPositionMs(0);
-      setDurationMs(0);
       await play(uri, {
         onFinished: () => {
           setIsPlaying(false);
@@ -92,7 +109,11 @@ function AudioPlayerWidget({
         },
         onProgress: (pos, dur) => {
           setPositionMs(pos);
-          setDurationMs(dur);
+          // A container without a stored duration has none to read up front,
+          // and the player knows by the time it is running.
+          if (dur > 0) {
+            setDurationMs(dur);
+          }
         },
       });
       setIsPlaying(true);

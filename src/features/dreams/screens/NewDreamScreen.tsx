@@ -105,7 +105,12 @@ export default function NewDreamScreen() {
     );
   }, [route.params?.launchKey, shouldAutoStartRecording]);
   React.useEffect(() => {
-    if (!pendingSavedDream || streakToast) {
+    // Waits for both toasts, not just the streak one. The widget prompt used
+    // to be left out of this condition, so the screen navigated away the
+    // instant a dream was saved and the prompt rendered behind the user, on a
+    // tab they were no longer looking at — then sat there until they came back
+    // to write their next dream, where it read as an interruption.
+    if (!pendingSavedDream || streakToast || showWidgetPinToast) {
       return;
     }
 
@@ -115,7 +120,7 @@ export default function NewDreamScreen() {
       focusSection: pendingSavedDream.focusSection,
     });
     setPendingSavedDream(null);
-  }, [navigation, pendingSavedDream, streakToast]);
+  }, [navigation, pendingSavedDream, showWidgetPinToast, streakToast]);
 
   const handleWidgetPinAction = React.useCallback(async () => {
     if (Platform.OS === 'android') {
@@ -179,17 +184,17 @@ export default function NewDreamScreen() {
               setStreakToast(toast);
             }
 
-            // Show widget pin prompt after first dream, if not seen before
+            // Show widget pin prompt after first dream, if not seen before.
+            //
+            // Shown synchronously, because whether to show it is a synchronous
+            // question — one dream, prompt not seen. Only the button's label
+            // depends on `isPinNativelySupported`, and waiting for that answer
+            // before deciding is what let the navigation below win the race.
             if (allDreams.length === 1 && !hasWidgetPinPromptBeenSeen()) {
+              setShowWidgetPinToast(true);
               isPinNativelySupported()
-                .then(supported => {
-                  setCanPinNatively(supported);
-                  setShowWidgetPinToast(true);
-                })
-                .catch(() => {
-                  setCanPinNatively(false);
-                  setShowWidgetPinToast(true);
-                });
+                .then(setCanPinNatively)
+                .catch(() => setCanPinNatively(false));
             }
           } catch {
             // Non-critical: ignore errors

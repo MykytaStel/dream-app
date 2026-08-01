@@ -214,6 +214,8 @@ describe('archive at scale', () => {
       )
       .join('\n');
 
-    console.log(`\nJS-thread cost by archive size (V8, not Hermes):\n${rows}\n`);
+    console.log(
+      `\nJS-thread cost by archive size (V8, not Hermes):\n${rows}\n`,
+    );
   });
 });

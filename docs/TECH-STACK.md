@@ -41,8 +41,13 @@ Verified: 2026-07-28. Node `>=20`, Yarn `3.6.4`.
 | Package | Version | Why |
 |---|---|---|
 | `whisper.rn` | ^0.5.5 | on-device speech transcription |
-| `react-native-audio-recorder-player` | 4.5.0 | recording and playback |
 | `react-native-nitro-modules` | 0.34.1 | native module bindings used by MMKV |
+
+Recording and playback are not in this table because they are not a
+dependency. Both platforms do it in their own native module against the
+`AudioRecorder` TurboModule spec — `AudioRecorderModule.kt` and
+`AudioRecorderModule.swift`. See Patched dependencies for why the library that
+used to do it on iOS had to go.
 
 ## Platform integration
 
@@ -140,7 +145,7 @@ optimizes it.
 | `@react-native-async-storage/async-storage` | Pinned at `^2.2.0`. Version 3.x was tried and did not build; the cause has not been diagnosed yet. |
 | `jest` | Pinned at 29. Jest 30 breaks every suite: `@react-native/jest-preset@0.86.2` depends on jest 29 packages and nests `jest-mock@29.7.0`, while `jest-runtime@30` calls an API only jest-mock 30 has. Moves when react native ships a preset built against 30. |
 | `eslint` | Pinned at 9. `@react-native/eslint-config@0.86.2` declares `eslint: "^8.0.0 \|\| ^9.0.0"`, so 10 is not an option yet. A `resolutions` entry forces `eslint-plugin-ft-flow` to 3.0.11, because the upstream config nests 2.0.3, which calls an API eslint 9 removed. |
-| `react-native-mmkv` / `react-native-nitro-modules` | Both pinned below the latest release. `react-native-audio-recorder-player@4.5.0` — the newest published version — ships nitrogen-generated Kotlin built against `react-native-nitro-modules@^0.29.2`, and calls `updateNative`, which no longer exists in nitro 0.36.x. Upgrading nitro breaks the Android build at `:react-native-audio-recorder-player:compileDebugKotlin`. Since mmkv 4.3.2 is itself generated against nitro 0.35.9, mmkv and nitro cannot move until audio-recorder-player is rebuilt against modern nitro, or is replaced. All three declare `react-native-nitro-modules: "*"` as a peer, so no tool warns about this. |
+| `react-native-mmkv` / `react-native-nitro-modules` | Still pinned at 4.1.2 and 0.34.1, but no longer blocked. What held them was `react-native-audio-recorder-player@4.5.0`: it shipped nitrogen-generated Kotlin built against `react-native-nitro-modules@^0.29.2` and called `updateNative`, gone in nitro 0.36.x, so upgrading nitro broke the Android build at `:react-native-audio-recorder-player:compileDebugKotlin`. mmkv 4.3.2 is itself generated against nitro 0.35.9, so neither could move. That library is gone — iOS records natively now — and the upgrade is a separate wave, because mmkv is the primary storage and deserves its own branch. All three declared `react-native-nitro-modules: "*"` as a peer, so no tool ever warned about any of it. |
 
 ## Patched dependencies
 

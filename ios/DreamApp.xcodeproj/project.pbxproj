@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-DreamApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-DreamApp.a */; };
 		1065BC5EC29F4189817B133F /* PlayfairDisplay-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = D2FECD98A13B40DBA946EB3E /* PlayfairDisplay-ExtraBold.ttf */; };
+		11A53F92ED527174D2464599 /* AudioRecorderModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4580396B2ED79E4C0FFC94C /* AudioRecorderModule.swift */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		1AA697672F6C596100029D4C /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AA697662F6C596100029D4C /* WidgetKit.framework */; };
 		1AA697692F6C596100029D4C /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1AA697682F6C596100029D4C /* SwiftUI.framework */; };
@@ -20,6 +21,7 @@
 		5F3D206CC09EBC9BA646AC9E /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
 		6D856119EE2946B5A4DAAB73 /* Manrope-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EBC7DE0747E4ABAB7E90AB4 /* Manrope-ExtraBold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
+		7A649B7080051277F91602CC /* AudioRecorderModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = A29AAA5A1FA003F4C73457BD /* AudioRecorderModule.mm */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		A23E850F395D4521A2FA56B4 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 38794046B8AF400A876E918C /* Manrope-Bold.ttf */; };
 		EDD73D486B2644F88853D6E5 /* PlayfairDisplay-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7C451118D07A4E1387FD2E50 /* PlayfairDisplay-Bold.ttf */; };
@@ -70,6 +72,8 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DreamApp/AppDelegate.swift; sourceTree = "<group>"; };
 		7C451118D07A4E1387FD2E50 /* PlayfairDisplay-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlayfairDisplay-Bold.ttf"; path = "../assets/fonts/PlayfairDisplay-Bold.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DreamApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A29AAA5A1FA003F4C73457BD /* AudioRecorderModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = AudioRecorderModule.mm; path = DreamApp/AudioRecorderModule.mm; sourceTree = "<group>"; };
+		A4580396B2ED79E4C0FFC94C /* AudioRecorderModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AudioRecorderModule.swift; path = DreamApp/AudioRecorderModule.swift; sourceTree = "<group>"; };
 		BC84B7AE540C405A833961E1 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
 		D2FECD98A13B40DBA946EB3E /* PlayfairDisplay-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlayfairDisplay-ExtraBold.ttf"; path = "../assets/fonts/PlayfairDisplay-ExtraBold.ttf"; sourceTree = "<group>"; };
 		E31AECA930AB461C9E41D121 /* Manrope-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-SemiBold.ttf"; path = "../assets/fonts/Manrope-SemiBold.ttf"; sourceTree = "<group>"; };
@@ -167,6 +171,8 @@
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
 				B9EF31E52E4E4FA8BF51FC13 /* Resources */,
 				1AA697852F6C5E3200029D4C /* DreamApp-Bridging-Header.h */,
+				A4580396B2ED79E4C0FFC94C /* AudioRecorderModule.swift */,
+				A29AAA5A1FA003F4C73457BD /* AudioRecorderModule.mm */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -395,6 +401,8 @@
 				1AA697882F6C608100029D4C /* DreamWidgetModule.swift in Sources */,
 				1AA697892F6C608100029D4C /* DreamWidgetModule.mm in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
+				11A53F92ED527174D2464599 /* AudioRecorderModule.swift in Sources */,
+				7A649B7080051277F91602CC /* AudioRecorderModule.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

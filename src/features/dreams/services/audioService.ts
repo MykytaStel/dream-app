@@ -1,23 +1,8 @@
-import AudioRecorderPlayer, {
-  AudioEncoderAndroidType,
-  AudioSourceAndroidType,
-  AVEncoderAudioQualityIOSType,
-  OutputFormatAndroidType,
-} from 'react-native-audio-recorder-player';
-import { Platform } from 'react-native';
 import NativeAudioRecorder from '../../../specs/NativeAudioRecorder';
-import RNFS from 'react-native-fs';
 import { ensureRecordAudioPermission } from './audioPermissions';
-import {
-  AUDIO_BIT_RATE,
-  AUDIO_CHANNELS,
-  AUDIO_SAMPLE_RATE_HZ,
-} from '../model/audioRecordingSettings';
-
-const arp = AudioRecorderPlayer;
 
 export type AudioPermissionCode =
-  'android-audio-permission-denied' | 'android-audio-permission-unavailable';
+  'audio-permission-denied' | 'audio-permission-unavailable';
 
 // Carries the reason on the error itself so callers can pick the right message
 // without parsing text. Callers read `.code`, which stays a plain string field.
@@ -31,97 +16,51 @@ export class AudioPermissionError extends Error {
   }
 }
 
-// Typed by codegen from src/specs/NativeAudioRecorder.ts. Android-only, so the
-// spec uses `get`: null on iOS, where recording goes through the library
-// instead. That is a real platform difference rather than a missing module.
+/**
+ * The native module rejects with this when iOS refuses the microphone.
+ *
+ * Android asks before recording and never reaches the native call; iOS can only
+ * ask through AVFoundation, which happens inside `startRecording`. Two routes to
+ * one situation, translated here so callers see a single error type.
+ */
+const NATIVE_PERMISSION_DENIED = 'audio_permission_denied';
 
 function normalizeUriForStorage(value: string | null | undefined): string {
   if (!value) {
     return '';
   }
 
-  if (value.startsWith('file://')) {
-    return value;
-  }
-
-  // react-native-audio-recorder-player on iOS often returns bare paths
-  return `file://${value}`;
-}
-
-function normalizeUriForPlayback(value: string): string {
-  if (!value) {
-    return value;
-  }
-
-  // Native side strips file:// before File/Uri; player libs accept both
   return value.startsWith('file://') ? value : `file://${value}`;
 }
 
 export async function startRecording(): Promise<string> {
-  if (Platform.OS === 'android' && NativeAudioRecorder) {
-    const permission = await ensureRecordAudioPermission();
-    if (permission !== 'granted') {
+  const permission = await ensureRecordAudioPermission();
+  if (permission !== 'granted') {
+    throw new AudioPermissionError(
+      'Audio recording permission is required.',
+      permission === 'denied'
+        ? 'audio-permission-denied'
+        : 'audio-permission-unavailable',
+    );
+  }
+
+  try {
+    const uri = await NativeAudioRecorder.startRecording();
+    return normalizeUriForStorage(uri);
+  } catch (error) {
+    if ((error as { code?: string })?.code === NATIVE_PERMISSION_DENIED) {
       throw new AudioPermissionError(
         'Audio recording permission is required.',
-        permission === 'denied'
-          ? 'android-audio-permission-denied'
-          : 'android-audio-permission-unavailable',
+        'audio-permission-denied',
       );
     }
 
-    const uri = await NativeAudioRecorder.startRecording();
-    return normalizeUriForStorage(uri);
+    throw error;
   }
-
-  if (Platform.OS === 'ios') {
-    const audioDir = `${RNFS.DocumentDirectoryPath}/audio`;
-    await RNFS.mkdir(audioDir).catch(() => undefined);
-    const timestamp = Date.now();
-    const suffix = Math.random().toString(36).slice(2, 9);
-    const path = `${audioDir}/dream_audio_${timestamp}_${suffix}.m4a`;
-    await arp.startRecorder(path, {
-      AVFormatIDKeyIOS: 'aac',
-      AVEncodingOptionIOS: 'aac',
-      AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
-      // Without these the library falls back to 44.1 kHz stereo — a duplicated
-      // channel from a single microphone, at three times the size.
-      AVSampleRateKeyIOS: AUDIO_SAMPLE_RATE_HZ,
-      AVNumberOfChannelsKeyIOS: AUDIO_CHANNELS,
-    });
-    return normalizeUriForStorage(path);
-  }
-
-  const audioDir = `${RNFS.DocumentDirectoryPath}/audio`;
-  await RNFS.mkdir(audioDir).catch(() => undefined);
-  const timestamp = Date.now();
-  const suffix = Math.random().toString(36).slice(2, 9);
-  const path = `${audioDir}/dream_audio_${timestamp}_${suffix}.mp4`;
-  // The JS fallback, used when the native Android recorder is unavailable.
-  // Left unset, MediaRecorder picks its own defaults, which differ by device.
-  await arp.startRecorder(path, {
-    AudioSourceAndroid: AudioSourceAndroidType.VOICE_RECOGNITION,
-    OutputFormatAndroid: OutputFormatAndroidType.MPEG_4,
-    AudioEncoderAndroid: AudioEncoderAndroidType.AAC,
-    AudioSamplingRate: AUDIO_SAMPLE_RATE_HZ,
-    AudioChannels: AUDIO_CHANNELS,
-    AudioEncodingBitRate: AUDIO_BIT_RATE,
-    AVFormatIDKeyIOS: 'aac',
-    AVEncodingOptionIOS: 'aac',
-    AVEncoderAudioQualityKeyIOS: AVEncoderAudioQualityIOSType.high,
-    AVSampleRateKeyIOS: AUDIO_SAMPLE_RATE_HZ,
-    AVNumberOfChannelsKeyIOS: AUDIO_CHANNELS,
-  });
-  return normalizeUriForStorage(path);
 }
 
 export async function stopRecording(): Promise<string> {
-  if (Platform.OS === 'android' && NativeAudioRecorder) {
-    const uri = await NativeAudioRecorder.stopRecording();
-    return normalizeUriForStorage(uri ?? '');
-  }
-
-  const uri = await arp.stopRecorder();
-  arp.removeRecordBackListener();
+  const uri = await NativeAudioRecorder.stopRecording();
   return normalizeUriForStorage(uri ?? '');
 }
 
@@ -130,43 +69,58 @@ type PlayCallbacks = {
   onProgress?: (positionMs: number, durationMs: number) => void;
 };
 
+/**
+ * Subscriptions for the playback in progress.
+ *
+ * Held at module scope because `stop()` is a separate call from `play()` and has
+ * to be able to tear them down. One playback at a time is the whole model — the
+ * native modules stop whatever is running before starting anything new — so a
+ * single slot is enough, and a map keyed by anything would only invite the
+ * question of what a second entry would mean.
+ */
+let subscriptions: Array<{ remove: () => void }> = [];
+
+function clearSubscriptions() {
+  for (const subscription of subscriptions) {
+    subscription.remove();
+  }
+  subscriptions = [];
+}
+
 export async function play(uri: string, callbacks?: PlayCallbacks) {
-  const normalized = normalizeUriForPlayback(uri);
+  clearSubscriptions();
 
   if (callbacks?.onProgress) {
-    arp.addPlayBackListener(e => {
-      callbacks.onProgress!(e.currentPosition, e.duration);
-    });
+    subscriptions.push(
+      NativeAudioRecorder.onPlaybackProgress(({ positionMs, durationMs }) => {
+        callbacks.onProgress!(positionMs, durationMs);
+      }),
+    );
   }
 
-  if (callbacks?.onFinished) {
-    arp.addPlaybackEndListener(() => {
-      arp.removePlaybackEndListener();
-      callbacks.onFinished!();
-    });
-  }
+  subscriptions.push(
+    NativeAudioRecorder.onPlaybackFinished(() => {
+      clearSubscriptions();
+      callbacks?.onFinished?.();
+    }),
+  );
 
   try {
-    await arp.startPlayer(normalized);
-  } catch (e) {
-    arp.removePlayBackListener();
-    arp.removePlaybackEndListener();
-    throw e;
+    await NativeAudioRecorder.play(uri);
+  } catch (error) {
+    clearSubscriptions();
+    throw error;
   }
 }
 
 export async function stop() {
-  arp.removePlayBackListener();
-  arp.removePlaybackEndListener();
-  await arp.stopPlayer();
+  clearSubscriptions();
+  await NativeAudioRecorder.stop();
 }
 
-/** Deletes orphaned recording files in app audio dir older than maxAgeDays. Android only; no-op on iOS. */
+/** Deletes orphaned recording files in the app audio directory. */
 export async function cleanupOrphanedAudioFiles(
   maxAgeDays: number,
 ): Promise<number> {
-  if (Platform.OS !== 'android' || !NativeAudioRecorder) {
-    return 0;
-  }
   return NativeAudioRecorder.cleanupOrphanedAudioFiles(maxAgeDays);
 }

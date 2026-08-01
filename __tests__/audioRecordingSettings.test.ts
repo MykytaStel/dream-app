@@ -36,16 +36,8 @@ const androidRecorder = readFileSync(
   'utf8',
 );
 
-const audioService = readFileSync(
-  join(
-    __dirname,
-    '..',
-    'src',
-    'features',
-    'dreams',
-    'services',
-    'audioService.ts',
-  ),
+const iosRecorder = readFileSync(
+  join(__dirname, '..', 'ios', 'DreamApp', 'AudioRecorderModule.swift'),
   'utf8',
 );
 
@@ -64,17 +56,32 @@ describe('audio recording settings', () => {
     );
   });
 
-  test('iOS states its sample rate and channel count rather than inheriting them', () => {
-    // This is the whole bug: absent these keys, the library picks 44.1 kHz
-    // stereo and nothing anywhere says so.
-    expect(audioService).toContain('AVSampleRateKeyIOS: AUDIO_SAMPLE_RATE_HZ');
-    expect(audioService).toContain('AVNumberOfChannelsKeyIOS: AUDIO_CHANNELS');
+  test('the iOS recorder uses the same numbers as the shared model', () => {
+    // These moved out of TypeScript when iOS stopped going through the
+    // recorder library: the settings are now an AVAudioRecorder dictionary,
+    // and this is the file that has to agree with the constants.
+    expect(iosRecorder).toContain(`AVSampleRateKey: ${AUDIO_SAMPLE_RATE_HZ}`);
+    expect(iosRecorder).toContain(`AVNumberOfChannelsKey: ${AUDIO_CHANNELS}`);
+    expect(iosRecorder).toContain(`AVEncoderBitRateKey: ${AUDIO_BIT_RATE}`);
   });
 
   test('no platform is left to a device default', () => {
-    expect(audioService).toContain('AudioSamplingRate: AUDIO_SAMPLE_RATE_HZ');
-    expect(audioService).toContain('AudioChannels: AUDIO_CHANNELS');
-    expect(audioService).toContain('AudioEncodingBitRate: AUDIO_BIT_RATE');
+    // The bug this whole file exists for: absent an explicit dictionary, each
+    // platform picks its own defaults and nothing anywhere says so.
+    for (const key of [
+      'AVSampleRateKey',
+      'AVNumberOfChannelsKey',
+      'AVEncoderBitRateKey',
+    ]) {
+      expect(iosRecorder).toContain(key);
+    }
+    for (const call of [
+      'setAudioSamplingRate',
+      'setAudioChannels',
+      'setAudioEncodingBitRate',
+    ]) {
+      expect(androidRecorder).toContain(call);
+    }
   });
 
   test('mono, because a phone has one microphone', () => {
@@ -90,7 +97,7 @@ describe('audio recording settings', () => {
   });
 
   test('no hardcoded rate survives beside the shared constant', () => {
-    expect(audioService).not.toContain('44100');
+    expect(iosRecorder).not.toContain('44100');
     expect(androidRecorder).not.toContain('44100');
     expect(androidRecorder).not.toContain('128_000');
   });

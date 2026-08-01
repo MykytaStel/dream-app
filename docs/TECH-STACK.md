@@ -169,6 +169,40 @@ accepted: delete the `resolutions` entry and the patch file.
 `libsodiumSecretStream.ts` keeps working either way, since it only reads JSI
 globals.
 
+## Versioning
+
+`package.json` holds the version. Nothing else does.
+
+```bash
+yarn version:set 0.9.0
+```
+
+That bumps `package.json` and writes the two iOS build settings. Nothing else
+needs doing, because nothing else stores a copy:
+
+| Where | How it gets the version |
+|---|---|
+| JavaScript | `src/config/app.ts` imports `package.json` |
+| Android | `android/app/build.gradle` parses `package.json` at build time |
+| iOS | `yarn version:set` writes `MARKETING_VERSION`; Xcode cannot read JSON |
+
+The build number is derived, not counted: `major × 10000 + minor × 100 + patch`,
+so 0.8.0 is 800. Both platforms use the same arithmetic, which is why they now
+carry the same number — they used to be 39 and 38, and nobody could say which
+was right. It stays monotonic as long as minor and patch are below 100, and
+`yarn version:set` refuses a version where they are not, rather than letting a
+store reject the upload without saying why.
+
+`__tests__/appVersion.test.ts` is what makes this hold. It fails if iOS falls
+behind, and it fails if a literal version reappears in `build.gradle` — the
+habit that caused this, since a copied value is correct on the day it is written
+and wrong forever after.
+
+The version and the git tag are separate acts. Tagging does not change the app,
+and the tags drifted three releases ahead of the code precisely because nothing
+tied them together. Run `yarn version:set` first, commit, then tag what you
+committed.
+
 ## Upgrade policy
 
 Upgrades go in waves, never all at once:

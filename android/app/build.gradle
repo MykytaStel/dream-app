@@ -9,6 +9,29 @@ apply plugin: "com.facebook.react"
 def releaseKeystorePath = System.getenv('ANDROID_KEYSTORE_PATH')
 def hasReleaseKeystore = releaseKeystorePath != null && !releaseKeystorePath.isEmpty()
 
+// The version is written in package.json and nowhere else. Read rather than
+// copied, so this file cannot fall behind it — which is what happened: every
+// copy said 0.6.0 while the newest tag said v0.7.2.
+def appVersionName =
+    new groovy.json.JsonSlurper().parseText(file("../../package.json").text).version
+
+/**
+ * versionCode, derived instead of counted.
+ *
+ * It has to be an integer that never decreases, and it used to be bumped by
+ * hand — which is why Android sat on 39 while iOS sat on 38, two numbers for
+ * one build with no way to tell which was right. Deriving it from the version
+ * makes them the same number and removes the counter entirely.
+ *
+ * Ten thousand per major and a hundred per minor, so 0.8.0 is 800 and 1.0.0 is
+ * 10000. This only stays monotonic while minor and patch stay under 100, which
+ * a test asserts rather than trusting.
+ */
+def appVersionCode = { ->
+    def parts = appVersionName.tokenize('.').collect { it.toInteger() }
+    parts[0] * 10000 + parts[1] * 100 + parts[2]
+}()
+
 ext {
     // String, not File — see the note in the root build.gradle.
     REACT_NATIVE_NODE_MODULES_DIR = file("../../node_modules/react-native").absolutePath
@@ -112,8 +135,8 @@ android {
         applicationId "com.kaleidoscopedreams"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 39
-        versionName "0.6.0"
+        versionCode appVersionCode
+        versionName appVersionName
     }
     signingConfigs {
         debug {

@@ -118,6 +118,23 @@ export async function stop() {
   await NativeAudioRecorder.stop();
 }
 
+/**
+ * How long a recording is, in milliseconds, without playing it.
+ *
+ * Zero means unknown — a file that is gone, or a container that never recorded
+ * its own duration. Callers show `--:--` for it rather than a wrong number.
+ */
+export async function getDuration(uri: string): Promise<number> {
+  try {
+    return await NativeAudioRecorder.getDuration(uri);
+  } catch {
+    // The native side already answers 0 for anything it cannot read, so
+    // reaching here means the call itself failed. A label is not worth
+    // propagating that to the screen.
+    return 0;
+  }
+}
+
 /** Deletes orphaned recording files in the app audio directory. */
 export async function cleanupOrphanedAudioFiles(
   maxAgeDays: number,

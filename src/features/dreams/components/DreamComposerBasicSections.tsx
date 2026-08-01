@@ -6,7 +6,7 @@ import { FormField } from '../../../components/ui/FormField';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { DreamComposerCopy, DreamComposerStyles } from './DreamComposer.types';
-import { play, stop } from '../services/audioService';
+import { getDuration, play, stop } from '../services/audioService';
 
 type HeroCardProps = {
   styles: DreamComposerStyles;
@@ -106,6 +106,24 @@ function ComposerAudioPlayback({
   const [durationSec, setDurationSec] = React.useState(0);
   const isBusyRef = React.useRef(false);
 
+  // Read from the file rather than waited for. The length used to arrive only
+  // with the first progress event, so a saved voice note showed `--:--` until
+  // it had been played all the way through once — and every replay reset it to
+  // `--:--` again for a quarter of a second.
+  React.useEffect(() => {
+    let cancelled = false;
+
+    getDuration(uri).then(ms => {
+      if (!cancelled && ms > 0) {
+        setDurationSec(Math.floor(ms / 1000));
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [uri]);
+
   React.useEffect(() => {
     return () => {
       stop().catch(() => {});
@@ -125,7 +143,6 @@ function ComposerAudioPlayback({
         return;
       }
       setPositionSec(0);
-      setDurationSec(0);
       await play(uri, {
         onFinished: () => {
           setIsPlaying(false);
@@ -133,7 +150,12 @@ function ComposerAudioPlayback({
         },
         onProgress: (posMs, durMs) => {
           setPositionSec(Math.floor(posMs / 1000));
-          setDurationSec(Math.floor(durMs / 1000));
+          // Still taken from playback when it arrives: a container without a
+          // stored duration has none to read up front, and the player knows by
+          // the time it is running.
+          if (durMs > 0) {
+            setDurationSec(Math.floor(durMs / 1000));
+          }
         },
       });
       setIsPlaying(true);

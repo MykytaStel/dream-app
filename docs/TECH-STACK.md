@@ -91,10 +91,45 @@ decision.
 | Not used | Why | What would change it |
 |---|---|---|
 | React Hook Form | `features/dreams/components/useDreamComposerForm.ts` already covers the need; the forms are small | a form with genuinely complex cross-field validation |
-| FlashList | the archive performs acceptably today | measured jank on a real archive, not a guess |
+| FlashList | measured, not assumed — see below | jank measured on a device, which needs the Hermes number this measurement does not have |
 | Redux Toolkit | Zustand handles the amount of client state we have | state that needs middleware, time travel or strict action logs |
 | SQLite | MMKV fits the current data model | vector search in H3, which MMKV cannot serve |
 | RevenueCat | there is nothing to sell yet | a monetization decision, which needs retention data first |
+
+### What a large archive actually costs
+
+`__tests__/archiveScalePerf.test.ts` measures it. Both lists are already
+virtualized, so the row count on screen does not grow with the archive; what
+grows is the pipeline that runs before the list. Median of seven runs, one
+frame at 60 Hz being 16.7 ms:
+
+| Stage | 250 | 1000 | 5000 |
+|---|---|---|---|
+| Archive: month scope, search, sections | 0.07 ms | 0.14 ms | 0.55 ms |
+| Home timeline, no search | 0.66 ms | 1.98 ms | 10.5 ms |
+| Home timeline, search (filter + score + re-sort) | 0.66 ms | 1.95 ms | 9.9 ms |
+| Stats aggregates | 0.39 ms | 1.10 ms | 5.4 ms |
+
+Two readings, and they point in different directions.
+
+The archive is not the bottleneck and swapping its list would not make it one
+bit faster: 0.14 ms at a thousand dreams is a hundred times under a frame. That
+is because `useArchiveBrowseState` narrows to the selected month before it
+searches or filters, so its cost tracks the size of a month, not the size of the
+archive. FlashList would replace a list that is already free.
+
+The home timeline is where size is felt. It filters, scores and sorts every
+dream on each committed keystroke, and 250 → 5000 costs 0.66 → 10.5 ms, close to
+linear. A thousand dreams — about three years of writing one down every night —
+leaves ample room. Five thousand does not, and that is the number to revisit.
+
+One caveat is load-bearing: these run on V8 on a developer Mac, and the app runs
+on Hermes on a phone. **That multiplier has not been measured** — there is no
+Hermes engine on this machine to measure it with, and the `hermes` on `PATH` is
+an unrelated tool with the same name. So treat every figure as a floor. It does
+not weaken the archive conclusion, which would need a 100× multiplier to change;
+it is exactly why the home timeline at 5000 needs a device before anyone
+optimizes it.
 
 ## Known debt
 

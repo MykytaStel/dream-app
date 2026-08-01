@@ -1,6 +1,6 @@
 {
   "name": "dream-app",
-  "version": "0.6.0",
+  "version": "0.8.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -12,7 +12,9 @@
     "test:ci": "jest --ci --watchAll=false",
     "typecheck": "tsc --noEmit",
     "test:coverage": "jest --coverage --ci --watchAll=false",
-    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"__tests__/**/*.{ts,tsx}\""
+    "format:check": "prettier --check \"src/**/*.{ts,tsx}\" \"__tests__/**/*.{ts,tsx}\"",
+    "version:sync": "node scripts/sync-app-version.js",
+    "version:set": "node scripts/sync-app-version.js"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",

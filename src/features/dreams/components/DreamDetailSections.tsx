@@ -7,18 +7,17 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import { Button } from '../../../components/ui/Button';
 import { FormField } from '../../../components/ui/FormField';
 import { InfoRow } from '../../../components/ui/InfoRow';
+import { DreamAnalysisSection } from './detail/DreamAnalysisSection';
 import { DreamLucidSection } from './detail/DreamLucidSection';
+import { DreamRelatedSection } from './detail/DreamRelatedSection';
+import { DreamStateSection } from './detail/DreamStateSection';
 import { DreamNightmareSection } from './detail/DreamNightmareSection';
 import { Card } from '../../../components/ui/Card';
-import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { Dream } from '../model/dream';
-import {
-  getRelatedSignalSummaries,
-  type RelatedDream,
-} from '../model/relatedDreams';
+import type { RelatedDream } from '../model/relatedDreams';
 import {
   formatMetaTimestamp,
   formatTranscriptionProgress,
@@ -218,29 +217,11 @@ export function DreamDetailSections({
 }: DreamDetailSectionsProps) {
   const theme = useTheme<Theme>();
   const rawCaptureText = dream.text?.trim();
-  const relatedSignalSummaries = React.useMemo(
-    () => getRelatedSignalSummaries(relatedDreams, 5),
-    [relatedDreams],
-  );
   const leadPrompt =
     viewModel.followUpPrompt ?? viewModel.reflectionPrompts[0] ?? null;
   const supportingPrompts = viewModel.followUpPrompt
     ? viewModel.reflectionPrompts
     : viewModel.reflectionPrompts.slice(1);
-  const wakeEmotionChips = React.useMemo(() => {
-    const moodLabel = viewModel.moodLabel?.toLowerCase();
-    return (dream.wakeEmotions ?? [])
-      .map(emotion => wakeEmotionLabels[emotion] ?? emotion)
-      .filter(label => label.toLowerCase() !== moodLabel);
-  }, [dream.wakeEmotions, viewModel.moodLabel, wakeEmotionLabels]);
-  const analysisNeedsSettings =
-    !analysisSettings.enabled || analysisSettings.provider === 'openai';
-  const hasAnalysisContent = Boolean(
-    dream.analysis?.summary ||
-    dream.analysis?.themes?.length ||
-    dream.analysis?.generatedAt ||
-    dream.analysis?.status === 'error',
-  );
   const primaryCaptureTitle = rawCaptureText
     ? copy.detailTranscriptTitle
     : dream.transcript
@@ -516,186 +497,26 @@ export function DreamDetailSections({
         ) : null}
 
         <View style={styles.sheetDivider} />
-        <View style={styles.sheetSection}>
-          <Text style={styles.sheetHeading}>{copy.detailRelatedTitle}</Text>
-
-          {relatedSignalSummaries.length ? (
-            <View style={styles.tagsRow}>
-              {relatedSignalSummaries.map(signal => (
-                <TagChip
-                  key={signal.label}
-                  label={
-                    signal.count > 1
-                      ? `${signal.label} x${signal.count}`
-                      : signal.label
-                  }
-                />
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.supportText}>{copy.detailRelatedEmpty}</Text>
-          )}
-
-          {relatedDreams.length ? (
-            <View style={styles.relatedList}>
-              {relatedDreams.map(item => (
-                <Pressable
-                  accessibilityRole="button"
-                  key={item.dream.id}
-                  style={({ pressed }) => [
-                    styles.relatedRow,
-                    pressed ? styles.relatedRowPressed : null,
-                  ]}
-                  onPress={() => onOpenRelatedDream(item.dream.id)}
-                >
-                  <View style={styles.relatedCopy}>
-                    <Text style={styles.relatedTitle}>
-                      {item.dream.title || copy.untitled}
-                    </Text>
-                    <Text style={styles.relatedMeta}>
-                      {item.dream.sleepDate ||
-                        new Date(item.dream.createdAt)
-                          .toISOString()
-                          .slice(0, 10)}
-                    </Text>
-                  </View>
-                  <Ionicons
-                    name="chevron-forward"
-                    size={16}
-                    color={theme.colors.textDim}
-                  />
-                </Pressable>
-              ))}
-            </View>
-          ) : null}
-
-          <View style={styles.supportBlock}>
-            <Text style={styles.supportHeading}>{copy.tagsTitle}</Text>
-            <View style={styles.tagsRow}>
-              {dream.tags.length ? (
-                dream.tags.map(tag => <TagChip key={tag} label={tag} />)
-              ) : (
-                <Text style={styles.supportText}>{copy.detailTagsEmpty}</Text>
-              )}
-            </View>
-          </View>
-        </View>
+        <DreamRelatedSection
+          dream={dream}
+          copy={copy}
+          styles={styles}
+          relatedDreams={relatedDreams}
+          onOpenRelatedDream={onOpenRelatedDream}
+        />
 
         <View style={styles.sheetDivider} />
-        <View style={styles.sheetSection}>
-          <Text style={styles.sheetHeading}>{copy.detailAnalysisTitle}</Text>
-
-          {analysisNeedsSettings ? (
-            <Pressable
-              accessibilityRole="button"
-              style={({ pressed }) => [
-                styles.settingsNotice,
-                pressed ? styles.settingsNoticePressed : null,
-              ]}
-              onPress={onOpenSettingsForAnalysis}
-            >
-              <View style={styles.settingsNoticeCopy}>
-                <Text style={styles.settingsNoticeTitle}>
-                  {copy.detailAnalysisOpenSettings}
-                </Text>
-                <Text style={styles.settingsNoticeBody}>
-                  {analysisSettings.enabled
-                    ? copy.detailAnalysisOpenAiUnavailable
-                    : copy.detailAnalysisDisabled}
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color={theme.colors.textDim}
-              />
-            </Pressable>
-          ) : (
-            <Text style={styles.supportText}>
-              {viewModel.analysisStateText}
-            </Text>
-          )}
-
-          {dream.analysis?.summary ? (
-            <View style={styles.featuredPanel}>
-              <Text style={styles.featuredEyebrow}>
-                {copy.detailAnalysisSummaryLabel}
-              </Text>
-              <Text style={styles.featuredBody}>{dream.analysis.summary}</Text>
-            </View>
-          ) : !analysisNeedsSettings ? (
-            <Text style={styles.supportText}>{copy.detailAnalysisEmpty}</Text>
-          ) : null}
-
-          {dream.analysis?.themes?.length ? (
-            <View style={styles.tagsRow}>
-              {dream.analysis.themes.map(themeValue => (
-                <TagChip key={themeValue} label={themeValue} />
-              ))}
-            </View>
-          ) : null}
-
-          {!analysisNeedsSettings || hasAnalysisContent ? (
-            <View style={styles.utilityRows}>
-              <InfoRow
-                label={copy.detailAnalysisStatusLabel}
-                value={viewModel.analysisStatusLabel}
-              />
-              <InfoRow
-                label={copy.detailAnalysisProviderLabel}
-                value={viewModel.analysisProviderLabel}
-              />
-              {dream.analysis?.generatedAt ? (
-                <InfoRow
-                  label={copy.detailAnalysisUpdatedLabel}
-                  value={formatMetaTimestamp(dream.analysis.generatedAt)}
-                />
-              ) : null}
-            </View>
-          ) : null}
-
-          {dream.analysis?.status === 'error' && dream.analysis.errorMessage ? (
-            <Text style={styles.statusErrorText}>
-              {dream.analysis.errorMessage}
-            </Text>
-          ) : null}
-
-          {!analysisNeedsSettings || dream.analysis ? (
-            <View style={styles.actionGroup}>
-              {analysisSettings.enabled ? (
-                <Button
-                  title={
-                    isGeneratingAnalysis
-                      ? copy.detailAnalysisGenerating
-                      : dream.analysis?.status === 'ready'
-                        ? copy.detailAnalysisRegenerate
-                        : copy.detailAnalysisGenerate
-                  }
-                  variant={
-                    dream.analysis?.status === 'ready' ? 'ghost' : 'primary'
-                  }
-                  onPress={onGenerateAnalysis}
-                  disabled={isGeneratingAnalysis}
-                  icon={
-                    dream.analysis?.status === 'ready'
-                      ? 'refresh-outline'
-                      : 'sparkles-outline'
-                  }
-                />
-              ) : null}
-              {dream.analysis ? (
-                <Button
-                  title={copy.detailAnalysisClear}
-                  variant="danger"
-                  onPress={onClearAnalysis}
-                  disabled={isGeneratingAnalysis}
-                  icon="trash-outline"
-                  size="sm"
-                />
-              ) : null}
-            </View>
-          ) : null}
-        </View>
+        <DreamAnalysisSection
+          dream={dream}
+          copy={copy}
+          styles={styles}
+          viewModel={viewModel}
+          analysisSettings={analysisSettings}
+          isGeneratingAnalysis={isGeneratingAnalysis}
+          onGenerateAnalysis={onGenerateAnalysis}
+          onClearAnalysis={onClearAnalysis}
+          onOpenSettingsForAnalysis={onOpenSettingsForAnalysis}
+        />
 
         <View style={styles.sheetDivider} />
         <DreamLucidSection
@@ -724,128 +545,15 @@ export function DreamDetailSections({
         />
 
         <View style={styles.sheetDivider} />
-        <View style={styles.sheetSection}>
-          <Text style={styles.sheetHeading}>{copy.detailStateTitle}</Text>
-
-          {!viewModel.hasContext &&
-          !viewModel.hasEmotions &&
-          !viewModel.hasLucidity ? (
-            <Text style={styles.supportText}>{copy.detailStateEmpty}</Text>
-          ) : (
-            <>
-              {viewModel.lucidityLabel ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>
-                    {copy.detailLucidityLabel}
-                  </Text>
-                  <View style={styles.tagsRow}>
-                    <TagChip label={viewModel.lucidityLabel} />
-                  </View>
-                </View>
-              ) : null}
-
-              {dream.wakeEmotions?.length ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>
-                    {copy.detailWakeEmotionsLabel}
-                  </Text>
-                  {wakeEmotionChips.length ? (
-                    <View style={styles.tagsRow}>
-                      {wakeEmotionChips.map(label => (
-                        <TagChip key={label} label={label} />
-                      ))}
-                    </View>
-                  ) : (
-                    <Text style={styles.supportText}>
-                      {viewModel.moodLabel}
-                    </Text>
-                  )}
-                </View>
-              ) : null}
-
-              {dream.sleepContext?.preSleepEmotions?.length ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>
-                    {copy.detailPreSleepEmotionsLabel}
-                  </Text>
-                  <View style={styles.tagsRow}>
-                    {dream.sleepContext.preSleepEmotions.map(emotion => (
-                      <TagChip
-                        key={emotion}
-                        label={preSleepEmotionLabels[emotion] ?? emotion}
-                      />
-                    ))}
-                  </View>
-                </View>
-              ) : null}
-
-              <View style={styles.contextFactsCard}>
-                <View style={styles.utilityRows}>
-                  {typeof dream.sleepContext?.stressLevel === 'number' ? (
-                    <InfoRow
-                      label={copy.stressLabel}
-                      value={
-                        stressLabels[dream.sleepContext.stressLevel] ??
-                        String(dream.sleepContext.stressLevel)
-                      }
-                    />
-                  ) : null}
-                  {typeof dream.sleepContext?.alcoholTaken === 'boolean' ? (
-                    <InfoRow
-                      label={copy.alcoholLabel}
-                      value={
-                        dream.sleepContext.alcoholTaken
-                          ? copy.boolYes
-                          : copy.boolNo
-                      }
-                    />
-                  ) : null}
-                  {typeof dream.sleepContext?.caffeineLate === 'boolean' ? (
-                    <InfoRow
-                      label={copy.caffeineLabel}
-                      value={
-                        dream.sleepContext.caffeineLate
-                          ? copy.boolYes
-                          : copy.boolNo
-                      }
-                    />
-                  ) : null}
-                </View>
-              </View>
-
-              {dream.sleepContext?.medications ? (
-                <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>
-                    {copy.medicationsLabel}
-                  </Text>
-                  <Text style={styles.contextNoteText}>
-                    {dream.sleepContext.medications}
-                  </Text>
-                </View>
-              ) : null}
-
-              {dream.sleepContext?.importantEvents ? (
-                <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>{copy.eventsLabel}</Text>
-                  <Text style={styles.contextNoteText}>
-                    {dream.sleepContext.importantEvents}
-                  </Text>
-                </View>
-              ) : null}
-
-              {dream.sleepContext?.healthNotes ? (
-                <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>
-                    {copy.healthNotesLabel}
-                  </Text>
-                  <Text style={styles.contextNoteText}>
-                    {dream.sleepContext.healthNotes}
-                  </Text>
-                </View>
-              ) : null}
-            </>
-          )}
-        </View>
+        <DreamStateSection
+          dream={dream}
+          copy={copy}
+          styles={styles}
+          viewModel={viewModel}
+          stressLabels={stressLabels}
+          wakeEmotionLabels={wakeEmotionLabels}
+          preSleepEmotionLabels={preSleepEmotionLabels}
+        />
       </Card>
     </Animated.View>
   );

@@ -6,7 +6,7 @@ import { FormField } from '../../../components/ui/FormField';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { DreamComposerCopy, DreamComposerStyles } from './DreamComposer.types';
-import { getDuration, play, stop } from '../services/audioService';
+import { formatPlaybackTime, useAudioPlayback } from './audio/useAudioPlayback';
 
 type HeroCardProps = {
   styles: DreamComposerStyles;
@@ -101,78 +101,20 @@ function ComposerAudioPlayback({
   styles: DreamComposerStyles;
   errorTitle: string;
 }) {
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [positionSec, setPositionSec] = React.useState(0);
-  const [durationSec, setDurationSec] = React.useState(0);
-  const isBusyRef = React.useRef(false);
-
-  // Read from the file rather than waited for. The length used to arrive only
-  // with the first progress event, so a saved voice note showed `--:--` until
-  // it had been played all the way through once — and every replay reset it to
-  // `--:--` again for a quarter of a second.
-  React.useEffect(() => {
-    let cancelled = false;
-
-    getDuration(uri).then(ms => {
-      if (!cancelled && ms > 0) {
-        setDurationSec(Math.floor(ms / 1000));
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [uri]);
-
-  React.useEffect(() => {
-    return () => {
-      stop().catch(() => {});
-    };
-  }, []);
+  const { isPlaying, positionMs, durationMs, toggle } = useAudioPlayback(uri);
 
   const onToggle = React.useCallback(async () => {
-    if (isBusyRef.current) {
-      return;
+    const message = await toggle();
+    if (message) {
+      Alert.alert(errorTitle, message);
     }
-    isBusyRef.current = true;
-    try {
-      if (isPlaying) {
-        await stop();
-        setIsPlaying(false);
-        setPositionSec(0);
-        return;
-      }
-      setPositionSec(0);
-      await play(uri, {
-        onFinished: () => {
-          setIsPlaying(false);
-          setPositionSec(0);
-        },
-        onProgress: (posMs, durMs) => {
-          setPositionSec(Math.floor(posMs / 1000));
-          // Still taken from playback when it arrives: a container without a
-          // stored duration has none to read up front, and the player knows by
-          // the time it is running.
-          if (durMs > 0) {
-            setDurationSec(Math.floor(durMs / 1000));
-          }
-        },
-      });
-      setIsPlaying(true);
-    } catch (e) {
-      setIsPlaying(false);
-      setPositionSec(0);
-      Alert.alert(errorTitle, e instanceof Error ? e.message : String(e));
-    } finally {
-      isBusyRef.current = false;
-    }
-  }, [errorTitle, isPlaying, uri]);
+  }, [errorTitle, toggle]);
 
   const timeLabel =
-    durationSec > 0
-      ? `${formatRecordingDuration(positionSec)} / ${formatRecordingDuration(durationSec)}`
+    durationMs > 0
+      ? `${formatPlaybackTime(positionMs)} / ${formatPlaybackTime(durationMs)}`
       : isPlaying
-        ? formatRecordingDuration(positionSec)
+        ? formatPlaybackTime(positionMs)
         : '--:--';
 
   return (
@@ -188,10 +130,12 @@ function ComposerAudioPlayback({
   );
 }
 
+/**
+ * The recording timer counts in seconds, so it gets a wrapper rather than a
+ * second implementation of the same format.
+ */
 function formatRecordingDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
+  return formatPlaybackTime(seconds * 1000);
 }
 
 type VoiceCardProps = {

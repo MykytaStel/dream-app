@@ -671,6 +671,146 @@ async function uploadPendingTombstones(
   return lastErrorMessage;
 }
 
+/**
+ * Applies the deletions and the dreams the server has that this device does
+ * not.
+ *
+ * Deletions first, deliberately: a dream deleted elsewhere and edited here has
+ * to meet the tombstone before it is pulled back in, or the pull would
+ * resurrect it and the tombstone would then delete it again on the next sync.
+ *
+ * Returns the last error, or undefined. A record that cannot be decrypted is
+ * counted as a failure and named, not thrown — the rest of the archive still
+ * syncs, and the settings screen has something to say.
+ */
+async function pullRemoteChanges(
+  input: {
+    userId: string;
+    sealer: ArchiveSealer;
+    changesSince: number | undefined;
+    conflictContext: CloudSyncConflictContext;
+  },
+  counters: SyncCounters,
+): Promise<string | undefined> {
+  let lastErrorMessage: string | undefined;
+
+  const remoteTombstones = await fetchRemoteDreamDeletionTombstones(
+    input.userId,
+    { deletedAtOrAfter: input.changesSince },
+  );
+
+  for (const row of remoteTombstones) {
+    const decision = decideRemoteTombstoneResolution(
+      row,
+      input.conflictContext,
+    );
+    Object.assign(counters, accumulateConflictDecision(decision, counters));
+
+    if (decision.action === 'skip') {
+      counters.skippedCount += 1;
+      continue;
+    }
+
+    applyRemoteDreamDeletion(row.dream_id, new Date(row.deleted_at).getTime());
+    counters.pulledCount += 1;
+  }
+
+  const { bundles: remoteBundles, unreadableCount } =
+    await fetchRemoteDreamBundles(input.userId, input.sealer, {
+      updatedAtOrAfter: input.changesSince,
+    });
+
+  counters.failedCount += unreadableCount;
+  if (unreadableCount) {
+    lastErrorMessage = 'archive-record-unreadable';
+  }
+
+  for (const bundle of remoteBundles) {
+    const decision = decideRemoteBundleResolution(
+      bundle,
+      input.conflictContext,
+    );
+    Object.assign(counters, accumulateConflictDecision(decision, counters));
+
+    if (decision.action === 'skip') {
+      counters.skippedCount += 1;
+      continue;
+    }
+
+    upsertDreamFromSyncBundle(bundle);
+    counters.pulledCount += 1;
+  }
+
+  return lastErrorMessage;
+}
+
+/**
+ * Reconciles the saved months and threads — the reading state, not the dreams.
+ *
+ * It travels as one snapshot rather than per item, so the resolution is a
+ * single decision about which side is newer. The `else if` at the end counts a
+ * skip only when there was something to skip; a device that has never saved
+ * anything and a server that holds nothing are not a conflict avoided, they are
+ * an empty shelf on both sides.
+ */
+async function syncSavedReviewState(
+  input: { userId: string },
+  counters: SyncCounters,
+): Promise<string | undefined> {
+  let lastErrorMessage: string | undefined;
+
+  const reconciledReviewState = reconcileDerivedReviewState(listDreams());
+  const remoteSavedReviewState = await fetchRemoteSavedReviewState(
+    input.userId,
+  );
+  const savedReviewStateDecision = decideSavedReviewStateResolution(
+    remoteSavedReviewState,
+    reconciledReviewState,
+  );
+  if (savedReviewStateDecision.conflict && savedReviewStateDecision.winner) {
+    counters.conflictsResolvedCount += 1;
+    if (savedReviewStateDecision.winner === 'local') {
+      counters.localWinsCount += 1;
+    } else {
+      counters.remoteWinsCount += 1;
+    }
+  }
+
+  if (savedReviewStateDecision.action === 'apply-remote') {
+    applyRemoteSavedReviewStateSnapshot({
+      ...savedReviewStateDecision.remoteSnapshot,
+      syncedAt: Date.now(),
+    });
+    counters.pulledCount += 1;
+  } else if (savedReviewStateDecision.action === 'mark-synced') {
+    markSavedReviewStateSynced(savedReviewStateDecision.syncedAt);
+    counters.skippedCount += 1;
+  } else if (savedReviewStateDecision.action === 'upload-local') {
+    markSavedReviewStateSyncing();
+
+    try {
+      await uploadSavedReviewStateSnapshot(
+        input.userId,
+        getStoredReviewStateSnapshot(),
+      );
+      markSavedReviewStateSynced(Date.now());
+      counters.uploadedCount += 1;
+    } catch (error) {
+      lastErrorMessage = normalizeSyncError(error);
+      markSavedReviewStateSyncError(lastErrorMessage);
+      counters.failedCount += 1;
+    }
+  } else if (
+    remoteSavedReviewState ||
+    reconciledReviewState.savedMonths.length ||
+    reconciledReviewState.savedThreads.length
+  ) {
+    counters.skippedCount += 1;
+  }
+
+  return lastErrorMessage;
+}
+
 async function performCloudSync(
   reason: CloudSyncReason,
   requireSyncEnabled: boolean,
@@ -811,97 +951,25 @@ async function performCloudSync(
       lastErrorMessage = tombstoneUploadError;
     }
 
-    const remoteChangesSince = previousSnapshot.lastSuccessAt;
-    const remoteTombstones = await fetchRemoteDreamDeletionTombstones(
-      session.userId,
+    const pullError = await pullRemoteChanges(
       {
-        deletedAtOrAfter: remoteChangesSince,
+        userId: session.userId,
+        sealer,
+        changesSince: previousSnapshot.lastSuccessAt,
+        conflictContext,
       },
+      counters,
     );
-    for (const row of remoteTombstones) {
-      const decision = decideRemoteTombstoneResolution(row, conflictContext);
-      Object.assign(counters, accumulateConflictDecision(decision, counters));
-
-      if (decision.action === 'skip') {
-        counters.skippedCount += 1;
-        continue;
-      }
-
-      applyRemoteDreamDeletion(
-        row.dream_id,
-        new Date(row.deleted_at).getTime(),
-      );
-      counters.pulledCount += 1;
+    if (pullError) {
+      lastErrorMessage = pullError;
     }
 
-    const { bundles: remoteBundles, unreadableCount } =
-      await fetchRemoteDreamBundles(session.userId, sealer, {
-        updatedAtOrAfter: remoteChangesSince,
-      });
-    counters.failedCount += unreadableCount;
-    if (unreadableCount) {
-      lastErrorMessage = 'archive-record-unreadable';
-    }
-    for (const bundle of remoteBundles) {
-      const decision = decideRemoteBundleResolution(bundle, conflictContext);
-      Object.assign(counters, accumulateConflictDecision(decision, counters));
-
-      if (decision.action === 'skip') {
-        counters.skippedCount += 1;
-        continue;
-      }
-
-      upsertDreamFromSyncBundle(bundle);
-      counters.pulledCount += 1;
-    }
-
-    const reconciledReviewState = reconcileDerivedReviewState(listDreams());
-    const remoteSavedReviewState = await fetchRemoteSavedReviewState(
-      session.userId,
+    const reviewStateError = await syncSavedReviewState(
+      { userId: session.userId },
+      counters,
     );
-    const savedReviewStateDecision = decideSavedReviewStateResolution(
-      remoteSavedReviewState,
-      reconciledReviewState,
-    );
-    if (savedReviewStateDecision.conflict && savedReviewStateDecision.winner) {
-      counters.conflictsResolvedCount += 1;
-      if (savedReviewStateDecision.winner === 'local') {
-        counters.localWinsCount += 1;
-      } else {
-        counters.remoteWinsCount += 1;
-      }
-    }
-
-    if (savedReviewStateDecision.action === 'apply-remote') {
-      applyRemoteSavedReviewStateSnapshot({
-        ...savedReviewStateDecision.remoteSnapshot,
-        syncedAt: Date.now(),
-      });
-      counters.pulledCount += 1;
-    } else if (savedReviewStateDecision.action === 'mark-synced') {
-      markSavedReviewStateSynced(savedReviewStateDecision.syncedAt);
-      counters.skippedCount += 1;
-    } else if (savedReviewStateDecision.action === 'upload-local') {
-      markSavedReviewStateSyncing();
-
-      try {
-        await uploadSavedReviewStateSnapshot(
-          session.userId,
-          getStoredReviewStateSnapshot(),
-        );
-        markSavedReviewStateSynced(Date.now());
-        counters.uploadedCount += 1;
-      } catch (error) {
-        lastErrorMessage = normalizeSyncError(error);
-        markSavedReviewStateSyncError(lastErrorMessage);
-        counters.failedCount += 1;
-      }
-    } else if (
-      remoteSavedReviewState ||
-      reconciledReviewState.savedMonths.length ||
-      reconciledReviewState.savedThreads.length
-    ) {
-      counters.skippedCount += 1;
+    if (reviewStateError) {
+      lastErrorMessage = reviewStateError;
     }
   } catch (error) {
     lastErrorMessage = normalizeSyncError(error);

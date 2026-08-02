@@ -124,6 +124,42 @@ describe('stats overview periods', () => {
     expect(result.current.nightmareCount).toBe(0);
   });
 
+  test('the metric groups are built from the scoped stats', async () => {
+    // Added before those two memos move into their own hook. They are the
+    // largest blocks in the file, and nothing was watching what they produce.
+    const { result } = await render(true);
+
+    expect(result.current.lucidMetrics.length).toBeGreaterThan(0);
+    expect(result.current.nightmareMetrics.length).toBeGreaterThan(0);
+
+    for (const metric of [
+      ...result.current.lucidMetrics,
+      ...result.current.nightmareMetrics,
+    ]) {
+      // Every metric names itself and has something to show, even when the
+      // number behind it is zero.
+      expect([metric.label, typeof metric.value]).toEqual([
+        metric.label,
+        'string',
+      ]);
+    }
+  });
+
+  test('the saved shelves are empty when nothing has been saved', async () => {
+    const { result } = await render(true);
+
+    expect(result.current.savedMonthItems).toEqual([]);
+    expect(result.current.savedOverviewThreadItems).toEqual([]);
+    expect(result.current.savedSetItems).toEqual([]);
+  });
+
+  test('outside overview mode the shelves are skipped entirely', async () => {
+    const { result } = await render(false);
+
+    expect(result.current.savedMonthItems).toEqual([]);
+    expect(result.current.importantDreamItems).toEqual([]);
+  });
+
   test('the entries row is not guarded the way the others are', async () => {
     // Found by writing the test above, not by reading the hook. Every derived
     // statistic goes through a memo that returns an empty record outside

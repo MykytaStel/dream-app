@@ -268,5 +268,20 @@ export function buildWeeklyPatternCards({
         : copy.weeklyPatternQuietWeekHint,
   };
 
+  // Nothing here is a pattern yet.
+  //
+  // The rhythm card is a count, and the lead card falls back to "still
+  // forming" when no signal has repeated. A week with one entry produced
+  // "1 entry this week" beside "a pattern is still forming", under a heading
+  // that promises a calm read of the last seven days — three ways of saying
+  // "you wrote once", above a timeline already showing the entry.
+  //
+  // An empty array hides the whole section, which the home screen already
+  // handles. It comes back the moment there is a real signal, a tone, a
+  // context or a capture habit to name.
+  if (!candidates.length) {
+    return [];
+  }
+
   return [rhythmCard, toWeeklyPatternCard(leadPatternCard)];
 }

@@ -46,6 +46,37 @@ feel good.
 The order matters. An app that is bad at capture never accumulates the archive that
 makes discovery possible. Depth is earned from the bottom up.
 
+## What is free, and what is not
+
+Decided 2026-08-02, before there is anything to sell, because the answer shapes
+what gets built and a decision left open gets re-argued every time it comes up.
+
+**Everything the device can do is free.** Capture, the archive, search, patterns,
+threads, monthly reports, on-device transcription. All of it.
+
+**What costs money to run is what costs money to use:** sync, backup, and having
+the archive on more than one device.
+
+Three reasons, in order of how much they matter.
+
+The price matches our cost. Supabase bills per user; the phone does not. A paid
+tier that charges for arithmetic already running on the device is a tier that has
+to be justified with a story rather than an invoice.
+
+The differentiator stays free. Pattern-finding on the device is the reason to
+choose this over a prettier notes app, and it is what someone describes when they
+recommend it. In a niche this size, growth is people telling each other. Putting a
+fence around the thing they would describe removes the reason to describe it.
+
+The encryption work becomes the pitch rather than a footnote. The paid tier is the
+one where data leaves the phone, and it leaves sealed with a key the server never
+receives. "You pay us to store what we cannot read" is a sentence that is both true
+here and rare.
+
+What this rules out: a free tier limited by number of dreams. A journal that stops
+accepting entries is not a smaller product, it is a broken one, and the archive is
+the thing we are asking people to build.
+
 ## Privacy model
 
 Dream content is among the most personal text a person will ever write down. Privacy

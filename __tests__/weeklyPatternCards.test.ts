@@ -103,7 +103,48 @@ describe('weeklyPatternCards', () => {
     });
   });
 
-  test('stays readable with a single recent dream', () => {
+  test('one repetition is enough to bring it back', () => {
+    // The other half of the rule. Hiding the section must not become "never
+    // show it": the moment a signal appears in two dreams there is something
+    // to read, and the count regains its meaning beside it.
+    const dreams: Dream[] = [
+      {
+        id: 'first',
+        createdAt: new Date('2026-03-10T08:00:00Z').getTime(),
+        title: 'Glass hallway',
+        text: 'A hallway of glass.',
+        tags: ['glass'],
+      },
+      {
+        id: 'second',
+        createdAt: new Date('2026-03-11T08:00:00Z').getTime(),
+        title: 'Glass again',
+        text: 'The glass hallway once more.',
+        tags: ['glass'],
+      },
+    ];
+
+    const cards = buildWeeklyPatternCards({
+      dreams,
+      locale: 'en',
+      copy,
+      moodLabels,
+      now,
+    });
+
+    expect(cards.length).toBeGreaterThan(0);
+    expect(cards[0].key).toBe('rhythm');
+  });
+
+  test('a week with nothing to say says nothing', () => {
+    // This used to assert the opposite: that a single dream still produced two
+    // cards. It did — "1 entry this week" beside "a pattern is still forming",
+    // under a heading promising a calm read of the last seven days. Three ways
+    // of saying "you wrote once", directly above a timeline showing the entry.
+    //
+    // The rhythm card is a count and the lead card is a placeholder, so when
+    // neither a signal, a tone, a context nor a capture habit has anything in
+    // it, there is no pattern to read and the section hides itself.
     const dreams: Dream[] = [
       {
         id: 'single',
@@ -115,26 +156,7 @@ describe('weeklyPatternCards', () => {
     ];
 
     expect(
-      buildWeeklyPatternCards({
-        dreams,
-        locale: 'en',
-        copy,
-        moodLabels,
-        now,
-      }),
-    ).toEqual([
-      {
-        key: 'rhythm',
-        label: copy.weeklyPatternRhythmLabel,
-        title: '1 entry this week',
-        hint: '+1 vs previous 7 days',
-      },
-      {
-        key: 'signal',
-        label: copy.weeklyPatternSignalLabel,
-        title: copy.weeklyPatternStillFormingTitle,
-        hint: copy.weeklyPatternStillFormingHint,
-      },
-    ]);
+      buildWeeklyPatternCards({ dreams, locale: 'en', copy, moodLabels, now }),
+    ).toEqual([]);
   });
 });

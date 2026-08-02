@@ -7,6 +7,8 @@ import Animated, { LinearTransition } from 'react-native-reanimated';
 import { Button } from '../../../components/ui/Button';
 import { FormField } from '../../../components/ui/FormField';
 import { InfoRow } from '../../../components/ui/InfoRow';
+import { DreamLucidSection } from './detail/DreamLucidSection';
+import { DreamNightmareSection } from './detail/DreamNightmareSection';
 import { Card } from '../../../components/ui/Card';
 import { TagChip } from '../../../components/ui/TagChip';
 import { Text } from '../../../components/ui/Text';
@@ -231,19 +233,6 @@ export function DreamDetailSections({
       .map(emotion => wakeEmotionLabels[emotion] ?? emotion)
       .filter(label => label.toLowerCase() !== moodLabel);
   }, [dream.wakeEmotions, viewModel.moodLabel, wakeEmotionLabels]);
-  const lucidDreamSignChips = dream.lucidPractice?.dreamSigns ?? [];
-  const lucidControlChips = (dream.lucidPractice?.controlAreas ?? []).map(
-    value => lucidControlLabels[value] ?? value,
-  );
-  const lucidStabilizationChips = (
-    dream.lucidPractice?.stabilizationActions ?? []
-  ).map(value => lucidStabilizationLabels[value] ?? value);
-  const nightmareAftereffectChips = (dream.nightmare?.aftereffects ?? []).map(
-    value => nightmareAftereffectLabels[value] ?? value,
-  );
-  const nightmareGroundingChips = (dream.nightmare?.groundingUsed ?? []).map(
-    value => nightmareGroundingLabels[value] ?? value,
-  );
   const analysisNeedsSettings =
     !analysisSettings.enabled || analysisSettings.provider === 'openai';
   const hasAnalysisContent = Boolean(
@@ -709,172 +698,30 @@ export function DreamDetailSections({
         </View>
 
         <View style={styles.sheetDivider} />
-        <View style={styles.sheetSection}>
-          <Text style={styles.sheetHeading}>{practiceCopy.openLucid}</Text>
-          {dream.lucidPractice || viewModel.lucidityLabel ? (
-            <>
-              <View style={styles.actionGroup}>
-                <Button
-                  title={practiceCopy.openLucid}
-                  variant="ghost"
-                  size="sm"
-                  onPress={() => onOpenDreamPractice('lucid')}
-                />
-              </View>
-              {dream.lucidPractice?.technique ? (
-                <InfoRow
-                  label={practiceCopy.openLucid}
-                  value={
-                    lucidTechniqueLabels[dream.lucidPractice.technique] ??
-                    dream.lucidPractice.technique
-                  }
-                />
-              ) : null}
-              {typeof dream.lucidPractice?.recallScore === 'number' ? (
-                <InfoRow
-                  label={practiceCopy.lucidRecallLabel}
-                  value={String(dream.lucidPractice.recallScore)}
-                />
-              ) : null}
-              {dream.lucidPractice?.trigger ? (
-                <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>
-                    {practiceCopy.lucidTriggerLabel}
-                  </Text>
-                  <Text style={styles.contextNoteText}>
-                    {dream.lucidPractice.trigger}
-                  </Text>
-                </View>
-              ) : null}
-              {lucidDreamSignChips.length ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>
-                    {practiceCopy.lucidDreamSignsLabel}
-                  </Text>
-                  <View style={styles.tagsRow}>
-                    {lucidDreamSignChips.map(value => (
-                      <TagChip key={value} label={value} />
-                    ))}
-                  </View>
-                </View>
-              ) : null}
-              {lucidControlChips.length ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>Control</Text>
-                  <View style={styles.tagsRow}>
-                    {lucidControlChips.map(value => (
-                      <TagChip key={value} label={value} />
-                    ))}
-                  </View>
-                </View>
-              ) : null}
-              {lucidStabilizationChips.length ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>
-                    {practiceCopy.lucidStabilizationLabel}
-                  </Text>
-                  <View style={styles.tagsRow}>
-                    {lucidStabilizationChips.map(value => (
-                      <TagChip key={value} label={value} />
-                    ))}
-                  </View>
-                </View>
-              ) : null}
-            </>
-          ) : (
-            <Text style={styles.supportText}>{copy.detailStateEmpty}</Text>
-          )}
-        </View>
+        <DreamLucidSection
+          dream={dream}
+          viewModel={viewModel}
+          copy={copy}
+          styles={styles}
+          practiceCopy={practiceCopy}
+          lucidTechniqueLabels={lucidTechniqueLabels}
+          lucidControlLabels={lucidControlLabels}
+          lucidStabilizationLabels={lucidStabilizationLabels}
+          onOpenDreamPractice={onOpenDreamPractice}
+        />
 
         <View style={styles.sheetDivider} />
-        <View style={styles.sheetSection}>
-          <Text style={styles.sheetHeading}>{practiceCopy.openNightmares}</Text>
-          {dream.nightmare || dream.tags.includes('nightmare') ? (
-            <>
-              <View style={styles.actionGroup}>
-                <Button
-                  title={practiceCopy.openNightmares}
-                  variant="ghost"
-                  size="sm"
-                  onPress={() => onOpenDreamPractice('nightmares')}
-                />
-                <Button
-                  title={practiceCopy.quickNightmareRewrite}
-                  variant="ghost"
-                  size="sm"
-                  onPress={onEditDream}
-                />
-              </View>
-              {typeof dream.nightmare?.distress === 'number' ? (
-                <InfoRow
-                  label="Distress"
-                  value={String(dream.nightmare.distress)}
-                />
-              ) : null}
-              {typeof dream.nightmare?.wokeFromDream === 'boolean' ? (
-                <InfoRow
-                  label={practiceCopy.nightmareWokeLabel}
-                  value={
-                    dream.nightmare.wokeFromDream ? copy.boolYes : copy.boolNo
-                  }
-                />
-              ) : null}
-              {dream.nightmare?.recurringKey ? (
-                <InfoRow
-                  label="Recurring pattern"
-                  value={dream.nightmare.recurringKey}
-                />
-              ) : null}
-              {nightmareAftereffectChips.length ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>
-                    {practiceCopy.nightmareAftereffectsLabel}
-                  </Text>
-                  <View style={styles.tagsRow}>
-                    {nightmareAftereffectChips.map(value => (
-                      <TagChip key={value} label={value} />
-                    ))}
-                  </View>
-                </View>
-              ) : null}
-              {nightmareGroundingChips.length ? (
-                <View style={styles.supportBlock}>
-                  <Text style={styles.supportHeading}>
-                    {practiceCopy.nightmareGroundingTitle}
-                  </Text>
-                  <View style={styles.tagsRow}>
-                    {nightmareGroundingChips.map(value => (
-                      <TagChip key={value} label={value} />
-                    ))}
-                  </View>
-                </View>
-              ) : null}
-              {dream.nightmare?.rewrittenEnding ? (
-                <View style={styles.contextNoteCard}>
-                  <Text style={styles.supportHeading}>
-                    {practiceCopy.quickNightmareRewrite}
-                  </Text>
-                  <Text style={styles.contextNoteText}>
-                    {dream.nightmare.rewrittenEnding}
-                  </Text>
-                </View>
-              ) : null}
-              {dream.nightmare?.rescriptStatus ? (
-                <InfoRow
-                  label={practiceCopy.nightmareRewriteStatusLabel}
-                  value={
-                    nightmareRescriptLabels[dream.nightmare.rescriptStatus] ??
-                    dream.nightmare.rescriptStatus
-                  }
-                />
-              ) : null}
-            </>
-          ) : (
-            <Text style={styles.supportText}>
-              {practiceCopy.nightmareGroundingBody}
-            </Text>
-          )}
-        </View>
+        <DreamNightmareSection
+          dream={dream}
+          copy={copy}
+          styles={styles}
+          practiceCopy={practiceCopy}
+          nightmareAftereffectLabels={nightmareAftereffectLabels}
+          nightmareGroundingLabels={nightmareGroundingLabels}
+          nightmareRescriptLabels={nightmareRescriptLabels}
+          onOpenDreamPractice={onOpenDreamPractice}
+          onEditDream={onEditDream}
+        />
 
         <View style={styles.sheetDivider} />
         <View style={styles.sheetSection}>

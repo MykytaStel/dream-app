@@ -16,10 +16,11 @@
  * budget on a real device. A stage that costs well under 1 ms here has room to
  * be several times slower and still not be the reason anything drops a frame.
  *
- * The thresholds below are ceilings that catch a change of complexity — an
- * accidental O(n²), a per-dream `JSON.parse`, a regex rebuilt inside a loop.
- * They are not targets, and they are loose enough that ordinary machine noise
- * cannot fail them.
+ * What is asserted is not a millisecond figure but the shape: that cost grows
+ * no worse than linearly, and that the archive stays far cheaper than the
+ * timeline at every size. Those are ratios, and a ratio survives a busy machine
+ * where an absolute ceiling does not — see the notes on the timer and on the
+ * frame budget below, both of which are scars from getting that wrong.
  */
 
 import {
@@ -64,13 +65,19 @@ function makeDreams(count: number): Dream[] {
 }
 
 /**
- * The fastest of repeated runs, after a warm-up that lets the JIT settle.
+ * The fastest of repeated runs, each run being a batch large enough to measure.
  *
- * The fastest rather than the median because this suite does not run alone:
- * jest runs seventy-odd suites across parallel workers, so every sample carries
- * however much of a core it happened to get. Interference can only ever make a
- * run slower, so the minimum is the closest estimate of what the code costs,
- * and the one least moved by what else the machine is doing.
+ * Two problems, one solution. This suite does not run alone — jest spreads
+ * seventy-odd suites across parallel workers — so every sample carries however
+ * much of a core it happened to get, and interference can only ever make a run
+ * slower. That is why the minimum is taken rather than the median.
+ *
+ * The minimum alone was not enough. The cheapest stage here costs about 0.06 ms,
+ * which is close enough to the cost of being descheduled that a single sample is
+ * mostly noise, and a ratio between two such samples swings enough to fail a
+ * comparison that is really 10:1. So each timed region repeats the work until it
+ * is comfortably longer than that noise, and the per-run cost comes out of the
+ * division.
  *
  * `process.hrtime` rather than `performance.now`: under this jest environment
  * the latter is quantized to whole milliseconds, which reported every stage
@@ -78,19 +85,31 @@ function makeDreams(count: number): Dream[] {
  * integer. Nanoseconds are the only resolution that can tell "fast" apart from
  * "not measured".
  */
-function fastestMs(run: () => unknown, iterations = 9): number {
+const MIN_BATCH_MS = 4;
+const MAX_BATCH = 512;
+
+function elapsedMs(run: () => unknown, times: number): number {
+  const startedAt = process.hrtime.bigint();
+  for (let i = 0; i < times; i += 1) {
+    run();
+  }
+  return Number(process.hrtime.bigint() - startedAt) / 1e6;
+}
+
+function fastestMs(run: () => unknown, iterations = 7): number {
   for (let i = 0; i < 3; i += 1) {
     run();
   }
 
+  // Grow the batch until one timed region is long enough to be worth timing.
+  let batch = 1;
+  while (batch < MAX_BATCH && elapsedMs(run, batch) < MIN_BATCH_MS) {
+    batch *= 2;
+  }
+
   let fastest = Infinity;
   for (let i = 0; i < iterations; i += 1) {
-    const startedAt = process.hrtime.bigint();
-    run();
-    fastest = Math.min(
-      fastest,
-      Number(process.hrtime.bigint() - startedAt) / 1e6,
-    );
+    fastest = Math.min(fastest, elapsedMs(run, batch) / batch);
   }
 
   return fastest;

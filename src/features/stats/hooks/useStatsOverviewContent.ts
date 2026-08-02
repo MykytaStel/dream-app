@@ -123,6 +123,9 @@ function formatInsightLatestValue(
   );
 }
 
+/** One shared empty array, so the memos above keep a stable dependency. */
+const NO_DREAMS: Dream[] = [];
+
 export function useStatsOverviewContent(args: {
   locale: AppLocale;
   copy: StatsCopy;
@@ -164,103 +167,51 @@ export function useStatsOverviewContent(args: {
     () => (isOverviewMode ? getPreviousRangeDreams(dreams, selectedRange) : []),
     [dreams, isOverviewMode, selectedRange],
   );
+
+  /**
+   * Nothing to measure, outside overview mode.
+   *
+   * Each statistic below used to carry its own hand-written empty record for
+   * this case — the same nine-field nightmare object twice, the same five-field
+   * summary twice — which is a copy of what the model already returns for an
+   * empty array, kept in step by hand and compared by nothing. Measuring no
+   * dreams costs nothing and cannot drift.
+   *
+   * A module constant rather than a fresh `[]`, so the memos below see a stable
+   * reference and do not recompute on every render.
+   */
+  const measuredDreams = isOverviewMode ? scopedDreams : NO_DREAMS;
+  const measuredPreviousDreams = isOverviewMode
+    ? previousScopedDreams
+    : NO_DREAMS;
+
   const scopedSummary = React.useMemo(
-    () =>
-      isOverviewMode
-        ? summarizeScopedDreams(scopedDreams)
-        : {
-            totalWords: 0,
-            voiceNotes: 0,
-            transcribedDreams: 0,
-            taggedEntries: 0,
-            moodEntries: 0,
-          },
-    [isOverviewMode, scopedDreams],
+    () => summarizeScopedDreams(measuredDreams),
+    [measuredDreams],
   );
   const previousScopedSummary = React.useMemo(
-    () =>
-      isOverviewMode
-        ? summarizeScopedDreams(previousScopedDreams)
-        : {
-            totalWords: 0,
-            voiceNotes: 0,
-            transcribedDreams: 0,
-            taggedEntries: 0,
-            moodEntries: 0,
-          },
-    [isOverviewMode, previousScopedDreams],
+    () => summarizeScopedDreams(measuredPreviousDreams),
+    [measuredPreviousDreams],
   );
   const scopedNightmareStats = React.useMemo(
-    () =>
-      isOverviewMode
-        ? getNightmareStats(scopedDreams)
-        : {
-            totalDreams: 0,
-            nightmareCount: 0,
-            taggedCount: 0,
-            derivedCount: 0,
-            recurringCount: 0,
-            highDistressCount: 0,
-            rescriptedCount: 0,
-            rate: undefined,
-            latestNightmareDream: null,
-          },
-    [isOverviewMode, scopedDreams],
+    () => getNightmareStats(measuredDreams),
+    [measuredDreams],
   );
   const previousScopedNightmareStats = React.useMemo(
-    () =>
-      isOverviewMode
-        ? getNightmareStats(previousScopedDreams)
-        : {
-            totalDreams: 0,
-            nightmareCount: 0,
-            taggedCount: 0,
-            derivedCount: 0,
-            recurringCount: 0,
-            highDistressCount: 0,
-            rescriptedCount: 0,
-            rate: undefined,
-            latestNightmareDream: null,
-          },
-    [isOverviewMode, previousScopedDreams],
+    () => getNightmareStats(measuredPreviousDreams),
+    [measuredPreviousDreams],
   );
   const scopedLucidStats = React.useMemo(
-    () =>
-      isOverviewMode
-        ? getLucidDreamStats(scopedDreams)
-        : {
-            totalDreams: 0,
-            lucidCount: 0,
-            rate: undefined,
-            latestLucidDream: null,
-          },
-    [isOverviewMode, scopedDreams],
+    () => getLucidDreamStats(measuredDreams),
+    [measuredDreams],
   );
   const previousScopedLucidStats = React.useMemo(
-    () =>
-      isOverviewMode
-        ? getLucidDreamStats(previousScopedDreams)
-        : {
-            totalDreams: 0,
-            lucidCount: 0,
-            rate: undefined,
-            latestLucidDream: null,
-          },
-    [isOverviewMode, previousScopedDreams],
+    () => getLucidDreamStats(measuredPreviousDreams),
+    [measuredPreviousDreams],
   );
   const scopedLucidPracticeStats = React.useMemo(
-    () =>
-      isOverviewMode
-        ? getLucidPracticeStats(scopedDreams)
-        : {
-            totalDreams: 0,
-            lucidCount: 0,
-            awareCount: 0,
-            controlledCount: 0,
-            byTechnique: [],
-            topDreamSigns: [],
-          },
-    [isOverviewMode, scopedDreams],
+    () => getLucidPracticeStats(measuredDreams),
+    [measuredDreams],
   );
   const overallLastSevenDays = React.useMemo(
     () => (isOverviewMode ? getEntriesLastSevenDays(dreams) : 0),

@@ -1,4 +1,6 @@
 import React from 'react';
+import { usePracticeMetrics } from './usePracticeMetrics';
+import { useSavedShelves } from './useSavedShelves';
 import { type AppLocale } from '../../../i18n/types';
 import { type getStatsCopy } from '../../../constants/copy/stats';
 import { type Dream, type Mood } from '../../dreams/model/dream';
@@ -24,11 +26,8 @@ import {
   getDreamAchievementSummary,
   getDreamAchievements,
 } from '../model/achievements';
-import { buildSavedDreamThreadShelfItems } from '../model/dreamThread';
 import {
-  buildSavedMonthlyReviewItems,
   buildRecentActivityBars,
-  formatCoverageValue,
   formatDreamCountLabel,
   formatEntryCountLabel,
   getAchievementContent,
@@ -46,82 +45,13 @@ import {
 } from '../model/emotionalTrends';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
 import { type DreamFingerprintFacet } from '../components/DreamFingerprintCard';
-import {
-  buildReviewWorkspaceImportantDreamItems,
-  buildReviewWorkspaceSavedSetItems,
-} from '../model/reviewWorkspace';
+import {} from '../model/reviewWorkspace';
 import {
   buildWeeklyPatternCards,
   type WeeklyPatternCard,
 } from '../model/weeklyPatternCards';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
-
-function formatNightmareCadence(
-  nightmareCount: number,
-  totalDreams: number,
-  copy: StatsCopy,
-) {
-  if (!nightmareCount || !totalDreams) {
-    return copy.nightmareFrequencyShareEmptyHint;
-  }
-
-  const everyDreamCount = Math.max(1, Math.round(totalDreams / nightmareCount));
-  return `${copy.nightmareFrequencyShareHintPrefix}${everyDreamCount}${
-    copy.nightmareFrequencyShareHintSuffix
-  }`;
-}
-
-function formatNightmareLatestValue(
-  timestamp: number | undefined,
-  locale: AppLocale,
-  copy: StatsCopy,
-) {
-  if (typeof timestamp !== 'number') {
-    return copy.nightmareFrequencyLatestEmptyValue;
-  }
-
-  return new Date(timestamp).toLocaleDateString(
-    locale === 'uk' ? 'uk-UA' : 'en-US',
-    {
-      month: 'short',
-      day: 'numeric',
-    },
-  );
-}
-
-function formatLucidCadence(
-  lucidCount: number,
-  totalDreams: number,
-  copy: StatsCopy,
-) {
-  if (!lucidCount || !totalDreams) {
-    return copy.lucidFrequencyShareEmptyHint;
-  }
-
-  const everyDreamCount = Math.max(1, Math.round(totalDreams / lucidCount));
-  return `${copy.lucidFrequencyShareHintPrefix}${everyDreamCount}${
-    copy.lucidFrequencyShareHintSuffix
-  }`;
-}
-
-function formatInsightLatestValue(
-  timestamp: number | undefined,
-  locale: AppLocale,
-  emptyValue: string,
-) {
-  if (typeof timestamp !== 'number') {
-    return emptyValue;
-  }
-
-  return new Date(timestamp).toLocaleDateString(
-    locale === 'uk' ? 'uk-UA' : 'en-US',
-    {
-      month: 'short',
-      day: 'numeric',
-    },
-  );
-}
 
 /** One shared empty array, so the memos above keep a stable dependency. */
 const NO_DREAMS: Dream[] = [];
@@ -362,136 +292,13 @@ export function useStatsOverviewContent(args: {
       scopedSummary.transcribedDreams,
     ],
   );
-  const lucidMetrics = React.useMemo(
-    () => [
-      {
-        label: copy.lucidFrequencyCountLabel,
-        value: formatCoverageValue(
-          scopedLucidStats.lucidCount,
-          scopedLucidStats.totalDreams,
-        ),
-        hint:
-          scopedLucidStats.lucidCount > 0
-            ? copy.lucidFrequencyCountHint
-            : copy.lucidFrequencyCountEmptyHint,
-      },
-      {
-        label: copy.lucidFrequencyShareLabel,
-        value: `${scopedLucidStats.rate ?? 0}%`,
-        hint: formatLucidCadence(
-          scopedLucidStats.lucidCount,
-          scopedLucidStats.totalDreams,
-          copy,
-        ),
-      },
-      {
-        label: copy.lucidFrequencyLatestLabel,
-        value: formatInsightLatestValue(
-          scopedLucidStats.latestLucidDream
-            ? getDreamDate(scopedLucidStats.latestLucidDream).getTime()
-            : undefined,
-          locale,
-          copy.lucidFrequencyLatestEmptyValue,
-        ),
-        hint: scopedLucidStats.latestLucidDream
-          ? copy.lucidFrequencyLatestHint
-          : copy.lucidFrequencyLatestEmptyHint,
-      },
-      {
-        label: copy.lucidAwareLabel,
-        value: String(scopedLucidPracticeStats.awareCount),
-        hint: copy.lucidFrequencyCountHint,
-      },
-      {
-        label: copy.lucidControlledLabel,
-        value: String(scopedLucidPracticeStats.controlledCount),
-        hint: copy.lucidFrequencyCountHint,
-      },
-      {
-        label: copy.lucidTopTechniqueLabel,
-        value:
-          scopedLucidPracticeStats.byTechnique[0]?.technique ??
-          copy.lucidTechniqueEmptyValue,
-        hint: scopedLucidPracticeStats.byTechnique[0]?.count
-          ? formatDreamCountLabel(
-              scopedLucidPracticeStats.byTechnique[0].count,
-              locale,
-            )
-          : copy.lucidFrequencyCountEmptyHint,
-      },
-      {
-        label: copy.lucidDreamSignsLabel,
-        value:
-          scopedLucidPracticeStats.topDreamSigns[0]?.sign ??
-          copy.lucidDreamSignsEmptyValue,
-        hint: scopedLucidPracticeStats.topDreamSigns[0]?.count
-          ? formatEntryCountLabel(
-              scopedLucidPracticeStats.topDreamSigns[0].count,
-              locale,
-            )
-          : copy.lucidFrequencyCountEmptyHint,
-      },
-    ],
-    [copy, locale, scopedLucidPracticeStats, scopedLucidStats],
-  );
-  const nightmareMetrics = React.useMemo(
-    () => [
-      {
-        label: copy.nightmareFrequencyCountLabel,
-        value: formatCoverageValue(
-          scopedNightmareStats.nightmareCount,
-          scopedNightmareStats.totalDreams,
-        ),
-        hint:
-          scopedNightmareStats.nightmareCount > 0
-            ? copy.nightmareFrequencyCountHint
-            : copy.nightmareFrequencyCountEmptyHint,
-      },
-      {
-        label: copy.nightmareFrequencyShareLabel,
-        value: `${scopedNightmareStats.rate ?? 0}%`,
-        hint: formatNightmareCadence(
-          scopedNightmareStats.nightmareCount,
-          scopedNightmareStats.totalDreams,
-          copy,
-        ),
-      },
-      {
-        label: copy.nightmareFrequencyLatestLabel,
-        value: formatNightmareLatestValue(
-          scopedNightmareStats.latestNightmareDream
-            ? getDreamDate(scopedNightmareStats.latestNightmareDream).getTime()
-            : undefined,
-          locale,
-          copy,
-        ),
-        hint: scopedNightmareStats.latestNightmareDream
-          ? copy.nightmareFrequencyLatestHint
-          : copy.nightmareFrequencyLatestEmptyHint,
-      },
-      {
-        label: copy.nightmareRecurringLabel,
-        value: String(scopedNightmareStats.recurringCount),
-        hint: copy.nightmareFrequencyCountHint,
-      },
-      {
-        label: copy.nightmareHighDistressLabel,
-        value: String(scopedNightmareStats.highDistressCount),
-        hint: copy.nightmareFrequencyCountHint,
-      },
-      {
-        label: copy.nightmareRescriptedLabel,
-        value: String(scopedNightmareStats.rescriptedCount),
-        hint: copy.nightmareFrequencyCountHint,
-      },
-      {
-        label: copy.nightmareDerivedLabel,
-        value: String(scopedNightmareStats.derivedCount),
-        hint: copy.nightmareDerivedHint,
-      },
-    ],
-    [copy, locale, scopedNightmareStats],
-  );
+  const { lucidMetrics, nightmareMetrics } = usePracticeMetrics({
+    copy,
+    locale,
+    scopedLucidStats,
+    scopedLucidPracticeStats,
+    scopedNightmareStats,
+  });
   const lucidHistoryItems = React.useMemo(
     () =>
       !isOverviewMode
@@ -772,63 +579,20 @@ export function useStatsOverviewContent(args: {
         : getMemoryWorkQueue(scopedDreams, copy, analysisSettings),
     [analysisSettings, copy, isOverviewMode, scopedDreams],
   );
-  const savedMonthItems = React.useMemo(
-    () =>
-      !isOverviewMode
-        ? []
-        : buildSavedMonthlyReviewItems({
-            savedMonthKeys: savedMonths.map(item => item.monthKey),
-            dreams,
-            locale,
-            copy,
-            wakeEmotionLabels,
-          }),
-    [copy, dreams, isOverviewMode, locale, savedMonths, wakeEmotionLabels],
-  );
-  const savedOverviewThreadItems = React.useMemo(
-    () =>
-      !isOverviewMode
-        ? []
-        : buildSavedDreamThreadShelfItems({
-            records: savedThreadRecords,
-            dreams,
-            statsCopy: copy,
-          }),
-    [copy, dreams, isOverviewMode, savedThreadRecords],
-  );
-  const importantDreamItems = React.useMemo(
-    () =>
-      !isOverviewMode
-        ? []
-        : buildReviewWorkspaceImportantDreamItems({
-            dreams,
-            locale,
-            copy,
-          }),
-    [copy, dreams, isOverviewMode, locale],
-  );
-  const savedSetItems = React.useMemo(
-    () =>
-      !isOverviewMode
-        ? []
-        : buildReviewWorkspaceSavedSetItems({
-            savedMonths,
-            savedThreads: savedThreadRecords,
-            dreams,
-            locale,
-            copy,
-            wakeEmotionLabels,
-          }),
-    [
-      copy,
-      dreams,
-      isOverviewMode,
-      locale,
-      savedMonths,
-      savedThreadRecords,
-      wakeEmotionLabels,
-    ],
-  );
+  const {
+    savedMonthItems,
+    savedOverviewThreadItems,
+    importantDreamItems,
+    savedSetItems,
+  } = useSavedShelves({
+    copy,
+    locale,
+    dreams,
+    savedMonths,
+    savedThreadRecords,
+    wakeEmotionLabels,
+    isOverviewMode,
+  });
   const highlightedAchievementTitle = achievementSummary.highlightedId
     ? getAchievementContent(achievementSummary.highlightedId, copy).title
     : null;

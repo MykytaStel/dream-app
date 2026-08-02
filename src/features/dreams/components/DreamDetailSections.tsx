@@ -26,16 +26,9 @@ import {
 } from '../model/dreamDetailPresentation';
 import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionService';
 import type { DreamDetailScreenStyles } from '../screens/DreamDetailScreen.styles';
-import { getDuration, play, stop } from '../services/audioService';
+import { formatPlaybackTime, useAudioPlayback } from './audio/useAudioPlayback';
 
 const detailLayoutTransition = LinearTransition.duration(160);
-
-function formatPlaybackTime(ms: number): string {
-  const totalSec = Math.floor(ms / 1000);
-  const m = Math.floor(totalSec / 60);
-  const s = totalSec % 60;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-}
 
 type AudioPlayerWidgetProps = {
   uri: string;
@@ -53,80 +46,21 @@ function AudioPlayerWidget({
   pauseLabel,
 }: AudioPlayerWidgetProps) {
   const theme = useTheme<Theme>();
-  const [isPlaying, setIsPlaying] = React.useState(false);
-  const [positionMs, setPositionMs] = React.useState(0);
-  const [durationMs, setDurationMs] = React.useState(0);
-  const [playError, setPlayError] = React.useState<string | null>(null);
-  const isBusyRef = React.useRef(false);
+  const { isPlaying, positionMs, durationMs, error, toggle, reset } =
+    useAudioPlayback(uri);
 
-  // Read from the file rather than waited for — the same fix as the composer's
-  // player, which had the same bug: the length arrived only with the first
-  // progress event, so a saved recording read `--:--` until it had been played
-  // through once.
-  React.useEffect(() => {
-    let cancelled = false;
-
-    getDuration(uri).then(ms => {
-      if (!cancelled && ms > 0) {
-        setDurationMs(ms);
-      }
-    });
-
-    return () => {
-      cancelled = true;
-    };
-  }, [uri]);
-
-  useFocusEffect(
-    React.useCallback(() => {
-      return () => {
-        stop().catch(() => {});
-        setIsPlaying(false);
-        setPositionMs(0);
-      };
-    }, []),
-  );
+  // Stops when the screen goes away rather than only when it unmounts: a stack
+  // screen stays mounted underneath the one pushed on top of it, and a
+  // recording playing from a screen the user has navigated past is a small
+  // horror of its own.
+  useFocusEffect(React.useCallback(() => reset, [reset]));
 
   const onToggle = React.useCallback(async () => {
-    if (isBusyRef.current) {
-      return;
+    const message = await toggle();
+    if (message) {
+      Alert.alert(playbackErrorTitle, message);
     }
-    isBusyRef.current = true;
-    try {
-      if (isPlaying) {
-        await stop();
-        setIsPlaying(false);
-        setPositionMs(0);
-        return;
-      }
-
-      setPlayError(null);
-      setPositionMs(0);
-      await play(uri, {
-        onFinished: () => {
-          setIsPlaying(false);
-          setPositionMs(0);
-        },
-        onProgress: (pos, dur) => {
-          setPositionMs(pos);
-          // A container without a stored duration has none to read up front,
-          // and the player knows by the time it is running.
-          if (dur > 0) {
-            setDurationMs(dur);
-          }
-        },
-      });
-      setIsPlaying(true);
-    } catch (e) {
-      setIsPlaying(false);
-      setPositionMs(0);
-      const msg = e instanceof Error ? e.message : String(e);
-      setPlayError(msg);
-      Alert.alert(playbackErrorTitle, msg);
-    } finally {
-      isBusyRef.current = false;
-    }
-  }, [isPlaying, playbackErrorTitle, uri]);
+  }, [playbackErrorTitle, toggle]);
 
   const progressPercent =
     durationMs > 0 ? Math.min(100, (positionMs / durationMs) * 100) : 0;
@@ -180,9 +114,7 @@ function AudioPlayerWidget({
           </View>
         </View>
       </View>
-      {playError ? (
-        <Text style={styles.statusErrorText}>{playError}</Text>
-      ) : null}
+      {error ? <Text style={styles.statusErrorText}>{error}</Text> : null}
     </View>
   );
 }

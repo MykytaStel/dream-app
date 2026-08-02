@@ -1,10 +1,7 @@
 import React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Card } from '../../../../components/ui/Card';
-import { FormField } from '../../../../components/ui/FormField';
-import { SegmentedControl } from '../../../../components/ui/SegmentedControl';
 import { SectionHeader } from '../../../../components/ui/SectionHeader';
-import { TagChip } from '../../../../components/ui/TagChip';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { type HomeSearchPreset } from '../../services/homeSearchPresetService';
@@ -18,12 +15,13 @@ import {
   type HomeLayoutSection,
 } from '../../model/homeLayout';
 import { type PatternDetailKind } from '../../../../app/navigation/routes';
+import { HomeControlCard } from './sections/HomeControlCard';
+import { HomeSearchCard } from './sections/HomeSearchCard';
 import { HomeShortcutSection } from './sections/HomeShortcutSection';
 import { HomeSpotlightSection } from './sections/HomeSpotlightSection';
 import { HomeWeeklyPatternsSection } from './sections/HomeWeeklyPatternsSection';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 import { type HomeFilterChip, type HomeOption } from './homeTypes';
-import { HomeSearchPresetChip } from './HomeSearchPresetChip';
 import { type WeeklyPatternCard } from '../../../stats/model/weeklyPatternCards';
 
 type HomeListHeaderProps = {
@@ -131,34 +129,6 @@ export const HomeListHeader = React.memo(function HomeListHeader({
     !hasSearchQuery &&
     !hasNonSearchRefinements &&
     timelineFilters.sortOrder === 'newest';
-  const orderedSearchPresets = React.useMemo(() => {
-    if (!activeSearchPresetId) {
-      return savedSearchPresets;
-    }
-
-    return [...savedSearchPresets].sort((a, b) => {
-      if (a.id === activeSearchPresetId) {
-        return -1;
-      }
-
-      if (b.id === activeSearchPresetId) {
-        return 1;
-      }
-
-      return b.createdAt - a.createdAt;
-    });
-  }, [activeSearchPresetId, savedSearchPresets]);
-  const hasSavedSearchSection = Boolean(
-    savedSearchPresets.length || canSaveSearchPreset,
-  );
-  const sortControlOptions = React.useMemo(
-    () =>
-      sortOptions.map(option => ({ value: option.key, label: option.label })),
-    [sortOptions],
-  );
-  const tagsShortcutLabel = timelineFilters.tags.length
-    ? `${copy.homeTagFilterLabel} (${timelineFilters.tags.length})`
-    : copy.homeTagFilterLabel;
   /**
    * Which section goes where, and which are switched off.
    *
@@ -247,270 +217,35 @@ export const HomeListHeader = React.memo(function HomeListHeader({
         </View>
       </View>
 
-      <Card style={styles.searchCard}>
-        <View style={styles.searchCardHeaderRow}>
-          <Text style={styles.searchPresetLabel}>{copy.homeSearchLabel}</Text>
-          {hasSearchQuery ? (
-            <Pressable
-              accessibilityRole="button"
-              style={styles.inlineActionButton}
-              onPress={onClearSearch}
-            >
-              <Text style={styles.inlineActionButtonText}>
-                {copy.homeClearSearch}
-              </Text>
-            </Pressable>
-          ) : null}
-        </View>
-        <View style={styles.searchBarRow}>
-          <FormField
-            placeholder={copy.homeSearchPlaceholder}
-            value={timelineFilters.searchQuery}
-            onChangeText={value =>
-              updateTimelineFilters(current => ({
-                ...current,
-                searchQuery: value,
-              }))
-            }
-            autoCapitalize="none"
-            autoCorrect={false}
-            helperText={
-              isSearchPending || isFilterMutationPending
-                ? copy.timelineLoadingDescription
-                : undefined
-            }
-            containerStyle={styles.searchFieldContainer}
-            inputStyle={styles.searchFieldInput}
-          />
-        </View>
+      <HomeSearchCard
+        copy={copy}
+        styles={styles}
+        timelineFilters={timelineFilters}
+        isSearchPending={isSearchPending}
+        hasSearchQuery={hasSearchQuery}
+        isFilterMutationPending={isFilterMutationPending}
+        savedSearchPresets={savedSearchPresets}
+        activeSearchPresetId={activeSearchPresetId}
+        canSaveSearchPreset={canSaveSearchPreset}
+        onClearSearch={onClearSearch}
+        onSaveSearchPreset={onSaveSearchPreset}
+        onApplySearchPreset={onApplySearchPreset}
+        onDeleteSearchPreset={onDeleteSearchPreset}
+        updateTimelineFilters={updateTimelineFilters}
+      />
 
-        {hasSavedSearchSection ? (
-          <>
-            <View style={styles.searchPresetHeaderRow}>
-              <Text style={styles.searchPresetLabel}>
-                {copy.homeSavedSearchesLabel}
-              </Text>
-              {canSaveSearchPreset ? (
-                <Pressable
-                  accessibilityRole="button"
-                  style={styles.searchPresetSaveButton}
-                  onPress={onSaveSearchPreset}
-                >
-                  <Text style={styles.searchPresetSaveButtonText}>
-                    {copy.homeSaveSearchPreset}
-                  </Text>
-                </Pressable>
-              ) : null}
-            </View>
-            {orderedSearchPresets.length ? (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.searchPresetRow}
-              >
-                {orderedSearchPresets.map(preset => (
-                  <HomeSearchPresetChip
-                    key={preset.id}
-                    label={preset.label}
-                    active={activeSearchPresetId === preset.id}
-                    removeLabel={copy.homeSearchPresetRemove}
-                    onPress={() => onApplySearchPreset(preset)}
-                    onRemove={() => onDeleteSearchPreset(preset)}
-                  />
-                ))}
-              </ScrollView>
-            ) : null}
-          </>
-        ) : null}
-      </Card>
-
-      <Card style={styles.controlCard}>
-        <View style={styles.controlSectionHeader}>
-          <Text style={styles.searchPresetLabel}>
-            {copy.homeQuickFiltersLabel}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            style={styles.inlineActionButton}
-            onPress={onOpenFilterSheet}
-          >
-            <Text style={styles.inlineActionButtonText}>
-              {copy.homeAllFilters}
-            </Text>
-          </Pressable>
-        </View>
-        <View style={styles.primaryActionsRow}>
-          <Pressable
-            accessibilityRole="button"
-            style={[
-              styles.inlineActionButton,
-              timelineFilters.special === 'lucid'
-                ? styles.inlineActionButtonActive
-                : null,
-            ]}
-            onPress={() =>
-              updateTimelineFilters(current => ({
-                ...current,
-                special: current.special === 'lucid' ? 'all' : 'lucid',
-              }))
-            }
-          >
-            <Text
-              style={[
-                styles.inlineActionButtonText,
-                timelineFilters.special === 'lucid'
-                  ? styles.inlineActionButtonTextActive
-                  : null,
-              ]}
-            >
-              {lucidQuickFilterLabel ?? 'Lucid'}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            style={[
-              styles.inlineActionButton,
-              timelineFilters.special === 'nightmare'
-                ? styles.inlineActionButtonActive
-                : null,
-            ]}
-            onPress={() =>
-              updateTimelineFilters(current => ({
-                ...current,
-                special: current.special === 'nightmare' ? 'all' : 'nightmare',
-              }))
-            }
-          >
-            <Text
-              style={[
-                styles.inlineActionButtonText,
-                timelineFilters.special === 'nightmare'
-                  ? styles.inlineActionButtonTextActive
-                  : null,
-              ]}
-            >
-              {nightmareQuickFilterLabel ?? 'Nightmare'}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            style={[
-              styles.inlineActionButton,
-              timelineFilters.starredOnly
-                ? styles.inlineActionButtonActive
-                : null,
-            ]}
-            onPress={() =>
-              updateTimelineFilters(current => ({
-                ...current,
-                starredOnly: !current.starredOnly,
-              }))
-            }
-          >
-            <Text
-              style={[
-                styles.inlineActionButtonText,
-                timelineFilters.starredOnly
-                  ? styles.inlineActionButtonTextActive
-                  : null,
-              ]}
-            >
-              {copy.homeFilterStarred}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            style={[
-              styles.inlineActionButton,
-              timelineFilters.entryType === 'audio'
-                ? styles.inlineActionButtonActive
-                : null,
-            ]}
-            onPress={() =>
-              updateTimelineFilters(current => ({
-                ...current,
-                entryType: current.entryType === 'audio' ? 'all' : 'audio',
-              }))
-            }
-          >
-            <Text
-              style={[
-                styles.inlineActionButtonText,
-                timelineFilters.entryType === 'audio'
-                  ? styles.inlineActionButtonTextActive
-                  : null,
-              ]}
-            >
-              {copy.homeTypeFilterAudio}
-            </Text>
-          </Pressable>
-
-          <Pressable
-            accessibilityRole="button"
-            style={[
-              styles.inlineActionButton,
-              timelineFilters.tags.length
-                ? styles.inlineActionButtonActive
-                : null,
-            ]}
-            onPress={onOpenFilterSheet}
-          >
-            <Text
-              style={[
-                styles.inlineActionButtonText,
-                timelineFilters.tags.length
-                  ? styles.inlineActionButtonTextActive
-                  : null,
-              ]}
-            >
-              {tagsShortcutLabel}
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.controlSectionDivider} />
-
-        <View style={styles.sortControlBlock}>
-          <Text style={styles.searchPresetLabel}>
-            {copy.homeSortFilterLabel}
-          </Text>
-        </View>
-        <SegmentedControl
-          options={sortControlOptions}
-          selectedValue={timelineFilters.sortOrder}
-          onChange={(value: HomeSortOrder) =>
-            updateTimelineFilters(current => ({
-              ...current,
-              sortOrder: value,
-            }))
-          }
-          columns={2}
-          minWidth={120}
-        />
-
-        {activeFilterChips.length ? (
-          <>
-            <View style={styles.controlSectionDivider} />
-            <View style={styles.activeFiltersRow}>
-              {activeFilterChips.map(chip => (
-                <TagChip key={chip.key} label={chip.label} />
-              ))}
-              <Pressable
-                accessibilityRole="button"
-                style={styles.clearFiltersButton}
-                onPress={onClearFilters}
-              >
-                <Text style={styles.clearFiltersButtonText}>
-                  {copy.homeClearFilters}
-                </Text>
-              </Pressable>
-            </View>
-          </>
-        ) : null}
-      </Card>
+      <HomeControlCard
+        copy={copy}
+        styles={styles}
+        timelineFilters={timelineFilters}
+        activeFilterChips={activeFilterChips}
+        sortOptions={sortOptions}
+        lucidQuickFilterLabel={lucidQuickFilterLabel}
+        nightmareQuickFilterLabel={nightmareQuickFilterLabel}
+        onOpenFilterSheet={onOpenFilterSheet}
+        onClearFilters={onClearFilters}
+        updateTimelineFilters={updateTimelineFilters}
+      />
 
       {!archiveScopedCount ? (
         <Card style={styles.emptyCard}>

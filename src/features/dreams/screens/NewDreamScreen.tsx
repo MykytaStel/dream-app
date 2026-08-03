@@ -12,6 +12,7 @@ import {
 } from '../../../app/navigation/routes';
 import type { Dream } from '../model/dream';
 import { DreamComposer } from '../components/DreamComposer';
+import { CaptureSavedSheet } from '../components/CaptureSavedSheet';
 import { listDreamListItems } from '../repository/dreamsRepository';
 import { getCurrentStreak } from '../model/dreamAnalytics';
 import {
@@ -82,7 +83,7 @@ export default function NewDreamScreen() {
   const [showWidgetPinToast, setShowWidgetPinToast] = React.useState(false);
   const [canPinNatively, setCanPinNatively] = React.useState(false);
   const [pendingSavedDream, setPendingSavedDream] = React.useState<{
-    dreamId: string;
+    dream: Dream;
     focusSection: DreamDetailFocusSection;
   } | null>(null);
   const [autoStartRecordingKey, setAutoStartRecordingKey] = React.useState<
@@ -104,23 +105,46 @@ export default function NewDreamScreen() {
       current === nextKey ? current : nextKey,
     );
   }, [route.params?.launchKey, shouldAutoStartRecording]);
-  React.useEffect(() => {
-    // Waits for both toasts, not just the streak one. The widget prompt used
-    // to be left out of this condition, so the screen navigated away the
-    // instant a dream was saved and the prompt rendered behind the user, on a
-    // tab they were no longer looking at — then sat there until they came back
-    // to write their next dream, where it read as an interruption.
-    if (!pendingSavedDream || streakToast || showWidgetPinToast) {
-      return;
-    }
+  /**
+   * Saving used to navigate on its own.
+   *
+   * The dream was written and the app moved to the detail screen, focused on
+   * a section, without being asked. At six in the morning that is the opposite
+   * of what a person wants to hear: they wanted "it is safe, go back to bed",
+   * and got a new screen with more to read.
+   *
+   * The sheet says the dream is saved and offers the three things someone
+   * might actually want next — add detail, write another, or nothing. Doing
+   * nothing is the default and costs one tap on the backdrop.
+   *
+   * It still waits for both toasts. The widget prompt used to be left out of
+   * that condition, so a prompt rendered behind the user on a tab they had
+   * already left.
+   */
+  const savedSheetVisible = Boolean(
+    pendingSavedDream && !streakToast && !showWidgetPinToast,
+  );
 
-    navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
-      dreamId: pendingSavedDream.dreamId,
-      justSaved: true,
-      focusSection: pendingSavedDream.focusSection,
-    });
+  const closeSavedSheet = React.useCallback(() => {
     setPendingSavedDream(null);
-  }, [navigation, pendingSavedDream, showWidgetPinToast, streakToast]);
+  }, []);
+
+  const openSavedDreamDetail = React.useCallback(
+    (focusSection?: DreamDetailFocusSection) => {
+      const saved = pendingSavedDream;
+      if (!saved) {
+        return;
+      }
+
+      setPendingSavedDream(null);
+      navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+        dreamId: saved.dream.id,
+        justSaved: true,
+        focusSection: focusSection ?? saved.focusSection,
+      });
+    },
+    [navigation, pendingSavedDream],
+  );
 
   const handleWidgetPinAction = React.useCallback(async () => {
     if (Platform.OS === 'android') {
@@ -165,7 +189,7 @@ export default function NewDreamScreen() {
         entryMode={entryMode}
         onSaved={dream => {
           setPendingSavedDream({
-            dreamId: dream.id,
+            dream,
             focusSection: getPostSaveFocusSection(dream),
           });
 
@@ -201,6 +225,14 @@ export default function NewDreamScreen() {
           }
         }}
         autoStartRecordingKey={autoStartRecordingKey}
+      />
+      <CaptureSavedSheet
+        visible={savedSheetVisible}
+        dream={pendingSavedDream?.dream ?? null}
+        prefersVoiceCapture={entryMode === 'voice'}
+        onClose={closeSavedSheet}
+        onCaptureAnother={closeSavedSheet}
+        onOpenDetail={openSavedDreamDetail}
       />
       {streakToast ? (
         <StreakMilestoneToast

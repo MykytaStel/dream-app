@@ -429,12 +429,25 @@ export function DreamComposer({
         </>
       )}
 
-      <DreamComposerRefineCard
-        styles={styles}
-        copy={copy}
-        isWakeMode={form.isWakeMode}
-        actions={refineActions}
-      />
+      {/*
+        Quick Capture: the five detail toggles are not on the way in.
+        Capturing a dream is text or voice, a date, an optional title and
+        Save — thirty to sixty seconds — and every switch offered before that
+        is a decision taken from someone with a fading dream and no reason to
+        care about tags yet. Detail is offered once the dream is safe, which
+        is the only point at which it is a free choice rather than a delay.
+
+        Editing keeps the card: by then there is nothing to lose and the whole
+        reason for opening the screen is usually one of these sections.
+      */}
+      {form.isEdit ? (
+        <DreamComposerRefineCard
+          styles={styles}
+          copy={copy}
+          isWakeMode={form.isWakeMode}
+          actions={refineActions}
+        />
+      ) : null}
 
       {form.showMetaSection && form.isWakeMode ? (
         <DreamComposerWakeMetaCard

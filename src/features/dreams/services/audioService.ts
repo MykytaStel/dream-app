@@ -64,6 +64,22 @@ export async function stopRecording(): Promise<string> {
   return normalizeUriForStorage(uri ?? '');
 }
 
+/**
+ * Notifies when the system ended a recording that was still in progress.
+ *
+ * Subscribe for as long as a recording is running. The uri is the audio as far
+ * as it got — empty when the partial file could not be kept, which is still
+ * worth hearing about, because the screen has to stop claiming it is recording
+ * either way.
+ */
+export function onRecordingInterrupted(listener: (uri: string) => void): {
+  remove: () => void;
+} {
+  return NativeAudioRecorder.onRecordingInterrupted(({ uri }) => {
+    listener(normalizeUriForStorage(uri));
+  });
+}
+
 type PlayCallbacks = {
   onFinished?: () => void;
   onProgress?: (positionMs: number, durationMs: number) => void;

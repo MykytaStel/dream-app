@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, Platform } from 'react-native';
+import { Alert, AppState, Platform } from 'react-native';
 import {
   Dream,
   DreamIntensity,
@@ -35,6 +35,7 @@ import { saveDream } from '../repository/dreamsRepository';
 import { logActionError } from '../../../app/errorReporting';
 import {
   cleanupOrphanedAudioFiles,
+  onRecordingInterrupted,
   startRecording,
   stopRecording,
 } from '../services/audioService';
@@ -194,9 +195,29 @@ export function useDreamComposerForm({
   const recordingIntervalRef = React.useRef<ReturnType<
     typeof setInterval
   > | null>(null);
+  /**
+   * When the current recording began, in wall-clock time.
+   *
+   * The elapsed seconds are derived from this rather than counted up by the
+   * interval, because a backgrounded app stops firing timers: a recording that
+   * survived a minute in the background used to come back reporting the
+   * handful of seconds the timer had managed to tick.
+   */
+  const recordingStartedAtRef = React.useRef<number | null>(null);
   const [audioUri, setAudioUri] = React.useState<string | undefined>(
     initialDream?.audioUri ?? initialDraft?.audioUri,
   );
+  /**
+   * The file a running recording is being written into.
+   *
+   * Held apart from `audioUri` so the composer does not offer a half-written
+   * file for playback, but still written into the draft — if the app is killed
+   * outright there is no event to react to, and this is the only thing that
+   * points at the audio afterwards.
+   */
+  const [pendingAudioUri, setPendingAudioUri] = React.useState<
+    string | undefined
+  >(undefined);
   const [mood, setMood] = React.useState<Mood | undefined>(
     initialDream?.mood ?? initialDraft?.mood,
   );
@@ -328,85 +349,128 @@ export function useDreamComposerForm({
   const saveDisabled = isBusy || recording || validationError !== null;
   const textWordCount = text.trim() ? text.trim().split(/\s+/).length : 0;
 
+  const draftPayload = React.useMemo(
+    () => ({
+      title,
+      text,
+      sleepDate,
+      // A recording still being written counts: the draft is what will point
+      // at the file if the app never gets a chance to finish the recording.
+      audioUri: audioUri ?? pendingAudioUri,
+      entryMode,
+      mood,
+      dreamIntensity,
+      lucidity,
+      wakeEmotions,
+      stressLevel,
+      preSleepEmotions,
+      alcoholTaken,
+      caffeineLate,
+      medications,
+      importantEvents,
+      healthNotes,
+      tags,
+      lucidTechnique,
+      dreamSigns,
+      lucidTrigger,
+      controlAreas,
+      stabilizationActions,
+      recallScore,
+      nightmareExplicit,
+      nightmareDistress,
+      nightmareRecurring,
+      nightmareRecurringKey,
+      nightmareWokeFromDream,
+      nightmareAftereffects,
+      nightmareGroundingUsed,
+      nightmareRewrittenEnding,
+      nightmareRescriptStatus,
+    }),
+    [
+      alcoholTaken,
+      audioUri,
+      pendingAudioUri,
+      caffeineLate,
+      dreamIntensity,
+      dreamSigns,
+      entryMode,
+      healthNotes,
+      importantEvents,
+      controlAreas,
+      lucidity,
+      lucidTechnique,
+      lucidTrigger,
+      medications,
+      mood,
+      nightmareAftereffects,
+      nightmareDistress,
+      nightmareExplicit,
+      nightmareGroundingUsed,
+      nightmareRecurring,
+      nightmareRecurringKey,
+      nightmareRewrittenEnding,
+      nightmareRescriptStatus,
+      nightmareWokeFromDream,
+      preSleepEmotions,
+      recallScore,
+      sleepDate,
+      stabilizationActions,
+      stressLevel,
+      tags,
+      text,
+      title,
+      wakeEmotions,
+    ],
+  );
+
+  /**
+   * Read by the listeners below, which need the newest draft without being
+   * torn down and rebuilt every keystroke to capture it.
+   */
+  const draftPayloadRef = React.useRef(draftPayload);
+  draftPayloadRef.current = draftPayload;
+
   React.useEffect(() => {
     if (mode !== 'create') {
       return;
     }
 
     const timeoutId = setTimeout(() => {
-      saveDreamDraft({
-        title,
-        text,
-        sleepDate,
-        audioUri,
-        entryMode,
-        mood,
-        dreamIntensity,
-        lucidity,
-        wakeEmotions,
-        stressLevel,
-        preSleepEmotions,
-        alcoholTaken,
-        caffeineLate,
-        medications,
-        importantEvents,
-        healthNotes,
-        tags,
-        lucidTechnique,
-        dreamSigns,
-        lucidTrigger,
-        controlAreas,
-        stabilizationActions,
-        recallScore,
-        nightmareExplicit,
-        nightmareDistress,
-        nightmareRecurring,
-        nightmareRecurringKey,
-        nightmareWokeFromDream,
-        nightmareAftereffects,
-        nightmareGroundingUsed,
-        nightmareRewrittenEnding,
-        nightmareRescriptStatus,
-      });
+      saveDreamDraft(draftPayloadRef.current);
     }, 400);
 
     return () => clearTimeout(timeoutId);
-  }, [
-    alcoholTaken,
-    audioUri,
-    caffeineLate,
-    dreamIntensity,
-    dreamSigns,
-    dreamSignsInput,
-    entryMode,
-    healthNotes,
-    importantEvents,
-    controlAreas,
-    lucidity,
-    lucidTechnique,
-    lucidTrigger,
-    medications,
-    mode,
-    mood,
-    nightmareAftereffects,
-    nightmareDistress,
-    nightmareExplicit,
-    nightmareGroundingUsed,
-    nightmareRecurring,
-    nightmareRecurringKey,
-    nightmareRewrittenEnding,
-    nightmareRescriptStatus,
-    nightmareWokeFromDream,
-    preSleepEmotions,
-    recallScore,
-    sleepDate,
-    stabilizationActions,
-    stressLevel,
-    tags,
-    text,
-    title,
-    wakeEmotions,
-  ]);
+  }, [draftPayload, mode]);
+
+  /**
+   * Writes the draft the moment the app leaves the foreground.
+   *
+   * The debounce above is what makes typing cheap, but it also means the last
+   * few hundred milliseconds of writing exist only in memory — and leaving the
+   * foreground is exactly when the system may never give this screen another
+   * turn. A call arriving mid-sentence should not cost the sentence.
+   */
+  React.useEffect(() => {
+    if (mode !== 'create') {
+      return;
+    }
+
+    const subscription = AppState.addEventListener('change', state => {
+      if (state === 'background' || state === 'inactive') {
+        saveDreamDraft(draftPayloadRef.current);
+      }
+    });
+
+    return () => subscription.remove();
+  }, [mode]);
+
+  const stopRecordingTimer = React.useCallback(() => {
+    if (recordingIntervalRef.current) {
+      clearInterval(recordingIntervalRef.current);
+      recordingIntervalRef.current = null;
+    }
+    recordingStartedAtRef.current = null;
+  }, []);
 
   const onToggleRecord = React.useCallback(async () => {
     setIsBusy(true);
@@ -415,30 +479,32 @@ export function useDreamComposerForm({
     try {
       if (!recording) {
         hapticImpactMedium();
-        await startRecording();
+        const startedUri = await startRecording();
+        setPendingAudioUri(startedUri || undefined);
         setRecording(true);
         setRecordingDuration(0);
+        recordingStartedAtRef.current = Date.now();
         recordingIntervalRef.current = setInterval(() => {
-          setRecordingDuration(d => d + 1);
+          const startedAt = recordingStartedAtRef.current;
+          if (startedAt === null) {
+            return;
+          }
+          setRecordingDuration(Math.floor((Date.now() - startedAt) / 1000));
         }, 1000);
         return;
       }
 
       hapticImpactMedium();
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-        recordingIntervalRef.current = null;
-      }
+      stopRecordingTimer();
       const uri = await stopRecording();
       setAudioUri(uri || undefined);
+      setPendingAudioUri(undefined);
       setRecording(false);
       setRecordingDuration(0);
     } catch (error) {
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-        recordingIntervalRef.current = null;
-      }
+      stopRecordingTimer();
       setRecordingDuration(0);
+      setPendingAudioUri(undefined);
       setRecording(false);
       const code = (error as { code?: string })?.code;
       let message: string;
@@ -465,6 +531,44 @@ export function useDreamComposerForm({
     copy.audioPermissionUnavailable,
     copy.audioSimulatorHint,
     recording,
+    stopRecordingTimer,
+  ]);
+
+  /**
+   * The system ending a recording the person did not end.
+   *
+   * Subscribed only while recording, because that is the only time the event
+   * means anything. Whatever was captured before the interruption is adopted
+   * as the recording — it is a real answer to "what did I dream", just a
+   * shorter one than intended — and the message says so rather than leaving
+   * the person to wonder whether the app lost it.
+   */
+  React.useEffect(() => {
+    if (!recording) {
+      return;
+    }
+
+    const subscription = onRecordingInterrupted(uri => {
+      stopRecordingTimer();
+      setRecording(false);
+      setRecordingDuration(0);
+      setPendingAudioUri(undefined);
+
+      if (uri) {
+        setAudioUri(uri);
+      }
+
+      setLastActionError(
+        uri ? copy.audioInterruptedSaved : copy.audioInterruptedLost,
+      );
+    });
+
+    return () => subscription.remove();
+  }, [
+    copy.audioInterruptedLost,
+    copy.audioInterruptedSaved,
+    recording,
+    stopRecordingTimer,
   ]);
 
   React.useEffect(() => {

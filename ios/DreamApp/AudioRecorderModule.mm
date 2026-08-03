@@ -45,6 +45,10 @@ RCT_EXPORT_MODULE()
     _impl.onPlaybackFinished = ^{
       [weakSelf emitOnPlaybackFinished];
     };
+
+    _impl.onRecordingInterrupted = ^(NSString *uri) {
+      [weakSelf emitOnRecordingInterrupted:@{@"uri" : uri}];
+    };
   }
   return self;
 }

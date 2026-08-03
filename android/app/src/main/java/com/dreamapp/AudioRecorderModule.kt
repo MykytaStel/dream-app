@@ -1,10 +1,14 @@
 package com.dreamapp
 
 import android.content.Context
+import android.media.AudioAttributes
+import android.media.AudioFocusRequest
+import android.media.AudioManager
 import android.media.MediaMetadataRetriever
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.net.Uri
+import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -67,6 +71,103 @@ class AudioRecorderModule(
 
   init {
     reactContext.addLifecycleEventListener(this)
+  }
+
+  private val audioManager: AudioManager
+    get() =
+      reactApplicationContext.getSystemService(Context.AUDIO_SERVICE) as AudioManager
+
+  private var focusRequest: AudioFocusRequest? = null
+
+  /**
+   * Another app taking the audio hardware while we are still in the foreground.
+   *
+   * Both kinds of loss end the recording. Transient is the one a phone call
+   * produces, and although the name invites resuming afterwards, we do not:
+   * starting again on our own would record a room nobody had agreed to record
+   * twice. Ducking is ignored — it is a playback idea and means nothing to a
+   * microphone.
+   *
+   * The iOS counterpart is `handleSessionInterruption` in
+   * `AudioRecorderModule.swift`, which reports the same event for the same
+   * reason.
+   */
+  private val focusListener =
+    AudioManager.OnAudioFocusChangeListener { change ->
+      if (
+        change == AudioManager.AUDIOFOCUS_LOSS ||
+          change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT
+      ) {
+        finishInterruptedRecording()
+      }
+    }
+
+  /**
+   * Best effort: a denied request is not a reason to refuse to record.
+   *
+   * Asked for exclusively so whatever the person had playing pauses for the
+   * length of the recording rather than being captured along with them.
+   */
+  private fun requestAudioFocus() {
+    try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        val request =
+          AudioFocusRequest.Builder(AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE)
+            .setAudioAttributes(
+              AudioAttributes.Builder()
+                .setUsage(AudioAttributes.USAGE_MEDIA)
+                .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                .build()
+            )
+            .setOnAudioFocusChangeListener(focusListener)
+            .build()
+        focusRequest = request
+        audioManager.requestAudioFocus(request)
+      } else {
+        @Suppress("DEPRECATION")
+        audioManager.requestAudioFocus(
+          focusListener,
+          AudioManager.STREAM_MUSIC,
+          AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_EXCLUSIVE,
+        )
+      }
+    } catch (error: Exception) {
+      Log.e("AudioRecorderModule", "Audio focus request failed", error)
+    }
+  }
+
+  private fun abandonAudioFocus() {
+    try {
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        focusRequest?.let { audioManager.abandonAudioFocusRequest(it) }
+        focusRequest = null
+      } else {
+        @Suppress("DEPRECATION")
+        audioManager.abandonAudioFocus(focusListener)
+      }
+    } catch (error: Exception) {
+      Log.e("AudioRecorderModule", "Abandoning audio focus failed", error)
+    }
+  }
+
+  /**
+   * Ends a recording the person did not end, and says so.
+   *
+   * The stopping already happened here before this existed — `onHostPause` has
+   * always torn the recorder down, because Android does not let a backgrounded
+   * app hold the microphone. What it did not do was tell anyone: the finished
+   * file sat in the audio directory with nothing referring to it, and the
+   * composer went on drawing a timer for a recording that had ended.
+   */
+  private fun finishInterruptedRecording() {
+    if (!isRecording) {
+      return
+    }
+
+    val uri = stopRecordingInternal()
+    val payload = Arguments.createMap()
+    payload.putString("uri", uri ?: "")
+    emitOnRecordingInterrupted(payload)
   }
 
   private fun emitPlaybackProgress(positionMs: Double, durationMs: Double) {
@@ -200,6 +301,7 @@ class AudioRecorderModule(
       recorder.setOutputFile(outputFile.absolutePath)
 
       recorder.prepare()
+      requestAudioFocus()
       recorder.start()
 
       isRecording = true
@@ -239,6 +341,7 @@ class AudioRecorderModule(
       }
       mediaRecorder = null
       isRecording = false
+      abandonAudioFocus()
 
       if (outputFile == null || !outputFile.exists()) {
         promise.reject("record_stop_failed", "Recording file is missing after stop.")
@@ -326,15 +429,30 @@ class AudioRecorderModule(
     }
   }
 
-  private fun stopRecordingInternal() {
+  /**
+   * Stops a running recording and answers with the file it produced.
+   *
+   * Returns null when there was nothing recording, or when stopping failed
+   * before the container was closed — a file MediaRecorder never finished
+   * writing has no usable header and is not worth handing back.
+   *
+   * The return value is what lets an interruption keep the audio; this used to
+   * return nothing, so every caller that was not `stopRecording` dropped the
+   * recording on the floor.
+   */
+  private fun stopRecordingInternal(): String? {
     if (!isRecording || mediaRecorder == null) {
-      return
+      return null
     }
+
+    val outputFile = currentOutputFile
+    var stopped = false
 
     try {
       mediaRecorder?.apply {
         try {
           stop()
+          stopped = true
         } catch (error: RuntimeException) {
           Log.e("AudioRecorderModule", "Recorder stop (internal) failed", error)
         } finally {
@@ -346,7 +464,15 @@ class AudioRecorderModule(
     } finally {
       mediaRecorder = null
       isRecording = false
+      currentOutputFile = null
+      abandonAudioFocus()
     }
+
+    if (!stopped || outputFile == null || !outputFile.exists()) {
+      return null
+    }
+
+    return "file://${outputFile.absolutePath}"
   }
 
   private fun stopPlaybackInternal() {
@@ -384,6 +510,7 @@ class AudioRecorderModule(
     } finally {
       mediaRecorder = null
       isRecording = false
+      abandonAudioFocus()
     }
   }
 
@@ -402,8 +529,12 @@ class AudioRecorderModule(
     // no-op
   }
 
+  /**
+   * Backgrounding takes the microphone away, so a recording in progress ends
+   * here — and now reports itself, rather than disappearing quietly.
+   */
   override fun onHostPause() {
-    stopRecordingInternal()
+    finishInterruptedRecording()
     stopPlaybackInternal()
   }
 

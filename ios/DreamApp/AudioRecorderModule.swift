@@ -56,6 +56,7 @@ class AudioRecorderImpl: NSObject {
    */
   @objc var onPlaybackProgress: ((Double, Double) -> Void)?
   @objc var onPlaybackFinished: (() -> Void)?
+  @objc var onRecordingInterrupted: ((String) -> Void)?
 
   private var recorder: AVAudioRecorder?
   private var player: AVAudioPlayer?
@@ -93,6 +94,65 @@ class AudioRecorderImpl: NSObject {
     recordingDelegate.onEncodeError = { [weak self] in
       self?.releaseRecorder()
     }
+
+    // Selector-based rather than block-based so the observer goes away with the
+    // instance; a block observer would need a token kept and released by hand.
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(handleSessionInterruption(_:)),
+      name: AVAudioSession.interruptionNotification,
+      object: AVAudioSession.sharedInstance()
+    )
+  }
+
+  // MARK: - Interruption
+
+  /**
+   * A call, an alarm, or another app taking the microphone.
+   *
+   * By the time this arrives the system has already stopped the hardware, so
+   * there is nothing to pause: the work is to close the file, drop the session,
+   * and say so. Without it the composer went on showing a running timer over a
+   * recorder that had stopped, and the audio the person had spoken stayed on
+   * disk with nothing pointing at it.
+   *
+   * `.ended` is deliberately ignored. Resuming on our own would start recording
+   * a room nobody had agreed to record again; the composer offers the
+   * microphone back instead.
+   *
+   * The Android counterpart is the audio-focus listener in
+   * `AudioRecorderModule.kt`, which reports the same event for the same reason.
+   */
+  @objc private func handleSessionInterruption(_ notification: Notification) {
+    guard
+      let raw = notification.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt,
+      AVAudioSession.InterruptionType(rawValue: raw) == .began
+    else {
+      return
+    }
+
+    if player != nil {
+      stopPlaybackInternal()
+      // The same reset the natural end asks for: playback is over and the
+      // screen has to stop drawing a position that will not move again.
+      onPlaybackFinished?()
+    }
+
+    guard recorder != nil else { return }
+
+    let url = currentOutputURL
+    // `stop()` writes the header, so what was spoken before the call is a
+    // playable file rather than a truncated one.
+    releaseRecorder()
+    currentOutputURL = nil
+    deactivateSession()
+
+    let salvaged =
+      url.flatMap {
+        FileManager.default.fileExists(atPath: $0.path) ? "file://\($0.path)" : nil
+      } ?? ""
+
+    onRecordingInterrupted?(salvaged)
   }
 
   // MARK: - Paths

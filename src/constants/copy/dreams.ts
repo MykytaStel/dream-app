@@ -632,6 +632,10 @@ const DREAM_COPY_EN = {
     'Microphone access was denied. Turn on microphone permission in system settings to record voice notes.',
   audioPermissionUnavailable:
     'Microphone permission could not be requested. Check system settings.',
+  audioInterruptedSaved:
+    'Something interrupted the recording. What you said up to then was kept.',
+  audioInterruptedLost:
+    'Something interrupted the recording before it could be saved.',
   templateSectionHint: 'Quick type',
   templateLucidLabel: 'Lucid',
   templateNightmareLabel: 'Nightmare',
@@ -1278,6 +1282,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
     'Доступ до мікрофона заборонено. Увімкни дозвіл у системних налаштуваннях, щоб записувати голосові нотатки.',
   audioPermissionUnavailable:
     'Не вдалося запитати дозвіл мікрофона. Перевір налаштування системи.',
+  audioInterruptedSaved: 'Запис перервало. Те, що ти встиг сказати, збережено.',
+  audioInterruptedLost: 'Запис перервало, і зберегти його не вдалося.',
   templateSectionHint: 'Тип сну',
   templateLucidLabel: 'Усвідомлений',
   templateNightmareLabel: 'Кошмар',

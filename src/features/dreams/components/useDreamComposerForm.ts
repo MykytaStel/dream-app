@@ -33,6 +33,7 @@ import {
 } from './composer/useNightmareFields';
 import { useRecordingLifecycle } from './composer/useRecordingLifecycle';
 import { saveDream } from '../repository/dreamsRepository';
+import { logActionError } from '../../../app/errorReporting';
 import {
   clearDreamDraft,
   clearDreamEditDraft,
@@ -459,13 +460,27 @@ export function useDreamComposerForm({
    * so an edit in progress never reads as a new dream waiting to be finished.
    */
   const persistDraft = React.useCallback(() => {
-    if (mode === 'create') {
-      saveDreamDraft(draftPayloadRef.current);
-      return;
-    }
+    // A failed draft write must not take the composer with it. This runs from
+    // a timer every 400ms while someone types and from the background
+    // listener, so a storage failure — a full disk is the realistic one —
+    // would otherwise throw outside any render, repeatedly, on the one screen
+    // the product cannot afford to lose. Losing the draft is survivable;
+    // losing the ability to keep typing is not.
+    //
+    // Nothing is shown here on purpose. The place a write failure has to be
+    // visible is the save itself, which alerts, and which is the moment the
+    // person believes their dream is safe.
+    try {
+      if (mode === 'create') {
+        saveDreamDraft(draftPayloadRef.current);
+        return;
+      }
 
-    if (initialDream) {
-      saveDreamEditDraft(initialDream.id, draftPayloadRef.current);
+      if (initialDream) {
+        saveDreamEditDraft(initialDream.id, draftPayloadRef.current);
+      }
+    } catch (error) {
+      logActionError('useDreamComposerForm.persistDraft', error);
     }
   }, [initialDream, mode]);
 
@@ -568,6 +583,33 @@ export function useDreamComposerForm({
     setShowMetaSection(!isWakeMode);
   }
 
+  /**
+   * The identity of the dream being composed, decided once.
+   *
+   * This used to be `createDreamId()` inside the save, which made the id a
+   * property of the button press rather than of the dream. Two presses meant
+   * two ids, and since the repository upserts by id, two dreams. Everything
+   * from the press to the write is synchronous, so the second press is not
+   * interrupted by the first — it runs afterwards, in full, and the busy flag
+   * that looks like it guards this is set inside the save and never read
+   * there.
+   *
+   * Held in a ref and replaced after a successful create, so the next dream
+   * does not overwrite the one just saved.
+   */
+  const composingDreamIdRef = React.useRef(initialDream?.id ?? createDreamId());
+
+  /**
+   * What was last written, so the same content is not written twice.
+   *
+   * The id alone keeps the archive correct — a repeated save upserts the same
+   * dream — but it would still do the work, fire the analytics event and call
+   * `onSaved` a second time. Comparing content also draws the line in the
+   * right place: a second press is refused, and a deliberate save after an
+   * edit is not.
+   */
+  const lastSavedSignatureRef = React.useRef<string | null>(null);
+
   function onSave() {
     setHasTriedSave(true);
     setIsBusy(true);
@@ -577,6 +619,17 @@ export function useDreamComposerForm({
       const cleanTitle = title.trim();
       const cleanText = text.trim();
       const cleanSleepDate = sleepDate.trim();
+
+      const signature = JSON.stringify([
+        cleanTitle,
+        cleanText,
+        cleanSleepDate,
+        audioUri ?? null,
+      ]);
+
+      if (lastSavedSignatureRef.current === signature) {
+        return;
+      }
 
       const saveValidationError = validateDreamForSave({
         text: cleanText,
@@ -600,7 +653,7 @@ export function useDreamComposerForm({
       }
 
       const dream: Dream = {
-        id: initialDream?.id ?? createDreamId(),
+        id: composingDreamIdRef.current,
         createdAt: initialDream?.createdAt ?? Date.now(),
         archivedAt: initialDream?.archivedAt,
         sleepDate: cleanSleepDate || getTodayDate(),
@@ -618,6 +671,7 @@ export function useDreamComposerForm({
       };
 
       saveDream(dream);
+      lastSavedSignatureRef.current = signature;
       hapticSave();
       trackDreamSaved({
         mode: isEdit ? 'edit' : 'create',
@@ -630,6 +684,12 @@ export function useDreamComposerForm({
         // The dream now holds everything the draft was protecting.
         clearDreamEditDraft(dream.id);
       } else {
+        // A new identity for whatever is written next, so the following dream
+        // does not upsert over the one just saved.
+        composingDreamIdRef.current = createDreamId();
+        // The signature is deliberately kept. resetForm empties the fields
+        // through state, which does not take effect before a second press
+        // arrives — clearing it here would hand that press an open door.
         resetForm();
       }
 

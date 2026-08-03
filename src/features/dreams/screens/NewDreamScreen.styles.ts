@@ -184,7 +184,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       borderRadius: 14,
       borderWidth: 1,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: 'transparent',
     },
     moodOptionSelected: {
       borderColor: theme.colors.primary,
@@ -210,7 +210,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       borderRadius: 12,
       borderWidth: 1,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: 'transparent',
     },
     intensityOptionSelected: {
       borderColor: theme.colors.primary,
@@ -244,6 +244,12 @@ export function createNewDreamScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       gap: 8,
     },
+    // Outlined, not filled. A text field and an option tile were the same
+    // rounded rectangle in the same tone at the same radius — createFieldSurface
+    // and this style resolved to identical values — so nothing on the card said
+    // which rectangles you type into and which you tap. The rule now: filled is
+    // a field, outlined is a choice, and filled-with-primary is the choice you
+    // made.
     contextOption: {
       flexGrow: 1,
       flexBasis: 72,
@@ -253,7 +259,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       borderRadius: 12,
       borderWidth: 1,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
+      backgroundColor: 'transparent',
     },
     contextOptionSelected: {
       borderColor: theme.colors.primary,
@@ -271,6 +277,59 @@ export function createNewDreamScreenStyles(theme: Theme) {
     },
     contextTextInput: {
       minHeight: 96,
+    },
+    /** One row of equal segments. See ComposerScaleField for why it cannot wrap. */
+    scaleRow: {
+      flexDirection: 'row',
+      gap: 6,
+    },
+    scaleSegment: {
+      flex: 1,
+      // React Native leaves flexShrink at 0, so without a floor of zero a long
+      // label would hold the segment open and push the row off the card.
+      minWidth: 0,
+      paddingVertical: 12,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      alignItems: 'center',
+    },
+    scaleSegmentSelected: {
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primary,
+    },
+    scaleSegmentLabel: {
+      color: theme.colors.text,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    scaleSegmentLabelSelected: {
+      color: theme.colors.background,
+    },
+    scaleAnchorRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+    },
+    scaleAnchor: {
+      color: theme.colors.textDim,
+      fontSize: 11,
+    },
+    booleanRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing.md,
+      paddingVertical: 4,
+    },
+    booleanCopy: {
+      flex: 1,
+      flexShrink: 1,
+      gap: 2,
+    },
+    booleanHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
     },
     tagsInputRow: {
       flexDirection: 'row',

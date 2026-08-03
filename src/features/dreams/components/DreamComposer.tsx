@@ -212,14 +212,6 @@ export function DreamComposer({
       })),
     [],
   );
-  const yesNoOptions = React.useMemo(
-    () => [
-      { value: false, label: copy.boolNo },
-      { value: true, label: copy.boolYes },
-    ],
-    [copy.boolNo, copy.boolYes],
-  );
-
   const refineActions = React.useMemo(
     () => [
       ...(!form.isWakeMode
@@ -528,7 +520,10 @@ export function DreamComposer({
           triggerLabel={practiceCopy.lucidTriggerLabel}
           triggerPlaceholder={practiceCopy.lucidTriggerPlaceholder}
           techniqueLabel={practiceCopy.lucidStatsTopTechnique}
-          recallLabel={practiceCopy.lucidRecallLabel}
+          recallLabel={practiceCopy.lucidRecallQuestion}
+          recallLowLabel={practiceCopy.lucidRecallLow}
+          recallHighLabel={practiceCopy.lucidRecallHigh}
+          lucidity={form.lucidity}
           controlLabel={practiceCopy.filterControl}
           stabilizationLabel={practiceCopy.lucidStabilizationLabel}
           dreamSignsInput={form.dreamSignsInput}
@@ -563,11 +558,13 @@ export function DreamComposer({
           styles={styles}
           title={practiceCopy.openNightmares}
           subtitle={practiceCopy.nightmareHeroDescription}
-          explicitLabel={practiceCopy.filterNightmare}
-          distressLabel={practiceCopy.filterHighDistress}
-          recurringLabel={practiceCopy.filterRecurringNightmare}
+          explicitLabel={practiceCopy.nightmareExplicitQuestion}
+          distressLabel={practiceCopy.nightmareDistressQuestion}
+          distressLowLabel={practiceCopy.nightmareDistressLow}
+          distressHighLabel={practiceCopy.nightmareDistressHigh}
+          recurringLabel={practiceCopy.nightmareRecurringQuestion}
           recurringPlaceholder={practiceCopy.nightmareRecurringPlaceholder}
-          wokeLabel={practiceCopy.nightmareWokeLabel}
+          wokeLabel={practiceCopy.nightmareWokeQuestion}
           aftereffectsLabel={practiceCopy.nightmareAftereffectsLabel}
           groundingLabel={practiceCopy.nightmareGroundingLabel}
           rewriteLabel={practiceCopy.quickNightmareRewrite}
@@ -615,7 +612,6 @@ export function DreamComposer({
           aftereffectOptions={nightmareAftereffectOptions}
           groundingOptions={nightmareGroundingOptions}
           rewriteStatusOptions={nightmareRescriptOptions}
-          yesNoOptions={yesNoOptions}
         />
       ) : null}
 

@@ -24,6 +24,13 @@ export const ROOT_ROUTE_NAMES = {
   ReviewWorkspace: 'ReviewWorkspace',
   DreamPractice: 'DreamPractice',
   Privacy: 'Privacy',
+  // The settings hub's spokes. Each one is a screen the Settings tab lists a
+  // row for, rather than a section it scrolls past.
+  SettingsAppearance: 'SettingsAppearance',
+  SettingsReminders: 'SettingsReminders',
+  SettingsSecurity: 'SettingsSecurity',
+  SettingsAnalysis: 'SettingsAnalysis',
+  SettingsAbout: 'SettingsAbout',
 } as const;
 
 type TabRouteLabelMap = Record<
@@ -93,6 +100,11 @@ export type RootStackParamList = {
   };
   [ROOT_ROUTE_NAMES.Progress]: undefined;
   [ROOT_ROUTE_NAMES.Privacy]: undefined;
+  [ROOT_ROUTE_NAMES.SettingsAppearance]: undefined;
+  [ROOT_ROUTE_NAMES.SettingsReminders]: undefined;
+  [ROOT_ROUTE_NAMES.SettingsSecurity]: undefined;
+  [ROOT_ROUTE_NAMES.SettingsAnalysis]: undefined;
+  [ROOT_ROUTE_NAMES.SettingsAbout]: undefined;
   [ROOT_ROUTE_NAMES.MonthlyReport]:
     | {
         yearMonth?: string;

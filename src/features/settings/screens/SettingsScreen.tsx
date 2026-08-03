@@ -40,7 +40,8 @@ export default function SettingsScreen() {
 
   return (
     <ScreenContainer scroll>
-      <SectionHeader title={copy.title} subtitle={copy.subtitle} />
+      {/* No subtitle: it listed four of the six things the rows below name. */}
+      <SectionHeader title={copy.title} />
 
       <View style={styles.hubList}>
         <SettingsActionRow

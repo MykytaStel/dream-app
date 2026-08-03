@@ -45,8 +45,6 @@ const DREAM_COPY_EN = {
   homeRecentLimitHint:
     'Home stays focused on the latest dreams. Switch to the Archive tab for the full history.',
   homeSpotlightTitle: 'In focus',
-  homeSpotlightSubtitle:
-    'One recurring signal and one thing worth cleaning up.',
   homeSpotlightPatternLabel: 'Pattern',
   homeSpotlightWeeklyLabel: 'This week',
   homeSpotlightAttentionLabel: 'Needs attention',
@@ -91,7 +89,6 @@ const DREAM_COPY_EN = {
   homeSpotlightShowDetails: 'More details',
   homeSpotlightHideDetails: 'Less details',
   homeWeeklyPatternsTitle: 'Weekly patterns',
-  homeWeeklyPatternsSubtitle: 'A calm read of the last seven days.',
   homeStreakLabel: 'Streak',
   homeTotalLabel: 'Total',
   homeAverageLabel: 'Avg words',
@@ -670,13 +667,12 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeCustomizeReset: 'Скинути',
   homeCustomizePresetLabel: 'Акцент',
   homeCustomizePresetHint:
-    'Оберіть спокійніший або більш аналітичний Home, не змінюючи інші екрани.',
+    'Спокійніша або аналітичніша стрічка. Інші екрани не зміняться.',
   homeCustomizePresetBalanced: 'Баланс',
   homeCustomizePresetCalm: 'Спокій',
   homeCustomizePresetInsight: 'Інсайти',
   homeCustomizeSectionsLabel: 'Видимі секції',
-  homeCustomizeSectionsHint:
-    'Покажіть або сховайте модулі над останніми снами.',
+  homeCustomizeSectionsHint: 'Покажи або сховай блоки над останніми снами.',
   homeCustomizeOrderLabel: 'Порядок секцій',
   homeCustomizeOrderHint: 'Підніміть вище те, що хочете помічати першим.',
   homeCustomizeSectionShortcuts: 'Швидкі дії',
@@ -688,8 +684,6 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeRecentLimitHint:
     'Головний екран тримає фокус на останніх записах. Для повної історії перемкнись на вкладку Архів.',
   homeSpotlightTitle: 'У фокусі',
-  homeSpotlightSubtitle:
-    'Один повторюваний сигнал і одна річ, яку варто розчистити.',
   homeSpotlightPatternLabel: 'Патерн',
   homeSpotlightWeeklyLabel: 'Цей тиждень',
   homeSpotlightAttentionLabel: 'Потребує уваги',
@@ -737,7 +731,6 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   homeSpotlightShowDetails: 'Більше деталей',
   homeSpotlightHideDetails: 'Менше деталей',
   homeWeeklyPatternsTitle: 'Патерни тижня',
-  homeWeeklyPatternsSubtitle: 'Спокійний зріз останніх семи днів.',
   homeStreakLabel: 'Серія',
   homeTotalLabel: 'Всього',
   homeAverageLabel: 'Сер. слів',
@@ -1198,7 +1191,7 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   moodIntensityLabel: 'Яскравість',
   moodIntensityHint: 'Наскільки яскравим або насиченим був цей сон?',
   lucidityLabel: 'Усвідомленість',
-  lucidityHint: 'Чи зрозумів(-ла) ти, що це сон, хоча б на мить?',
+  lucidityHint: 'Чи було відчуття, що це сон — хоча б на мить?',
   lucidityNoneLabel: 'Неусвідомлений',
   lucidityBriefLabel: 'Коротка ясність',
   lucidityAwareLabel: 'Усвідомлений',

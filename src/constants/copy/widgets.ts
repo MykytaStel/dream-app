@@ -50,7 +50,7 @@ const WIDGET_COPY_UK = {
   pinPromptSubtitleIos:
     'Затримайте палець на домашньому екрані, натисніть + і знайдіть Kaleidoscope щоб додати віджет.',
   pinPromptSubtitleAndroid:
-    'Додайте віджет Kaleidoscope на домашній екран для миттєвого запису снів.',
+    'Додай віджет на домашній екран, щоб записувати сни одразу з нього.',
   pinPromptAction: 'Додати віджет',
   pinPromptGotIt: 'Зрозуміло',
   pinPromptDismiss: 'Пізніше',

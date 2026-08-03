@@ -12,10 +12,6 @@ import {
   getLastViewedDream,
   isLastViewedDreamFresh,
 } from '../services/lastViewedDreamService';
-import {
-  getHomeSearchPresets,
-  type HomeSearchPreset,
-} from '../services/homeSearchPresetService';
 
 export type HomeRefreshMode = 'initial' | 'refresh' | 'silent';
 
@@ -23,10 +19,6 @@ type HomeScreenDataState = {
   dreamListItems: DreamListItem[];
   dreams: Dream[];
   draft: DreamDraft | null;
-  savedSearchPresets: HomeSearchPreset[];
-  setSavedSearchPresets: React.Dispatch<
-    React.SetStateAction<HomeSearchPreset[]>
-  >;
   lastViewedDream: DreamListItem | Dream | null;
   detailsReady: boolean;
   loading: boolean;
@@ -49,9 +41,6 @@ export function useHomeScreenData(): HomeScreenDataState {
     [],
   );
   const [draft, setDraft] = React.useState<DreamDraft | null>(null);
-  const [savedSearchPresets, setSavedSearchPresets] = React.useState<
-    HomeSearchPreset[]
-  >([]);
   const [lastViewedDream, setLastViewedDream] = React.useState<
     DreamListItem | Dream | null
   >(null);
@@ -122,7 +111,6 @@ export function useHomeScreenData(): HomeScreenDataState {
         hydrationRequestRef.current += 1;
         const nextDreamListItems = listDreamListItems();
         const nextDraft = getDreamDraft();
-        const nextSavedSearchPresets = getHomeSearchPresets();
         const nextLastViewedDreamRecord = getLastViewedDream();
         const nextLastViewedDream =
           isLastViewedDreamFresh(nextLastViewedDreamRecord) &&
@@ -133,7 +121,6 @@ export function useHomeScreenData(): HomeScreenDataState {
             : null;
         setDreamListItems(nextDreamListItems);
         setDraft(nextDraft);
-        setSavedSearchPresets(nextSavedSearchPresets);
         setLastViewedDream(nextLastViewedDream);
         if (mode !== 'silent') {
           setDreams([]);
@@ -207,8 +194,6 @@ export function useHomeScreenData(): HomeScreenDataState {
     dreamListItems,
     dreams,
     draft,
-    savedSearchPresets,
-    setSavedSearchPresets,
     lastViewedDream,
     detailsReady,
     loading,

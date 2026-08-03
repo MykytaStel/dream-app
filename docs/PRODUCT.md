@@ -12,11 +12,22 @@ of what a person's mind returns to.
 
 ## Positioning
 
-> A private dream archive that gets smarter without leaving your phone.
+> Write the dream down before it goes. See what keeps coming back — privately,
+> without your journal leaving the device.
 
-Most apps in this category compete on being a prettier notes app. That is a category,
-not a difference. The difference here is that the pattern-finding runs on the device,
-so depth costs the user no privacy.
+An earlier version of this line leaned on the app getting smarter on-device, and that
+is no longer a difference. Competitors ship offline AI, on-device transcription and
+semantic search today; privacy plus AI is now table stakes in this category, not a
+position.
+
+The difference that remains is narrower and harder to copy: **not what a symbol means
+in general, but what recurs for one person over months and years.** A dictionary of
+symbols can be written once and sold to everyone. A record of what your own mind
+returns to cannot be — it has to be accumulated, and it belongs to whoever accumulated
+it.
+
+This is also why the app is not sold as a dream interpreter. That category is crowded
+and its promise is a reading; this one's promise is a memory.
 
 What this product is **not**:
 
@@ -45,6 +56,36 @@ feel good.
 
 The order matters. An app that is bad at capture never accumulates the archive that
 makes discovery possible. Depth is earned from the bottom up.
+
+## The three journeys everything is judged against
+
+Every screen, every setting and every piece of copy should be traceable to one of
+these. Work that serves none of them is work that made the app larger without making
+it better — which is the failure this product is closest to.
+
+### 1. First capture
+
+Someone has just installed the app and has a dream in mind, or does not and wants to
+start anyway. They should reach a saved entry without reading anything, choosing a
+mode, or meeting a single setting.
+
+**Judged by:** they save something. Not that they understood the app.
+
+### 2. Morning capture
+
+Someone wakes at six, in the dark, with a dream already dissolving. They have under a
+minute of usable memory and clumsy hands.
+
+**Judged by:** time from opening the app to a saved fragment, and whether anything was
+lost when the phone rang mid-recording.
+
+### 3. Revisit
+
+Someone with thirty entries opens the app on an ordinary evening with no dream to
+write. The archive has to give them a reason to be there.
+
+**Judged by:** they open an old dream, and they recognise something in what the app
+noticed.
 
 ## What is free, and what is not
 

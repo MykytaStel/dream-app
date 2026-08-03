@@ -1,4 +1,5 @@
 import React from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { type DreamDraft, getDreamDraft } from '../services/dreamDraftService';
 import {
   listDreams,
@@ -42,6 +43,7 @@ type IdleSchedulerShape = {
 
 export function useHomeScreenData(): HomeScreenDataState {
   const hydrationRequestRef = React.useRef(0);
+  const hasCompletedInitialLoadRef = React.useRef(false);
   const [dreams, setDreams] = React.useState<Dream[]>([]);
   const [dreamListItems, setDreamListItems] = React.useState<DreamListItem[]>(
     [],
@@ -147,6 +149,7 @@ export function useHomeScreenData(): HomeScreenDataState {
         setLoadError(String(error));
       } finally {
         if (mode === 'initial') {
+          hasCompletedInitialLoadRef.current = true;
           setLoading(false);
         }
 
@@ -156,6 +159,19 @@ export function useHomeScreenData(): HomeScreenDataState {
       }
     },
     [hydrateDreamDetails],
+  );
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (!hasCompletedInitialLoadRef.current) {
+        return;
+      }
+
+      // Bottom-tab screens stay mounted. Re-read storage whenever the user
+      // returns from capture or dev tools so newly saved dreams appear without
+      // requiring an app restart or manual pull-to-refresh.
+      refreshDreams('silent');
+    }, [refreshDreams]),
   );
 
   React.useEffect(() => {

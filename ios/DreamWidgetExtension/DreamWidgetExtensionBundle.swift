@@ -13,7 +13,5 @@ struct DreamWidgetExtensionBundle: WidgetBundle {
     var body: some Widget {
         DreamWidget()
         DreamLastDreamWidget()
-        DreamWidgetExtensionControl()
-        DreamWidgetExtensionLiveActivity()
     }
 }

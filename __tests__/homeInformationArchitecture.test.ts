@@ -38,7 +38,10 @@ describe('Home return reason', () => {
     emptyState,
     { ...emptyState, hasLastViewedDream: true },
     { ...emptyState, canOpenLastViewedDream: true },
-  ])('starts with the timeline when no actionable return reason exists', state => {
-    expect(selectHomeReturnReason(state)).toBe('timeline');
-  });
+  ])(
+    'starts with the timeline when no actionable return reason exists',
+    state => {
+      expect(selectHomeReturnReason(state)).toBe('timeline');
+    },
+  );
 });

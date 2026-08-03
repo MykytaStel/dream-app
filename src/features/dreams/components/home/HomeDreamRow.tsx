@@ -489,10 +489,10 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
       >
         <Pressable
           accessibilityRole="button"
-          style={({ pressed }: { pressed: boolean }) => [
-            styles.dreamPressable,
-            pressed ? styles.dreamPressablePressed : null,
-          ]}
+          // Swipe actions stay mounted underneath the row. Keeping the pressed
+          // state fully opaque prevents those actions from bleeding through the
+          // dream card, which was especially visible in the dark themes.
+          style={styles.dreamPressable}
           onPress={() => {
             closeActiveSwipe();
             openDreamDetail(dream.id);

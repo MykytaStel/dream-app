@@ -2,80 +2,129 @@
 
 ## How this roadmap works
 
-Work is organised into horizons, not dates. A horizon closes when its exit criterion
-is met, not when a quarter ends. This keeps the plan honest: a date can be missed
-quietly, an exit criterion cannot.
+Work is organised into stages, not dates. A stage closes when its exit criterion is
+met. This keeps the plan honest: a date can be missed quietly, an exit criterion
+cannot.
 
-Each horizon assumes the previous one is done. The order is a dependency chain, not a
-preference.
+Each stage assumes the previous one is done. The order is a dependency chain, not a
+preference — and it is the part of this document least open to negotiation.
 
-## Horizons
+## What changed, and why this file was rewritten
 
-| | Horizon | Focus | Exit criterion |
+The previous roadmap had four horizons: foundation, ship v1.0, premium feel, AI layer.
+Its H0 planned the React Native upgrade, Sentry and a light theme. All three shipped;
+`package.json` carries React Native 0.86.2 and Sentry 8.20.0, and `daylight` is a
+registered light theme with per-theme contrast tests. A roadmap still planning
+delivered work is worse than no roadmap: it hides what is actually left.
+
+The deeper reason for the rewrite is a change of diagnosis. The old plan assumed the
+product needed more capability. It does not. It has fast text and voice capture, local
+storage, drafts, an archive with search and filters and a calendar, nightmares, lucid
+practice, statistics, patterns, monthly reports, reminders, widgets, quick actions,
+biometric lock, import, export and optional encrypted sync.
+
+**The risk is no longer missing features. It is too many features with no proven
+hierarchy.** A new user cannot tell which single problem this app solves best, because
+it currently presents itself as a morning notepad, an archive, an analytics tool, a
+lucid trainer, a nightmare tool, cloud storage and a dashboard builder at once.
+
+Everything below follows from that.
+
+## Stages to v1.0
+
+| | Stage | Exit criterion | Estimate |
 |---|---|---|---|
-| H0 | Foundation | dependency upgrades, crash reporting, quality gates, repo hygiene | green CI, builds on both platforms |
-| H1 | Ship v1.0 | close partial features, onboarding, store listing, privacy page | app live in both stores |
-| H2 | Premium feel | design system, themes, widgets finished, visual cards, motion | coherent product feel |
-| H3 | AI layer | on-device embeddings, semantic search, symbol clusters, optional cloud summaries | differentiation users can name |
+| 0 | Product freeze | docs match the code; release criteria written; P0 list agreed | 16–24 h |
+| 1 | Capture reliability | quick capture path is fast and cannot lose an entry | 40–60 h |
+| 2 | Information architecture | Home, Archive and Memory each have one clear job | 45–70 h |
+| 3 | Activation | a new user saves a dream without being taught | 30–50 h |
+| 4 | Trust and recovery | restore works from a clean device; sync failures are legible | 40–70 h |
+| 5 | Beta and release | analytics, crash-free sessions, accessibility, store assets | 35–55 h |
 
-### H0 — Foundation
+**Total: 206–329 hours** — roughly 6–9 weeks full time, or 12–20 weeks at 15–20 hours a
+week. This excludes billing infrastructure, semantic search, on-device embeddings,
+dream images and any web client.
 
-The product is functionally mature but the ground under it has drifted: dependencies
-are behind, there is no crash reporting, and quality rules exist only as habits.
+### Stage 0 — Product freeze
 
-Work: dependency upgrades in waves, React Native to current, Sentry behind the existing
-observability interface, test and lint gates in CI, documentation regenerated from the
-code, and migration of the widget native module to a typed TurboModule.
+No new large features. Bring the documentation back in line with the code, write down
+what actually blocks a public release, and separate confirmed needs from hypotheses.
+Cheapest stage, and it unblocks the rest: without an honest list of what works, there
+is no way to decide what is missing.
 
-### H1 — Ship v1.0
+### Stage 1 — Capture reliability
 
-Getting to real users. Closing features that are half-done rather than starting new
-ones, tightening onboarding, preparing store listings, and writing the privacy page
-that the positioning promises.
+Split the composer into **Quick Capture** — text or voice, sleep date, optional title,
+save, in thirty to sixty seconds — and **Reflect Later**, which offers mood, intensity,
+tags, lucidity, nightmare and sleep context *after* the entry is safe. A **Guided
+Entry** mode exists for people who want structure, and is never the default morning
+screen.
 
-### H2 — Premium feel
+Then the failure list, every item of which has to be walked deliberately: the app
+killed during recording, no space on the device, microphone permission refused, the
+transcription model missing or its download interrupted, transcription failing, Save
+pressed twice, the timezone changing, a corrupted draft, a sync conflict, biometrics
+unavailable after an OS update, and a lost recovery key.
 
-The product works; it does not yet feel like one thing. A design system, the three
-themes finished properly, widgets completed, visual entry cards, and motion that
-supports transitions instead of decorating them.
+### Stage 2 — Information architecture
 
-### H3 — AI layer
+Home keeps one primary action, the active draft, three recent dreams, one revisit card
+and a backup line only when something is wrong. Search, the calendar, filters and saved
+searches move to Archive and live behind a filter sheet rather than all being visible
+at once. Memory shows what the archive can support at its current size, and drops the
+achievements and weekly goals that make a journal feel like a habit tracker the product
+explicitly refuses to be.
 
-On-device embeddings unlock semantic search and symbol clustering — the discovery layer
-the archive has been accumulating toward. Cloud summaries stay optional and explicit.
+### Stage 3 — Activation
 
-This horizon is also the trigger for structured local storage: vector search needs
-SQLite, which MMKV cannot provide.
+The current onboarding explains the product across four slides and then leaves the user
+on a tab bar. It should instead promise one thing, optionally ask what they are here
+for, and open capture. Reminders, backup, biometric lock and the transcription model
+are offered in context after the first or third entry, not all at once at the start.
 
-## Why this order
+### Stage 4 — Trust and recovery
 
-H0 comes first because shipping on stale dependencies means paying for regression
-testing twice — once before the release and once after the upgrade. The largest risk
-of the React Native upgrade is already behind us: New Architecture is enabled
-(`android/gradle.properties`, `newArchEnabled=true`), so this is a version bump rather
-than an architecture migration.
+A backup nobody has restored is a claim, not a feature. Restore has to be exercised on
+a clean device, sync errors have to say what happened and what to do, and the recovery
+key flow has to survive someone who has lost theirs.
 
-H3 comes last because AI over a thin archive is a demo, not a feature. Pattern detection
-needs entries to detect patterns in, which means capture and retention have to work
-first.
+### Stage 5 — Beta and release
 
-## Explicitly out of scope for now
+Analytics on the activation funnel — without dream text, transcripts, titles, tags,
+symbols, search queries or mood values ever leaving the device. Crash-free sessions,
+accessibility, store assets, and the two rounds of real use described in
+`RELEASE_CRITERIA.md`.
+
+## After beta, and only on a signal
+
+| Work | Starts when | Estimate |
+|---|---|---|
+| Paid sync | retention exists and someone has said they would pay | 45–80 h |
+| User-confirmed patterns | people actually open Memory | 40–70 h |
+| Semantic search | real archives are large enough to search | 120–220 h |
+| Visual dream board | research shows demand | 50–90 h |
+| Cloud reflection credits | willingness to pay is confirmed | 40–70 h |
+
+## Explicitly out of scope
 
 | Not doing | Why |
 |---|---|
-| Monetization, subscriptions, paywall | no retention signal yet; a paywall before that is guessing at what people would pay for |
-| RevenueCat | follows from the above |
-| Social or sharing features | conflicts with the privacy positioning and adds moderation burden |
-| Wearable integration | speculative until sleep data proves it adds something the journal cannot |
-| Splitting all 17 oversized files at once | a diff that large would hide regressions from the upgrades; files are split as they are touched |
+| A social feed, public profiles, community sharing | conflicts with the positioning and adds moderation burden |
+| A universal symbol dictionary | the opposite of the product's actual difference |
+| An interpretation marketplace, therapist integration | scope and liability, with no evidence of demand |
+| Apple Health and wearables | speculative until sleep data proves it adds something the journal cannot |
+| AI-generated dream art as a core feature | testable later as credits, never as the foundation |
+| More achievements, themes or dashboard widgets | each one makes the hierarchy problem worse |
+| A web client | large surface, no signal |
+
+Each of these grows scope, privacy burden or moderation burden without proving the one
+thing that has to be true first: that a person records dreams regularly and comes back
+to the archive.
 
 ## What would change this plan
 
-This roadmap is a current best guess, and these signals would justify reordering it:
-
-- **The archive gets slow on real data.** Pulls list virtualisation forward, ahead of
-  polish work.
-- **Users ask for export more than for insight.** Widens H1 rather than waiting for H2.
-- **The React Native upgrade breaks native modules badly.** H0 grows, and H1 slips —
-  better than shipping on a broken foundation.
-- **Retention proves strong before H3.** Brings monetization back into scope earlier.
+- **Alpha shows people cannot find capture.** Stage 3 moves ahead of Stage 2.
+- **Someone loses an entry.** Everything stops until Stage 1 is closed.
+- **Nobody opens Memory in the beta.** User-confirmed patterns leave the post-beta list
+  entirely rather than being built on an unproven surface.
+- **Retention is strong before the beta ends.** Paid sync moves earlier.

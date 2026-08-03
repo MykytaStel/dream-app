@@ -87,8 +87,6 @@ export default function HomeScreen() {
     dreamListItems,
     dreams,
     draft,
-    savedSearchPresets,
-    setSavedSearchPresets,
     lastViewedDream,
     detailsReady,
     loading,
@@ -137,11 +135,7 @@ export default function HomeScreen() {
     dreams,
     copy,
     locale,
-    moodLabels,
-    savedSearchPresets,
-    setSavedSearchPresets,
     lastViewedDream: fullLastViewedDream,
-    closeActiveSwipe,
   });
   const openDefaultCapture = React.useCallback(() => {
     openNewDreamTab({
@@ -261,8 +255,8 @@ export default function HomeScreen() {
         <HomeListHeader
           copy={copy}
           styles={styles}
-          visibleDreamCount={timeline.visibleDreams.length}
-          archiveScopedCount={timeline.archiveScopedDreams.length}
+          visibleDreamCount={timeline.activeDreamCount}
+          archiveScopedCount={timeline.activeDreamCount}
           lastViewedDreamTitle={lastViewedDream?.title || copy.untitled}
           lastViewedDreamMeta={timeline.lastViewedDreamMeta}
           onOpenLastDream={
@@ -359,7 +353,7 @@ export default function HomeScreen() {
         dream={dream}
         index={index}
         copy={copy}
-        searchQuery={timeline.deferredSearchQuery}
+        searchQuery=""
         moodLabels={moodLabels}
         theme={theme}
         styles={styles}
@@ -393,7 +387,6 @@ export default function HomeScreen() {
       removeDreamFromList,
       styles,
       theme,
-      timeline.deferredSearchQuery,
       toggleArchiveFromList,
     ],
   );

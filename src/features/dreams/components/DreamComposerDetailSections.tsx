@@ -19,6 +19,8 @@ import {
   WakeEmotion,
 } from '../model/dream';
 import { DreamComposerChoiceChip } from './DreamComposerChoiceChip';
+import { ComposerBooleanField } from './composer/ComposerBooleanField';
+import { ComposerScaleField } from './composer/ComposerScaleField';
 import {
   DreamComposerCopy,
   DreamComposerIntensityOption,
@@ -179,11 +181,6 @@ export function DreamComposerContextCard({
   healthNotes,
   onChangeHealthNotes,
 }: ContextCardProps) {
-  const yesNoOptions = [
-    { label: copy.boolNo, value: false },
-    { label: copy.boolYes, value: true },
-  ];
-
   return (
     <Card style={styles.card}>
       <View style={styles.sectionAccentRow}>
@@ -229,37 +226,19 @@ export function DreamComposerContextCard({
         </View>
       </View>
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{copy.alcoholLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {yesNoOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={`alcohol-${option.label}`}
-              variant="context"
-              label={option.label}
-              selected={alcoholTaken === option.value}
-              onPress={() => onToggleAlcoholTaken(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
+      <ComposerBooleanField
+        label={copy.alcoholLabel}
+        value={alcoholTaken}
+        onChange={onToggleAlcoholTaken}
+        styles={styles}
+      />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{copy.caffeineLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {yesNoOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={`caffeine-${option.label}`}
-              variant="context"
-              label={option.label}
-              selected={caffeineLate === option.value}
-              onPress={() => onToggleCaffeineLate(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
+      <ComposerBooleanField
+        label={copy.caffeineLabel}
+        value={caffeineLate}
+        onChange={onToggleCaffeineLate}
+        styles={styles}
+      />
 
       <FormField
         label={copy.medicationsLabel}
@@ -306,6 +285,16 @@ type LucidPracticeCardProps = {
   triggerPlaceholder: string;
   techniqueLabel: string;
   recallLabel: string;
+  recallLowLabel: string;
+  recallHighLabel: string;
+  /**
+   * How aware the dreamer was, from the mood card above.
+   *
+   * Trigger, technique, control and stabilisation are all things that only
+   * happen once someone knows they are dreaming. Asking them of a dream
+   * recorded as "not lucid" is asking about something that did not occur.
+   */
+  lucidity?: 0 | 1 | 2 | 3;
   controlLabel: string;
   stabilizationLabel: string;
   dreamSignsInput: string;
@@ -336,6 +325,9 @@ export function DreamComposerLucidPracticeCard({
   triggerPlaceholder,
   techniqueLabel,
   recallLabel,
+  recallLowLabel,
+  recallHighLabel,
+  lucidity,
   controlLabel,
   stabilizationLabel,
   dreamSignsInput,
@@ -373,73 +365,76 @@ export function DreamComposerLucidPracticeCard({
         inputStyle={styles.contextTextInput}
       />
 
-      <FormField
-        label={triggerLabel}
-        placeholder={triggerPlaceholder}
-        value={trigger}
-        onChangeText={onChangeTrigger}
-        inputStyle={styles.contextTextInput}
+      <ComposerScaleField
+        label={recallLabel}
+        lowLabel={recallLowLabel}
+        highLabel={recallHighLabel}
+        options={recallOptions}
+        value={recallScore}
+        onSelect={onToggleRecallScore}
+        styles={styles}
       />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{techniqueLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {techniqueOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={option.value}
-              variant="context"
-              label={option.label}
-              selected={technique === option.value}
-              onPress={() => onToggleTechnique(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
+      {/*
+        Recall and dream signs are worth asking about any dream. What follows
+        only exists once the dreamer knew they were dreaming, so it waits for
+        the lucidity answer given on the mood card above.
+      */}
+      {typeof lucidity === 'number' && lucidity >= 1 ? (
+        <>
+          <FormField
+            label={triggerLabel}
+            placeholder={triggerPlaceholder}
+            value={trigger}
+            onChangeText={onChangeTrigger}
+            inputStyle={styles.contextTextInput}
+          />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{recallLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {recallOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={option.value}
-              variant="context"
-              label={option.label}
-              selected={recallScore === option.value}
-              onPress={() => onToggleRecallScore(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
+          <View style={styles.contextBlock}>
+            <Text style={styles.contextFieldLabel}>{techniqueLabel}</Text>
+            <View style={styles.contextOptionsRow}>
+              {techniqueOptions.map(option => (
+                <DreamComposerChoiceChip
+                  key={option.value}
+                  variant="context"
+                  label={option.label}
+                  selected={technique === option.value}
+                  onPress={() => onToggleTechnique(option.value)}
+                  styles={styles}
+                />
+              ))}
+            </View>
+          </View>
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{controlLabel}</Text>
-        <View style={styles.tagsWrap}>
-          {controlOptions.map(option => (
-            <TagChip
-              key={option.value}
-              label={option.label}
-              selected={controlAreas.includes(option.value)}
-              onPress={() => onToggleControlArea(option.value)}
-            />
-          ))}
-        </View>
-      </View>
+          <View style={styles.contextBlock}>
+            <Text style={styles.contextFieldLabel}>{controlLabel}</Text>
+            <View style={styles.tagsWrap}>
+              {controlOptions.map(option => (
+                <TagChip
+                  key={option.value}
+                  label={option.label}
+                  selected={controlAreas.includes(option.value)}
+                  onPress={() => onToggleControlArea(option.value)}
+                />
+              ))}
+            </View>
+          </View>
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{stabilizationLabel}</Text>
-        <View style={styles.tagsWrap}>
-          {stabilizationOptions.map(option => (
-            <TagChip
-              key={option.value}
-              label={option.label}
-              selected={stabilizationActions.includes(option.value)}
-              onPress={() => onToggleStabilizationAction(option.value)}
-            />
-          ))}
-        </View>
-      </View>
+          <View style={styles.contextBlock}>
+            <Text style={styles.contextFieldLabel}>{stabilizationLabel}</Text>
+            <View style={styles.tagsWrap}>
+              {stabilizationOptions.map(option => (
+                <TagChip
+                  key={option.value}
+                  label={option.label}
+                  selected={stabilizationActions.includes(option.value)}
+                  onPress={() => onToggleStabilizationAction(option.value)}
+                />
+              ))}
+            </View>
+          </View>
+        </>
+      ) : null}
     </Card>
   );
 }
@@ -450,6 +445,8 @@ type NightmareCardProps = {
   subtitle: string;
   explicitLabel: string;
   distressLabel: string;
+  distressLowLabel: string;
+  distressHighLabel: string;
   recurringLabel: string;
   recurringPlaceholder: string;
   wokeLabel: string;
@@ -480,7 +477,6 @@ type NightmareCardProps = {
   aftereffectOptions: Array<ChoiceOption<NightmareAftereffect>>;
   groundingOptions: Array<ChoiceOption<NightmareGroundingAction>>;
   rewriteStatusOptions: Array<ChoiceOption<NightmareRescriptStatus>>;
-  yesNoOptions: Array<ChoiceOption<boolean>>;
 };
 
 export function DreamComposerNightmareCard({
@@ -489,6 +485,8 @@ export function DreamComposerNightmareCard({
   subtitle,
   explicitLabel,
   distressLabel,
+  distressLowLabel,
+  distressHighLabel,
   recurringLabel,
   recurringPlaceholder,
   wokeLabel,
@@ -519,7 +517,6 @@ export function DreamComposerNightmareCard({
   aftereffectOptions,
   groundingOptions,
   rewriteStatusOptions,
-  yesNoOptions,
 }: NightmareCardProps) {
   return (
     <Card style={styles.card}>
@@ -531,130 +528,109 @@ export function DreamComposerNightmareCard({
       </View>
       <SectionHeader title={title} subtitle={subtitle} />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{explicitLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {yesNoOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={`${explicitLabel}-${option.value}`}
-              variant="context"
-              label={option.label}
-              selected={explicit === option.value}
-              onPress={() => onToggleExplicit(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{distressLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {distressOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={option.value}
-              variant="context"
-              label={option.label}
-              selected={distress === option.value}
-              onPress={() => onToggleDistress(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
-
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{recurringLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {yesNoOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={`${recurringLabel}-${option.value}`}
-              variant="context"
-              label={option.label}
-              selected={recurring === option.value}
-              onPress={() => onToggleRecurring(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
-
-      <FormField
-        label=""
-        placeholder={recurringPlaceholder}
-        value={recurringKey}
-        onChangeText={onChangeRecurringKey}
-        inputStyle={styles.contextTextInput}
+      <ComposerBooleanField
+        label={explicitLabel}
+        value={explicit}
+        onChange={onToggleExplicit}
+        styles={styles}
       />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{wokeLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {yesNoOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={`${wokeLabel}-${option.value}`}
-              variant="context"
-              label={option.label}
-              selected={wokeFromDream === option.value}
-              onPress={() => onToggleWokeFromDream(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
+      {/*
+        Everything below describes a nightmare. Asking all of it of someone
+        who did not have one — twelve controls, at whatever hour they opened
+        this — was the card's real problem; the tiles it drew them with were
+        only the visible half.
+      */}
+      {explicit === true ? (
+        <>
+          <ComposerScaleField
+            label={distressLabel}
+            lowLabel={distressLowLabel}
+            highLabel={distressHighLabel}
+            options={distressOptions}
+            value={distress}
+            onSelect={onToggleDistress}
+            styles={styles}
+          />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{aftereffectsLabel}</Text>
-        <View style={styles.tagsWrap}>
-          {aftereffectOptions.map(option => (
-            <TagChip
-              key={option.value}
-              label={option.label}
-              selected={aftereffects.includes(option.value)}
-              onPress={() => onToggleAftereffect(option.value)}
-            />
-          ))}
-        </View>
-      </View>
+          <ComposerBooleanField
+            label={recurringLabel}
+            value={recurring}
+            onChange={onToggleRecurring}
+            styles={styles}
+          />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{groundingLabel}</Text>
-        <View style={styles.tagsWrap}>
-          {groundingOptions.map(option => (
-            <TagChip
-              key={option.value}
-              label={option.label}
-              selected={groundingUsed.includes(option.value)}
-              onPress={() => onToggleGroundingUsed(option.value)}
+          {recurring === true ? (
+            <FormField
+              label=""
+              placeholder={recurringPlaceholder}
+              value={recurringKey}
+              onChangeText={onChangeRecurringKey}
+              inputStyle={styles.contextTextInput}
             />
-          ))}
-        </View>
-      </View>
+          ) : null}
 
-      <FormField
-        label={rewriteLabel}
-        placeholder={rewritePlaceholder}
-        value={rewrittenEnding}
-        onChangeText={onChangeRewrittenEnding}
-        multiline
-        inputStyle={styles.contextTextInput}
-      />
+          <ComposerBooleanField
+            label={wokeLabel}
+            value={wokeFromDream}
+            onChange={onToggleWokeFromDream}
+            styles={styles}
+          />
 
-      <View style={styles.contextBlock}>
-        <Text style={styles.contextFieldLabel}>{rewriteStatusLabel}</Text>
-        <View style={styles.contextOptionsRow}>
-          {rewriteStatusOptions.map(option => (
-            <DreamComposerChoiceChip
-              key={option.value}
-              variant="context"
-              label={option.label}
-              selected={rescriptStatus === option.value}
-              onPress={() => onToggleRescriptStatus(option.value)}
-              styles={styles}
-            />
-          ))}
-        </View>
-      </View>
+          <View style={styles.contextBlock}>
+            <Text style={styles.contextFieldLabel}>{aftereffectsLabel}</Text>
+            <View style={styles.tagsWrap}>
+              {aftereffectOptions.map(option => (
+                <TagChip
+                  key={option.value}
+                  label={option.label}
+                  selected={aftereffects.includes(option.value)}
+                  onPress={() => onToggleAftereffect(option.value)}
+                />
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.contextBlock}>
+            <Text style={styles.contextFieldLabel}>{groundingLabel}</Text>
+            <View style={styles.tagsWrap}>
+              {groundingOptions.map(option => (
+                <TagChip
+                  key={option.value}
+                  label={option.label}
+                  selected={groundingUsed.includes(option.value)}
+                  onPress={() => onToggleGroundingUsed(option.value)}
+                />
+              ))}
+            </View>
+          </View>
+
+          <FormField
+            label={rewriteLabel}
+            placeholder={rewritePlaceholder}
+            value={rewrittenEnding}
+            onChangeText={onChangeRewrittenEnding}
+            multiline
+            inputStyle={styles.contextTextInput}
+          />
+
+          <View style={styles.contextBlock}>
+            <Text style={styles.contextFieldLabel}>{rewriteStatusLabel}</Text>
+            <View style={styles.contextOptionsRow}>
+              {rewriteStatusOptions.map(option => (
+                <DreamComposerChoiceChip
+                  key={option.value}
+                  variant="context"
+                  label={option.label}
+                  selected={rescriptStatus === option.value}
+                  onPress={() => onToggleRescriptStatus(option.value)}
+                  styles={styles}
+                />
+              ))}
+            </View>
+          </View>
+        </>
+      ) : null}
     </Card>
   );
 }

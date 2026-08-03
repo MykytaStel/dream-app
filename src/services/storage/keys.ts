@@ -18,7 +18,6 @@ export const DREAM_DRAFT_STORAGE_KEY = 'dream-draft';
 export const DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX = 'dream-edit-draft:';
 export const LAST_VIEWED_DREAM_STORAGE_KEY = 'last-viewed-dream';
 export const HOME_SEARCH_PRESETS_STORAGE_KEY = 'home-search-presets';
-export const HOME_LAYOUT_PREFERENCES_STORAGE_KEY = 'home-layout-preferences';
 export const MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY =
   'monthly-report-saved-months';
 export const PINNED_DREAM_THREADS_STORAGE_KEY = 'pinned-dream-threads';

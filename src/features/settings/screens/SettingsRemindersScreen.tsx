@@ -67,7 +67,7 @@ export default function SettingsRemindersScreen() {
   }, [controller, suggestedReminderTime]);
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll withTopInset={false}>
       <ReminderSection
         copy={copy}
         styles={styles}

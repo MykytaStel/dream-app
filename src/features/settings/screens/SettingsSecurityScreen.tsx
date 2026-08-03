@@ -26,7 +26,7 @@ export default function SettingsSecurityScreen() {
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll withTopInset={false}>
       <BiometricLockSection
         copy={copy}
         styles={styles}

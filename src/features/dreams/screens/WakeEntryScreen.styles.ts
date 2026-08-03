@@ -129,7 +129,12 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       borderRadius: 16,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: hexToRgba(theme.colors.ink, 0.12),
+      // Follows the icon it sits behind, which is drawn in `background`. This
+      // was `ink` — a fixed near-black in every palette — so on the one light
+      // theme a dark disc appeared behind a white glyph on a blue card. In the
+      // dark themes `ink` and `background` are near enough that the look is
+      // unchanged.
+      backgroundColor: hexToRgba(theme.colors.background, 0.18),
     },
     primaryActionCopy: {
       flex: 1,

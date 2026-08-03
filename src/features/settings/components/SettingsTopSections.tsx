@@ -202,7 +202,7 @@ export function ReminderSection({
               false: t.colors.switchTrackOff,
               true: t.colors.primary,
             }}
-            thumbColor={t.colors.text}
+            thumbColor={t.colors.switchThumb}
           />
         }
       />
@@ -396,7 +396,7 @@ export function BiometricLockSection({
               false: t.colors.switchTrackOff,
               true: t.colors.primary,
             }}
-            thumbColor={t.colors.text}
+            thumbColor={t.colors.switchThumb}
           />
         }
       />

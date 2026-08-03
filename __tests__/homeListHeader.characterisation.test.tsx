@@ -43,8 +43,8 @@ function renderHeader(overrides?: Record<string, unknown>) {
 }
 
 describe('home list header', () => {
-  test('shows one data-led return reason before the timeline', () => {
-    const { getByText } = renderHeader();
+  test('shows one data-led return reason before the timeline', async () => {
+    const { getByText } = await renderHeader();
 
     expect(getByText('stairs')).toBeTruthy();
     expect(getByText('1 voice note')).toBeTruthy();
@@ -52,15 +52,15 @@ describe('home list header', () => {
     expect(getByText('4')).toBeTruthy();
   });
 
-  test('a spotlight signal suppresses the last-viewed shortcut', () => {
-    const { queryByText } = renderHeader();
+  test('a spotlight signal suppresses the last-viewed shortcut', async () => {
+    const { queryByText } = await renderHeader();
 
     expect(queryByText(copy.homeLastDreamLabel)).toBeNull();
     expect(queryByText('Ocean room')).toBeNull();
   });
 
-  test('falls back to the last-viewed dream when no spotlight signal exists', () => {
-    const { getByText, queryByText } = renderHeader({
+  test('falls back to the last-viewed dream when no spotlight signal exists', async () => {
+    const { getByText, queryByText } = await renderHeader({
       spotlightPattern: '',
       spotlightPatternKind: null,
       attentionValue: copy.homeSpotlightAttentionClear,
@@ -73,8 +73,8 @@ describe('home list header', () => {
     expect(queryByText('stairs')).toBeNull();
   });
 
-  test('does not render legacy browsing and practice controls', () => {
-    const { queryByText } = renderHeader({
+  test('does not render legacy browsing and practice controls', async () => {
+    const { queryByText } = await renderHeader({
       practiceShortcutTitle: 'Practice lucidity',
       onOpenPractice: jest.fn(),
       nightmareShortcutTitle: 'After a nightmare',
@@ -100,8 +100,8 @@ describe('home list header', () => {
     expect(queryByText('Oldest first')).toBeNull();
   });
 
-  test('shows the active-journal empty state when no dreams exist', () => {
-    const { getByText, queryByText } = renderHeader({
+  test('shows the active-journal empty state when no dreams exist', async () => {
+    const { getByText, queryByText } = await renderHeader({
       visibleDreamCount: 0,
       archiveScopedCount: 0,
       lastViewedDreamTitle: null,

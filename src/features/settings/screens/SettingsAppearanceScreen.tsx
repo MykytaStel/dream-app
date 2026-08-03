@@ -2,7 +2,7 @@ import React from 'react';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { useSettingsSpoke } from './useSettingsSpoke';
 import {
-  SettingsHeroSection,
+  LanguageSection,
   ThemeSection,
 } from '../components/SettingsTopSections';
 
@@ -19,7 +19,7 @@ export default function SettingsAppearanceScreen() {
 
   return (
     <ScreenContainer scroll>
-      <SettingsHeroSection
+      <LanguageSection
         copy={copy}
         locale={locale}
         isApplyingReminder={controller.isApplyingReminder}

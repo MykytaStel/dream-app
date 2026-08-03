@@ -11,7 +11,6 @@ import DateTimePicker, {
 } from '@react-native-community/datetimepicker';
 import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../components/ui/Card';
-import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { type AppLocale } from '../../../i18n/types';
@@ -31,7 +30,16 @@ import { createSettingsScreenStyles } from '../screens/SettingsScreen.styles';
 type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 type SettingsStyles = ReturnType<typeof createSettingsScreenStyles>;
 
-export function SettingsHeroSection({
+/**
+ * The language switch, on its own.
+ *
+ * This used to open with the settings title and subtitle, back when it was the
+ * first thing in a single scrolling screen and that header belonged to it. Now
+ * the hub owns that header and this is one control on the Appearance screen —
+ * where the old header rendered as a second "Settings" heading underneath a
+ * navigation bar that already said where you were.
+ */
+export function LanguageSection({
   copy,
   locale,
   isApplyingReminder,
@@ -56,7 +64,6 @@ export function SettingsHeroSection({
 
   return (
     <View style={styles.heroHeader}>
-      <SectionHeader title={copy.title} subtitle={copy.subtitle} />
       <View style={styles.inlineLanguageRow}>
         <Text style={styles.inlineLanguageLabel}>{copy.languageTitle}</Text>
         <View

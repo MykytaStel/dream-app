@@ -2,13 +2,13 @@ import React from 'react';
 import { Pressable, View } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTheme } from '@shopify/restyle';
+import { ThemeProvider, useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text } from '../../../components/ui/Text';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { useI18n } from '../../../i18n/I18nProvider';
-import { Theme } from '../../../theme/theme';
+import { Theme, themes } from '../../../theme/theme';
 import {
   ROOT_ROUTE_NAMES,
   type RootStackParamList,
@@ -24,13 +24,43 @@ import {
   getDreamDraftSummaryLabels,
 } from '../model/dreamDraftPresentation';
 import { createWakeEntryScreenStyles } from './WakeEntryScreen.styles';
+import { useNightCapture } from '../hooks/useNightCapture';
 
 type IdleCallbackHandle = number;
 type IdleSchedulerShape = {
   requestIdleCallback?: (callback: () => void) => IdleCallbackHandle;
 };
 
+/**
+ * The screen someone opens in a dark room, minutes after waking.
+ *
+ * At night it borrows the warm dark palette rather than trusting whichever
+ * theme is set, because the light one is a white rectangle held at arm's
+ * length at four in the morning — and by the time anyone thinks to change the
+ * theme, the dream they opened this to write down is gone.
+ *
+ * Ember rather than the default dark: it is the warmest palette here, and the
+ * point of a night mode is the least blue light, not merely the least light.
+ * It is one screen for a minute or two, and the palette is already covered by
+ * the contrast tests, so nothing is unproven about it.
+ */
 export default function WakeEntryScreen() {
+  const nightCapture = useNightCapture();
+
+  // Wrapped only at night. A ThemeProvider handed the app's own theme would
+  // work, but one handed undefined empties the context for everything below.
+  if (!nightCapture) {
+    return <WakeEntryScreenBody />;
+  }
+
+  return (
+    <ThemeProvider theme={themes.ember}>
+      <WakeEntryScreenBody />
+    </ThemeProvider>
+  );
+}
+
+function WakeEntryScreenBody() {
   const t = useTheme<Theme>();
   const styles = React.useMemo(() => createWakeEntryScreenStyles(t), [t]);
   const insets = useSafeAreaInsets();

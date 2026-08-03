@@ -1,5 +1,6 @@
 import { kv } from '../../../services/storage/mmkv';
 import { reportError } from '../../../services/observability/errorReporting';
+import { clearDreamEditDraft } from '../services/dreamDraftService';
 import {
   DREAMS_INDEX_STORAGE_KEY,
   DREAMS_META_STORAGE_KEY,
@@ -422,10 +423,14 @@ export function getDream(id: string): Dream | undefined {
 export function deleteDream(id: string) {
   saveDreamDeletionTombstone(id);
   persistDreams(listDreams().filter(dream => dream.id !== id));
+  // A draft of an edit to a dream that no longer exists has nothing to be
+  // restored into, and would otherwise sit in storage for good.
+  clearDreamEditDraft(id);
 }
 
 export function applyRemoteDreamDeletion(id: string, deletedAt: number) {
   persistDreams(listDreams().filter(dream => dream.id !== id));
+  clearDreamEditDraft(id);
   return applyRemoteDreamDeletionTombstone(id, deletedAt);
 }
 

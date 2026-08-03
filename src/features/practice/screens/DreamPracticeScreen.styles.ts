@@ -37,8 +37,17 @@ export function createPracticeCardStyles(theme: Theme) {
     checklistDotOff: { backgroundColor: hexToRgba(theme.colors.text, 0.18) },
     checklistLabel: { flex: 1, fontSize: 13 },
     metricCard: {
-      flexBasis: '31%',
+      // Two across, not three. At a third of a phone a tile is about 100pt
+      // wide, and "Controlled dreams" and "No technique logged yet" are simply
+      // longer than that — no amount of wrapping makes three columns readable
+      // here, so the third tile drops to its own row.
+      flexBasis: '47%',
       flexGrow: 1,
+      // React Native defaults flexShrink to 0, unlike the web. Without this a
+      // tile refuses to go narrower than its longest line, so a value like
+      // "No technique logged yet" pushed the whole row past the card and off
+      // the screen instead of wrapping inside its own tile.
+      flexShrink: 1,
       gap: 6,
       padding: 12,
       borderRadius: 16,
@@ -46,8 +55,12 @@ export function createPracticeCardStyles(theme: Theme) {
       borderWidth: 1,
       borderColor: hexToRgba(theme.colors.text, 0.08),
     },
-    metricLabel: { fontSize: 12, opacity: 0.7 },
-    metricValue: { fontSize: 16, fontWeight: '700' },
+    // Both need flexShrink because React Native defaults it to 0: a Text in a
+    // flex column keeps its intrinsic width and is clipped by the parent
+    // rather than wrapping to it, which is why these read "Controlled dream"
+    // and "No technique lo".
+    metricLabel: { fontSize: 12, opacity: 0.7, flexShrink: 1 },
+    metricValue: { fontSize: 16, fontWeight: '700', flexShrink: 1 },
   });
 }
 

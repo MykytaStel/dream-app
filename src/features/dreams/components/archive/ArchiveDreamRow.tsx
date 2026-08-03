@@ -511,7 +511,10 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
             style={[
               styles.rowPreviewPanel,
               {
-                backgroundColor: `${theme.colors.ink}30`,
+                // A recess in the card, so it follows the card. `ink` is a
+                // fixed near-black in every palette, which read as a grey slab
+                // dropped on a white row in the light theme.
+                backgroundColor: theme.colors.surfaceAlt,
                 borderColor: `${accentColor}20`,
               },
             ]}

@@ -101,11 +101,6 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       height: 8,
       borderRadius: 999,
     },
-    heroMetaText: {
-      color: theme.colors.textDim,
-      fontSize: 13,
-      lineHeight: 18,
-    },
     heroMetaChip: {
       ...createControlPill(theme, {
         tone: 'background',

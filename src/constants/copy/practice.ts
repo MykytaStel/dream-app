@@ -177,7 +177,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   nightmareTab: 'Кошмари',
   lucidHeroTitle: 'Тренуй усвідомлення м’яко',
   lucidHeroDescription:
-    'Спершу пам’ять про сон, потім dream signs і нагадування без тиску на сон.',
+    'Спершу пам’ять про сон, потім ознаки сну і нагадування без тиску на сон.',
   nightmareHeroTitle: 'Відстежуй і пом’якшуй кошмари',
   nightmareHeroDescription:
     'Швидко записуй, заземлюйся після пробудження і переписуй повторювані сцени, коли готовий(-а).',
@@ -208,8 +208,8 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   gentleRulesTitle: 'М’які правила',
   gentleRulesBody:
     'Мета тут не форсувати результат, а мати більше ясності й безпечніший сон. Якщо ти вже втомлений(-а), WBTB краще пропустити.',
-  lucidNowOne: 'Спершу записуй сни. Пригадування це база для lucid practice.',
-  lucidNowTwo: 'Збережи один-два dream signs, що повторюються.',
+  lucidNowOne: 'Спершу записуй сни. Пригадування — основа усвідомлених снів.',
+  lucidNowTwo: 'Збережи одну-дві ознаки сну, що повторюються.',
   lucidNowThree: 'Роби reality checks лише вдень, а не в ліжку.',
   lucidTonightOne: 'Задай один спокійний намір перед сном.',
   lucidTonightTwo: 'Обери один dream sign, який хочеш помітити цієї ночі.',
@@ -232,7 +232,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   nightmareWakeThree:
     'Записуй кошмар лише коли вже трохи стабілізувався(-лась).',
   lucidProgressHint:
-    'Частіше за все усвідомлені сни починаються з кращого пригадування і чіткіших dream signs.',
+    'Найчастіше усвідомлені сни починаються з кращого пригадування і чіткіших ознак сну.',
   nightmareProgressHint:
     'Прогрес це менше дистресу, менше повторів і спокійніші пробудження, а не “ідеальні ночі”.',
   quickRecordDream: 'Записати сон',
@@ -242,7 +242,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   quickRealityCheck: 'Позначити reality check',
   beginnerPathTitle: 'Базовий шлях',
   beginnerPathRecall: 'Записуй відразу після пробудження',
-  beginnerPathSigns: 'Помічай повторювані dream signs',
+  beginnerPathSigns: 'Помічай повторювані ознаки сну',
   beginnerPathChecks: 'Роби reality checks лише вдень',
   beginnerPathMild: 'Задавай легкий намір перед сном',
   beginnerPathWbtb: 'Використовуй WBTB рідко і лише коли виспався(-лась)',
@@ -292,7 +292,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   filterControl: 'Контроль',
   filterHighDistress: 'Високий дистрес',
   homeLucidCtaTitle: 'Практикувати усвідомленість',
-  homeLucidCtaHint: 'Пригадування, dream signs і ясність на цю ніч.',
+  homeLucidCtaHint: 'Пригадування, ознаки сну і ясність на цю ніч.',
   homeNightmareCtaTitle: 'Після кошмару',
   homeNightmareCtaHint:
     'Заземлення, короткий запис і переписування, коли будеш готовий(-а).',

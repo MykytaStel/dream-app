@@ -213,7 +213,6 @@ export default function HomeScreen() {
     () =>
       draft
         ? {
-            title: copy.homeContinueDraft,
             description: draftResumeDescription,
             primaryActionLabel: copy.homeContinueDraft,
             primaryActionIcon:

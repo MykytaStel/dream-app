@@ -179,11 +179,21 @@ export function DreamDetailOverview({
               </Text>
             </View>
           ) : null}
+          {/*
+            Chips, like everything else on this row. Starred and archived were
+            bare text among pills, which read as a different kind of thing and
+            made the gaps look uneven — a pill carries its own padding and a
+            text node does not, so one row gap produced two visual gaps.
+          */}
           {viewModel.starred ? (
-            <Text style={styles.heroMetaText}>{copy.starredTag}</Text>
+            <View style={styles.heroMetaChip}>
+              <Text style={styles.heroMetaChipLabel}>{copy.starredTag}</Text>
+            </View>
           ) : null}
           {viewModel.archived ? (
-            <Text style={styles.heroMetaText}>{copy.archivedTag}</Text>
+            <View style={styles.heroMetaChip}>
+              <Text style={styles.heroMetaChipLabel}>{copy.archivedTag}</Text>
+            </View>
           ) : null}
           {wakeHighlights.map(label => (
             <View key={label} style={styles.heroMetaChip}>

@@ -28,7 +28,8 @@ describe('Home and Archive have different jobs', () => {
   test('Archive remains the owner of search, filters and calendar browsing', () => {
     expect(archive).toContain('ArchiveMonthPanel');
     expect(archive).toContain('ArchiveControlsPanel');
+    expect(archive).toContain('calendarRows={browse.calendarRows}');
     expect(archive).toContain('searchQuery={browse.searchQuery}');
-    expect(archive).toContain('onOpenFilterSheet');
+    expect(archive).toContain('archiveFilters={browse.archiveFilters}');
   });
 });

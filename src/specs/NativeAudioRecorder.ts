@@ -30,6 +30,22 @@ export type PlaybackProgress = {
   durationMs: number;
 };
 
+/**
+ * A recording the system ended, rather than the user.
+ *
+ * A call arriving mid-recording takes the microphone away on both platforms.
+ * Neither one tells JavaScript on its own, so the composer went on showing a
+ * running timer over a recorder that had already stopped, and the audio the
+ * person had spoken was left on disk with nothing pointing at it.
+ *
+ * `uri` is the file as far as it got. It is empty only when the partial
+ * recording could not be closed and there is nothing to keep — the event still
+ * fires, because the screen has to stop claiming it is recording either way.
+ */
+export type RecordingInterruption = {
+  uri: string;
+};
+
 export interface Spec extends TurboModule {
   /**
    * Fires while audio is playing. Nothing guarantees the interval — treat it
@@ -38,13 +54,26 @@ export interface Spec extends TurboModule {
   readonly onPlaybackProgress: CodegenTypes.EventEmitter<PlaybackProgress>;
 
   /**
-   * Fires when playback reaches the end on its own.
+   * Fires when playback ends without the caller ending it — either it reached
+   * the end, or the system took the audio session away mid-play.
    *
    * Not fired when `stop()` ends it: the caller already knows it stopped, and
    * emitting there would collapse "the recording finished" and "the user
-   * pressed stop" into one event the UI has to tell apart anyway.
+   * pressed stop" into one event the UI has to tell apart anyway. An
+   * interruption belongs on this side of that line, because the screen is left
+   * holding a position that will never advance again and needs the same reset.
    */
   readonly onPlaybackFinished: CodegenTypes.EventEmitter<void>;
+
+  /**
+   * Fires when the system stopped an in-progress recording — a phone call, or
+   * another app taking the microphone.
+   *
+   * Never fired for `stopRecording()`: that path resolves its own promise, and
+   * a caller that pressed stop does not need telling twice. Same reasoning as
+   * `onPlaybackFinished`.
+   */
+  readonly onRecordingInterrupted: CodegenTypes.EventEmitter<RecordingInterruption>;
 
   startRecording(): Promise<string>;
   /** Null when nothing was recording. */

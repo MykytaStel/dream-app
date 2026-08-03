@@ -1,4 +1,4 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 /**
@@ -36,12 +36,43 @@ const buildGradle = read('android', 'app', 'build.gradle');
 
 describe('app identity', () => {
   test('no React Native template identifier is left anywhere', () => {
-    for (const file of [
-      pbxproj,
-      appInfoPlist,
-      read('ios', 'DreamWidgetExtension', 'DreamWidgetExtensionControl.swift'),
-    ]) {
+    for (const file of [pbxproj, appInfoPlist]) {
       expect(file).not.toContain('org.reactjs.native.example');
+    }
+  });
+
+  test('the widget bundle ships only widgets this app wrote', () => {
+    // Xcode's widget template adds a Live Activity, a Control, and a
+    // configuration intent alongside the real widget, and registers all of
+    // them. They shipped for months: the Live Activity rendered
+    // `Text("Hello \(emoji)")` on a cyan background, and the Control offered a
+    // timer this app has never had. Nothing surfaces them while working —
+    // they build, and the widgets a person actually placed look right.
+    //
+    // The extension uses a file-system synchronized group, so a file existing
+    // in the folder is a file in the target. Absence is the assertion.
+    const boilerplate = [
+      'DreamWidgetExtensionLiveActivity.swift',
+      'DreamWidgetExtensionControl.swift',
+      'AppIntent.swift',
+    ];
+
+    for (const name of boilerplate) {
+      expect(existsSync(join(root, 'ios', 'DreamWidgetExtension', name))).toBe(
+        false,
+      );
+    }
+
+    const bundle = read(
+      'ios',
+      'DreamWidgetExtension',
+      'DreamWidgetExtensionBundle.swift',
+    );
+
+    expect(bundle).toContain('DreamWidget()');
+    expect(bundle).toContain('DreamLastDreamWidget()');
+    for (const name of ['LiveActivity', 'ExtensionControl']) {
+      expect(bundle).not.toContain(name);
     }
   });
 

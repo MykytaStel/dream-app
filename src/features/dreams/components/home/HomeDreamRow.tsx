@@ -10,6 +10,7 @@ import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { DREAM_PREVIEW_MAX_LENGTH } from '../../../../constants/limits/dreams';
 import { Theme } from '../../../../theme/theme';
+import { blend } from '../../../../theme/contrast';
 import { getDreamLayout } from '../../constants/layout';
 import { Dream, Mood } from '../../model/dream';
 import { getDreamDate } from '../../model/dreamAnalytics';
@@ -503,7 +504,22 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
             style={[
               styles.dreamCard,
               styles.dreamCardVisual,
-              dream.mood ? { backgroundColor: `${accentColor}0B` } : null,
+              // Blended to an opaque colour rather than laid on at 4% alpha.
+              // A translucent value here does not tint the card — it replaces
+              // the card's own background, and a swipeable keeps its action
+              // layer mounted underneath at all times. So every row showed its
+              // archive, edit and delete buttons faintly through itself, which
+              // in the dark themes read as texture and in the light one as two
+              // saturated bands across the card.
+              dream.mood
+                ? {
+                    backgroundColor: blend(
+                      accentColor,
+                      0.043,
+                      theme.colors.surfaceElevated,
+                    ),
+                  }
+                : null,
               starred ? styles.dreamCardStarred : null,
             ]}
           >

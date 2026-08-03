@@ -1,168 +1,82 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { View } from 'react-native';
 import { Card } from '../../../../components/ui/Card';
 import { SectionHeader } from '../../../../components/ui/SectionHeader';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
-import { type HomeSearchPreset } from '../../services/homeSearchPresetService';
-import {
-  type HomeSortOrder,
-  type HomeTimelineFilters,
-} from '../../model/homeTimeline';
-import { type HomeRevisitCue } from '../../model/homeOverview';
-import {
-  type HomeLayoutPreferences,
-  type HomeLayoutSection,
-} from '../../model/homeLayout';
 import { type PatternDetailKind } from '../../../../app/navigation/routes';
-import { HomeControlCard } from './sections/HomeControlCard';
-import { HomeSearchCard } from './sections/HomeSearchCard';
+import { type HomeRevisitCue } from '../../model/homeOverview';
 import { HomeShortcutSection } from './sections/HomeShortcutSection';
 import { HomeSpotlightSection } from './sections/HomeSpotlightSection';
-import { HomeWeeklyPatternsSection } from './sections/HomeWeeklyPatternsSection';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
-import { type HomeFilterChip, type HomeOption } from './homeTypes';
-import { type WeeklyPatternCard } from '../../../stats/model/weeklyPatternCards';
 
+/**
+ * Home is the way back into the journal, not a second archive.
+ *
+ * The old header rendered search, saved searches, sorting, filter chips,
+ * special filters, weekly patterns, lucid and nightmare shortcuts, a last-viewed
+ * shortcut and a dashboard customizer before the first dream row. Archive
+ * already owns browsing. Keeping the same tools here made both screens harder
+ * to explain and put the most expensive decisions in front of someone who
+ * opened the app half-awake.
+ *
+ * The call site still passes the old props while Stage 2 removes the dead
+ * state in smaller commits. The index signature makes that transition honest:
+ * Home deliberately ignores those controls rather than pretending they still
+ * affect what is rendered here.
+ */
 type HomeListHeaderProps = {
   copy: DreamCopy;
   styles: ReturnType<typeof createHomeScreenStyles>;
-  timelineFilters: HomeTimelineFilters;
-  activeFilterChips: HomeFilterChip[];
   visibleDreamCount: number;
   archiveScopedCount: number;
-  searchResultsLabel: string;
   lastViewedDreamTitle?: string | null;
   lastViewedDreamMeta?: string | null;
   onOpenLastDream?: (() => void) | null;
-  isSearchPending: boolean;
-  isFilterMutationPending: boolean;
-  hasSearchQuery: boolean;
-  hasNonSearchRefinements: boolean;
-  savedSearchPresets: HomeSearchPreset[];
-  activeSearchPresetId: string | null;
-  canSaveSearchPreset: boolean;
-  sortOptions: Array<HomeOption<HomeSortOrder>>;
   spotlightPattern: string;
   spotlightPatternKind: PatternDetailKind | null;
   spotlightCountLabel: string;
   revisitCue: HomeRevisitCue | null;
-  weeklyPatternCards: WeeklyPatternCard[];
   attentionValue: string;
   attentionHint: string;
-  practiceShortcutTitle?: string;
-  practiceShortcutHint?: string;
-  nightmareShortcutTitle?: string;
-  nightmareShortcutHint?: string;
-  lucidQuickFilterLabel?: string;
-  nightmareQuickFilterLabel?: string;
-  homeLayoutPreferences: HomeLayoutPreferences;
-  onOpenPractice?: (() => void) | null;
-  onOpenNightmarePractice?: (() => void) | null;
   onOpenRevisitDream: (dreamId: string) => void;
   onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
-  onOpenFilterSheet: () => void;
-  onOpenHomeCustomizationSheet: () => void;
-  onClearFilters: () => void;
-  onClearSearch: () => void;
-  onSaveSearchPreset: () => void;
-  onApplySearchPreset: (preset: HomeSearchPreset) => void;
-  onDeleteSearchPreset: (preset: HomeSearchPreset) => void;
-  updateTimelineFilters: (
-    updater: (current: HomeTimelineFilters) => HomeTimelineFilters,
-  ) => void;
+  [legacyProp: string]: unknown;
 };
 
 export const HomeListHeader = React.memo(function HomeListHeader({
   copy,
   styles,
-  timelineFilters,
-  activeFilterChips,
   visibleDreamCount,
   archiveScopedCount,
-  searchResultsLabel,
   lastViewedDreamTitle,
   lastViewedDreamMeta,
   onOpenLastDream,
-  isSearchPending,
-  isFilterMutationPending,
-  hasSearchQuery,
-  hasNonSearchRefinements,
-  savedSearchPresets,
-  activeSearchPresetId,
-  canSaveSearchPreset,
-  sortOptions,
   spotlightPattern,
   spotlightPatternKind,
   spotlightCountLabel,
   revisitCue,
-  weeklyPatternCards,
   attentionValue,
   attentionHint,
-  practiceShortcutTitle,
-  practiceShortcutHint,
-  nightmareShortcutTitle,
-  nightmareShortcutHint,
-  lucidQuickFilterLabel,
-  nightmareQuickFilterLabel,
-  homeLayoutPreferences,
-  onOpenPractice,
-  onOpenNightmarePractice,
   onOpenRevisitDream,
   onOpenPatternDetail,
-  onOpenFilterSheet,
-  onOpenHomeCustomizationSheet,
-  onClearFilters,
-  onClearSearch,
-  onSaveSearchPreset,
-  onApplySearchPreset,
-  onDeleteSearchPreset,
-  updateTimelineFilters,
 }: HomeListHeaderProps) {
   const hasAttentionCue = attentionValue !== copy.homeSpotlightAttentionClear;
   const showSpotlightCard = Boolean(
     spotlightPatternKind || revisitCue || hasAttentionCue,
   );
-  const showLastViewedShortcut =
-    Boolean(lastViewedDreamTitle && onOpenLastDream) &&
-    !showSpotlightCard &&
-    !hasSearchQuery &&
-    !hasNonSearchRefinements &&
-    timelineFilters.sortOrder === 'newest';
-  /**
-   * Which section goes where, and which are switched off.
-   *
-   * The one piece of logic that stays here now that each section is its own
-   * component. Sections that have nothing to show return null, and the fragment
-   * they are rendered into draws nothing for them — which is why this no longer
-   * needs to filter empty nodes out.
-   */
-  const orderedSectionKeys = React.useMemo(
-    () =>
-      homeLayoutPreferences.sectionOrder.filter(
-        section => !homeLayoutPreferences.hiddenSections.includes(section),
-      ),
-    [homeLayoutPreferences.hiddenSections, homeLayoutPreferences.sectionOrder],
+  const showLastViewedShortcut = Boolean(
+    !showSpotlightCard && lastViewedDreamTitle && onOpenLastDream,
   );
 
-  const sectionsByKey: Record<HomeLayoutSection, React.ReactNode> = {
-    shortcuts: (
-      <HomeShortcutSection
-        copy={copy}
-        styles={styles}
-        showLastViewedShortcut={showLastViewedShortcut}
-        lastViewedDreamTitle={lastViewedDreamTitle}
-        lastViewedDreamMeta={lastViewedDreamMeta}
-        practiceShortcutTitle={practiceShortcutTitle}
-        practiceShortcutHint={practiceShortcutHint}
-        nightmareShortcutTitle={nightmareShortcutTitle}
-        nightmareShortcutHint={nightmareShortcutHint}
-        onOpenLastDream={onOpenLastDream}
-        onOpenPractice={onOpenPractice}
-        onOpenNightmarePractice={onOpenNightmarePractice}
-      />
-    ),
-    spotlight: (
+  return (
+    <View style={styles.listHeaderContent}>
+      {/*
+        One reason to return, chosen by the data. A pattern, a resurfaced dream
+        or an attention cue wins; otherwise the most recently opened dream is
+        the fallback. Practice tools live in their own screen and no longer
+        compete with the archive on Home.
+      */}
       <HomeSpotlightSection
         copy={copy}
         styles={styles}
@@ -177,132 +91,33 @@ export const HomeListHeader = React.memo(function HomeListHeader({
         onOpenPatternDetail={onOpenPatternDetail}
         onOpenRevisitDream={onOpenRevisitDream}
       />
-    ),
-    weeklyPatterns: (
-      <HomeWeeklyPatternsSection
+
+      <HomeShortcutSection
         copy={copy}
         styles={styles}
-        weeklyPatternCards={weeklyPatternCards}
-        onOpenPatternDetail={onOpenPatternDetail}
+        showLastViewedShortcut={showLastViewedShortcut}
+        lastViewedDreamTitle={lastViewedDreamTitle}
+        lastViewedDreamMeta={lastViewedDreamMeta}
+        onOpenLastDream={onOpenLastDream}
       />
-    ),
-  };
-  return (
-    <View style={styles.listHeaderContent}>
-      {orderedSectionKeys.map(key => (
-        <React.Fragment key={key}>{sectionsByKey[key]}</React.Fragment>
-      ))}
 
       <View style={styles.timelineHeaderRow}>
         <View style={styles.timelineHeaderCopy}>
           <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
         </View>
-        <View style={styles.timelineHeaderActions}>
-          <Pressable
-            accessibilityRole="button"
-            style={styles.inlineActionButton}
-            onPress={onOpenHomeCustomizationSheet}
-          >
-            <Text style={styles.inlineActionButtonText}>
-              {copy.homeCustomizeAction}
-            </Text>
-          </Pressable>
-          {hasSearchQuery || hasNonSearchRefinements ? (
-            <View style={styles.timelineCountPill}>
-              <Text style={styles.timelineCountLabel}>
-                {searchResultsLabel}
-              </Text>
-            </View>
-          ) : null}
-        </View>
+        {visibleDreamCount > 0 ? (
+          <View style={styles.timelineCountPill}>
+            <Text style={styles.timelineCountLabel}>{visibleDreamCount}</Text>
+          </View>
+        ) : null}
       </View>
-
-      <HomeSearchCard
-        copy={copy}
-        styles={styles}
-        timelineFilters={timelineFilters}
-        isSearchPending={isSearchPending}
-        hasSearchQuery={hasSearchQuery}
-        isFilterMutationPending={isFilterMutationPending}
-        savedSearchPresets={savedSearchPresets}
-        activeSearchPresetId={activeSearchPresetId}
-        canSaveSearchPreset={canSaveSearchPreset}
-        onClearSearch={onClearSearch}
-        onSaveSearchPreset={onSaveSearchPreset}
-        onApplySearchPreset={onApplySearchPreset}
-        onDeleteSearchPreset={onDeleteSearchPreset}
-        updateTimelineFilters={updateTimelineFilters}
-      />
-
-      <HomeControlCard
-        copy={copy}
-        styles={styles}
-        timelineFilters={timelineFilters}
-        activeFilterChips={activeFilterChips}
-        sortOptions={sortOptions}
-        lucidQuickFilterLabel={lucidQuickFilterLabel}
-        nightmareQuickFilterLabel={nightmareQuickFilterLabel}
-        onOpenFilterSheet={onOpenFilterSheet}
-        onClearFilters={onClearFilters}
-        updateTimelineFilters={updateTimelineFilters}
-      />
 
       {!archiveScopedCount ? (
         <Card style={styles.emptyCard}>
           <SectionHeader
-            title={
-              timelineFilters.archive === 'archived'
-                ? copy.emptyArchivedTitle
-                : copy.emptyActiveTitle
-            }
-            subtitle={
-              timelineFilters.archive === 'archived'
-                ? copy.emptyArchivedDescription
-                : copy.emptyActiveDescription
-            }
+            title={copy.emptyActiveTitle}
+            subtitle={copy.emptyActiveDescription}
           />
-        </Card>
-      ) : null}
-
-      {archiveScopedCount > 0 && !visibleDreamCount ? (
-        <Card style={styles.emptyCard}>
-          <SectionHeader
-            title={copy.homeSearchEmptyTitle}
-            subtitle={copy.homeSearchEmptyDescription}
-          />
-          <View style={styles.emptyActionsRow}>
-            {hasSearchQuery ? (
-              <Pressable
-                accessibilityRole="button"
-                style={styles.inlineActionButton}
-                onPress={onClearSearch}
-              >
-                <Text style={styles.inlineActionButtonText}>
-                  {copy.homeClearSearch}
-                </Text>
-              </Pressable>
-            ) : null}
-            {hasNonSearchRefinements ? (
-              <Pressable
-                accessibilityRole="button"
-                style={styles.inlineActionButton}
-                onPress={onClearFilters}
-              >
-                <Text style={styles.inlineActionButtonText}>
-                  {copy.homeClearFilters}
-                </Text>
-              </Pressable>
-            ) : null}
-            <Pressable
-              accessibilityRole="button"
-              style={styles.inlineActionButton}
-              onPress={onOpenFilterSheet}
-            >
-              <Text style={styles.inlineActionButtonText}>
-                {copy.homeAllFilters}
-              </Text>
-            </Pressable>
-          </View>
         </Card>
       ) : null}
     </View>

@@ -245,12 +245,6 @@ export function createHomeScreenStyles(theme: Theme) {
       gap: 3,
       minWidth: 0,
     },
-    heroPromptTitle: {
-      color: theme.colors.text,
-      fontSize: 14,
-      lineHeight: 18,
-      fontWeight: '700',
-    },
     heroPromptDescription: {
       color: theme.colors.textDim,
       fontSize: 12,

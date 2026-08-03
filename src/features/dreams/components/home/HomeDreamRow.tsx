@@ -616,7 +616,10 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
               style={[
                 styles.previewPanel,
                 {
-                  backgroundColor: `${theme.colors.ink}33`,
+                  // A recess in the card, so it follows the card. `ink` is a
+                  // fixed near-black in every palette, which read as a grey
+                  // slab dropped on a white row in the light theme.
+                  backgroundColor: theme.colors.surfaceAlt,
                   borderColor: `${accentColor}20`,
                 },
               ]}

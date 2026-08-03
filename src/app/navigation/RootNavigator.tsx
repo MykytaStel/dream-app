@@ -17,6 +17,11 @@ import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceS
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
 import PrivacyScreen from '../../features/settings/screens/PrivacyScreen';
+import SettingsAboutScreen from '../../features/settings/screens/SettingsAboutScreen';
+import SettingsAnalysisScreen from '../../features/settings/screens/SettingsAnalysisScreen';
+import SettingsAppearanceScreen from '../../features/settings/screens/SettingsAppearanceScreen';
+import SettingsRemindersScreen from '../../features/settings/screens/SettingsRemindersScreen';
+import SettingsSecurityScreen from '../../features/settings/screens/SettingsSecurityScreen';
 import OnboardingScreen from '../../features/onboarding/screens/OnboardingScreen';
 import DreamPracticeScreen from '../../features/practice/screens/DreamPracticeScreen';
 import { hasSeenOnboarding } from '../../features/onboarding/services/onboardingService';
@@ -221,6 +226,31 @@ export default function RootNavigator() {
           name={ROOT_ROUTE_NAMES.Privacy}
           component={PrivacyScreen}
           options={{ headerShown: true, title: 'Privacy' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SettingsAppearance}
+          component={SettingsAppearanceScreen}
+          options={{ headerShown: true, title: 'Appearance' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SettingsReminders}
+          component={SettingsRemindersScreen}
+          options={{ headerShown: true, title: 'Reminders' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SettingsSecurity}
+          component={SettingsSecurityScreen}
+          options={{ headerShown: true, title: 'Privacy and lock' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SettingsAnalysis}
+          component={SettingsAnalysisScreen}
+          options={{ headerShown: true, title: 'Analysis' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SettingsAbout}
+          component={SettingsAboutScreen}
+          options={{ headerShown: true, title: 'About' }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.Progress}

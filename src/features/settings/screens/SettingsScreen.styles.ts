@@ -232,6 +232,12 @@ export function createSettingsScreenStyles(theme: Theme) {
       lineHeight: 17,
       fontSize: 11,
     },
+    // The hub's list of rooms. Rows carry their own tile background, so this
+    // only has to space them and keep them clear of the header.
+    hubList: {
+      gap: theme.spacing.sm,
+      paddingTop: theme.spacing.sm,
+    },
     footerBlock: {
       paddingVertical: 8,
       alignItems: 'center',

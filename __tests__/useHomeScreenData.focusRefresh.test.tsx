@@ -5,7 +5,6 @@ import { useHomeScreenData } from '../src/features/dreams/hooks/useHomeScreenDat
 const mockListDreams = jest.fn();
 const mockListDreamListItems = jest.fn();
 const mockGetDreamDraft = jest.fn();
-const mockGetHomeSearchPresets = jest.fn();
 const mockGetLastViewedDream = jest.fn();
 const mockIsLastViewedDreamFresh = jest.fn();
 const mockTrackLocalSurfaceLoad = jest.fn();
@@ -24,11 +23,6 @@ jest.mock('../src/features/dreams/repository/dreamsRepository', () => ({
 
 jest.mock('../src/features/dreams/services/dreamDraftService', () => ({
   getDreamDraft: (...args: unknown[]) => mockGetDreamDraft(...args),
-}));
-
-jest.mock('../src/features/dreams/services/homeSearchPresetService', () => ({
-  getHomeSearchPresets: (...args: unknown[]) =>
-    mockGetHomeSearchPresets(...args),
 }));
 
 jest.mock('../src/features/dreams/services/lastViewedDreamService', () => ({
@@ -94,7 +88,6 @@ describe('Home data refresh on focus', () => {
     latestState = null;
     mockFocusCallback = null;
     mockGetDreamDraft.mockReturnValue(null);
-    mockGetHomeSearchPresets.mockReturnValue([]);
     mockGetLastViewedDream.mockReturnValue(null);
     mockIsLastViewedDreamFresh.mockReturnValue(false);
     mockListDreamListItems.mockReturnValue([toListItem(firstDream)]);

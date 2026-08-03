@@ -1,14 +1,15 @@
 import React from 'react';
 import { View } from 'react-native';
+import { type PatternDetailKind } from '../../../../app/navigation/routes';
 import { Card } from '../../../../components/ui/Card';
 import { SectionHeader } from '../../../../components/ui/SectionHeader';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
-import { type PatternDetailKind } from '../../../../app/navigation/routes';
 import { type HomeRevisitCue } from '../../model/homeOverview';
+import { selectHomeReturnReason } from '../../model/homeReturnReason';
+import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 import { HomeShortcutSection } from './sections/HomeShortcutSection';
 import { HomeSpotlightSection } from './sections/HomeSpotlightSection';
-import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 
 /**
  * Home is the way back into the journal, not a second archive.
@@ -62,12 +63,15 @@ export const HomeListHeader = React.memo(function HomeListHeader({
   onOpenPatternDetail,
 }: HomeListHeaderProps) {
   const hasAttentionCue = attentionValue !== copy.homeSpotlightAttentionClear;
-  const showSpotlightCard = Boolean(
-    spotlightPatternKind || revisitCue || hasAttentionCue,
-  );
-  const showLastViewedShortcut = Boolean(
-    !showSpotlightCard && lastViewedDreamTitle && onOpenLastDream,
-  );
+  const returnReason = selectHomeReturnReason({
+    hasSpotlightPattern: Boolean(spotlightPatternKind),
+    hasRevisitCue: Boolean(revisitCue),
+    hasAttentionCue,
+    hasLastViewedDream: Boolean(lastViewedDreamTitle),
+    canOpenLastViewedDream: Boolean(onOpenLastDream),
+  });
+  const showSpotlightCard = returnReason === 'spotlight';
+  const showLastViewedShortcut = returnReason === 'lastViewed';
 
   return (
     <View style={styles.listHeaderContent}>

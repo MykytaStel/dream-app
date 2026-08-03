@@ -74,34 +74,31 @@ describe('transcription is not on the capture critical path', () => {
     );
   });
 
-  test(
-    'a transcription failure marks only the transcript as failed',
-    async () => {
-      const dream = {
-        id: 'dream-1',
-        createdAt: 1_775_000_000_000,
-        sleepDate: '2026-08-03',
-        audioUri: 'file:///audio/dream-1.m4a',
-      };
-      (getDream as jest.Mock).mockReturnValue(dream);
-      failModelDownload(500);
+  test('a transcription failure marks only the transcript as failed', async () => {
+    const dream = {
+      id: 'dream-1',
+      createdAt: 1_775_000_000_000,
+      sleepDate: '2026-08-03',
+      audioUri: 'file:///audio/dream-1.m4a',
+    };
+    (getDream as jest.Mock).mockReturnValue(dream);
+    failModelDownload(500);
 
-      await expect(transcribeDreamAudio(dream.id)).rejects.toThrow(
-        'model-download-failed:500',
-      );
+    await expect(transcribeDreamAudio(dream.id)).rejects.toThrow(
+      'model-download-failed:500',
+    );
 
-      expect(updateDreamTranscriptState).toHaveBeenNthCalledWith(1, dream.id, {
-        transcriptStatus: 'processing',
-        transcriptUpdatedAt: expect.any(Number),
-      });
-      expect(updateDreamTranscriptState).toHaveBeenLastCalledWith(dream.id, {
-        transcriptStatus: 'error',
-        transcriptUpdatedAt: expect.any(Number),
-      });
+    expect(updateDreamTranscriptState).toHaveBeenNthCalledWith(1, dream.id, {
+      transcriptStatus: 'processing',
+      transcriptUpdatedAt: expect.any(Number),
+    });
+    expect(updateDreamTranscriptState).toHaveBeenLastCalledWith(dream.id, {
+      transcriptStatus: 'error',
+      transcriptUpdatedAt: expect.any(Number),
+    });
 
-      // The audio entry was already saved before transcription began. Failure
-      // changes transcript state only; it does not delete or replace the dream.
-      expect(dream.audioUri).toBe('file:///audio/dream-1.m4a');
-    },
-  );
+    // The audio entry was already saved before transcription began. Failure
+    // changes transcript state only; it does not delete or replace the dream.
+    expect(dream.audioUri).toBe('file:///audio/dream-1.m4a');
+  });
 });

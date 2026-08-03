@@ -83,46 +83,40 @@ describe('capture fallbacks', () => {
     });
   });
 
-  test(
-    'a refused microphone is explained without breaking the composer',
-    async () => {
-      mockStartRecording.mockRejectedValue(
-        Object.assign(new Error('permission denied'), {
-          code: 'audio-permission-denied',
-        }),
-      );
+  test('a refused microphone is explained without breaking the composer', async () => {
+    mockStartRecording.mockRejectedValue(
+      Object.assign(new Error('permission denied'), {
+        code: 'audio-permission-denied',
+      }),
+    );
 
-      await ReactTestRenderer.act(async () => {
-        await lifecycle().onToggleRecord();
-      });
+    await ReactTestRenderer.act(async () => {
+      await lifecycle().onToggleRecord();
+    });
 
-      expect(lifecycle().recording).toBe(false);
-      expect(lifecycle().audioUri).toBeUndefined();
-      expect(latestError).toBe(copy.audioPermissionDenied);
-      expect(Alert.alert).toHaveBeenCalledWith(
-        copy.audioErrorTitle,
-        copy.audioPermissionDenied,
-      );
-    },
-  );
+    expect(lifecycle().recording).toBe(false);
+    expect(lifecycle().audioUri).toBeUndefined();
+    expect(latestError).toBe(copy.audioPermissionDenied);
+    expect(Alert.alert).toHaveBeenCalledWith(
+      copy.audioErrorTitle,
+      copy.audioPermissionDenied,
+    );
+  });
 
-  test(
-    'an unavailable microphone uses the distinct recovery copy',
-    async () => {
-      mockStartRecording.mockRejectedValue(
-        Object.assign(new Error('microphone unavailable'), {
-          code: 'audio-permission-unavailable',
-        }),
-      );
+  test('an unavailable microphone uses the distinct recovery copy', async () => {
+    mockStartRecording.mockRejectedValue(
+      Object.assign(new Error('microphone unavailable'), {
+        code: 'audio-permission-unavailable',
+      }),
+    );
 
-      await ReactTestRenderer.act(async () => {
-        await lifecycle().onToggleRecord();
-      });
+    await ReactTestRenderer.act(async () => {
+      await lifecycle().onToggleRecord();
+    });
 
-      expect(latestError).toBe(copy.audioPermissionUnavailable);
-      expect(lifecycle().recording).toBe(false);
-    },
-  );
+    expect(latestError).toBe(copy.audioPermissionUnavailable);
+    expect(lifecycle().recording).toBe(false);
+  });
 
   test('a system interruption adopts the partial recording', async () => {
     mockStartRecording.mockResolvedValue('file:///audio/dream-partial.m4a');
@@ -132,9 +126,7 @@ describe('capture fallbacks', () => {
     });
 
     expect(lifecycle().recording).toBe(true);
-    expect(lifecycle().pendingAudioUri).toBe(
-      'file:///audio/dream-partial.m4a',
-    );
+    expect(lifecycle().pendingAudioUri).toBe('file:///audio/dream-partial.m4a');
     expect(interruptionListener).not.toBeNull();
 
     ReactTestRenderer.act(() => {
@@ -147,22 +139,19 @@ describe('capture fallbacks', () => {
     expect(latestError).toBe(copy.audioInterruptedSaved);
   });
 
-  test(
-    'an interruption with no recoverable file stops recording visibly',
-    async () => {
-      mockStartRecording.mockResolvedValue('file:///audio/dream-partial.m4a');
+  test('an interruption with no recoverable file stops recording visibly', async () => {
+    mockStartRecording.mockResolvedValue('file:///audio/dream-partial.m4a');
 
-      await ReactTestRenderer.act(async () => {
-        await lifecycle().onToggleRecord();
-      });
+    await ReactTestRenderer.act(async () => {
+      await lifecycle().onToggleRecord();
+    });
 
-      ReactTestRenderer.act(() => {
-        interruptionListener?.('');
-      });
+    ReactTestRenderer.act(() => {
+      interruptionListener?.('');
+    });
 
-      expect(lifecycle().recording).toBe(false);
-      expect(lifecycle().audioUri).toBeUndefined();
-      expect(latestError).toBe(copy.audioInterruptedLost);
-    },
-  );
+    expect(lifecycle().recording).toBe(false);
+    expect(lifecycle().audioUri).toBeUndefined();
+    expect(latestError).toBe(copy.audioInterruptedLost);
+  });
 });

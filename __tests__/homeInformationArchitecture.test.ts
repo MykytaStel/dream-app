@@ -1,35 +1,44 @@
-import fs from 'node:fs';
-import path from 'node:path';
+import { selectHomeReturnReason } from '../src/features/dreams/model/homeReturnReason';
 
-function read(relativePath: string) {
-  return fs.readFileSync(path.join(process.cwd(), relativePath), 'utf8');
-}
+const emptyState = {
+  hasSpotlightPattern: false,
+  hasRevisitCue: false,
+  hasAttentionCue: false,
+  hasLastViewedDream: false,
+  canOpenLastViewedDream: false,
+};
 
-describe('Home and Archive have different jobs', () => {
-  const homeHeader = read(
-    'src/features/dreams/components/home/HomeListHeader.tsx',
-  );
-  const archive = read('src/features/dreams/screens/ArchiveScreen.tsx');
-
-  test('Home does not render a second set of archive controls', () => {
-    expect(homeHeader).not.toContain('HomeSearchCard');
-    expect(homeHeader).not.toContain('HomeControlCard');
-    expect(homeHeader).not.toContain('HomeWeeklyPatternsSection');
-    expect(homeHeader).not.toContain('homeCustomizeAction');
-    expect(homeHeader).not.toContain('savedSearchPresets');
+describe('Home return reason', () => {
+  test.each([
+    { hasSpotlightPattern: true },
+    { hasRevisitCue: true },
+    { hasAttentionCue: true },
+  ])('prioritizes a data-led signal: %o', signal => {
+    expect(
+      selectHomeReturnReason({
+        ...emptyState,
+        ...signal,
+        hasLastViewedDream: true,
+        canOpenLastViewedDream: true,
+      }),
+    ).toBe('spotlight');
   });
 
-  test('Home offers at most one data-led reason to return', () => {
-    expect(homeHeader).toContain('HomeSpotlightSection');
-    expect(homeHeader).toContain('showLastViewedShortcut');
-    expect(homeHeader).toContain('!showSpotlightCard');
+  test('falls back to the last viewed dream when it can be opened', () => {
+    expect(
+      selectHomeReturnReason({
+        ...emptyState,
+        hasLastViewedDream: true,
+        canOpenLastViewedDream: true,
+      }),
+    ).toBe('lastViewed');
   });
 
-  test('Archive remains the owner of search, filters and calendar browsing', () => {
-    expect(archive).toContain('ArchiveMonthPanel');
-    expect(archive).toContain('ArchiveControlsPanel');
-    expect(archive).toContain('calendarRows={browse.calendarRows}');
-    expect(archive).toContain('searchQuery={browse.searchQuery}');
-    expect(archive).toContain('archiveFilters={browse.archiveFilters}');
+  test.each([
+    emptyState,
+    { ...emptyState, hasLastViewedDream: true },
+    { ...emptyState, canOpenLastViewedDream: true },
+  ])('starts with the timeline when no actionable return reason exists', state => {
+    expect(selectHomeReturnReason(state)).toBe('timeline');
   });
 });

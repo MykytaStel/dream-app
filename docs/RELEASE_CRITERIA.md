@@ -18,11 +18,18 @@ functionally complete for a while; the question this answers is a different one.
 | A recording interrupted by a call is kept and reported | walked on a device, with a real incoming call |
 | The app killed mid-recording leaves a recoverable file | the draft holds the path from the moment recording starts |
 | Editing a saved dream survives an interruption | per-dream edit draft, restored only when newer than the dream |
-| Save pressed twice creates one dream | not yet verified |
-| A corrupted draft does not block the composer | not yet verified |
-| No space on the device fails visibly, not silently | not yet verified |
+| Save pressed twice creates one dream | `useDreamComposerForm.saveGuarantees.test.tsx` — it did not, until the id stopped being minted per press |
+| A corrupted draft does not block the composer | `dreamDraftCorruption.test.ts` — nine malformed payloads, on both draft stores and the widget snapshot |
+| A failed draft write does not break typing | the autosave runs every 400ms from a timer; it reports and continues |
+| A failed save is shown, not swallowed | the save alerts and sets the error line |
 
-The first four are implemented and covered by tests; the last three are open.
+All seven are implemented and covered by tests.
+
+Two of these were found to be already satisfied and two were not. The
+double-press was real: `saveDream` upserts by id, and the id was generated
+inside the press rather than for the dream, so two taps in one frame wrote two
+dreams. The draft autosave threw on a storage failure from inside a timer,
+every 400ms, on the one screen that cannot afford to stop working.
 
 ### Capture works when it is needed
 

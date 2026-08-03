@@ -24,6 +24,17 @@ const PRACTICE_COPY_EN = {
   reminderDisable: 'Disable',
   reminderTimeLabel: 'Time',
   reminderSafeHint: 'Support awareness, not force results.',
+  // One line each, saying what this particular reminder does. They used to
+  // share reminderSafeHint with the section header above them, so the same
+  // sentence appeared five times on one card and told you nothing about which
+  // reminder you were turning on.
+  morningCaptureHint:
+    'A nudge to write the dream down while it is still there.',
+  eveningIntentionHint:
+    'Before sleep, a prompt to intend to notice you are dreaming.',
+  wbtbHint: 'Wakes you late in the night, when aware dreams are most likely.',
+  realityChecksHint:
+    'Asks through the day whether this is a dream. The habit carries over.',
   quickActionsTitle: 'Quick actions',
   planTitle: 'What to do',
   doNowTitle: 'Right now',
@@ -83,6 +94,7 @@ const PRACTICE_COPY_EN = {
   lucidStatsTopTechnique: 'Top technique',
   lucidStatsDreamSigns: 'Dream signs',
   lucidStatsNoTechnique: 'No technique logged yet',
+  lucidStatsNoDreamSigns: 'No dream signs noticed yet',
   nightmareStatsTitle: 'Nightmare signals',
   nightmareStatsRecurring: 'Recurring',
   nightmareStatsHighDistress: 'High distress',
@@ -169,6 +181,10 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   reminderDisable: 'Вимкнути',
   reminderTimeLabel: 'Час',
   reminderSafeHint: 'Підтримуй усвідомлення, а не форсуй результат.',
+  morningCaptureHint: 'Нагадає записати сон, поки він ще з тобою.',
+  eveningIntentionHint: 'Перед сном — намір помітити, що ти спиш.',
+  wbtbHint: 'Розбудить пізно вночі, коли усвідомлені сни найімовірніші.',
+  realityChecksHint: 'Питає протягом дня, чи це сон. Звичка переходить у сон.',
   quickActionsTitle: 'Швидкі дії',
   planTitle: 'Що робити',
   doNowTitle: 'Зараз',
@@ -228,6 +244,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   lucidStatsTopTechnique: 'Головна техніка',
   lucidStatsDreamSigns: 'Ознаки сну',
   lucidStatsNoTechnique: 'Техніки ще не логувались',
+  lucidStatsNoDreamSigns: 'Ознак сну ще не помічено',
   nightmareStatsTitle: 'Сигнали кошмарів',
   nightmareStatsRecurring: 'Повторювані',
   nightmareStatsHighDistress: 'Високий дистрес',

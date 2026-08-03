@@ -65,7 +65,10 @@ function createStyles(theme: Theme, active: boolean, danger: boolean) {
   const iconShellBackground = danger
     ? `${theme.colors.danger}20`
     : active
-      ? hexToRgba(theme.colors.ink, 0.18)
+      ? // Follows labelColor below, which is already `background` when active:
+        // an active tile is filled with `primary`, and everything drawn on it
+        // belongs to the same on-primary colour.
+        hexToRgba(theme.colors.background, 0.18)
       : theme.colors.surface;
   const labelColor = danger
     ? theme.colors.danger

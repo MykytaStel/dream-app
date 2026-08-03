@@ -530,7 +530,7 @@ export default function DreamPracticeScreen() {
         <View style={styles.reminderGrid}>
           <PracticeReminderCard
             title={copy.morningCaptureTitle}
-            hint={copy.reminderSafeHint}
+            hint={copy.morningCaptureHint}
             value={
               reminders.morning_capture.enabled
                 ? formatReminderTime(reminders.morning_capture, locale)
@@ -543,7 +543,7 @@ export default function DreamPracticeScreen() {
           />
           <PracticeReminderCard
             title={copy.eveningIntentionTitle}
-            hint={copy.reminderSafeHint}
+            hint={copy.eveningIntentionHint}
             value={
               reminders.evening_intention.enabled
                 ? formatReminderTime(reminders.evening_intention, locale)
@@ -556,7 +556,7 @@ export default function DreamPracticeScreen() {
           />
           <PracticeReminderCard
             title={copy.wbtbTitle}
-            hint={copy.reminderSafeHint}
+            hint={copy.wbtbHint}
             value={
               reminders.wbtb.enabled
                 ? formatReminderTime(reminders.wbtb, locale)
@@ -569,7 +569,7 @@ export default function DreamPracticeScreen() {
           />
           <PracticeReminderCard
             title={copy.realityChecksTitle}
-            hint={copy.reminderSafeHint}
+            hint={copy.realityChecksHint}
             value={realityChecksValue}
             toggleLabel={copy.reminderEnable}
             shiftLabel="+1h"
@@ -638,7 +638,9 @@ export default function DreamPracticeScreen() {
                 </Pressable>
               ))
             ) : (
-              <Text style={styles.emptyHint}>{copy.lucidStatsNoTechnique}</Text>
+              <Text style={styles.emptyHint}>
+                {copy.lucidStatsNoDreamSigns}
+              </Text>
             )}
           </View>
         </Card>

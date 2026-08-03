@@ -147,7 +147,10 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       fontWeight: '800',
     },
     primaryActionHint: {
-      color: hexToRgba(theme.colors.ink, 0.72),
+      // `background` is this app's ink-on-primary, the same colour the title
+      // above uses. It was `ink` — dark in every palette — which on the light
+      // theme's deeper blue left the hint barely readable.
+      color: hexToRgba(theme.colors.background, 0.82),
       fontSize: 14,
       lineHeight: 20,
     },
@@ -160,7 +163,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       borderRadius: 999,
       paddingHorizontal: 10,
       paddingVertical: 6,
-      backgroundColor: hexToRgba(theme.colors.ink, 0.12),
+      backgroundColor: hexToRgba(theme.colors.background, 0.18),
     },
     primaryActionMetaLabel: {
       color: theme.colors.background,

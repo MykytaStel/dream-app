@@ -14,17 +14,9 @@ import { HomeSpotlightSection } from './sections/HomeSpotlightSection';
 /**
  * Home is the way back into the journal, not a second archive.
  *
- * The old header rendered search, saved searches, sorting, filter chips,
- * special filters, weekly patterns, lucid and nightmare shortcuts, a last-viewed
- * shortcut and a dashboard customizer before the first dream row. Archive
- * already owns browsing. Keeping the same tools here made both screens harder
- * to explain and put the most expensive decisions in front of someone who
- * opened the app half-awake.
- *
- * The call site still passes the old props while Stage 2 removes the dead
- * state in smaller commits. The index signature makes that transition honest:
- * Home deliberately ignores those controls rather than pretending they still
- * affect what is rendered here.
+ * It presents at most one contextual reason to return before the recent-dream
+ * timeline. Search, filters, sorting, weekly browsing and practice navigation
+ * belong to their dedicated surfaces instead of being duplicated here.
  */
 type HomeListHeaderProps = {
   copy: DreamCopy;
@@ -42,7 +34,6 @@ type HomeListHeaderProps = {
   attentionHint: string;
   onOpenRevisitDream: (dreamId: string) => void;
   onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
-  [legacyProp: string]: unknown;
 };
 
 export const HomeListHeader = React.memo(function HomeListHeader({
@@ -75,12 +66,6 @@ export const HomeListHeader = React.memo(function HomeListHeader({
 
   return (
     <View style={styles.listHeaderContent}>
-      {/*
-        One reason to return, chosen by the data. A pattern, a resurfaced dream
-        or an attention cue wins; otherwise the most recently opened dream is
-        the fallback. Practice tools live in their own screen and no longer
-        compete with the archive on Home.
-      */}
       <HomeSpotlightSection
         copy={copy}
         styles={styles}

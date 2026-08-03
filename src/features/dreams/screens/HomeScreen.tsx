@@ -31,6 +31,7 @@ import { HomeDreamRow } from '../components/home/HomeDreamRow';
 import { HomeCustomizationSheet } from '../components/home/HomeCustomizationSheet';
 import { HomeFilterSheet } from '../components/home/HomeFilterSheet';
 import { HomeHero } from '../components/home/HomeHero';
+import { HomeDraftPrompt } from '../components/home/HomeDraftPrompt';
 import { HomeListHeader } from '../components/home/HomeListHeader';
 import { isWakeCaptureWindow } from '../model/homeOverview';
 import { getDreamDraftResumeDescription } from '../model/dreamDraftPresentation';
@@ -264,8 +265,9 @@ export default function HomeScreen() {
               ? `${timeline.streak} ${copy.homeDaysUnit}`
               : undefined
           }
-          prompt={heroPrompt}
         />
+
+        <HomeDraftPrompt styles={styles} prompt={heroPrompt} />
 
         <HomeListHeader
           copy={copy}
@@ -546,19 +548,21 @@ export default function HomeScreen() {
           data={dreamListItems}
           keyExtractor={item => item.id}
           ListHeaderComponent={
-            <HomeHero
-              styles={styles}
-              insetTop={insets.top + theme.spacing.sm}
-              greeting={timeline.heroGreeting}
-              dateLabel={timeline.heroDateLabel}
-              streak={timeline.streak}
-              streakLabel={
-                timeline.streak >= 2
-                  ? `${timeline.streak} ${copy.homeDaysUnit}`
-                  : undefined
-              }
-              prompt={heroPrompt}
-            />
+            <>
+              <HomeHero
+                styles={styles}
+                insetTop={insets.top + theme.spacing.sm}
+                greeting={timeline.heroGreeting}
+                dateLabel={timeline.heroDateLabel}
+                streak={timeline.streak}
+                streakLabel={
+                  timeline.streak >= 2
+                    ? `${timeline.streak} ${copy.homeDaysUnit}`
+                    : undefined
+                }
+              />
+              <HomeDraftPrompt styles={styles} prompt={heroPrompt} />
+            </>
           }
           showsVerticalScrollIndicator={false}
           initialNumToRender={8}

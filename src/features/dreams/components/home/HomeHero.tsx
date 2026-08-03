@@ -1,22 +1,8 @@
 import React from 'react';
 import { View } from 'react-native';
-import { useTheme } from '@shopify/restyle';
 import Animated, { FadeIn } from 'react-native-reanimated';
-import Ionicons from 'react-native-vector-icons/Ionicons';
-import { Button } from '../../../../components/ui/Button';
 import { Text } from '../../../../components/ui/Text';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
-import { Theme } from '../../../../theme/theme';
-
-type HomeHeroPrompt = {
-  description: string;
-  primaryActionLabel: string;
-  primaryActionIcon: string;
-  onPrimaryAction: () => void;
-  secondaryActionLabel?: string;
-  secondaryActionIcon?: string;
-  onSecondaryAction?: () => void;
-};
 
 const STREAK_MILESTONES = new Set([3, 7, 14, 30]);
 
@@ -27,7 +13,6 @@ type HomeHeroProps = {
   dateLabel: string;
   streak?: number;
   streakLabel?: string;
-  prompt?: HomeHeroPrompt | null;
 };
 
 export const HomeHero = React.memo(function HomeHero({
@@ -37,9 +22,7 @@ export const HomeHero = React.memo(function HomeHero({
   dateLabel,
   streak,
   streakLabel,
-  prompt,
 }: HomeHeroProps) {
-  const t = useTheme<Theme>();
   const isMilestone =
     streak != null && streak >= 2 && STREAK_MILESTONES.has(streak);
 
@@ -48,10 +31,15 @@ export const HomeHero = React.memo(function HomeHero({
       entering={FadeIn.duration(400)}
       style={[styles.heroCard, { paddingTop: insetTop }]}
     >
-      <View pointerEvents="none" style={styles.heroGlowLarge} />
-      {prompt ? (
-        <View pointerEvents="none" style={styles.heroGlowSmall} />
-      ) : null}
+      {/*
+        Offset by the safe area, not by the card. The card starts at the top of
+        the screen, so a glow measured from its edge sits under the clock. It
+        belongs beside the greeting.
+      */}
+      <View
+        pointerEvents="none"
+        style={[styles.heroGlowLarge, { top: insetTop + 8 }]}
+      />
       <View style={styles.heroFrame}>
         <View style={styles.heroTopRow}>
           <View style={styles.heroCopy}>
@@ -85,49 +73,6 @@ export const HomeHero = React.memo(function HomeHero({
             <View style={[styles.heroFacet, styles.heroFacetAlt]} />
           </View>
         </View>
-        {prompt ? (
-          <View style={styles.heroPromptCard}>
-            <View style={styles.heroPromptHeader}>
-              <View style={styles.heroPromptIconWrap}>
-                <Ionicons
-                  name={prompt.primaryActionIcon}
-                  size={16}
-                  color={t.colors.primary}
-                />
-              </View>
-              {/*
-                No title. It was the button's own label printed a second time,
-                three lines above the button — "Continue draft" over "Continue
-                draft". The description says what the draft actually is, which
-                is the part the reader does not already know.
-              */}
-              <View style={styles.heroPromptCopy}>
-                <Text style={styles.heroPromptDescription}>
-                  {prompt.description}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.heroPromptActions}>
-              <Button
-                title={prompt.primaryActionLabel}
-                onPress={prompt.onPrimaryAction}
-                icon={prompt.primaryActionIcon}
-                size="sm"
-                style={styles.heroPromptPrimaryAction}
-              />
-              {prompt.secondaryActionLabel && prompt.onSecondaryAction ? (
-                <Button
-                  title={prompt.secondaryActionLabel}
-                  onPress={prompt.onSecondaryAction}
-                  icon={prompt.secondaryActionIcon}
-                  variant="ghost"
-                  size="sm"
-                  style={styles.heroPromptSecondaryAction}
-                />
-              ) : null}
-            </View>
-          </View>
-        ) : null}
       </View>
     </Animated.View>
   );

@@ -162,6 +162,15 @@ export function createHomeScreenStyles(theme: Theme) {
       zIndex: 1,
       paddingBottom: 2,
     },
+    /**
+     * Fully inside the card, because the card clips.
+     *
+     * This sat at `top: -4, right: -10` under an `overflow: hidden` parent, so
+     * what rendered was never a circle — it was the arc left after the corner
+     * cut it. A soft shape bleeding off an edge is a real technique, but it
+     * needs the edge to be the frame; here the frame is a rounded card, and a
+     * circle sliced by it reads as a mistake rather than as depth.
+     */
     heroGlowLarge: {
       position: 'absolute',
       width: 104,
@@ -169,19 +178,7 @@ export function createHomeScreenStyles(theme: Theme) {
       borderRadius: 999,
       backgroundColor: theme.colors.auroraMid,
       opacity: 0.1,
-      top: -4,
-      right: -10,
-      zIndex: 0,
-    },
-    heroGlowSmall: {
-      position: 'absolute',
-      width: 72,
-      height: 72,
-      borderRadius: 999,
-      backgroundColor: theme.colors.accent,
-      opacity: 0.08,
-      bottom: 8,
-      left: -12,
+      right: 8,
       zIndex: 0,
     },
     heroTopRow: {

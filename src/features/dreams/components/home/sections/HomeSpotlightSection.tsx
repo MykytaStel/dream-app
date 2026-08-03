@@ -56,11 +56,13 @@ export function HomeSpotlightSection({
   return (
     <Card style={styles.spotlightCard}>
       <View style={styles.spotlightHeader}>
+        {/*
+          Heading only. The line under it named the two things in the card —
+          a repeating signal and something to revisit — which the card then
+          labels itself, one row further down.
+        */}
         <View style={styles.spotlightHeaderCopy}>
           <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
-          <Text style={styles.spotlightHeaderHint}>
-            {copy.homeSpotlightSubtitle}
-          </Text>
         </View>
       </View>
 

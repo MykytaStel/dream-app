@@ -180,7 +180,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
     'Спершу пам’ять про сон, потім ознаки сну і нагадування без тиску на сон.',
   nightmareHeroTitle: 'Відстежуй і пом’якшуй кошмари',
   nightmareHeroDescription:
-    'Швидко записуй, заземлюйся після пробудження і переписуй повторювані сцени, коли готовий(-а).',
+    'Запиши швидко, заземлись після пробудження, а повторювані сцени перепиши без поспіху.',
   openLucid: 'Практика усвідомленості',
   openNightmares: 'Підтримка при кошмарах',
   openPractice: 'Відкрити практику',
@@ -202,12 +202,12 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   planTitle: 'Що робити',
   doNowTitle: 'Зараз',
   tonightTitle: 'Сьогодні ввечері',
-  ifAwareTitle: 'Якщо усвідомив(-ла), що це сон',
+  ifAwareTitle: 'Якщо розумієш, що це сон',
   ifNightmareWakeTitle: 'Якщо кошмар тебе розбудив',
   progressTitle: 'Прогрес',
   gentleRulesTitle: 'М’які правила',
   gentleRulesBody:
-    'Мета тут не форсувати результат, а мати більше ясності й безпечніший сон. Якщо ти вже втомлений(-а), WBTB краще пропустити.',
+    'Мета — не форсувати результат, а мати більше ясності й спокійніший сон. Коли немає сил, WBTB краще пропустити.',
   lucidNowOne: 'Спершу записуй сни. Пригадування — основа усвідомлених снів.',
   lucidNowTwo: 'Збережи одну-дві ознаки сну, що повторюються.',
   lucidNowThree: 'Роби reality checks лише вдень, а не в ліжку.',
@@ -229,8 +229,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
     'Звертай увагу на стрес, пізній кофеїн, алкоголь і повторювані сигнали перед сном.',
   nightmareWakeOne: 'Увімкни світло і зорієнтуйся в кімнаті.',
   nightmareWakeTwo: 'Спочатку заспокой тіло, а не аналізуй.',
-  nightmareWakeThree:
-    'Записуй кошмар лише коли вже трохи стабілізувався(-лась).',
+  nightmareWakeThree: 'Записуй кошмар лише тоді, коли вже трохи відпустило.',
   lucidProgressHint:
     'Найчастіше усвідомлені сни починаються з кращого пригадування і чіткіших ознак сну.',
   nightmareProgressHint:
@@ -245,7 +244,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   beginnerPathSigns: 'Помічай повторювані ознаки сну',
   beginnerPathChecks: 'Роби reality checks лише вдень',
   beginnerPathMild: 'Задавай легкий намір перед сном',
-  beginnerPathWbtb: 'Використовуй WBTB рідко і лише коли виспався(-лась)',
+  beginnerPathWbtb: 'WBTB — рідко і тільки після нормального сну',
   dailyChecklistTitle: 'Сьогодні',
   checklistCapture: 'Сьогодні є запис сну',
   checklistSigns: 'Збережено dream sign',
@@ -282,8 +281,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   reminderNotificationEveningBody:
     'Обери один dream sign або один спокійний намір перед сном.',
   reminderNotificationWbtbTitle: 'Необов’язкове вікно WBTB',
-  reminderNotificationWbtbBody:
-    'Використовуй це лише якщо почуваєшся достатньо відпочившим(-ою).',
+  reminderNotificationWbtbBody: 'Роби це лише тоді, коли є сили.',
   focusLucidHint: 'Формуються сигнали усвідомленості',
   focusNightmareHint: 'Кошмарним патернам потрібен м’якший перегляд',
   filterLucid: 'Усвідомлений',
@@ -292,10 +290,9 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   filterControl: 'Контроль',
   filterHighDistress: 'Високий дистрес',
   homeLucidCtaTitle: 'Практикувати усвідомленість',
-  homeLucidCtaHint: 'Пригадування, ознаки сну і ясність на цю ніч.',
+  homeLucidCtaHint: 'Ознаки сну і ясність на цю ніч.',
   homeNightmareCtaTitle: 'Після кошмару',
-  homeNightmareCtaHint:
-    'Заземлення, короткий запис і переписування, коли будеш готовий(-а).',
+  homeNightmareCtaHint: 'Заземлись і коротко запиши.',
   statsLucidProgressTitle: 'Прогрес усвідомленості',
   statsLucidProgressDescription:
     'Шлях від пригадування до усвідомлення, стабілізації та контролю.',
@@ -319,7 +316,7 @@ const PRACTICE_COPY_UK: PracticeCopy = {
   lucidRecallHigh: 'Яскраво',
   lucidStabilizationLabel: 'Стабілізація',
   nightmareRecurringPlaceholder: 'коридор / падіння / переслідувач',
-  nightmareWokeLabel: 'Прокинувся(-лась) від сну',
+  nightmareWokeLabel: 'Сон розбудив',
   nightmareAftereffectsLabel: 'Після пробудження',
   nightmareGroundingLabel: 'Що допомогло заземлитись',
   nightmareRewriteStatusLabel: 'Статус переписування',

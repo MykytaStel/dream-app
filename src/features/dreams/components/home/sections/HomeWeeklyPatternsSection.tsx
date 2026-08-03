@@ -33,10 +33,9 @@ export function HomeWeeklyPatternsSection({
   return (
     <View style={styles.weeklyPatternsSection}>
       <View style={styles.weeklyPatternsHeader}>
+        {/* "A calm slice of the last seven days" under a heading that already
+            says "this week". */}
         <Text style={styles.sectionLabel}>{copy.homeWeeklyPatternsTitle}</Text>
-        <Text style={styles.weeklyPatternsSubtitle}>
-          {copy.homeWeeklyPatternsSubtitle}
-        </Text>
       </View>
 
       <View style={styles.weeklyPatternsRow}>

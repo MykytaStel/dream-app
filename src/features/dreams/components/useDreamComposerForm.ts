@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, AppState, Platform } from 'react-native';
+import { Alert, AppState } from 'react-native';
 import {
   Dream,
   DreamIntensity,
@@ -31,14 +31,8 @@ import {
   hasNightmareValues,
   useNightmareFields,
 } from './composer/useNightmareFields';
+import { useRecordingLifecycle } from './composer/useRecordingLifecycle';
 import { saveDream } from '../repository/dreamsRepository';
-import { logActionError } from '../../../app/errorReporting';
-import {
-  cleanupOrphanedAudioFiles,
-  onRecordingInterrupted,
-  startRecording,
-  stopRecording,
-} from '../services/audioService';
 import {
   clearDreamDraft,
   clearDreamEditDraft,
@@ -54,10 +48,7 @@ import {
   DreamComposerMode,
 } from './DreamComposer.types';
 import { trackDreamSaved } from '../../../services/observability/events';
-import {
-  hapticSave,
-  hapticImpactMedium,
-} from '../../../services/haptics/hapticService';
+import { hapticSave } from '../../../services/haptics/hapticService';
 
 export function getTodayDate() {
   const now = new Date();
@@ -232,34 +223,6 @@ export function useDreamComposerForm({
   const [sleepDate, setSleepDate] = React.useState(
     initialDreamFields?.sleepDate ?? initialDraft?.sleepDate ?? getTodayDate(),
   );
-  const [recording, setRecording] = React.useState(false);
-  const [recordingDuration, setRecordingDuration] = React.useState(0);
-  const recordingIntervalRef = React.useRef<ReturnType<
-    typeof setInterval
-  > | null>(null);
-  /**
-   * When the current recording began, in wall-clock time.
-   *
-   * The elapsed seconds are derived from this rather than counted up by the
-   * interval, because a backgrounded app stops firing timers: a recording that
-   * survived a minute in the background used to come back reporting the
-   * handful of seconds the timer had managed to tick.
-   */
-  const recordingStartedAtRef = React.useRef<number | null>(null);
-  const [audioUri, setAudioUri] = React.useState<string | undefined>(
-    initialDreamFields?.audioUri ?? initialDraft?.audioUri,
-  );
-  /**
-   * The file a running recording is being written into.
-   *
-   * Held apart from `audioUri` so the composer does not offer a half-written
-   * file for playback, but still written into the draft — if the app is killed
-   * outright there is no event to react to, and this is the only thing that
-   * points at the audio afterwards.
-   */
-  const [pendingAudioUri, setPendingAudioUri] = React.useState<
-    string | undefined
-  >(undefined);
   const [mood, setMood] = React.useState<Mood | undefined>(
     initialDreamFields?.mood ?? initialDraft?.mood,
   );
@@ -337,6 +300,23 @@ export function useDreamComposerForm({
   const [lastActionError, setLastActionError] = React.useState<string | null>(
     null,
   );
+  const {
+    recording,
+    recordingDuration,
+    audioUri,
+    setAudioUri,
+    pendingAudioUri,
+    onToggleRecord,
+    resetRecording,
+  } = useRecordingLifecycle({
+    initialAudioUri: initialDreamFields?.audioUri ?? initialDraft?.audioUri,
+    mode,
+    autoStartRecordingKey,
+    copy,
+    isBusy,
+    setIsBusy,
+    setLastActionError,
+  });
   const [showMoodSection, setShowMoodSection] = React.useState(
     isWakeMode || mode === 'edit' || initialHasMoodDetails,
   );
@@ -354,7 +334,6 @@ export function useDreamComposerForm({
   const [showMetaSection, setShowMetaSection] = React.useState(
     mode === 'edit' || !isWakeMode,
   );
-  const lastAutoStartKey = React.useRef<number | undefined>(undefined);
 
   const validationError = validateDreamForSave({
     text,
@@ -514,159 +493,6 @@ export function useDreamComposerForm({
     return () => subscription.remove();
   }, [persistDraft]);
 
-  const stopRecordingTimer = React.useCallback(() => {
-    if (recordingIntervalRef.current) {
-      clearInterval(recordingIntervalRef.current);
-      recordingIntervalRef.current = null;
-    }
-    recordingStartedAtRef.current = null;
-  }, []);
-
-  const onToggleRecord = React.useCallback(async () => {
-    setIsBusy(true);
-    setLastActionError(null);
-
-    try {
-      if (!recording) {
-        hapticImpactMedium();
-        const startedUri = await startRecording();
-        setPendingAudioUri(startedUri || undefined);
-        setRecording(true);
-        setRecordingDuration(0);
-        recordingStartedAtRef.current = Date.now();
-        recordingIntervalRef.current = setInterval(() => {
-          const startedAt = recordingStartedAtRef.current;
-          if (startedAt === null) {
-            return;
-          }
-          setRecordingDuration(Math.floor((Date.now() - startedAt) / 1000));
-        }, 1000);
-        return;
-      }
-
-      hapticImpactMedium();
-      stopRecordingTimer();
-      const uri = await stopRecording();
-      setAudioUri(uri || undefined);
-      setPendingAudioUri(undefined);
-      setRecording(false);
-      setRecordingDuration(0);
-    } catch (error) {
-      stopRecordingTimer();
-      setRecordingDuration(0);
-      setPendingAudioUri(undefined);
-      setRecording(false);
-      const code = (error as { code?: string })?.code;
-      let message: string;
-      if (code === 'audio-permission-denied') {
-        message = copy.audioPermissionDenied;
-      } else if (code === 'audio-permission-unavailable') {
-        message = copy.audioPermissionUnavailable;
-      } else {
-        const rawMessage =
-          error instanceof Error ? error.message : String(error);
-        message =
-          Platform.OS === 'ios'
-            ? `${rawMessage}\n\n${copy.audioSimulatorHint}`
-            : rawMessage;
-      }
-      setLastActionError(message);
-      Alert.alert(copy.audioErrorTitle, message);
-    } finally {
-      setIsBusy(false);
-    }
-  }, [
-    copy.audioErrorTitle,
-    copy.audioPermissionDenied,
-    copy.audioPermissionUnavailable,
-    copy.audioSimulatorHint,
-    recording,
-    stopRecordingTimer,
-  ]);
-
-  /**
-   * The system ending a recording the person did not end.
-   *
-   * Subscribed only while recording, because that is the only time the event
-   * means anything. Whatever was captured before the interruption is adopted
-   * as the recording — it is a real answer to "what did I dream", just a
-   * shorter one than intended — and the message says so rather than leaving
-   * the person to wonder whether the app lost it.
-   */
-  React.useEffect(() => {
-    if (!recording) {
-      return;
-    }
-
-    const subscription = onRecordingInterrupted(uri => {
-      stopRecordingTimer();
-      setRecording(false);
-      setRecordingDuration(0);
-      setPendingAudioUri(undefined);
-
-      if (uri) {
-        setAudioUri(uri);
-      }
-
-      setLastActionError(
-        uri ? copy.audioInterruptedSaved : copy.audioInterruptedLost,
-      );
-    });
-
-    return () => subscription.remove();
-  }, [
-    copy.audioInterruptedLost,
-    copy.audioInterruptedSaved,
-    recording,
-    stopRecordingTimer,
-  ]);
-
-  React.useEffect(() => {
-    return () => {
-      if (recordingIntervalRef.current) {
-        clearInterval(recordingIntervalRef.current);
-        recordingIntervalRef.current = null;
-      }
-    };
-  }, []);
-
-  React.useEffect(() => {
-    cleanupOrphanedAudioFiles(7).catch(e =>
-      logActionError('useDreamComposerForm.cleanupOrphanedAudioFiles', e),
-    );
-  }, []);
-
-  React.useEffect(() => {
-    if (mode !== 'create' || !autoStartRecordingKey) {
-      return;
-    }
-
-    if (lastAutoStartKey.current === autoStartRecordingKey) {
-      return;
-    }
-
-    if (recording || audioUri) {
-      lastAutoStartKey.current = autoStartRecordingKey;
-      return;
-    }
-
-    if (isBusy) {
-      return;
-    }
-
-    lastAutoStartKey.current = autoStartRecordingKey;
-    onToggleRecord().catch(e =>
-      logActionError('useDreamComposerForm.autoStartRecording', e),
-    );
-  }, [
-    audioUri,
-    autoStartRecordingKey,
-    isBusy,
-    mode,
-    onToggleRecord,
-    recording,
-  ]);
-
   React.useEffect(() => {
     if (!isWakeMode) {
       return;
@@ -698,7 +524,6 @@ export function useDreamComposerForm({
     setTitle('');
     setText('');
     setSleepDate(getTodayDate());
-    setAudioUri(undefined);
     setMood(undefined);
     setDreamIntensity(undefined);
     setLucidity(undefined);
@@ -727,12 +552,7 @@ export function useDreamComposerForm({
     setNightmareRewrittenEnding('');
     setNightmareRescriptStatus(undefined);
     setTagInput('');
-    setRecording(false);
-    if (recordingIntervalRef.current) {
-      clearInterval(recordingIntervalRef.current);
-      recordingIntervalRef.current = null;
-    }
-    setRecordingDuration(0);
+    resetRecording();
     setHasTriedSave(false);
     setLastActionError(null);
     clearDreamDraft();

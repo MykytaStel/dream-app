@@ -26,6 +26,13 @@ export const REVIEW_SAVED_STATE_STORAGE_KEY = 'review-saved-state';
 export const BACKUP_ONBOARDING_SEEN_KEY = 'backup-onboarding-seen';
 export const APP_LOCALE_KEY = 'app-locale';
 export const APP_THEME_KEY = 'app-theme';
+/**
+ * Whether the app shows its explanatory prose.
+ *
+ * Sits next to the theme because it is the same kind of preference: how the
+ * app presents itself, not what it stores.
+ */
+export const APP_CALM_MODE_KEY = 'app-calm-mode';
 export const WIDGET_SNAPSHOT_STORAGE_KEY = 'widget-snapshot';
 export const DREAM_ANALYSIS_SETTINGS_KEY = 'dream-analysis-settings';
 export const CLOUD_SESSION_STORAGE_KEY = 'cloud-session';

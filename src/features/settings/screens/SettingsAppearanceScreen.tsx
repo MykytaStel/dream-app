@@ -6,6 +6,10 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import { useCalmMode } from '../../../app/CalmModeProvider';
+import {
+  getNightCaptureEnabled,
+  setNightCaptureEnabled,
+} from '../../dreams/hooks/useNightCapture';
 import { useSettingsSpoke } from './useSettingsSpoke';
 import {
   LanguageSection,
@@ -24,6 +28,14 @@ export default function SettingsAppearanceScreen() {
   const { copy, styles, controller, locale } = useSettingsSpoke();
   const theme = useTheme<Theme>();
   const { calmMode, setCalmMode } = useCalmMode();
+  const [nightCapture, setNightCapture] = React.useState(
+    getNightCaptureEnabled,
+  );
+
+  const onToggleNightCapture = React.useCallback((value: boolean) => {
+    setNightCaptureEnabled(value);
+    setNightCapture(value);
+  }, []);
 
   return (
     <ScreenContainer scroll withTopInset={false}>
@@ -58,6 +70,23 @@ export default function SettingsAppearanceScreen() {
             accessibilityLabel={copy.calmModeTitle}
             value={calmMode}
             onValueChange={setCalmMode}
+            trackColor={{
+              false: theme.colors.switchTrackOff,
+              true: theme.colors.primary,
+            }}
+            thumbColor={theme.colors.switchThumb}
+          />
+        </View>
+
+        <View style={styles.calmModeRow}>
+          <View style={styles.calmModeCopy}>
+            <Text style={styles.calmModeTitle}>{copy.nightCaptureTitle}</Text>
+            <Text style={styles.calmModeHint}>{copy.nightCaptureHint}</Text>
+          </View>
+          <Switch
+            accessibilityLabel={copy.nightCaptureTitle}
+            value={nightCapture}
+            onValueChange={onToggleNightCapture}
             trackColor={{
               false: theme.colors.switchTrackOff,
               true: theme.colors.primary,

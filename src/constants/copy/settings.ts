@@ -79,6 +79,9 @@ const SETTINGS_COPY_EN = {
   calmModeTitle: 'Calm mode',
   calmModeHint:
     'Hides the explanations under headings and fields. Values, counts and errors stay.',
+  nightCaptureTitle: 'Night capture',
+  nightCaptureHint:
+    'Between 22:00 and 07:00 the capture screen goes warm and dark, whichever theme is set.',
   themeTitle: 'Appearance',
   themeDescription: 'Choose the palette used across the app.',
   themeFootnote: 'Kaleido keeps the current look stable as the default theme.',
@@ -666,6 +669,9 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   calmModeTitle: 'Спокійний режим',
   calmModeHint:
     'Ховає пояснення під заголовками й полями. Значення, лічильники та помилки лишаються.',
+  nightCaptureTitle: 'Нічний запис',
+  nightCaptureHint:
+    'Між 22:00 і 07:00 екран запису стає теплим і темним — незалежно від обраної теми.',
   themeTitle: 'Оформлення',
   themeDescription: 'Обери палітру, яка використовується в усьому застосунку.',
   themeFootnote:

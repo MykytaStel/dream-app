@@ -33,6 +33,8 @@ export const APP_THEME_KEY = 'app-theme';
  * app presents itself, not what it stores.
  */
 export const APP_CALM_MODE_KEY = 'app-calm-mode';
+/** Whether capture screens dim themselves during the dark hours. */
+export const APP_NIGHT_CAPTURE_KEY = 'app-night-capture';
 export const WIDGET_SNAPSHOT_STORAGE_KEY = 'widget-snapshot';
 export const DREAM_ANALYSIS_SETTINGS_KEY = 'dream-analysis-settings';
 export const CLOUD_SESSION_STORAGE_KEY = 'cloud-session';

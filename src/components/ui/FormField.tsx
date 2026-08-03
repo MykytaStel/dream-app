@@ -10,6 +10,7 @@ import { useTheme } from '@shopify/restyle';
 import { Theme } from '../../theme/theme';
 import { Text } from './Text';
 import { createFormFieldStyles } from './FormField.styles';
+import { useCalmMode } from '../../app/CalmModeProvider';
 
 export function FormField({
   label,
@@ -30,6 +31,11 @@ export function FormField({
 }) {
   const t = useTheme<Theme>();
   const styles = React.useMemo(() => createFormFieldStyles(t), [t]);
+  const { calmMode } = useCalmMode();
+  // An error is not prose — it is the reason the field is refusing input, and
+  // it survives calm mode.
+  const showHelper =
+    Boolean(helperText) && (!calmMode || helperTone === 'error');
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -41,7 +47,7 @@ export function FormField({
         style={[styles.input, invalid ? styles.inputInvalid : null, inputStyle]}
         {...props}
       />
-      {helperText ? (
+      {showHelper ? (
         <Text
           style={[
             styles.helper,

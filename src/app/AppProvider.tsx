@@ -17,6 +17,7 @@ import { OBS_EVENTS } from '../services/observability/events';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { runStorageMigrations } from '../services/storage/migrations';
 import { AppThemeProvider, useAppTheme } from '../theme/AppThemeProvider';
+import { CalmModeProvider } from './CalmModeProvider';
 import { syncDreamWidgetSnapshot } from '../features/widgets/services/dreamWidgetSyncService';
 
 const qc = new QueryClient();
@@ -83,8 +84,10 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
       <SafeAreaProvider>
         <I18nProvider>
           <AppThemeProvider>
-            <ThemedSystemChrome />
-            {children}
+            <CalmModeProvider>
+              <ThemedSystemChrome />
+              {children}
+            </CalmModeProvider>
           </AppThemeProvider>
         </I18nProvider>
       </SafeAreaProvider>

@@ -5,6 +5,7 @@ import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import { createSoftTile } from '../../../theme/surfaces';
 import { SettingsValueChip } from './SettingsValueChip';
+import { useCalmMode } from '../../../app/CalmModeProvider';
 
 type SettingsActionRowProps = {
   title: string;
@@ -27,12 +28,15 @@ export function SettingsActionRow({
 }: SettingsActionRowProps) {
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
+  // The meta line describes the row; the value chip reports its state. Only
+  // the description goes.
+  const { calmMode } = useCalmMode();
 
   const content = (
     <>
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
-        {meta ? (
+        {meta && !calmMode ? (
           <Text
             style={styles.meta}
             numberOfLines={variant === 'tile' ? 1 : 2}

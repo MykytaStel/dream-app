@@ -76,6 +76,9 @@ const SETTINGS_COPY_EN = {
   languageDescription: 'Choose your app language.',
   languageEnglish: 'EN',
   languageUkrainian: 'UA',
+  calmModeTitle: 'Calm mode',
+  calmModeHint:
+    'Hides the explanations under headings and fields. Values, counts and errors stay.',
   themeTitle: 'Appearance',
   themeDescription: 'Choose the palette used across the app.',
   themeFootnote: 'Kaleido keeps the current look stable as the default theme.',
@@ -660,6 +663,9 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   languageDescription: 'Обери мову застосунку.',
   languageEnglish: 'EN',
   languageUkrainian: 'UA',
+  calmModeTitle: 'Спокійний режим',
+  calmModeHint:
+    'Ховає пояснення під заголовками й полями. Значення, лічильники та помилки лишаються.',
   themeTitle: 'Оформлення',
   themeDescription: 'Обери палітру, яка використовується в усьому застосунку.',
   themeFootnote:

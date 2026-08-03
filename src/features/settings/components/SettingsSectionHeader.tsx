@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
+import { useCalmMode } from '../../../app/CalmModeProvider';
 
 type SettingsSectionHeaderProps = {
   title: string;
@@ -17,12 +18,13 @@ export function SettingsSectionHeader({
 }: SettingsSectionHeaderProps) {
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
+  const { calmMode } = useCalmMode();
 
   return (
     <View style={styles.row}>
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
-        {description ? (
+        {description && !calmMode ? (
           <Text style={styles.description}>{description}</Text>
         ) : null}
       </View>

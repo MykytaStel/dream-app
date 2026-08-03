@@ -234,6 +234,25 @@ export function createSettingsScreenStyles(theme: Theme) {
     },
     // The hub's list of rooms. Rows carry their own tile background, so this
     // only has to space them and keep them clear of the header.
+    calmModeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: theme.spacing.md,
+    },
+    calmModeCopy: {
+      flex: 1,
+      flexShrink: 1,
+      gap: 2,
+    },
+    calmModeTitle: {
+      fontWeight: '700',
+    },
+    calmModeHint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 17,
+    },
     hubList: {
       gap: theme.spacing.sm,
       paddingTop: theme.spacing.sm,

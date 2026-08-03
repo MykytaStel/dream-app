@@ -36,8 +36,13 @@ jest.mock('../src/features/dreams/services/audioService', () => ({
 
 jest.mock('../src/features/dreams/services/dreamDraftService', () => ({
   clearDreamDraft: jest.fn(),
+  clearDreamEditDraft: jest.fn(),
   getDreamDraft: jest.fn(() => null),
+  // No stored edit, so these cases keep reading the dream itself — which is
+  // exactly what they characterise.
+  getDreamEditDraft: jest.fn(() => null),
   saveDreamDraft: jest.fn(),
+  saveDreamEditDraft: jest.fn(),
 }));
 
 jest.mock('../src/services/observability/events', () => ({

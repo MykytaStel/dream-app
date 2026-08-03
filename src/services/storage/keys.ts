@@ -7,6 +7,15 @@ export const DREAMS_META_STORAGE_KEY = 'dreams-meta';
 export const DREAM_DELETION_TOMBSTONES_STORAGE_KEY =
   'dream-deletion-tombstones';
 export const DREAM_DRAFT_STORAGE_KEY = 'dream-draft';
+/**
+ * Prefix for the draft kept while editing a dream that already exists, one key
+ * per dream.
+ *
+ * Deliberately not the key above. That one is the unfinished *new* dream: the
+ * widget renders it and the home screen offers to resume it, neither of which
+ * an edit in progress should trigger.
+ */
+export const DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX = 'dream-edit-draft:';
 export const LAST_VIEWED_DREAM_STORAGE_KEY = 'last-viewed-dream';
 export const HOME_SEARCH_PRESETS_STORAGE_KEY = 'home-search-presets';
 export const HOME_LAYOUT_PREFERENCES_STORAGE_KEY = 'home-layout-preferences';

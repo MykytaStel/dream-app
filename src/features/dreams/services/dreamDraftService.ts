@@ -1,5 +1,8 @@
 import { kv } from '../../../services/storage/mmkv';
-import { DREAM_DRAFT_STORAGE_KEY } from '../../../services/storage/keys';
+import {
+  DREAM_DRAFT_STORAGE_KEY,
+  DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX,
+} from '../../../services/storage/keys';
 import { scheduleDreamWidgetSync } from '../../widgets/services/dreamWidgetSyncService';
 import {
   Dream,
@@ -291,6 +294,58 @@ export function saveDreamDraft(draft: DreamDraft) {
 export function clearDreamDraft() {
   kv.remove(DREAM_DRAFT_STORAGE_KEY);
   scheduleDreamWidgetSync({ draftSnapshot: null });
+}
+
+/**
+ * The three below are the same idea as the three above, for a dream that has
+ * already been saved.
+ *
+ * They keep their own key per dream and touch no widget. Editing had no draft
+ * at all until now — the composer wrote one only in create mode — so a call
+ * arriving mid-edit took every change made since the screen opened. The dream
+ * survived intact, which is why it went unnoticed for so long: nothing was
+ * broken afterwards, the work was simply gone.
+ */
+function editDraftKey(dreamId: string) {
+  return `${DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX}${dreamId}`;
+}
+
+export function getDreamEditDraft(dreamId: string) {
+  const raw = kv.getString(editDraftKey(dreamId));
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    return normalizeDraft(JSON.parse(raw) as Partial<DreamDraft>);
+  } catch (error) {
+    reportStorageReadFailure(editDraftKey(dreamId), error);
+    return null;
+  }
+}
+
+export function saveDreamEditDraft(dreamId: string, draft: DreamDraft) {
+  const normalized = normalizeDraft({
+    ...draft,
+    updatedAt:
+      typeof draft.updatedAt === 'number' && Number.isFinite(draft.updatedAt)
+        ? draft.updatedAt
+        : Date.now(),
+  });
+
+  // An editor opened and closed again has nothing worth restoring, and a draft
+  // that exists but says nothing would still be compared against the dream on
+  // every open.
+  if (!hasDraftContent(normalized)) {
+    kv.remove(editDraftKey(dreamId));
+    return;
+  }
+
+  kv.set(editDraftKey(dreamId), JSON.stringify(normalized));
+}
+
+export function clearDreamEditDraft(dreamId: string) {
+  kv.remove(editDraftKey(dreamId));
 }
 
 export function getDreamDraftSnapshot(

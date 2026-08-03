@@ -20,7 +20,7 @@ export default function SettingsAnalysisScreen() {
   const { copy, styles, controller } = useSettingsSpoke();
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll withTopInset={false}>
       <AnalysisSection
         copy={copy}
         styles={styles}

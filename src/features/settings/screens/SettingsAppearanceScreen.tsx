@@ -18,7 +18,7 @@ export default function SettingsAppearanceScreen() {
   const { copy, styles, controller, locale } = useSettingsSpoke();
 
   return (
-    <ScreenContainer scroll>
+    <ScreenContainer scroll withTopInset={false}>
       <LanguageSection
         copy={copy}
         locale={locale}

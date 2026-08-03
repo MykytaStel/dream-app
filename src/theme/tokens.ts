@@ -20,6 +20,7 @@ export type ThemePalette = {
   glow: string;
   ink: string;
   switchTrackOff: string;
+  switchThumb: string;
   /**
    * What a shadow is cast in. Always near-black today, but a light theme casts
    * softer, warmer shadows than a dark one, and `#000` hardcoded in a stylesheet
@@ -49,6 +50,7 @@ export const palette = {
     glow: '#78B8FF',
     ink: '#0B1220',
     switchTrackOff: '#444B5A',
+    switchThumb: '#F2F4FB',
     shadow: '#000000',
   },
   ember: {
@@ -71,6 +73,7 @@ export const palette = {
     glow: '#FF9A7A',
     ink: '#0E090A',
     switchTrackOff: '#5A4348',
+    switchThumb: '#FAF2F3',
     shadow: '#000000',
   },
   moss: {
@@ -93,6 +96,7 @@ export const palette = {
     glow: '#7DE3C0',
     ink: '#08110F',
     switchTrackOff: '#41534E',
+    switchThumb: '#EEF8F4',
     shadow: '#000000',
   },
   /**
@@ -129,6 +133,10 @@ export const palette = {
     glow: '#2F63C7',
     ink: '#0B1220',
     switchTrackOff: '#BFC6DA',
+    // The knob, not the label. This used to read `text` at the call site,
+    // which is near-white in the dark themes and near-black here — so the one
+    // light theme drew a black pill on a pale track.
+    switchThumb: '#FFFFFF',
     // Softer than black: a pure-black shadow on a pale surface reads as dirt.
     shadow: '#1B2138',
   },

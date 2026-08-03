@@ -45,6 +45,7 @@ function createAppTheme(colors: ThemePalette) {
       glow: colors.glow,
       ink: colors.ink,
       switchTrackOff: colors.switchTrackOff,
+      switchThumb: colors.switchThumb,
       shadow: colors.shadow,
     },
     ...sharedTheme,

@@ -341,7 +341,12 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
       backgroundColor: hexToRgba(theme.colors.primary, 0.12),
     },
     quickAddOptionIconWrapPrimary: {
-      backgroundColor: hexToRgba(theme.colors.text, 0.2),
+      // A deeper pour of the same tint the other rows use, rather than a wash
+      // of the text colour. The text wash was symmetric in theory and not in
+      // practice: white at 0.2 over a dark surface is a hint, black at 0.2
+      // over a pale one is a grey disc, so the highlighted row was the only
+      // one whose icon sat on something muddy.
+      backgroundColor: hexToRgba(theme.colors.primary, 0.26),
     },
     quickAddOptionCopy: {
       flex: 1,

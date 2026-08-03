@@ -16,22 +16,16 @@ import { useSettingsSpoke } from './useSettingsSpoke';
  * Version, schema, export — and the development tools, when there are any.
  *
  * The footer of the old settings scroll, which meant the build number was
- * reachable only by scrolling past every control in the app. It is rarely
- * wanted and worth finding quickly when it is, which is exactly what a row on
- * the hub is for.
+ * reachable only by scrolling past every control in the app. A row on the hub
+ * makes it one tap away instead — but the version still belongs at the bottom
+ * of the screen it lands on, the way a colophon does, rather than being the
+ * first thing read.
  */
 export default function SettingsAboutScreen() {
   const { copy, styles, controller } = useSettingsSpoke();
 
   return (
-    <ScreenContainer scroll>
-      <View style={styles.footerBlock}>
-        <Text style={styles.footerVersion}>
-          {`${copy.footerBuildLabel} ${controller.APP_VERSION_LABEL}`}
-        </Text>
-        <Text style={styles.footerMeta}>{controller.footerMeta}</Text>
-      </View>
-
+    <ScreenContainer scroll withTopInset={false}>
       {controller.__DEV__ ? (
         <DevSection
           copy={copy}
@@ -55,6 +49,15 @@ export default function SettingsAboutScreen() {
           onClearSeedDreams={controller.onClearSeedDreams}
         />
       ) : null}
+
+      {/* Last, the way a colophon is. Moving it to the top of its own screen
+          put the build number above the tools someone actually came for. */}
+      <View style={styles.footerBlock}>
+        <Text style={styles.footerVersion}>
+          {`${copy.footerBuildLabel} ${controller.APP_VERSION_LABEL}`}
+        </Text>
+        <Text style={styles.footerMeta}>{controller.footerMeta}</Text>
+      </View>
     </ScreenContainer>
   );
 }

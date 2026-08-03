@@ -419,7 +419,7 @@ export function CloudSection({
                 false: t.colors.switchTrackOff,
                 true: t.colors.primary,
               }}
-              thumbColor={t.colors.text}
+              thumbColor={t.colors.switchThumb}
             />
           ) : null
         }

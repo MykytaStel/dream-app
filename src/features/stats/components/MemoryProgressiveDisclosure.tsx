@@ -116,11 +116,7 @@ function MemorySecondaryAction({
           {description}
         </Text>
       </View>
-      <Ionicons
-        name="chevron-forward"
-        size={16}
-        color={theme.colors.textDim}
-      />
+      <Ionicons name="chevron-forward" size={16} color={theme.colors.textDim} />
     </Pressable>
   );
 }

@@ -271,8 +271,7 @@ export default function StatsScreen() {
             copy={disclosureCopy}
             onOpenPractice={() =>
               navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
-                focus:
-                  controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
+                focus: controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
                 entrySource: 'stats',
               })
             }
@@ -313,7 +312,9 @@ export default function StatsScreen() {
             lucidHistoryItems={controller.lucidHistoryItems}
             nightmareMetrics={controller.nightmareMetrics}
             lucidProgressTitle={practiceCopy.statsLucidProgressTitle}
-            lucidProgressDescription={practiceCopy.statsLucidProgressDescription}
+            lucidProgressDescription={
+              practiceCopy.statsLucidProgressDescription
+            }
             nightmareRecoveryTitle={practiceCopy.statsNightmareRecoveryTitle}
             nightmareRecoveryDescription={
               practiceCopy.statsNightmareRecoveryDescription

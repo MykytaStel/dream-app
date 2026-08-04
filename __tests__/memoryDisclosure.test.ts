@@ -48,16 +48,22 @@ describe('memoryDisclosure', () => {
     expect(isMemoryModeAvailable(twentyDreams, 'monthly')).toBe(true);
   });
 
-  test('provides localized stage and detail copy', () => {
+  test('provides localized stage, analysis and secondary tool copy', () => {
     const state = getMemoryDisclosureState(4);
 
     expect(getMemoryDisclosureCopy(state, 'uk')).toMatchObject({
       title: 'Перші сигнали',
+      detailsTitle: 'Детальна аналітика',
+      practiceTitle: 'Практика снів',
+      progressTitle: 'Прогрес',
       showDetailsLabel: 'Показати деталі',
       progressLabel: 'Ще 2 записи до наступного рівня',
     });
     expect(getMemoryDisclosureCopy(state, 'en')).toMatchObject({
       title: 'First signals',
+      detailsTitle: 'Detailed analysis',
+      practiceTitle: 'Dream practice',
+      progressTitle: 'Progress',
       showDetailsLabel: 'Show details',
       progressLabel: '2 more entries to the next level',
     });

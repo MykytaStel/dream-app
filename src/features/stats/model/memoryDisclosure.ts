@@ -1,11 +1,7 @@
 import type { AppLocale } from '../../../i18n/types';
 
 export type MemoryDisclosureStage =
-  | 'foundation'
-  | 'signals'
-  | 'connections'
-  | 'threads'
-  | 'deep';
+  'foundation' | 'signals' | 'connections' | 'threads' | 'deep';
 
 export type MemoryDisclosureMode = 'overview' | 'threads' | 'monthly';
 

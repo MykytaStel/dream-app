@@ -13,9 +13,9 @@ import {
 } from './dreamList';
 
 /**
- * @deprecated Transitional exports for callers that still use the retired
- * Home timeline module name. New code belongs in `dreamList` or
- * `archiveSearch`. Remove after the remaining UI and hook imports migrate.
+ * @deprecated Transitional exports for the remaining UI and hook callers that
+ * still use the retired Home timeline module name. New code belongs in
+ * `dreamList` or `archiveSearch`.
  */
 export type HomeSortOrder = 'newest' | 'oldest';
 export type HomeSpecialFilter = ArchiveSpecialFilter;

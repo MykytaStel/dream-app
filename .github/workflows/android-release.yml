@@ -27,6 +27,11 @@ jobs:
         with:
           ref: ${{ github.event.inputs.ref || github.ref }}
 
+      - name: Enable Corepack
+        run: |
+          corepack enable
+          corepack prepare yarn@3.6.4 --activate
+
       - name: Setup Node
         uses: actions/setup-node@v5
         with:
@@ -40,11 +45,6 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-
-      - name: Enable Corepack
-        run: |
-          corepack enable
-          corepack prepare yarn@3.6.4 --activate
 
       - name: Install dependencies
         run: yarn install --immutable

@@ -107,22 +107,6 @@ export default function ArchiveScreen() {
     () => countActiveArchiveFilters(filterSelection),
     [filterSelection],
   );
-  const { selectFilter, selectSpecialFilter, selectTagFilter } = browse;
-  const applyArchiveFilters = React.useCallback(
-    (selection: ArchiveFilterSelection) => {
-      // Applying from the sheet is one user action. React batches these state
-      // updates, while selectFilter first clears refinements that may no longer
-      // make sense under the new status scope.
-      selectFilter(selection.filter);
-      if (selection.specialFilter !== 'all') {
-        selectSpecialFilter(selection.specialFilter);
-      }
-      if (selection.tagFilter) {
-        selectTagFilter(selection.tagFilter);
-      }
-    },
-    [selectFilter, selectSpecialFilter, selectTagFilter],
-  );
 
   const renderArchiveItem = React.useCallback(
     ({ item }: { item: Dream }) => (
@@ -339,7 +323,7 @@ export default function ArchiveScreen() {
         topTags={browse.topMonthTags}
         selection={filterSelection}
         onClose={() => setIsFilterSheetOpen(false)}
-        onApply={applyArchiveFilters}
+        onApply={browse.applyFilterSelection}
       />
     </ScreenContainer>
   );

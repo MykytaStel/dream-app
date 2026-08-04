@@ -17,6 +17,7 @@ import {
 } from '../../model/archiveBrowser';
 import { type ArchiveSurfaceMode } from '../../model/archiveSurface';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
+import { ArchiveSegmentedControl } from './ArchiveSegmentedControl';
 
 const archiveControlsLayoutTransition = LinearTransition.springify()
   .damping(18)
@@ -117,33 +118,12 @@ export function ArchiveControlsPanel({
             <Text style={styles.browseModeLabel}>
               {copy.archiveBrowseLabel}
             </Text>
-            <View style={styles.browseModeChips}>
-              {surfaceModes.map(option => {
-                const active = surfaceMode === option.key;
-
-                return (
-                  <Pressable
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: active }}
-                    key={option.key}
-                    style={[
-                      styles.modeChip,
-                      active ? styles.modeChipActive : null,
-                    ]}
-                    onPress={() => onChangeSurfaceMode(option.key)}
-                  >
-                    <Text
-                      style={[
-                        styles.modeChipText,
-                        active ? styles.modeChipTextActive : null,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <ArchiveSegmentedControl
+              options={surfaceModes}
+              value={surfaceMode}
+              styles={styles}
+              onChange={onChangeSurfaceMode}
+            />
           </View>
 
           <View style={styles.controlsFooterRow}>
@@ -201,30 +181,12 @@ export function ArchiveControlsPanel({
         <View style={styles.resultsToolbarMeta}>
           <Text style={styles.resultsToolbarText}>{visibleEntriesLabel}</Text>
         </View>
-        <View style={styles.browseModeChips}>
-          {browseModes.map(option => {
-            const active = viewMode === option.key;
-
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                key={option.key}
-                style={[styles.modeChip, active ? styles.modeChipActive : null]}
-                onPress={() => onChangeViewMode(option.key)}
-              >
-                <Text
-                  style={[
-                    styles.modeChipText,
-                    active ? styles.modeChipTextActive : null,
-                  ]}
-                >
-                  {option.label}
-                </Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <ArchiveSegmentedControl
+          options={browseModes}
+          value={viewMode}
+          styles={styles}
+          onChange={onChangeViewMode}
+        />
       </Animated.View>
 
       {revisitCue ? (

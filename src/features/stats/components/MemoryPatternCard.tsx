@@ -52,7 +52,9 @@ function PatternAction({
         size={14}
         color={active ? theme.colors.background : theme.colors.text}
       />
-      <Text style={[styles.actionText, active ? styles.actionTextActive : null]}>
+      <Text
+        style={[styles.actionText, active ? styles.actionTextActive : null]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -118,7 +120,9 @@ export function MemoryPatternCard({
             ]}
           >
             <Ionicons
-              name={candidate.confirmed ? 'checkmark-circle' : 'sparkles-outline'}
+              name={
+                candidate.confirmed ? 'checkmark-circle' : 'sparkles-outline'
+              }
               size={13}
               color={theme.colors.accent}
             />
@@ -151,7 +155,9 @@ export function MemoryPatternCard({
                     <Text style={styles.evidenceDreamTitle} numberOfLines={1}>
                       {evidence.title || copy.fallbackDreamTitle}
                     </Text>
-                    <Text style={styles.evidenceDate}>{evidence.dateLabel}</Text>
+                    <Text style={styles.evidenceDate}>
+                      {evidence.dateLabel}
+                    </Text>
                   </View>
                   {evidence.preview ? (
                     <Text style={styles.evidencePreview} numberOfLines={2}>
@@ -177,11 +183,11 @@ export function MemoryPatternCard({
         <View style={styles.actionsRow}>
           <PatternAction
             label={
-              candidate.confirmed
-                ? copy.confirmedAction
-                : copy.confirmAction
+              candidate.confirmed ? copy.confirmedAction : copy.confirmAction
             }
-            icon={candidate.confirmed ? 'checkmark-circle' : 'checkmark-outline'}
+            icon={
+              candidate.confirmed ? 'checkmark-circle' : 'checkmark-outline'
+            }
             active={candidate.confirmed}
             disabled={candidate.confirmed}
             onPress={onConfirm}
@@ -228,11 +234,7 @@ export function MemoryPatternCard({
                 onPress={closeRename}
                 style={styles.closeButton}
               >
-                <Ionicons
-                  name="close"
-                  size={18}
-                  color={theme.colors.text}
-                />
+                <Ionicons name="close" size={18} color={theme.colors.text} />
               </Pressable>
             </View>
 
@@ -255,7 +257,9 @@ export function MemoryPatternCard({
                 onPress={closeRename}
                 style={styles.modalSecondaryAction}
               >
-                <Text style={styles.modalSecondaryText}>{copy.cancelAction}</Text>
+                <Text style={styles.modalSecondaryText}>
+                  {copy.cancelAction}
+                </Text>
               </Pressable>
               <Pressable
                 accessibilityRole="button"
@@ -454,8 +458,8 @@ function createStyles(theme: Theme) {
       justifyContent: 'flex-end',
     },
     backdrop: {
-      ...StyleSheet.absoluteFillObject,
-      backgroundColor: 'rgba(0, 0, 0, 0.52)',
+      ...StyleSheet.absoluteFill,
+      backgroundColor: `${theme.colors.ink}8F`,
     },
     modalCard: {
       gap: 16,

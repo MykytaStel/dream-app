@@ -64,10 +64,7 @@ function truncate(value: string, maxLength: number) {
 
 function getEvidencePreview(dream: Dream) {
   return truncate(
-    dream.text?.trim() ||
-      dream.transcript?.trim() ||
-      dream.title?.trim() ||
-      '',
+    dream.text?.trim() || dream.transcript?.trim() || dream.title?.trim() || '',
     140,
   );
 }

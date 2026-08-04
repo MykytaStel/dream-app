@@ -134,11 +134,5 @@ export function getPatternDreamMatches(
       };
     })
     .filter((entry): entry is PatternDreamMatch => Boolean(entry))
-    .sort((a, b) => {
-      if (b.sources.length !== a.sources.length) {
-        return b.sources.length - a.sources.length;
-      }
-
-      return b.dream.createdAt - a.dream.createdAt;
-    });
+    .sort((a, b) => b.dream.createdAt - a.dream.createdAt);
 }

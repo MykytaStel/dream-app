@@ -13,11 +13,7 @@ jest.mock('../src/services/storage/mmkv', () => ({
   },
 }));
 
-function dream(
-  id: string,
-  createdAt: number,
-  input: Partial<Dream>,
-): Dream {
+function dream(id: string, createdAt: number, input: Partial<Dream>): Dream {
   return {
     id,
     createdAt,

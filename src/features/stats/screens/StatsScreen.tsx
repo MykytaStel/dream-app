@@ -32,11 +32,22 @@ import {
   MemoryDetailsToggle,
   MemoryDisclosureCard,
 } from '../components/MemoryProgressiveDisclosure';
+import { MemoryPatternCard } from '../components/MemoryPatternCard';
 import {
   getMemoryDisclosureCopy,
   getMemoryDisclosureState,
   isMemoryModeAvailable,
 } from '../model/memoryDisclosure';
+import {
+  getMemoryPatternCopy,
+  getPrimaryMemoryPattern,
+} from '../model/memoryPattern';
+import {
+  confirmMemoryPattern,
+  dismissMemoryPattern,
+  getMemoryPatternFeedback,
+  renameMemoryPattern,
+} from '../services/memoryPatternFeedbackService';
 
 export default function StatsScreen() {
   const theme = useTheme<Theme>();
@@ -44,6 +55,10 @@ export default function StatsScreen() {
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
+  const memoryPatternCopy = React.useMemo(
+    () => getMemoryPatternCopy(locale),
+    [locale],
+  );
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
@@ -51,6 +66,9 @@ export default function StatsScreen() {
     React.useState<MemoryMode>('overview');
   const [isMemoryDetailsExpanded, setIsMemoryDetailsExpanded] =
     React.useState(false);
+  const [memoryPatternFeedback, setMemoryPatternFeedback] = React.useState(() =>
+    getMemoryPatternFeedback(),
+  );
 
   const openPatternDetail = React.useCallback(
     (signal: string, kind: PatternDetailKind) => {
@@ -76,6 +94,15 @@ export default function StatsScreen() {
   const disclosureCopy = React.useMemo(
     () => getMemoryDisclosureCopy(disclosureState, locale),
     [disclosureState, locale],
+  );
+  const primaryMemoryPattern = React.useMemo(
+    () =>
+      getPrimaryMemoryPattern({
+        dreams: controller.scopedDreams,
+        locale,
+        feedback: memoryPatternFeedback,
+      }),
+    [controller.scopedDreams, locale, memoryPatternFeedback],
   );
   const memoryModeOptions = React.useMemo(
     () =>
@@ -181,7 +208,6 @@ export default function StatsScreen() {
         selectedRange={controller.selectedRange}
         onSelectRange={handleSelectRange}
         rangeOptions={visibleRangeOptions}
-        topSignal={controller.topSignal}
         memoryNudge={controller.memoryNudge}
         onOpenMemoryNudge={(dreamId, focusSection) =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
@@ -191,6 +217,49 @@ export default function StatsScreen() {
         }
         coverageGap={controller.coverageGap}
       />
+
+      {selectedMemoryMode === 'overview' &&
+      disclosureState.stage !== 'foundation' &&
+      primaryMemoryPattern ? (
+        <MemoryPatternCard
+          candidate={primaryMemoryPattern}
+          copy={memoryPatternCopy}
+          onConfirm={() =>
+            setMemoryPatternFeedback(
+              confirmMemoryPattern(
+                primaryMemoryPattern.signal,
+                primaryMemoryPattern.kind,
+              ),
+            )
+          }
+          onDismiss={() =>
+            setMemoryPatternFeedback(
+              dismissMemoryPattern(
+                primaryMemoryPattern.signal,
+                primaryMemoryPattern.kind,
+              ),
+            )
+          }
+          onRename={title =>
+            setMemoryPatternFeedback(
+              renameMemoryPattern(
+                primaryMemoryPattern.signal,
+                primaryMemoryPattern.kind,
+                title,
+              ),
+            )
+          }
+          onOpenDream={dreamId =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId })
+          }
+          onOpenPattern={() =>
+            openPatternDetail(
+              primaryMemoryPattern.signal,
+              primaryMemoryPattern.kind,
+            )
+          }
+        />
+      ) : null}
 
       {selectedMemoryMode === 'overview' ? (
         <>

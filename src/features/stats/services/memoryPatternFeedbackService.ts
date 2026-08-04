@@ -17,10 +17,7 @@ export type MemoryPatternFeedbackRecord = {
 
 type RawMemoryPatternFeedbackRecord = Partial<MemoryPatternFeedbackRecord>;
 
-export function buildMemoryPatternKey(
-  signal: string,
-  kind: PatternDetailKind,
-) {
+export function buildMemoryPatternKey(signal: string, kind: PatternDetailKind) {
   return `${kind}:${normalizePatternSignal(signal)}`;
 }
 
@@ -123,10 +120,7 @@ function updatePatternFeedback(
   );
 }
 
-export function confirmMemoryPattern(
-  signal: string,
-  kind: PatternDetailKind,
-) {
+export function confirmMemoryPattern(signal: string, kind: PatternDetailKind) {
   return updatePatternFeedback(signal, kind, current => ({
     key: buildMemoryPatternKey(signal, kind),
     signal: signal.trim(),
@@ -137,10 +131,7 @@ export function confirmMemoryPattern(
   }));
 }
 
-export function dismissMemoryPattern(
-  signal: string,
-  kind: PatternDetailKind,
-) {
+export function dismissMemoryPattern(signal: string, kind: PatternDetailKind) {
   return updatePatternFeedback(signal, kind, current => ({
     key: buildMemoryPatternKey(signal, kind),
     signal: signal.trim(),

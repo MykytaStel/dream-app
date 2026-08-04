@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Text } from '../../../../components/ui/Text';
@@ -101,11 +95,7 @@ export function ArchiveFilterSheet({
               style={styles.closeButton}
               onPress={onClose}
             >
-              <Ionicons
-                name="close"
-                size={20}
-                color={theme.colors.text}
-              />
+              <Ionicons name="close" size={20} color={theme.colors.text} />
             </Pressable>
           </View>
 
@@ -247,7 +237,9 @@ function FilterChip({ label, selected, styles, onPress }: FilterChipProps) {
       style={[styles.chip, selected ? styles.chipSelected : null]}
       onPress={onPress}
     >
-      <Text style={[styles.chipText, selected ? styles.chipTextSelected : null]}>
+      <Text
+        style={[styles.chipText, selected ? styles.chipTextSelected : null]}
+      >
         {label}
       </Text>
     </Pressable>
@@ -259,7 +251,7 @@ function createStyles(theme: Theme) {
     backdrop: {
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: 'rgba(0, 0, 0, 0.52)',
+      backgroundColor: `${theme.colors.ink}8F`,
     },
     sheet: {
       maxHeight: '86%',

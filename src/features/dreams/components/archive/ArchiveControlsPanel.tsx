@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Animated, {
@@ -21,6 +21,21 @@ import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
 const archiveControlsLayoutTransition = LinearTransition.springify()
   .damping(18)
   .stiffness(180);
+
+const localStyles = StyleSheet.create({
+  filterTrigger: {
+    minHeight: 32,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  footerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flexWrap: 'wrap',
+  },
+});
 
 type ArchiveControlsPanelProps = {
   copy: DreamCopy;
@@ -135,15 +150,7 @@ export function ArchiveControlsPanel({
             <Pressable
               accessibilityRole="button"
               accessibilityLabel={filtersLabel}
-              style={[
-                styles.controlsActionChip,
-                {
-                  minHeight: 32,
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  gap: 6,
-                },
-              ]}
+              style={[styles.controlsActionChip, localStyles.filterTrigger]}
               onPress={onOpenFilters}
             >
               <Ionicons
@@ -161,14 +168,7 @@ export function ArchiveControlsPanel({
               ) : null}
             </Pressable>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-                gap: 8,
-                flexWrap: 'wrap',
-              }}
-            >
+            <View style={localStyles.footerActions}>
               {hasHardReset ? (
                 <Pressable
                   accessibilityRole="button"

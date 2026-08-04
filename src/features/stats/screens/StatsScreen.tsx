@@ -83,9 +83,7 @@ export default function StatsScreen() {
         { value: 'overview' as const, label: copy.memoryModeOverview },
         { value: 'threads' as const, label: copy.memoryModeThreads },
         { value: 'monthly' as const, label: copy.memoryModeMonthly },
-      ].filter(option =>
-        disclosureState.availableModes.includes(option.value),
-      ),
+      ].filter(option => disclosureState.availableModes.includes(option.value)),
     [
       copy.memoryModeMonthly,
       copy.memoryModeOverview,
@@ -196,16 +194,11 @@ export default function StatsScreen() {
 
       {selectedMemoryMode === 'overview' ? (
         <>
-          <MemoryDisclosureCard
-            state={disclosureState}
-            copy={disclosureCopy}
-          />
+          <MemoryDisclosureCard state={disclosureState} copy={disclosureCopy} />
           <MemoryDetailsToggle
             expanded={isMemoryDetailsExpanded}
             copy={disclosureCopy}
-            onPress={() =>
-              setIsMemoryDetailsExpanded(current => !current)
-            }
+            onPress={() => setIsMemoryDetailsExpanded(current => !current)}
           />
         </>
       ) : null}

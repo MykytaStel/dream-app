@@ -75,9 +75,7 @@ describe('archiveBrowseSections', () => {
       locale: 'en-US',
     });
 
-    expect(sections[0].title).toBe(
-      formatSelectedDate('2026-03-08', 'en-US'),
-    );
+    expect(sections[0].title).toBe(formatSelectedDate('2026-03-08', 'en-US'));
   });
 
   test('calendar mode has no sections without an available month', () => {

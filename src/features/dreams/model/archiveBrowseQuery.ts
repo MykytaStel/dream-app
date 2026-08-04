@@ -24,8 +24,8 @@ export type ArchiveBrowseQuery = {
 
 export type ArchiveBrowseResult = {
   statusScopedDreams: Dream[];
-  monthDreams: Dream[];
-  searchedMonthDreams: Dream[];
+  dateScopedDreams: Dream[];
+  searchedScopeDreams: Dream[];
   visibleDreams: Dream[];
 };
 
@@ -48,34 +48,35 @@ export function getArchiveBrowseResult({
   selectedDate,
 }: ArchiveBrowseQuery): ArchiveBrowseResult {
   const statusScopedDreams = applyArchiveStatusFilter(dreams, filter);
-  const monthDreams = selectedMonthKey
+  const dateScopedDreams = selectedMonthKey
     ? statusScopedDreams.filter(
         dream => getMonthKey(dream) === selectedMonthKey,
       )
-    : [];
+    : statusScopedDreams;
   const tagFilteredDreams = tagFilter
-    ? monthDreams.filter(dream => matchesArchiveTag(dream, tagFilter))
-    : monthDreams;
+    ? dateScopedDreams.filter(dream => matchesArchiveTag(dream, tagFilter))
+    : dateScopedDreams;
   const specialFilteredDreams =
     specialFilter === 'all'
       ? tagFilteredDreams
       : tagFilteredDreams.filter(dream =>
           matchesArchiveSpecialFilter(dream, specialFilter),
         );
-  const searchedMonthDreams = searchArchiveMonthDreams(
+  const searchedScopeDreams = searchArchiveMonthDreams(
     specialFilteredDreams,
     searchQuery,
   );
-  const visibleDreams = selectedDate
-    ? searchedMonthDreams.filter(
-        dream => toLocalDateKey(getDreamDate(dream)) === selectedDate,
-      )
-    : searchedMonthDreams;
+  const visibleDreams =
+    selectedMonthKey && selectedDate
+      ? searchedScopeDreams.filter(
+          dream => toLocalDateKey(getDreamDate(dream)) === selectedDate,
+        )
+      : searchedScopeDreams;
 
   return {
     statusScopedDreams,
-    monthDreams,
-    searchedMonthDreams,
+    dateScopedDreams,
+    searchedScopeDreams,
     visibleDreams,
   };
 }

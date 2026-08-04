@@ -12,7 +12,7 @@ function createDream(overrides: Partial<Dream> & Pick<Dream, 'id'>): Dream {
 }
 
 describe('archiveBrowseQuery', () => {
-  test('applies status and month scope before returning visible dreams', () => {
+  test('applies status and calendar month scope before returning dreams', () => {
     const archivedMarchOlder = createDream({
       id: 'archived-march-older',
       sleepDate: '2026-03-02',
@@ -55,13 +55,46 @@ describe('archiveBrowseQuery', () => {
       'archived-april',
       'archived-march-newer',
     ]);
-    expect(result.monthDreams.map(dream => dream.id)).toEqual([
+    expect(result.dateScopedDreams.map(dream => dream.id)).toEqual([
       'archived-march-older',
       'archived-march-newer',
     ]);
     expect(result.visibleDreams.map(dream => dream.id)).toEqual([
       'archived-march-newer',
       'archived-march-older',
+    ]);
+  });
+
+  test('list scope searches active and archived dreams across months', () => {
+    const activeMarch = createDream({
+      id: 'active-march',
+      sleepDate: '2026-03-09',
+      title: 'Quiet room',
+    });
+    const archivedApril = createDream({
+      id: 'archived-april',
+      sleepDate: '2026-04-01',
+      title: 'Lantern station',
+      archivedAt: 3,
+    });
+
+    const result = getArchiveBrowseResult({
+      dreams: [activeMarch, archivedApril],
+      filter: 'all',
+      selectedMonthKey: null,
+      tagFilter: null,
+      specialFilter: 'all',
+      searchQuery: 'lantern',
+      selectedDate: null,
+    });
+
+    expect(result.statusScopedDreams).toHaveLength(2);
+    expect(result.dateScopedDreams).toHaveLength(2);
+    expect(result.searchedScopeDreams.map(dream => dream.id)).toEqual([
+      'archived-april',
+    ]);
+    expect(result.visibleDreams.map(dream => dream.id)).toEqual([
+      'archived-april',
     ]);
   });
 
@@ -84,7 +117,7 @@ describe('archiveBrowseQuery', () => {
     const result = getArchiveBrowseResult({
       dreams: [wrongTag, matching],
       filter: 'archived',
-      selectedMonthKey: '2026-03',
+      selectedMonthKey: null,
       tagFilter: 'night flight',
       specialFilter: 'all',
       searchQuery: 'lantern',
@@ -94,7 +127,7 @@ describe('archiveBrowseQuery', () => {
     expect(result.visibleDreams.map(dream => dream.id)).toEqual(['matching']);
   });
 
-  test('composes special filter, search and selected date', () => {
+  test('composes special filter, search and selected calendar date', () => {
     const matching = createDream({
       id: 'matching-lucid',
       sleepDate: '2026-03-12',
@@ -129,7 +162,7 @@ describe('archiveBrowseQuery', () => {
       selectedDate: '2026-03-12',
     });
 
-    expect(result.searchedMonthDreams.map(dream => dream.id)).toEqual([
+    expect(result.searchedScopeDreams.map(dream => dream.id)).toEqual([
       'wrong-date',
       'matching-lucid',
     ]);
@@ -138,22 +171,29 @@ describe('archiveBrowseQuery', () => {
     ]);
   });
 
-  test('keeps status scope available when no month is selected', () => {
-    const archived = createDream({ id: 'archived', archivedAt: 1 });
+  test('selected date is ignored when no calendar month is active', () => {
+    const march = createDream({
+      id: 'march',
+      sleepDate: '2026-03-12',
+    });
+    const april = createDream({
+      id: 'april',
+      sleepDate: '2026-04-01',
+    });
 
     const result = getArchiveBrowseResult({
-      dreams: [archived],
-      filter: 'archived',
+      dreams: [march, april],
+      filter: 'all',
       selectedMonthKey: null,
       tagFilter: null,
       specialFilter: 'all',
       searchQuery: '',
-      selectedDate: null,
+      selectedDate: '2026-03-12',
     });
 
-    expect(result.statusScopedDreams).toEqual([archived]);
-    expect(result.monthDreams).toEqual([]);
-    expect(result.searchedMonthDreams).toEqual([]);
-    expect(result.visibleDreams).toEqual([]);
+    expect(result.visibleDreams.map(dream => dream.id)).toEqual([
+      'april',
+      'march',
+    ]);
   });
 });

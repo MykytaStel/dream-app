@@ -26,7 +26,6 @@ import {
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { Theme } from '../../../theme/theme';
-import { getPracticeCopy } from '../../../constants/copy/practice';
 import { Dream } from '../model/dream';
 import { isWakeCaptureWindow } from '../model/homeOverview';
 import { createArchiveScreenStyles } from './ArchiveScreen.styles';
@@ -51,7 +50,6 @@ export default function ArchiveScreen() {
   const theme = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
-  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const filterSheetCopy = React.useMemo(
     () => getArchiveFilterSheetCopy(locale),
     [locale],

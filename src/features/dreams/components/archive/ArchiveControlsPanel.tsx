@@ -17,7 +17,7 @@ import {
   type ArchiveTagSignal,
   type ArchiveViewMode,
 } from '../../model/archiveBrowser';
-import { type HomeSpecialFilter } from '../../model/homeTimeline';
+import { type ArchiveSpecialFilter } from '../../model/archiveSearch';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
 
 const archiveControlsLayoutTransition = LinearTransition.springify()
@@ -34,9 +34,9 @@ type ArchiveControlsPanelProps = {
   filter: ArchiveFilter;
   onSelectFilter: (filter: ArchiveFilter) => void;
   specialFiltersLabel: string;
-  specialFilters: ReadonlyArray<{ key: HomeSpecialFilter; label: string }>;
-  specialFilter: HomeSpecialFilter;
-  onSelectSpecialFilter: (filter: HomeSpecialFilter) => void;
+  specialFilters: ReadonlyArray<{ key: ArchiveSpecialFilter; label: string }>;
+  specialFilter: ArchiveSpecialFilter;
+  onSelectSpecialFilter: (filter: ArchiveSpecialFilter) => void;
   hasHardReset: boolean;
   onReset: () => void;
   visibleEntriesLabel: string;

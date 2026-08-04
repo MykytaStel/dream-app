@@ -76,11 +76,26 @@ describe('useArchiveBrowseState', () => {
     expect(result.current.availableMonthKeys).toEqual(['2026-04', '2026-03']);
   });
 
-  test('only the selected month is visible', async () => {
-    // The narrowing that makes the screen cheap. If this ever returns all
-    // three, the cost of every filter below it starts tracking the whole
-    // archive instead of one month.
+  test('list mode spans the whole journal, not just the selected month', async () => {
+    // List is the default surface now, and it is deliberately not narrowed by
+    // month — that narrowing is calendar's job (next test).
     const { result } = await renderArchive(threeMonths);
+
+    expect(result.current.surfaceMode).toBe('list');
+    expect(result.current.visibleDreams.map(dream => dream.id)).toEqual([
+      'april-2',
+      'april-1',
+      'march',
+    ]);
+  });
+
+  test('calendar mode narrows to only the selected month', async () => {
+    // The narrowing that makes the calendar screen cheap. If this ever
+    // returns all three, the cost of every filter below it starts tracking
+    // the whole archive instead of one month.
+    const { result } = await renderArchive(threeMonths);
+
+    await act(async () => result.current.selectSurfaceMode('calendar'));
 
     expect(result.current.visibleDreams.map(dream => dream.id)).toEqual([
       'april-2',
@@ -88,11 +103,10 @@ describe('useArchiveBrowseState', () => {
     ]);
   });
 
-  test('a month can be offered while showing nothing', async () => {
-    // The months come from every dream, the contents from the ones the status
-    // filter kept. So a month whose only dream is unarchived is still listed —
-    // deliberately, since the user can switch the filter — and lands on an
-    // empty screen until they do.
+  test('a status filter that empties a month drops it from the offered months', async () => {
+    // Months come from the dreams the status filter kept, not from every
+    // dream — so a month whose only dream just got filtered out disappears
+    // from availableMonthKeys instead of being offered empty.
     const activeOnly = makeDream({
       id: 'may-active',
       createdAt: at(2026, 5, 2),
@@ -103,7 +117,11 @@ describe('useArchiveBrowseState', () => {
 
     expect(result.current.availableMonthKeys).toContain('2026-05');
     expect(result.current.selectedMonthKey).toBe('2026-05');
-    expect(result.current.visibleDreams).toHaveLength(0);
+
+    await act(async () => result.current.selectFilter('archived'));
+
+    expect(result.current.availableMonthKeys).not.toContain('2026-05');
+    expect(result.current.selectedMonthKey).toBe('2026-04');
   });
 
   test('moving between months stops at both ends', async () => {
@@ -124,9 +142,11 @@ describe('useArchiveBrowseState', () => {
 
   test('a day selection does not survive a change of month', async () => {
     // Otherwise the screen filters April by a date in March and shows nothing,
-    // with both controls looking perfectly reasonable.
+    // with both controls looking perfectly reasonable. Date narrowing is
+    // calendar-only, so the test needs that surface.
     const { result } = await renderArchive(threeMonths);
 
+    await act(async () => result.current.selectSurfaceMode('calendar'));
     await act(async () => result.current.selectCalendarDate('2026-04-18'));
     expect(result.current.visibleDreams.map(dream => dream.id)).toEqual([
       'april-2',
@@ -169,7 +189,8 @@ describe('useArchiveBrowseState', () => {
 
     await act(async () => result.current.selectTagFilter('ocean'));
     expect(result.current.tagFilter).toBeNull();
-    expect(result.current.visibleDreams).toHaveLength(2);
+    // Back to the whole journal (list mode), not just April.
+    expect(result.current.visibleDreams).toHaveLength(3);
   });
 
   test('tapping the same special filter twice clears it', async () => {
@@ -211,19 +232,21 @@ describe('useArchiveBrowseState', () => {
 
     await act(async () => result.current.resetArchiveView());
     expect(result.current.searchQuery).toBe('');
-    expect(result.current.filter).toBe('archived');
+    expect(result.current.filter).toBe('all');
   });
 
   test('a chosen day is resettable but is not a hard reset', async () => {
     // The two flags differ by exactly one term, `selectedDate`, and the
     // difference is the point: a day is undone by tapping it again on the
     // calendar that is already on screen, so it does not by itself justify
-    // offering to clear everything.
+    // offering to clear everything. A day only counts once calendar is the
+    // active surface — that's where selecting one has any effect.
     const { result } = await renderArchive(threeMonths);
 
     expect(result.current.hasResettableView).toBe(false);
     expect(result.current.hasHardReset).toBe(false);
 
+    await act(async () => result.current.selectSurfaceMode('calendar'));
     await act(async () => result.current.selectCalendarDate('2026-04-04'));
 
     expect(result.current.hasResettableView).toBe(true);

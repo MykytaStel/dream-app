@@ -25,6 +25,7 @@ import {
 } from '../model/archiveBrowser';
 import { getArchiveBrowseResult } from '../model/archiveBrowseQuery';
 import { buildArchiveBrowseSections } from '../model/archiveBrowseSections';
+import { type ArchiveFilterSelection } from '../model/archiveFilterSheet';
 import { type ArchiveSpecialFilter } from '../model/archiveSearch';
 import {
   getArchiveSearchPlaceholder,
@@ -365,6 +366,17 @@ export function useArchiveBrowseState({
     onBrowseMutate?.();
   }, [onBrowseMutate]);
 
+  const applyFilterSelection = React.useCallback(
+    (selection: ArchiveFilterSelection) => {
+      setFilter(selection.filter);
+      setSpecialFilter(selection.specialFilter);
+      setSelectedDate(null);
+      setTagFilter(selection.tagFilter);
+      onBrowseMutate?.();
+    },
+    [onBrowseMutate],
+  );
+
   const selectFilter = React.useCallback(
     (nextFilter: ArchiveFilter) => {
       setFilter(nextFilter);
@@ -438,6 +450,7 @@ export function useArchiveBrowseState({
     selectMonth,
     moveMonth,
     resetArchiveView,
+    applyFilterSelection,
     selectFilter,
     selectTagFilter,
     selectSpecialFilter,

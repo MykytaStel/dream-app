@@ -18,6 +18,7 @@ import {
   type ArchiveViewMode,
 } from '../../model/archiveBrowser';
 import { type ArchiveSpecialFilter } from '../../model/archiveSearch';
+import { type ArchiveSurfaceMode } from '../../model/archiveSurface';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
 
 const archiveControlsLayoutTransition = LinearTransition.springify()
@@ -27,9 +28,16 @@ const archiveControlsLayoutTransition = LinearTransition.springify()
 type ArchiveControlsPanelProps = {
   copy: DreamCopy;
   styles: ReturnType<typeof createArchiveScreenStyles>;
+  searchPlaceholder: string;
   searchQuery: string;
   onChangeSearch: (value: string) => void;
   isSearchPending: boolean;
+  surfaceModes: ReadonlyArray<{
+    key: ArchiveSurfaceMode;
+    label: string;
+  }>;
+  surfaceMode: ArchiveSurfaceMode;
+  onChangeSurfaceMode: (mode: ArchiveSurfaceMode) => void;
   archiveFilters: ReadonlyArray<{ key: ArchiveFilter; label: string }>;
   filter: ArchiveFilter;
   onSelectFilter: (filter: ArchiveFilter) => void;
@@ -53,9 +61,13 @@ type ArchiveControlsPanelProps = {
 export function ArchiveControlsPanel({
   copy,
   styles,
+  searchPlaceholder,
   searchQuery,
   onChangeSearch,
   isSearchPending,
+  surfaceModes,
+  surfaceMode,
+  onChangeSurfaceMode,
   archiveFilters,
   filter,
   onSelectFilter,
@@ -93,7 +105,7 @@ export function ArchiveControlsPanel({
               />
             </View>
             <FormField
-              placeholder={copy.archiveSearchPlaceholder}
+              placeholder={searchPlaceholder}
               value={searchQuery}
               onChangeText={onChangeSearch}
               autoCapitalize="none"
@@ -101,6 +113,36 @@ export function ArchiveControlsPanel({
               containerStyle={styles.searchFieldContainer}
               inputStyle={styles.searchInput}
             />
+          </View>
+
+          <View style={styles.browseModeRow}>
+            <Text style={styles.browseModeLabel}>{copy.archiveBrowseLabel}</Text>
+            <View style={styles.browseModeChips}>
+              {surfaceModes.map(option => {
+                const active = surfaceMode === option.key;
+
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    key={option.key}
+                    style={[
+                      styles.modeChip,
+                      active ? styles.modeChipActive : null,
+                    ]}
+                    onPress={() => onChangeSurfaceMode(option.key)}
+                  >
+                    <Text
+                      style={[
+                        styles.modeChipText,
+                        active ? styles.modeChipTextActive : null,
+                      ]}
+                    >
+                      {option.label}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
 
           <ScrollView

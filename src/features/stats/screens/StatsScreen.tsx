@@ -28,6 +28,15 @@ import {
   StatsThreadsSections,
   type MemoryMode,
 } from '../components/StatsScreenSections';
+import {
+  MemoryDetailsToggle,
+  MemoryDisclosureCard,
+} from '../components/MemoryProgressiveDisclosure';
+import {
+  getMemoryDisclosureCopy,
+  getMemoryDisclosureState,
+  isMemoryModeAvailable,
+} from '../model/memoryDisclosure';
 
 export default function StatsScreen() {
   const theme = useTheme<Theme>();
@@ -40,20 +49,8 @@ export default function StatsScreen() {
   const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
   const [selectedMemoryMode, setSelectedMemoryMode] =
     React.useState<MemoryMode>('overview');
-  const handleSelectMemoryMode = React.useCallback((value: MemoryMode) => {
-    React.startTransition(() => {
-      setSelectedMemoryMode(value);
-    });
-  }, []);
-
-  const memoryModeOptions = React.useMemo(
-    () => [
-      { value: 'overview' as const, label: copy.memoryModeOverview },
-      { value: 'threads' as const, label: copy.memoryModeThreads },
-      { value: 'monthly' as const, label: copy.memoryModeMonthly },
-    ],
-    [copy.memoryModeMonthly, copy.memoryModeOverview, copy.memoryModeThreads],
-  );
+  const [isMemoryDetailsExpanded, setIsMemoryDetailsExpanded] =
+    React.useState(false);
 
   const openPatternDetail = React.useCallback(
     (signal: string, kind: PatternDetailKind) => {
@@ -72,6 +69,54 @@ export default function StatsScreen() {
     selectedMemoryMode,
     openPatternDetail,
   });
+  const disclosureState = React.useMemo(
+    () => getMemoryDisclosureState(controller.meta.totalCount),
+    [controller.meta.totalCount],
+  );
+  const disclosureCopy = React.useMemo(
+    () => getMemoryDisclosureCopy(disclosureState, locale),
+    [disclosureState, locale],
+  );
+  const memoryModeOptions = React.useMemo(
+    () =>
+      [
+        { value: 'overview' as const, label: copy.memoryModeOverview },
+        { value: 'threads' as const, label: copy.memoryModeThreads },
+        { value: 'monthly' as const, label: copy.memoryModeMonthly },
+      ].filter(option =>
+        disclosureState.availableModes.includes(option.value),
+      ),
+    [
+      copy.memoryModeMonthly,
+      copy.memoryModeOverview,
+      copy.memoryModeThreads,
+      disclosureState.availableModes,
+    ],
+  );
+  const visibleRangeOptions =
+    disclosureState.stage === 'foundation' ? [] : controller.rangeOptions;
+
+  React.useEffect(() => {
+    if (!isMemoryModeAvailable(disclosureState, selectedMemoryMode)) {
+      setSelectedMemoryMode('overview');
+    }
+  }, [disclosureState, selectedMemoryMode]);
+
+  const handleSelectMemoryMode = React.useCallback(
+    (value: MemoryMode) => {
+      if (!isMemoryModeAvailable(disclosureState, value)) {
+        return;
+      }
+
+      React.startTransition(() => {
+        setSelectedMemoryMode(value);
+        if (value !== 'overview') {
+          setIsMemoryDetailsExpanded(false);
+        }
+      });
+    },
+    [disclosureState],
+  );
   const handleSelectRange = React.useCallback(
     (value: 'all' | '30d' | '7d') => {
       React.startTransition(() => {
@@ -137,7 +182,7 @@ export default function StatsScreen() {
         memoryModeOptions={memoryModeOptions}
         selectedRange={controller.selectedRange}
         onSelectRange={handleSelectRange}
-        rangeOptions={controller.rangeOptions}
+        rangeOptions={visibleRangeOptions}
         topSignal={controller.topSignal}
         memoryNudge={controller.memoryNudge}
         onOpenMemoryNudge={(dreamId, focusSection) =>
@@ -149,35 +194,52 @@ export default function StatsScreen() {
         coverageGap={controller.coverageGap}
       />
 
-      <Card style={styles.sectionCard}>
-        <SectionHeader
-          title={practiceCopy.title}
-          subtitle={practiceCopy.subtitle}
-        />
-        <Button
-          title={
-            controller.nightmareCount === 0
-              ? practiceCopy.openLucid
-              : practiceCopy.openNightmares
-          }
-          onPress={() =>
-            navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
-              focus: controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
-              entrySource: 'stats',
-            })
-          }
-        />
-      </Card>
-
-      {shouldShowScopedEmptyState ? (
-        <ScreenStateCard
-          variant="empty"
-          title={copy.emptyTitle}
-          subtitle={copy.emptyDescription}
-        />
-      ) : (
+      {selectedMemoryMode === 'overview' ? (
         <>
-          {selectedMemoryMode === 'overview' ? (
+          <MemoryDisclosureCard
+            state={disclosureState}
+            copy={disclosureCopy}
+          />
+          <MemoryDetailsToggle
+            expanded={isMemoryDetailsExpanded}
+            copy={disclosureCopy}
+            onPress={() =>
+              setIsMemoryDetailsExpanded(current => !current)
+            }
+          />
+        </>
+      ) : null}
+
+      {selectedMemoryMode === 'overview' && isMemoryDetailsExpanded ? (
+        <>
+          <Card style={styles.sectionCard}>
+            <SectionHeader
+              title={practiceCopy.title}
+              subtitle={practiceCopy.subtitle}
+            />
+            <Button
+              title={
+                controller.nightmareCount === 0
+                  ? practiceCopy.openLucid
+                  : practiceCopy.openNightmares
+              }
+              onPress={() =>
+                navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+                  focus:
+                    controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
+                  entrySource: 'stats',
+                })
+              }
+            />
+          </Card>
+
+          {shouldShowScopedEmptyState ? (
+            <ScreenStateCard
+              variant="empty"
+              title={copy.emptyTitle}
+              subtitle={copy.emptyDescription}
+            />
+          ) : (
             <StatsOverviewSections
               copy={copy}
               styles={styles}
@@ -222,52 +284,56 @@ export default function StatsScreen() {
               }
               onOpenPatternDetail={openPatternDetail}
             />
-          ) : null}
+          )}
 
-          {selectedMemoryMode === 'threads' ? (
-            <StatsThreadsSections
-              copy={copy}
-              styles={styles}
-              patternGroups={controller.patternGroups}
-              savedThreadItems={controller.savedThreadItems}
-              onOpenThreadDetail={openPatternDetail}
-            />
-          ) : null}
-
-          {selectedMemoryMode === 'monthly' ? (
-            <StatsMonthlySections
-              copy={copy}
-              styles={styles}
-              latestMonthlyReport={controller.latestMonthlyReport}
-              latestMonthlyReportTitle={controller.latestMonthlyReportTitle}
-              monthlyReportPreviewSignals={
-                controller.monthlyReportPreviewSignals
-              }
-              onOpenMonthlyReport={() =>
-                navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport)
-              }
-            />
-          ) : null}
+          <StatsMilestonesSection
+            copy={copy}
+            styles={styles}
+            overallLastSevenDays={controller.overallLastSevenDays}
+            weeklyGoalTarget={controller.weeklyGoalTarget}
+            weeklyGoalComplete={controller.weeklyGoalComplete}
+            unlockedCount={controller.achievementSummary.unlockedCount}
+            totalCount={controller.achievementSummary.totalCount}
+            milestoneSummaryHint={controller.milestoneSummaryHint}
+            achievements={controller.achievements}
+            highlightedAchievementId={
+              controller.achievementSummary.highlightedId ?? null
+            }
+            isExpanded={controller.isMilestonesExpanded}
+            onToggleExpanded={() =>
+              controller.setIsMilestonesExpanded(current => !current)
+            }
+          />
         </>
-      )}
+      ) : null}
 
-      {selectedMemoryMode === 'overview' ? (
-        <StatsMilestonesSection
+      {selectedMemoryMode !== 'overview' && shouldShowScopedEmptyState ? (
+        <ScreenStateCard
+          variant="empty"
+          title={copy.emptyTitle}
+          subtitle={copy.emptyDescription}
+        />
+      ) : null}
+
+      {selectedMemoryMode === 'threads' && !shouldShowScopedEmptyState ? (
+        <StatsThreadsSections
           copy={copy}
           styles={styles}
-          overallLastSevenDays={controller.overallLastSevenDays}
-          weeklyGoalTarget={controller.weeklyGoalTarget}
-          weeklyGoalComplete={controller.weeklyGoalComplete}
-          unlockedCount={controller.achievementSummary.unlockedCount}
-          totalCount={controller.achievementSummary.totalCount}
-          milestoneSummaryHint={controller.milestoneSummaryHint}
-          achievements={controller.achievements}
-          highlightedAchievementId={
-            controller.achievementSummary.highlightedId ?? null
-          }
-          isExpanded={controller.isMilestonesExpanded}
-          onToggleExpanded={() =>
-            controller.setIsMilestonesExpanded(current => !current)
+          patternGroups={controller.patternGroups}
+          savedThreadItems={controller.savedThreadItems}
+          onOpenThreadDetail={openPatternDetail}
+        />
+      ) : null}
+
+      {selectedMemoryMode === 'monthly' ? (
+        <StatsMonthlySections
+          copy={copy}
+          styles={styles}
+          latestMonthlyReport={controller.latestMonthlyReport}
+          latestMonthlyReportTitle={controller.latestMonthlyReportTitle}
+          monthlyReportPreviewSignals={controller.monthlyReportPreviewSignals}
+          onOpenMonthlyReport={() =>
+            navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport)
           }
         />
       ) : null}

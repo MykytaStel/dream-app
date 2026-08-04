@@ -51,7 +51,7 @@ before trusting the statuses.
 | Archive comfortable and compact row modes | `works` | `features/dreams/model/archiveBrowser.ts` (`ArchiveViewMode`) |
 | Month calendar panel with mood dots | `works` | `features/dreams/components/archive/ArchiveMonthPanel.tsx`, `archiveBrowser.ts` (`ArchiveCalendarCell`) |
 | Debounced local search across the full list or selected calendar month | `works` | `features/dreams/hooks/useArchiveBrowseState.ts`, `archiveBrowseQuery.ts` |
-| Filters: all, active, archived, starred | `works` | `archiveBrowser.ts` (`ArchiveFilter`), `useArchiveBrowseState.ts` |
+| Draft/apply Archive filter sheet for status, dream type and tags | `works` | `features/dreams/components/archive/ArchiveFilterSheet.tsx`, `features/dreams/model/archiveFilterSheet.ts` |
 | Dream detail view | `works` | `features/dreams/screens/DreamDetailScreen.tsx` |
 | Related dreams | `works` | `features/dreams/model/relatedDreams.ts` |
 | Resurfacing and revisit cues | `works` | `features/dreams/model/resurfacingCue.ts`, `archiveBrowser.ts` |

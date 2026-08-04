@@ -11,10 +11,7 @@ import {
 } from '../model/homeOverview';
 import { getCurrentStreak } from '../model/dreamAnalytics';
 import { type Dream } from '../model/dream';
-import {
-  isDreamArchived,
-  sortDreamsNewestFirst,
-} from '../model/dreamList';
+import { isDreamArchived, sortDreamsNewestFirst } from '../model/dreamList';
 import {
   getRecurringReflectionSignals,
   getRecurringWordSignals,
@@ -38,9 +35,7 @@ export function useHomeTimelineState({
 }: UseHomeTimelineStateArgs) {
   const activeDreams = React.useMemo(
     () =>
-      sortDreamsNewestFirst(
-        dreams.filter(dream => !isDreamArchived(dream)),
-      ),
+      sortDreamsNewestFirst(dreams.filter(dream => !isDreamArchived(dream))),
     [dreams],
   );
   const displayedDreams = React.useMemo(

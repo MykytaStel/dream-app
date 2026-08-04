@@ -4,8 +4,6 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { Card } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
@@ -22,7 +20,6 @@ import { useI18n } from '../../../i18n/I18nProvider';
 import { useStatsScreenController } from '../hooks/useStatsScreenController';
 import {
   StatsHeroSection,
-  StatsMilestonesSection,
   StatsMonthlySections,
   StatsOverviewSections,
   StatsThreadsSections,
@@ -31,6 +28,7 @@ import {
 import {
   MemoryDetailsToggle,
   MemoryDisclosureCard,
+  MemorySecondaryActions,
 } from '../components/MemoryProgressiveDisclosure';
 import { MemoryPatternCard } from '../components/MemoryPatternCard';
 import {
@@ -269,104 +267,73 @@ export default function StatsScreen() {
             copy={disclosureCopy}
             onPress={() => setIsMemoryDetailsExpanded(current => !current)}
           />
+          <MemorySecondaryActions
+            copy={disclosureCopy}
+            onOpenPractice={() =>
+              navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+                focus:
+                  controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
+                entrySource: 'stats',
+              })
+            }
+            onOpenProgress={() =>
+              navigation.navigate(ROOT_ROUTE_NAMES.Progress)
+            }
+          />
         </>
       ) : null}
 
       {selectedMemoryMode === 'overview' && isMemoryDetailsExpanded ? (
-        <>
-          <Card style={styles.sectionCard}>
-            <SectionHeader
-              title={practiceCopy.title}
-              subtitle={practiceCopy.subtitle}
-            />
-            <Button
-              title={
-                controller.nightmareCount === 0
-                  ? practiceCopy.openLucid
-                  : practiceCopy.openNightmares
-              }
-              onPress={() =>
-                navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
-                  focus:
-                    controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
-                  entrySource: 'stats',
-                })
-              }
-            />
-          </Card>
-
-          {shouldShowScopedEmptyState ? (
-            <ScreenStateCard
-              variant="empty"
-              title={copy.emptyTitle}
-              subtitle={copy.emptyDescription}
-            />
-          ) : (
-            <StatsOverviewSections
-              copy={copy}
-              styles={styles}
-              fingerprintLeadSignals={controller.fingerprintLeadSignals}
-              fingerprintFacets={controller.fingerprintFacets}
-              isDetailsExpanded={controller.isDetailsExpanded}
-              onToggleDetails={() =>
-                controller.setIsDetailsExpanded(current => !current)
-              }
-              selectedMode={controller.selectedMode}
-              onSelectMode={controller.setSelectedMode}
-              canCompare={controller.canCompare}
-              selectedRangeLabel={controller.selectedRangeLabel}
-              compareOptions={controller.compareOptions}
-              compareMetrics={controller.compareMetrics}
-              activityBars={controller.activityBars}
-              emotionalTrendSeries={controller.emotionalTrendSeries}
-              emotionalTrendInsight={controller.emotionalTrendInsight}
-              lucidMetrics={controller.lucidMetrics}
-              lucidHistoryItems={controller.lucidHistoryItems}
-              nightmareMetrics={controller.nightmareMetrics}
-              lucidProgressTitle={practiceCopy.statsLucidProgressTitle}
-              lucidProgressDescription={
-                practiceCopy.statsLucidProgressDescription
-              }
-              nightmareRecoveryTitle={practiceCopy.statsNightmareRecoveryTitle}
-              nightmareRecoveryDescription={
-                practiceCopy.statsNightmareRecoveryDescription
-              }
-              weeklyPatternCards={controller.weeklyPatternCards}
-              summaryTiles={controller.summaryTiles}
-              coverageItems={controller.coverageItems}
-              attentionItems={controller.attentionItems}
-              workQueueItems={controller.workQueueItems}
-              importantDreamItems={controller.importantDreamItems}
-              savedSetItems={controller.savedSetItems}
-              onOpenReviewWorkspace={() =>
-                navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
-              }
-              onOpenLucidDream={dreamId =>
-                navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId })
-              }
-              onOpenPatternDetail={openPatternDetail}
-            />
-          )}
-
-          <StatsMilestonesSection
+        shouldShowScopedEmptyState ? (
+          <ScreenStateCard
+            variant="empty"
+            title={copy.emptyTitle}
+            subtitle={copy.emptyDescription}
+          />
+        ) : (
+          <StatsOverviewSections
             copy={copy}
             styles={styles}
-            overallLastSevenDays={controller.overallLastSevenDays}
-            weeklyGoalTarget={controller.weeklyGoalTarget}
-            weeklyGoalComplete={controller.weeklyGoalComplete}
-            unlockedCount={controller.achievementSummary.unlockedCount}
-            totalCount={controller.achievementSummary.totalCount}
-            milestoneSummaryHint={controller.milestoneSummaryHint}
-            achievements={controller.achievements}
-            highlightedAchievementId={
-              controller.achievementSummary.highlightedId ?? null
+            fingerprintLeadSignals={controller.fingerprintLeadSignals}
+            fingerprintFacets={controller.fingerprintFacets}
+            isDetailsExpanded={controller.isDetailsExpanded}
+            onToggleDetails={() =>
+              controller.setIsDetailsExpanded(current => !current)
             }
-            isExpanded={controller.isMilestonesExpanded}
-            onToggleExpanded={() =>
-              controller.setIsMilestonesExpanded(current => !current)
+            selectedMode={controller.selectedMode}
+            onSelectMode={controller.setSelectedMode}
+            canCompare={controller.canCompare}
+            selectedRangeLabel={controller.selectedRangeLabel}
+            compareOptions={controller.compareOptions}
+            compareMetrics={controller.compareMetrics}
+            activityBars={controller.activityBars}
+            emotionalTrendSeries={controller.emotionalTrendSeries}
+            emotionalTrendInsight={controller.emotionalTrendInsight}
+            lucidMetrics={controller.lucidMetrics}
+            lucidHistoryItems={controller.lucidHistoryItems}
+            nightmareMetrics={controller.nightmareMetrics}
+            lucidProgressTitle={practiceCopy.statsLucidProgressTitle}
+            lucidProgressDescription={practiceCopy.statsLucidProgressDescription}
+            nightmareRecoveryTitle={practiceCopy.statsNightmareRecoveryTitle}
+            nightmareRecoveryDescription={
+              practiceCopy.statsNightmareRecoveryDescription
             }
+            weeklyPatternCards={controller.weeklyPatternCards}
+            summaryTiles={controller.summaryTiles}
+            coverageItems={controller.coverageItems}
+            attentionItems={controller.attentionItems}
+            workQueueItems={controller.workQueueItems}
+            importantDreamItems={controller.importantDreamItems}
+            savedSetItems={controller.savedSetItems}
+            onOpenReviewWorkspace={() =>
+              navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
+            }
+            onOpenLucidDream={dreamId =>
+              navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId })
+            }
+            onOpenPatternDetail={openPatternDetail}
           />
-        </>
+        )
       ) : null}
 
       {selectedMemoryMode !== 'overview' && shouldShowScopedEmptyState ? (

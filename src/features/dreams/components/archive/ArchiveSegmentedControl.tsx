@@ -31,10 +31,7 @@ export function ArchiveSegmentedControl<TKey extends string>({
             accessibilityRole="button"
             accessibilityState={{ selected }}
             key={option.key}
-            style={[
-              styles.modeChip,
-              selected ? styles.modeChipActive : null,
-            ]}
+            style={[styles.modeChip, selected ? styles.modeChipActive : null]}
             onPress={() => onChange(option.key)}
           >
             <Text

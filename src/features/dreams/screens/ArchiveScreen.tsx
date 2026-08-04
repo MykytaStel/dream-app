@@ -35,7 +35,13 @@ import { useArchiveBrowseState } from '../hooks/useArchiveBrowseState';
 import { ArchiveDreamRow } from '../components/archive/ArchiveDreamRow';
 import { ArchiveMonthPanel } from '../components/archive/ArchiveMonthPanel';
 import { ArchiveControlsPanel } from '../components/archive/ArchiveControlsPanel';
+import { ArchiveFilterSheet } from '../components/archive/ArchiveFilterSheet';
 import { type ArchiveSection } from '../model/archiveBrowser';
+import {
+  countActiveArchiveFilters,
+  getArchiveFilterSheetCopy,
+  type ArchiveFilterSelection,
+} from '../model/archiveFilterSheet';
 
 const archiveLayoutTransition = LinearTransition.springify()
   .damping(18)
@@ -46,12 +52,17 @@ export default function ArchiveScreen() {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
+  const filterSheetCopy = React.useMemo(
+    () => getArchiveFilterSheetCopy(locale),
+    [locale],
+  );
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = React.useMemo(() => createArchiveScreenStyles(theme), [theme]);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();
   const listRef = React.useRef<SectionList<Dream, ArchiveSection>>(null);
+  const [isFilterSheetOpen, setIsFilterSheetOpen] = React.useState(false);
   const showWakeCapturePrompt = isWakeCaptureWindow();
 
   const scrollArchiveToTop = React.useCallback(() => {
@@ -85,6 +96,34 @@ export default function ArchiveScreen() {
     locale,
     onBrowseMutate: scrollArchiveToTop,
   });
+
+  const filterSelection = React.useMemo<ArchiveFilterSelection>(
+    () => ({
+      filter: browse.filter,
+      specialFilter: browse.specialFilter,
+      tagFilter: browse.tagFilter,
+    }),
+    [browse.filter, browse.specialFilter, browse.tagFilter],
+  );
+  const activeFilterCount = React.useMemo(
+    () => countActiveArchiveFilters(filterSelection),
+    [filterSelection],
+  );
+  const applyArchiveFilters = React.useCallback(
+    (selection: ArchiveFilterSelection) => {
+      // Applying from the sheet is one user action. React batches these state
+      // updates, while selectFilter first clears refinements that may no longer
+      // make sense under the new status scope.
+      browse.selectFilter(selection.filter);
+      if (selection.specialFilter !== 'all') {
+        browse.selectSpecialFilter(selection.specialFilter);
+      }
+      if (selection.tagFilter) {
+        browse.selectTagFilter(selection.tagFilter);
+      }
+    },
+    [browse.selectFilter, browse.selectSpecialFilter, browse.selectTagFilter],
+  );
 
   const renderArchiveItem = React.useCallback(
     ({ item }: { item: Dream }) => (
@@ -131,13 +170,9 @@ export default function ArchiveScreen() {
           surfaceModes={browse.surfaceModes}
           surfaceMode={browse.surfaceMode}
           onChangeSurfaceMode={browse.selectSurfaceMode}
-          archiveFilters={browse.archiveFilters}
-          filter={browse.filter}
-          onSelectFilter={browse.selectFilter}
-          specialFiltersLabel={practiceCopy.archiveSpecialFiltersLabel}
-          specialFilters={browse.specialFilters}
-          specialFilter={browse.specialFilter}
-          onSelectSpecialFilter={browse.selectSpecialFilter}
+          filtersLabel={filterSheetCopy.triggerLabel}
+          activeFilterCount={activeFilterCount}
+          onOpenFilters={() => setIsFilterSheetOpen(true)}
           hasHardReset={browse.hasHardReset}
           onReset={browse.resetArchiveView}
           visibleEntriesLabel={browse.visibleEntriesLabel}
@@ -148,9 +183,6 @@ export default function ArchiveScreen() {
           onOpenRevisitDream={dreamId =>
             navigation.navigate('DreamDetail', { dreamId })
           }
-          topMonthTags={browse.topMonthTags}
-          tagFilter={browse.tagFilter}
-          onSelectTagFilter={browse.selectTagFilter}
         />
 
         {browse.surfaceMode === 'calendar' && browse.selectedMonthKey ? (
@@ -196,7 +228,14 @@ export default function ArchiveScreen() {
         ) : null}
       </View>
     ),
-    [browse, copy, navigation, practiceCopy.archiveSpecialFiltersLabel, styles],
+    [
+      activeFilterCount,
+      browse,
+      copy,
+      filterSheetCopy.triggerLabel,
+      navigation,
+      styles,
+    ],
   );
 
   if (data.loading) {
@@ -291,6 +330,17 @@ export default function ArchiveScreen() {
           ) : null
         }
         renderItem={renderArchiveItem}
+      />
+
+      <ArchiveFilterSheet
+        visible={isFilterSheetOpen}
+        copy={filterSheetCopy}
+        archiveFilters={browse.archiveFilters}
+        specialFilters={browse.specialFilters}
+        topTags={browse.topMonthTags}
+        selection={filterSelection}
+        onClose={() => setIsFilterSheetOpen(false)}
+        onApply={applyArchiveFilters}
       />
     </ScreenContainer>
   );

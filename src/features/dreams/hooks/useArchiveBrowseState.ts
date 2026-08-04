@@ -2,9 +2,13 @@ import React from 'react';
 import { type DreamCopy } from '../../../constants/copy/dreams';
 import { useDebouncedValue } from '../../../hooks/useDebouncedValue';
 import { type AppLocale } from '../../../i18n/types';
+import { getPracticeCopy } from '../../../constants/copy/practice';
+import {
+  trackFiltersApplied,
+  trackSearchUsed,
+} from '../../../services/observability/events';
 import { Dream } from '../model/dream';
 import {
-  buildArchiveSections,
   getArchiveRevisitCue,
   buildCalendarCells,
   buildCalendarRows,
@@ -20,15 +24,17 @@ import {
   type ArchiveViewMode,
 } from '../model/archiveBrowser';
 import { getArchiveBrowseResult } from '../model/archiveBrowseQuery';
+import { buildArchiveBrowseSections } from '../model/archiveBrowseSections';
 import { type ArchiveSpecialFilter } from '../model/archiveSearch';
-import { getPracticeCopy } from '../../../constants/copy/practice';
 import {
-  trackFiltersApplied,
-  trackSearchUsed,
-} from '../../../services/observability/events';
+  getArchiveSearchPlaceholder,
+  getArchiveSurfaceOptions,
+  type ArchiveSurfaceMode,
+} from '../model/archiveSurface';
 
 const ARCHIVE_SEARCH_DEBOUNCE_MS = 160;
-const DEFAULT_ARCHIVE_FILTER: ArchiveFilter = 'archived';
+const DEFAULT_ARCHIVE_FILTER: ArchiveFilter = 'all';
+const DEFAULT_ARCHIVE_SURFACE: ArchiveSurfaceMode = 'list';
 
 type UseArchiveBrowseStateArgs = {
   dreams: Dream[];
@@ -47,6 +53,9 @@ export function useArchiveBrowseState({
   const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const [filter, setFilter] = React.useState<ArchiveFilter>(
     DEFAULT_ARCHIVE_FILTER,
+  );
+  const [surfaceMode, setSurfaceMode] = React.useState<ArchiveSurfaceMode>(
+    DEFAULT_ARCHIVE_SURFACE,
   );
   const [specialFilter, setSpecialFilter] =
     React.useState<ArchiveSpecialFilter>('all');
@@ -67,37 +76,40 @@ export function useArchiveBrowseState({
   const isSearchPending =
     searchQuery !== debouncedSearchQuery ||
     deferredSearchQuery !== debouncedSearchQuery;
+  const calendarMonthKey =
+    surfaceMode === 'calendar' ? selectedMonthKey : null;
+  const calendarDate = surfaceMode === 'calendar' ? selectedDate : null;
 
   const {
     statusScopedDreams,
-    monthDreams,
-    searchedMonthDreams,
+    dateScopedDreams,
+    searchedScopeDreams,
     visibleDreams,
   } = React.useMemo(
     () =>
       getArchiveBrowseResult({
         dreams,
         filter,
-        selectedMonthKey,
+        selectedMonthKey: calendarMonthKey,
         tagFilter,
         specialFilter,
         searchQuery: deferredSearchQuery,
-        selectedDate,
+        selectedDate: calendarDate,
       }),
     [
+      calendarDate,
+      calendarMonthKey,
       deferredSearchQuery,
       dreams,
       filter,
-      selectedDate,
-      selectedMonthKey,
       specialFilter,
       tagFilter,
     ],
   );
 
   const availableMonthKeys = React.useMemo(
-    () => getAvailableMonthKeys(dreams),
-    [dreams],
+    () => getAvailableMonthKeys(statusScopedDreams),
+    [statusScopedDreams],
   );
 
   React.useEffect(() => {
@@ -124,8 +136,8 @@ export function useArchiveBrowseState({
   }, [selectedDate, selectedMonthKey]);
 
   const topMonthTags = React.useMemo<ArchiveTagSignal[]>(
-    () => getTopArchiveTags(monthDreams),
-    [monthDreams],
+    () => getTopArchiveTags(dateScopedDreams),
+    [dateScopedDreams],
   );
 
   const revisitCue = React.useMemo(
@@ -135,29 +147,36 @@ export function useArchiveBrowseState({
 
   const sections = React.useMemo(
     () =>
-      buildArchiveSections(
-        visibleDreams,
-        selectedMonthKey,
-        localeKey,
-        selectedDate,
-      ),
-    [visibleDreams, selectedMonthKey, localeKey, selectedDate],
+      buildArchiveBrowseSections({
+        dreams: visibleDreams,
+        surfaceMode,
+        selectedMonthKey: calendarMonthKey,
+        selectedDate: calendarDate,
+        locale: localeKey,
+      }),
+    [
+      calendarDate,
+      calendarMonthKey,
+      localeKey,
+      surfaceMode,
+      visibleDreams,
+    ],
   );
 
   const calendarCells = React.useMemo(
     () =>
-      selectedMonthKey
-        ? buildCalendarCells(selectedMonthKey, searchedMonthDreams)
+      calendarMonthKey
+        ? buildCalendarCells(calendarMonthKey, searchedScopeDreams)
         : [],
-    [searchedMonthDreams, selectedMonthKey],
+    [calendarMonthKey, searchedScopeDreams],
   );
   const calendarRows = React.useMemo(
     () => buildCalendarRows(calendarCells),
     [calendarCells],
   );
 
-  const monthEntryCount = searchedMonthDreams.length;
-  const monthActiveDays = getDistinctDayCount(searchedMonthDreams);
+  const monthEntryCount = searchedScopeDreams.length;
+  const monthActiveDays = getDistinctDayCount(searchedScopeDreams);
   const monthMetaText = `${formatArchiveEntryCount(monthEntryCount, locale)} · ${formatArchiveActiveDaysCount(monthActiveDays, locale)}`;
   const selectedMonthIndex = selectedMonthKey
     ? availableMonthKeys.indexOf(selectedMonthKey)
@@ -186,12 +205,20 @@ export function useArchiveBrowseState({
 
   const archiveFilters = React.useMemo(
     () => [
-      { key: 'archived' as const, label: copy.archiveFilterArchived },
-      { key: 'active' as const, label: copy.archiveFilterActive },
-      { key: 'starred' as const, label: copy.archiveFilterStarred },
       { key: 'all' as const, label: copy.archiveFilterAll },
+      { key: 'active' as const, label: copy.archiveFilterActive },
+      { key: 'archived' as const, label: copy.archiveFilterArchived },
+      { key: 'starred' as const, label: copy.archiveFilterStarred },
     ],
     [copy],
+  );
+  const surfaceModes = React.useMemo(
+    () => getArchiveSurfaceOptions(locale),
+    [locale],
+  );
+  const searchPlaceholder = React.useMemo(
+    () => getArchiveSearchPlaceholder(surfaceMode, locale, copy),
+    [copy, locale, surfaceMode],
   );
   const browseModes = React.useMemo(
     () => [
@@ -225,7 +252,7 @@ export function useArchiveBrowseState({
   );
   const hasResettableView =
     Boolean(searchQuery.trim()) ||
-    Boolean(selectedDate) ||
+    Boolean(calendarDate) ||
     Boolean(tagFilter) ||
     specialFilter !== 'all';
   const hasHardReset =
@@ -238,12 +265,18 @@ export function useArchiveBrowseState({
   );
   const filterCount =
     Number(filter !== DEFAULT_ARCHIVE_FILTER) +
-    Number(Boolean(selectedDate)) +
+    Number(Boolean(calendarDate)) +
     Number(Boolean(tagFilter)) +
     Number(specialFilter !== 'all');
   const filterSignature = React.useMemo(
-    () => JSON.stringify({ filter, selectedDate, tagFilter, specialFilter }),
-    [filter, selectedDate, specialFilter, tagFilter],
+    () =>
+      JSON.stringify({
+        filter,
+        selectedDate: calendarDate,
+        tagFilter,
+        specialFilter,
+      }),
+    [calendarDate, filter, specialFilter, tagFilter],
   );
   const lastTrackedSearchQueryRef = React.useRef('');
   const lastTrackedFilterSignatureRef = React.useRef(filterSignature);
@@ -283,6 +316,21 @@ export function useArchiveBrowseState({
       filterCount,
     });
   }, [filterCount, filterSignature]);
+
+  const selectSurfaceMode = React.useCallback(
+    (nextMode: ArchiveSurfaceMode) => {
+      if (nextMode === surfaceMode) {
+        return;
+      }
+
+      setSurfaceMode(nextMode);
+      if (nextMode === 'list') {
+        setSelectedDate(null);
+      }
+      onBrowseMutate?.();
+    },
+    [onBrowseMutate, surfaceMode],
+  );
 
   const selectMonth = React.useCallback(
     (monthKey: string) => {
@@ -362,6 +410,10 @@ export function useArchiveBrowseState({
   return {
     localeKey,
     filter,
+    surfaceMode,
+    surfaceModes,
+    selectSurfaceMode,
+    searchPlaceholder,
     searchQuery,
     setSearchQuery,
     selectedMonthKey,

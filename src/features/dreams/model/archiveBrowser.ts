@@ -4,13 +4,15 @@ import { Dream, Mood } from './dream';
 import { VALENCE_COLOR_TOKEN, type Valence } from '../../../theme/valence';
 import { getDreamDate, getMoodValence } from './dreamAnalytics';
 import {
-  getDreamSearchMatchReasons,
-  getDreamSearchScore,
+  getArchiveSearchMatchReasons,
+  getArchiveSearchScore,
+  type ArchiveSearchMatchReason,
+} from './archiveSearch';
+import {
   isDreamArchived,
   isDreamStarred,
-  sortDreamsForTimeline,
-  type DreamSearchMatchReason,
-} from './homeTimeline';
+  sortDreamsNewestFirst,
+} from './dreamList';
 import { pluralize } from '../../../i18n/plural';
 
 export type ArchiveFilter = 'all' | 'active' | 'archived' | 'starred';
@@ -436,7 +438,7 @@ export function getArchiveMatchReasonLabels(
   query: string,
   copy: DreamCopy,
 ) {
-  const labelMap: Record<DreamSearchMatchReason, string> = {
+  const labelMap: Record<ArchiveSearchMatchReason, string> = {
     title: copy.homeSearchMatchTitle,
     notes: copy.homeSearchMatchNotes,
     transcript: copy.homeSearchMatchTranscript,
@@ -444,7 +446,7 @@ export function getArchiveMatchReasonLabels(
     context: copy.homeSearchMatchContext,
   };
 
-  return getDreamSearchMatchReasons(dream, query)
+  return getArchiveSearchMatchReasons(dream, query)
     .slice(0, 3)
     .map(reason => labelMap[reason]);
 }
@@ -499,7 +501,7 @@ export function applyArchiveStatusFilter(
 
 export function searchArchiveMonthDreams(dreams: Dream[], query: string) {
   const normalizedQuery = query.trim().toLowerCase();
-  const sortedDreams = sortDreamsForTimeline(dreams, 'newest');
+  const sortedDreams = sortDreamsNewestFirst(dreams);
 
   if (!normalizedQuery) {
     return sortedDreams;
@@ -508,7 +510,7 @@ export function searchArchiveMonthDreams(dreams: Dream[], query: string) {
   return sortedDreams
     .map(dream => ({
       dream,
-      score: getDreamSearchScore(dream, normalizedQuery),
+      score: getArchiveSearchScore(dream, normalizedQuery),
     }))
     .filter(entry => entry.score > 0)
     .sort((a, b) => b.score - a.score)

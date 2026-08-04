@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import Animated, {
@@ -12,12 +12,9 @@ import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { Theme } from '../../../../theme/theme';
 import {
-  type ArchiveFilter,
   type ArchiveRevisitCue,
-  type ArchiveTagSignal,
   type ArchiveViewMode,
 } from '../../model/archiveBrowser';
-import { type ArchiveSpecialFilter } from '../../model/archiveSearch';
 import { type ArchiveSurfaceMode } from '../../model/archiveSurface';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
 
@@ -38,13 +35,9 @@ type ArchiveControlsPanelProps = {
   }>;
   surfaceMode: ArchiveSurfaceMode;
   onChangeSurfaceMode: (mode: ArchiveSurfaceMode) => void;
-  archiveFilters: ReadonlyArray<{ key: ArchiveFilter; label: string }>;
-  filter: ArchiveFilter;
-  onSelectFilter: (filter: ArchiveFilter) => void;
-  specialFiltersLabel: string;
-  specialFilters: ReadonlyArray<{ key: ArchiveSpecialFilter; label: string }>;
-  specialFilter: ArchiveSpecialFilter;
-  onSelectSpecialFilter: (filter: ArchiveSpecialFilter) => void;
+  filtersLabel: string;
+  activeFilterCount: number;
+  onOpenFilters: () => void;
   hasHardReset: boolean;
   onReset: () => void;
   visibleEntriesLabel: string;
@@ -53,9 +46,6 @@ type ArchiveControlsPanelProps = {
   viewMode: ArchiveViewMode;
   onChangeViewMode: (mode: ArchiveViewMode) => void;
   onOpenRevisitDream: (dreamId: string) => void;
-  topMonthTags: ArchiveTagSignal[];
-  tagFilter: string | null;
-  onSelectTagFilter: (tag: string | null) => void;
 };
 
 export function ArchiveControlsPanel({
@@ -68,13 +58,9 @@ export function ArchiveControlsPanel({
   surfaceModes,
   surfaceMode,
   onChangeSurfaceMode,
-  archiveFilters,
-  filter,
-  onSelectFilter,
-  specialFiltersLabel,
-  specialFilters,
-  specialFilter,
-  onSelectSpecialFilter,
+  filtersLabel,
+  activeFilterCount,
+  onOpenFilters,
   hasHardReset,
   onReset,
   visibleEntriesLabel,
@@ -83,9 +69,6 @@ export function ArchiveControlsPanel({
   viewMode,
   onChangeViewMode,
   onOpenRevisitDream,
-  topMonthTags,
-  tagFilter,
-  onSelectTagFilter,
 }: ArchiveControlsPanelProps) {
   const theme = useTheme<Theme>();
 
@@ -126,6 +109,7 @@ export function ArchiveControlsPanel({
                 return (
                   <Pressable
                     accessibilityRole="button"
+                    accessibilityState={{ selected: active }}
                     key={option.key}
                     style={[
                       styles.modeChip,
@@ -147,114 +131,44 @@ export function ArchiveControlsPanel({
             </View>
           </View>
 
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.filtersRail}
-          >
-            {archiveFilters.map(option => {
-              const active = filter === option.key;
-              return (
-                <Pressable
-                  accessibilityRole="button"
-                  key={option.key}
-                  onPress={() => onSelectFilter(option.key)}
-                  style={[
-                    styles.filterChip,
-                    active ? styles.filterChipActive : null,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.filterChipText,
-                      active ? styles.filterChipTextActive : null,
-                    ]}
-                  >
-                    {option.label}
-                  </Text>
-                </Pressable>
-              );
-            })}
-          </ScrollView>
-
-          <View style={styles.tagRailRow}>
-            <Text style={styles.tagRailLabel}>{specialFiltersLabel}</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.tagRail}
+          <View style={styles.controlsFooterRow}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel={filtersLabel}
+              style={[
+                styles.controlsActionChip,
+                {
+                  minHeight: 32,
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  gap: 6,
+                },
+              ]}
+              onPress={onOpenFilters}
             >
-              {specialFilters.map(option => {
-                const active = specialFilter === option.key;
-                return (
-                  <Pressable
-                    accessibilityRole="button"
-                    key={option.key}
-                    onPress={() => onSelectSpecialFilter(option.key)}
-                    style={[
-                      styles.tagChip,
-                      active ? styles.tagChipActive : null,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.tagChipText,
-                        active ? styles.tagChipTextActive : null,
-                      ]}
-                    >
-                      {option.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </View>
+              <Ionicons
+                name="options-outline"
+                size={15}
+                color={theme.colors.text}
+              />
+              <Text style={styles.controlsActionChipText}>{filtersLabel}</Text>
+              {activeFilterCount > 0 ? (
+                <View style={styles.controlsMetaChip}>
+                  <Text style={styles.controlsMetaChipText}>
+                    {activeFilterCount}
+                  </Text>
+                </View>
+              ) : null}
+            </Pressable>
 
-          {topMonthTags.length > 0 ? (
-            <View style={styles.tagRailRow}>
-              <Text style={styles.tagRailLabel}>{copy.archiveTagsLabel}</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.tagRail}
-              >
-                {topMonthTags.map(signal => {
-                  const active = tagFilter === signal.tag;
-                  return (
-                    <Pressable
-                      accessibilityRole="button"
-                      key={signal.tag}
-                      style={[
-                        styles.tagChip,
-                        active ? styles.tagChipActive : null,
-                      ]}
-                      onPress={() => onSelectTagFilter(signal.tag)}
-                    >
-                      <Text
-                        style={[
-                          styles.tagChipText,
-                          active ? styles.tagChipTextActive : null,
-                        ]}
-                      >
-                        {signal.tag}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.tagChipCount,
-                          active ? styles.tagChipCountActive : null,
-                        ]}
-                      >
-                        {signal.count}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </ScrollView>
-            </View>
-          ) : null}
-
-          {hasHardReset || isSearchPending ? (
-            <View style={styles.controlsFooterRow}>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                gap: 8,
+                flexWrap: 'wrap',
+              }}
+            >
               {hasHardReset ? (
                 <Pressable
                   accessibilityRole="button"
@@ -275,7 +189,7 @@ export function ArchiveControlsPanel({
                 </View>
               ) : null}
             </View>
-          ) : null}
+          </View>
         </Card>
       </Animated.View>
 
@@ -294,6 +208,7 @@ export function ArchiveControlsPanel({
             return (
               <Pressable
                 accessibilityRole="button"
+                accessibilityState={{ selected: active }}
                 key={option.key}
                 style={[styles.modeChip, active ? styles.modeChipActive : null]}
                 onPress={() => onChangeViewMode(option.key)}

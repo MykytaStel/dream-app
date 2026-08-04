@@ -67,16 +67,18 @@ export function StatsHeroSection({
           <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
         </View>
 
-        <View style={styles.modeSection}>
-          <Text style={styles.rangeLabel}>{copy.memoryModeLabel}</Text>
-          <SegmentedControl
-            options={memoryModeOptions}
-            selectedValue={selectedMemoryMode}
-            onChange={onSelectMemoryMode}
-          />
-        </View>
+        {memoryModeOptions.length > 1 ? (
+          <View style={styles.modeSection}>
+            <Text style={styles.rangeLabel}>{copy.memoryModeLabel}</Text>
+            <SegmentedControl
+              options={memoryModeOptions}
+              selectedValue={selectedMemoryMode}
+              onChange={onSelectMemoryMode}
+            />
+          </View>
+        ) : null}
 
-        {selectedMemoryMode !== 'monthly' ? (
+        {selectedMemoryMode !== 'monthly' && rangeOptions.length > 0 ? (
           <View style={styles.heroTopGrid}>
             <View
               style={[
@@ -94,6 +96,7 @@ export function StatsHeroSection({
                   return (
                     <Pressable
                       accessibilityRole="button"
+                      accessibilityState={{ selected: active }}
                       key={option.key}
                       style={[
                         styles.rangeChip,

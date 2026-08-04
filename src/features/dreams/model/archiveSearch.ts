@@ -16,11 +16,7 @@ export type ArchiveSpecialFilter =
   | 'high-distress';
 
 export type ArchiveSearchMatchReason =
-  | 'title'
-  | 'notes'
-  | 'transcript'
-  | 'tag'
-  | 'context';
+  'title' | 'notes' | 'transcript' | 'tag' | 'context';
 
 export function matchesArchiveSpecialFilter(
   dream: Dream,

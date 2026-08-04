@@ -1,7 +1,11 @@
 import type { AppLocale } from '../../../i18n/types';
 
 export type MemoryDisclosureStage =
-  'foundation' | 'signals' | 'connections' | 'threads' | 'deep';
+  | 'foundation'
+  | 'signals'
+  | 'connections'
+  | 'threads'
+  | 'deep';
 
 export type MemoryDisclosureMode = 'overview' | 'threads' | 'monthly';
 
@@ -21,6 +25,10 @@ export type MemoryDisclosureCopy = {
   detailsDescription: string;
   showDetailsLabel: string;
   hideDetailsLabel: string;
+  practiceTitle: string;
+  practiceDescription: string;
+  progressTitle: string;
+  progressDescription: string;
 };
 
 function normalizeDreamCount(value: number) {
@@ -203,9 +211,14 @@ export function getMemoryDisclosureCopy(
       progressLabel,
       detailsTitle: 'Детальна аналітика',
       detailsDescription:
-        'Практика, тренди, порівняння, збережені набори й додаткові показники.',
+        'Тренди, порівняння, збережені набори й додаткові показники.',
       showDetailsLabel: 'Показати деталі',
       hideDetailsLabel: 'Сховати деталі',
+      practiceTitle: 'Практика снів',
+      practiceDescription:
+        'Люцидність, стабілізація та підтримка після кошмарів.',
+      progressTitle: 'Прогрес',
+      progressDescription: 'Тижнева ціль і всі досягнення в окремому екрані.',
     };
   }
 
@@ -214,8 +227,13 @@ export function getMemoryDisclosureCopy(
     progressLabel,
     detailsTitle: 'Detailed analysis',
     detailsDescription:
-      'Practice, trends, comparisons, saved sets and additional metrics.',
+      'Trends, comparisons, saved sets and additional metrics.',
     showDetailsLabel: 'Show details',
     hideDetailsLabel: 'Hide details',
+    practiceTitle: 'Dream practice',
+    practiceDescription:
+      'Lucidity, stabilization and support after nightmares.',
+    progressTitle: 'Progress',
+    progressDescription: 'Weekly goal and all achievements in one screen.',
   };
 }

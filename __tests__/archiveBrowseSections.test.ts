@@ -1,4 +1,8 @@
 import type { Dream } from '../src/features/dreams/model/dream';
+import {
+  formatSelectedDate,
+  getMonthLabel,
+} from '../src/features/dreams/model/archiveBrowser';
 import { buildArchiveBrowseSections } from '../src/features/dreams/model/archiveBrowseSections';
 
 function createDream(id: string, sleepDate: string, createdAt: string): Dream {
@@ -55,7 +59,7 @@ describe('archiveBrowseSections', () => {
 
     expect(sections).toHaveLength(1);
     expect(sections[0].monthKey).toBe('2026-03');
-    expect(sections[0].title).toMatch(/March 2026/i);
+    expect(sections[0].title).toBe(getMonthLabel('2026-03', 'en-US'));
     expect(sections[0].data.map(dream => dream.id)).toEqual([
       'march-newer',
       'march-older',
@@ -71,7 +75,9 @@ describe('archiveBrowseSections', () => {
       locale: 'en-US',
     });
 
-    expect(sections[0].title).toMatch(/Mar 8, 2026/i);
+    expect(sections[0].title).toBe(
+      formatSelectedDate('2026-03-08', 'en-US'),
+    );
   });
 
   test('calendar mode has no sections without an available month', () => {

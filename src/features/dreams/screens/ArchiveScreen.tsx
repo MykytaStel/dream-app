@@ -118,64 +118,63 @@ export default function ArchiveScreen() {
           layout={archiveLayoutTransition}
           style={styles.titleBlock}
         >
-          <SectionHeader
-            title={copy.archiveTitle}
-            subtitle={copy.archiveSubtitle}
-            large
-          />
+          <SectionHeader title={copy.archiveTitle} large />
         </Animated.View>
 
-        {browse.selectedMonthKey ? (
-          <>
-            <ArchiveMonthPanel
-              copy={copy}
-              localeKey={browse.localeKey}
-              styles={styles}
-              selectedMonthKey={browse.selectedMonthKey}
-              monthMetaText={browse.monthMetaText}
-              canGoOlder={browse.canGoOlder}
-              canGoNewer={browse.canGoNewer}
-              onMoveMonth={browse.moveMonth}
-              quickJumpMonthKeys={browse.quickJumpMonthKeys}
-              selectedDate={browse.selectedDate}
-              onSelectMonth={browse.selectMonth}
-              onClearDate={browse.clearSelectedDate}
-              weekdayLabels={browse.weekdayLabels}
-              calendarRows={browse.calendarRows}
-              onSelectCalendarDate={browse.selectCalendarDate}
-            />
+        <ArchiveControlsPanel
+          copy={copy}
+          styles={styles}
+          searchPlaceholder={browse.searchPlaceholder}
+          searchQuery={browse.searchQuery}
+          onChangeSearch={browse.setSearchQuery}
+          isSearchPending={browse.isSearchPending}
+          surfaceModes={browse.surfaceModes}
+          surfaceMode={browse.surfaceMode}
+          onChangeSurfaceMode={browse.selectSurfaceMode}
+          archiveFilters={browse.archiveFilters}
+          filter={browse.filter}
+          onSelectFilter={browse.selectFilter}
+          specialFiltersLabel={practiceCopy.archiveSpecialFiltersLabel}
+          specialFilters={browse.specialFilters}
+          specialFilter={browse.specialFilter}
+          onSelectSpecialFilter={browse.selectSpecialFilter}
+          hasHardReset={browse.hasHardReset}
+          onReset={browse.resetArchiveView}
+          visibleEntriesLabel={browse.visibleEntriesLabel}
+          revisitCue={browse.revisitCue}
+          browseModes={browse.browseModes}
+          viewMode={browse.viewMode}
+          onChangeViewMode={browse.setViewMode}
+          onOpenRevisitDream={dreamId =>
+            navigation.navigate('DreamDetail', { dreamId })
+          }
+          topMonthTags={browse.topMonthTags}
+          tagFilter={browse.tagFilter}
+          onSelectTagFilter={browse.selectTagFilter}
+        />
 
-            <ArchiveControlsPanel
-              copy={copy}
-              styles={styles}
-              searchQuery={browse.searchQuery}
-              onChangeSearch={browse.setSearchQuery}
-              isSearchPending={browse.isSearchPending}
-              archiveFilters={browse.archiveFilters}
-              filter={browse.filter}
-              onSelectFilter={browse.selectFilter}
-              specialFiltersLabel={practiceCopy.archiveSpecialFiltersLabel}
-              specialFilters={browse.specialFilters}
-              specialFilter={browse.specialFilter}
-              onSelectSpecialFilter={browse.selectSpecialFilter}
-              hasHardReset={browse.hasHardReset}
-              onReset={browse.resetArchiveView}
-              visibleEntriesLabel={browse.visibleEntriesLabel}
-              revisitCue={browse.revisitCue}
-              browseModes={browse.browseModes}
-              viewMode={browse.viewMode}
-              onChangeViewMode={browse.setViewMode}
-              onOpenRevisitDream={dreamId =>
-                navigation.navigate('DreamDetail', { dreamId })
-              }
-              topMonthTags={browse.topMonthTags}
-              tagFilter={browse.tagFilter}
-              onSelectTagFilter={browse.selectTagFilter}
-            />
-          </>
+        {browse.surfaceMode === 'calendar' && browse.selectedMonthKey ? (
+          <ArchiveMonthPanel
+            copy={copy}
+            localeKey={browse.localeKey}
+            styles={styles}
+            selectedMonthKey={browse.selectedMonthKey}
+            monthMetaText={browse.monthMetaText}
+            canGoOlder={browse.canGoOlder}
+            canGoNewer={browse.canGoNewer}
+            onMoveMonth={browse.moveMonth}
+            quickJumpMonthKeys={browse.quickJumpMonthKeys}
+            selectedDate={browse.selectedDate}
+            onSelectMonth={browse.selectMonth}
+            onClearDate={browse.clearSelectedDate}
+            weekdayLabels={browse.weekdayLabels}
+            calendarRows={browse.calendarRows}
+            onSelectCalendarDate={browse.selectCalendarDate}
+          />
         ) : null}
 
-        {browse.archiveEmptyContent || !browse.selectedMonthKey ? (
+        {browse.archiveEmptyContent ||
+        (browse.surfaceMode === 'calendar' && !browse.selectedMonthKey) ? (
           <View style={styles.emptyWrap}>
             <ScreenStateCard
               variant="empty"
@@ -280,7 +279,8 @@ export default function ArchiveScreen() {
         ]}
         ListHeaderComponent={listHeader}
         renderSectionHeader={({ section }) =>
-          section.data.length && browse.selectedDate ? (
+          section.data.length &&
+          (browse.surfaceMode === 'list' || browse.selectedDate) ? (
             <Animated.View
               entering={FadeInDown.duration(160)}
               layout={archiveLayoutTransition}

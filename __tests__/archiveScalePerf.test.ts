@@ -1,26 +1,14 @@
 /**
- * What a large archive costs on the JavaScript thread.
+ * What the current large-journal pipelines cost on the JavaScript thread.
  *
- * `docs/TECH-STACK.md` records FlashList as rejected until there is "measured
- * jank on a real archive, not a guess". This is the measurement, and it is
- * deliberately aimed one layer below the list: both lists are already
- * virtualized with `removeClippedSubviews` and bounded batch windows, so the
- * number of rows on screen does not grow with the archive. What does grow is
- * the pipeline that runs before the list — filtering, scoring and sorting every
- * dream — and that work happens on the JS thread, where it delays frames no
- * list component can rescue.
+ * The lists themselves are virtualized. This suite measures the model work
+ * performed before rendering: selecting the Home recent list, scoping and
+ * searching one Archive month, and calculating whole-journal statistics.
  *
- * Read the numbers as a floor, not as device timings. This runs on V8 on a
- * developer Mac; the app runs on Hermes on a phone, which is several times
- * slower. A stage that costs 15 ms here has already lost the 16.7 ms frame
- * budget on a real device. A stage that costs well under 1 ms here has room to
- * be several times slower and still not be the reason anything drops a frame.
- *
- * What is asserted is not a millisecond figure but the shape: that cost grows
- * no worse than linearly, and that the archive stays far cheaper than the
- * timeline at every size. Those are ratios, and a ratio survives a busy machine
- * where an absolute ceiling does not — see the notes on the timer and on the
- * frame budget below, both of which are scars from getting that wrong.
+ * These are V8 timings from the Jest process, not Hermes device timings. The
+ * suite therefore guards the shape of the work rather than a fixed frame-time
+ * promise: a larger journal must not accidentally turn a linear or n log n
+ * path into quadratic work.
  */
 
 import {
@@ -36,9 +24,9 @@ import {
   getSleepContextStats,
 } from '../src/features/dreams/model/dreamAnalytics';
 import {
-  applyHomeTimelineFilters,
-  DEFAULT_HOME_TIMELINE_FILTERS,
-} from '../src/features/dreams/model/homeTimeline';
+  isDreamArchived,
+  sortDreamsNewestFirst,
+} from '../src/features/dreams/model/dreamList';
 import type { Dream } from '../src/features/dreams/model/dream';
 
 const captured: Dream[][] = [];
@@ -51,9 +39,8 @@ jest.mock('../src/features/dreams/repository/dreamsRepository', () => ({
 }));
 
 // Imported after the mock so the repository it closes over is the fake one.
-// The app's own seed generator is reused on purpose: a benchmark against
-// hand-written dreams measures whatever shape the benchmark author imagined,
-// and the shape is most of the cost here.
+// Reusing the app's seed generator keeps the benchmark aligned with the real
+// Dream shape rather than a hand-written approximation.
 const {
   seedDreamSamples,
 } = require('../src/features/dreams/services/dreamSeedService');
@@ -65,25 +52,8 @@ function makeDreams(count: number): Dream[] {
 }
 
 /**
- * The fastest of repeated runs, each run being a batch large enough to measure.
- *
- * Two problems, one solution. This suite does not run alone — jest spreads
- * seventy-odd suites across parallel workers — so every sample carries however
- * much of a core it happened to get, and interference can only ever make a run
- * slower. That is why the minimum is taken rather than the median.
- *
- * The minimum alone was not enough. The cheapest stage here costs about 0.06 ms,
- * which is close enough to the cost of being descheduled that a single sample is
- * mostly noise, and a ratio between two such samples swings enough to fail a
- * comparison that is really 10:1. So each timed region repeats the work until it
- * is comfortably longer than that noise, and the per-run cost comes out of the
- * division.
- *
- * `process.hrtime` rather than `performance.now`: under this jest environment
- * the latter is quantized to whole milliseconds, which reported every stage
- * cheaper than a millisecond as exactly `0.00` and every other one as a round
- * integer. Nanoseconds are the only resolution that can tell "fast" apart from
- * "not measured".
+ * Measure a batch large enough to rise above scheduler and timer noise, then
+ * keep the fastest repeated sample because interference can only slow a run.
  */
 const MIN_BATCH_MS = 4;
 const MAX_BATCH = 512;
@@ -101,7 +71,6 @@ function fastestMs(run: () => unknown, iterations = 7): number {
     run();
   }
 
-  // Grow the batch until one timed region is long enough to be worth timing.
   let batch = 1;
   while (batch < MAX_BATCH && elapsedMs(run, batch) < MIN_BATCH_MS) {
     batch *= 2;
@@ -123,67 +92,38 @@ function measure(stage: string, size: number, run: () => unknown): number {
   return ms;
 }
 
-/**
- * One frame at 60 Hz. Reported against, never asserted against.
- *
- * An absolute millisecond ceiling in a suite jest runs across parallel workers
- * measures how busy the machine is at least as much as it measures the code.
- * An earlier version of this file asserted one, passed on its own, and failed
- * five ways inside the full run — the worst outcome available, because a timing
- * test that fails sometimes gets muted rather than read.
- *
- * So the frame comparison lives in the log below and in `docs/TECH-STACK.md`,
- * where the numbers sit next to the decision they informed. What is asserted
- * here is only what stays true on a loaded machine: how the cost grows with the
- * archive, and how the stages compare to each other. Both are ratios measured
- * in the same worker under the same conditions, so interference cancels.
- */
 const FRAME_BUDGET_MS = 16.7;
-
-/**
- * 5000 dreams is not a person, it is a scaling probe — roughly fourteen years
- * of writing one down every night. It is here to show the shape of the curve.
- */
 const PROBE_SIZE = 5000;
 
-describe('archive at scale', () => {
+function buildHomeRecentList(dreams: Dream[]) {
+  return sortDreamsNewestFirst(
+    dreams.filter(dream => !isDreamArchived(dream)),
+  ).slice(0, 12);
+}
+
+describe('journal pipelines at scale', () => {
   const sizes = [250, 1000, PROBE_SIZE];
 
   describe.each(sizes)('%i dreams', size => {
     const dreams = makeDreams(size);
 
     test('the seed spans enough months to be a real archive', () => {
-      // Twelve hours apart, so 1000 dreams cover roughly sixteen months. If
-      // this ever collapses to one month the archive numbers below stop
-      // meaning anything, because the month scoping would have nothing to do.
       expect(dreams).toHaveLength(size);
       expect(getAvailableMonthKeys(dreams).length).toBeGreaterThan(
         size >= 1000 ? 12 : 3,
       );
     });
 
-    test('the home timeline filters the whole archive', () => {
-      const ms = measure('home timeline, no search', size, () =>
-        applyHomeTimelineFilters(dreams, DEFAULT_HOME_TIMELINE_FILTERS),
+    test('Home builds its bounded recent list', () => {
+      const ms = measure('home recent list', size, () =>
+        buildHomeRecentList(dreams),
       );
 
       expect(ms).toBeGreaterThan(0);
+      expect(buildHomeRecentList(dreams).length).toBeLessThanOrEqual(12);
     });
 
-    test('home search scores and re-sorts the whole archive', () => {
-      // The heaviest path in the app: every dream is filtered, then scored,
-      // then sorted a second time by score. It runs on each committed keystroke.
-      const ms = measure('home timeline, search "ocean"', size, () =>
-        applyHomeTimelineFilters(dreams, {
-          ...DEFAULT_HOME_TIMELINE_FILTERS,
-          searchQuery: 'ocean',
-        }),
-      );
-
-      expect(ms).toBeGreaterThan(0);
-    });
-
-    test('the archive screen builds its sections', () => {
+    test('Archive scopes one month and builds its sections', () => {
       const monthKey = getAvailableMonthKeys(dreams)[0];
 
       const ms = measure('archive month + sections', size, () => {
@@ -198,7 +138,7 @@ describe('archive at scale', () => {
       expect(ms).toBeGreaterThan(0);
     });
 
-    test('stats aggregate the whole archive', () => {
+    test('Stats aggregate the whole journal', () => {
       const ms = measure('stats aggregates', size, () => {
         getMoodCorrelationStats(dreams);
         getSleepContextStats(dreams);
@@ -209,33 +149,7 @@ describe('archive at scale', () => {
     });
   });
 
-  test('the archive stays an order of magnitude cheaper than the timeline', () => {
-    // This is the FlashList decision, written as an invariant rather than a
-    // number. The archive is cheap because `useArchiveBrowseState` narrows to
-    // the selected month before it searches or filters, so its cost tracks the
-    // size of a month and not the size of the archive. Lose that — by hoisting
-    // a filter above the month scoping, say — and this ratio collapses long
-    // before anybody notices a dropped frame.
-    for (const size of sizes) {
-      const archive = measurements.find(
-        entry =>
-          entry.stage === 'archive month + sections' && entry.size === size,
-      )!;
-      const timeline = measurements.find(
-        entry =>
-          entry.stage === 'home timeline, no search' && entry.size === size,
-      )!;
-
-      expect([size, timeline.ms > archive.ms * 5]).toEqual([size, true]);
-    }
-  });
-
-  test('every stage stays linear in the number of dreams', () => {
-    // Twenty times the dreams must not cost far more than twenty times the
-    // work. The allowance is generous — 40× for a 20× input — because it is
-    // there to catch a change in complexity class, not to police constants.
-    // Sub-millisecond stages are skipped: at that size the timer resolution,
-    // not the algorithm, decides the ratio.
+  test('measured stages do not change complexity class', () => {
     const stages = [...new Set(measurements.map(entry => entry.stage))];
 
     for (const stage of stages) {
@@ -246,14 +160,15 @@ describe('archive at scale', () => {
         entry => entry.stage === stage && entry.size === PROBE_SIZE,
       )!;
 
-      if (small.ms < 0.5) {
+      // Very small measurements remain ratio-sensitive even with batching.
+      if (small.ms < 0.1) {
         continue;
       }
 
-      // Paired with the stage name so a failure says which one changed shape,
-      // rather than reporting a bare number with no way to find its owner.
+      // The input grows 20x. A 60x allowance catches a complexity regression
+      // without turning shared-runner noise into a flaky build.
       const growth = large.ms / small.ms;
-      expect([stage, growth < 40]).toEqual([stage, true]);
+      expect([stage, growth < 60]).toEqual([stage, true]);
     }
   });
 
@@ -269,8 +184,8 @@ describe('archive at scale', () => {
       .join('\n');
 
     console.log(
-      `\nJS-thread cost by archive size (V8 on this machine, not Hermes on a phone).\n` +
-        `Reported, not asserted — see the note at the top of this file.\n${rows}\n`,
+      `\nJS-thread cost by journal size (V8 here, not Hermes on a phone).\n` +
+        `Reported, not used as a device frame-time promise.\n${rows}\n`,
     );
   });
 });

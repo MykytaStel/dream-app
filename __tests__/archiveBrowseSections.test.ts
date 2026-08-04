@@ -1,11 +1,7 @@
 import type { Dream } from '../src/features/dreams/model/dream';
 import { buildArchiveBrowseSections } from '../src/features/dreams/model/archiveBrowseSections';
 
-function createDream(
-  id: string,
-  sleepDate: string,
-  createdAt: string,
-): Dream {
+function createDream(id: string, sleepDate: string, createdAt: string): Dream {
   return {
     id,
     sleepDate,
@@ -26,11 +22,7 @@ describe('archiveBrowseSections', () => {
     '2026-03-08',
     '2026-03-08T08:00:00.000Z',
   );
-  const april = createDream(
-    'april',
-    '2026-04-01',
-    '2026-04-01T08:00:00.000Z',
-  );
+  const april = createDream('april', '2026-04-01', '2026-04-01T08:00:00.000Z');
 
   test('list mode groups the full journal newest month first', () => {
     const sections = buildArchiveBrowseSections({

@@ -13,7 +13,7 @@ no list at all.
 | `partial` | real implementation exists, the flow or polish is incomplete |
 | `planned` | intent only, no meaningful code |
 
-Last verified against the code: 2026-08-03, at `ece5dca`.
+Last verified against the code: 2026-08-04, at `abf6f59`.
 
 The commit matters more than the date. A date says when someone looked; a SHA says
 what they looked at, and lets the next person diff the code since. A row whose
@@ -45,12 +45,13 @@ before trusting the statuses.
 
 | Capability | Status | Where |
 |---|---|---|
-| Home timeline | `works` | `features/dreams/model/homeTimeline.ts`, `homeLayout.ts` |
-| Home recap and overview | `works` | `features/dreams/model/homeOverview.ts` |
-| Archive browsing, comfortable and compact modes | `works` | `features/dreams/model/archiveBrowser.ts` (`ArchiveViewMode`) |
+| Home recent-dream timeline | `works` | `features/dreams/hooks/useHomeTimelineState.ts`, `features/dreams/model/dreamList.ts` |
+| Home contextual return reason | `works` | `features/dreams/model/homeReturnReason.ts`, `homeOverview.ts` |
+| Archive list and calendar surfaces | `works` | `features/dreams/model/archiveSurface.ts`, `archiveBrowseQuery.ts`, `archiveBrowseSections.ts` |
+| Archive comfortable and compact row modes | `works` | `features/dreams/model/archiveBrowser.ts` (`ArchiveViewMode`) |
 | Month calendar panel with mood dots | `works` | `features/dreams/components/archive/ArchiveMonthPanel.tsx`, `archiveBrowser.ts` (`ArchiveCalendarCell`) |
-| Debounced local search | `works` | `features/dreams/hooks/useArchiveBrowseState.ts` |
-| Filters: all, active, archived, starred | `works` | `archiveBrowser.ts` (`ArchiveFilter`) |
+| Debounced local search across the full list or selected calendar month | `works` | `features/dreams/hooks/useArchiveBrowseState.ts`, `archiveBrowseQuery.ts` |
+| Filters: all, active, archived, starred | `works` | `archiveBrowser.ts` (`ArchiveFilter`), `useArchiveBrowseState.ts` |
 | Dream detail view | `works` | `features/dreams/screens/DreamDetailScreen.tsx` |
 | Related dreams | `works` | `features/dreams/model/relatedDreams.ts` |
 | Resurfacing and revisit cues | `works` | `features/dreams/model/resurfacingCue.ts`, `archiveBrowser.ts` |
@@ -71,7 +72,8 @@ before trusting the statuses.
 | Dream practice guidance | `works` | `features/practice/screens/DreamPracticeScreen.tsx` |
 
 The insight layer today is heuristic, not learned. It counts, groups and compares —
-it does not understand text. That is what H3 changes.
+it does not understand text. Semantic search and learned text analysis remain post-beta
+work and start only after real archives show that they are needed.
 
 ## Privacy and trust
 

@@ -116,7 +116,9 @@ export function ArchiveControlsPanel({
           </View>
 
           <View style={styles.browseModeRow}>
-            <Text style={styles.browseModeLabel}>{copy.archiveBrowseLabel}</Text>
+            <Text style={styles.browseModeLabel}>
+              {copy.archiveBrowseLabel}
+            </Text>
             <View style={styles.browseModeChips}>
               {surfaceModes.map(option => {
                 const active = surfaceMode === option.key;

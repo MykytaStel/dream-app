@@ -76,8 +76,7 @@ export function useArchiveBrowseState({
   const isSearchPending =
     searchQuery !== debouncedSearchQuery ||
     deferredSearchQuery !== debouncedSearchQuery;
-  const calendarMonthKey =
-    surfaceMode === 'calendar' ? selectedMonthKey : null;
+  const calendarMonthKey = surfaceMode === 'calendar' ? selectedMonthKey : null;
   const calendarDate = surfaceMode === 'calendar' ? selectedDate : null;
 
   const {
@@ -154,13 +153,7 @@ export function useArchiveBrowseState({
         selectedDate: calendarDate,
         locale: localeKey,
       }),
-    [
-      calendarDate,
-      calendarMonthKey,
-      localeKey,
-      surfaceMode,
-      visibleDreams,
-    ],
+    [calendarDate, calendarMonthKey, localeKey, surfaceMode, visibleDreams],
   );
 
   const calendarCells = React.useMemo(

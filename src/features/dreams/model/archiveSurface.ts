@@ -21,7 +21,5 @@ export function getArchiveSearchPlaceholder(
     return copy.archiveSearchPlaceholder;
   }
 
-  return locale === 'uk'
-    ? 'Шукати в усьому архіві'
-    : 'Search the full archive';
+  return locale === 'uk' ? 'Шукати в усьому архіві' : 'Search the full archive';
 }

@@ -21,6 +21,7 @@ export const MONTHLY_REPORT_SAVED_MONTHS_STORAGE_KEY =
   'monthly-report-saved-months';
 export const PINNED_DREAM_THREADS_STORAGE_KEY = 'pinned-dream-threads';
 export const REVIEW_SAVED_STATE_STORAGE_KEY = 'review-saved-state';
+export const MEMORY_PATTERN_FEEDBACK_STORAGE_KEY = 'memory-pattern-feedback';
 export const BACKUP_ONBOARDING_SEEN_KEY = 'backup-onboarding-seen';
 export const APP_LOCALE_KEY = 'app-locale';
 export const APP_THEME_KEY = 'app-theme';

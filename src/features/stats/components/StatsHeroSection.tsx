@@ -29,7 +29,6 @@ export function StatsHeroSection({
   selectedRange,
   onSelectRange,
   rangeOptions,
-  topSignal,
   memoryNudge,
   onOpenMemoryNudge,
   coverageGap,
@@ -42,7 +41,6 @@ export function StatsHeroSection({
   selectedRange: InsightRange;
   onSelectRange: (value: InsightRange) => void;
   rangeOptions: ReadonlyArray<{ key: InsightRange; label: string }>;
-  topSignal: { label: string; hint: string; onPress?: () => void } | null;
   memoryNudge: {
     dreamId: string;
     dreamTitle: string;
@@ -126,36 +124,6 @@ export function StatsHeroSection({
             layout={statsLayoutTransition}
           >
             <View style={styles.overviewPanel}>
-              <View style={styles.overviewPanelHeader}>
-                <Text style={styles.overviewPanelTitle}>
-                  {copy.spotlightTitle}
-                </Text>
-              </View>
-
-              <Pressable
-                accessibilityRole="button"
-                disabled={!topSignal?.onPress}
-                onPress={topSignal?.onPress}
-                style={({ pressed }) => [
-                  styles.storyCard,
-                  styles.storyCardAccent,
-                  styles.storyCardSingle,
-                  pressed && topSignal?.onPress
-                    ? styles.insightCardPressed
-                    : null,
-                ]}
-              >
-                <Text style={styles.storyLabel}>
-                  {copy.overviewTopSignalLabel}
-                </Text>
-                <Text style={styles.storyValue} numberOfLines={2}>
-                  {topSignal?.label ?? copy.overviewTopSignalEmpty}
-                </Text>
-                <Text style={styles.storyHint} numberOfLines={2}>
-                  {topSignal?.hint ?? copy.takeawayThemesEmpty}
-                </Text>
-              </Pressable>
-
               {memoryNudge ? (
                 <Pressable
                   accessibilityRole="button"

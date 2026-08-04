@@ -49,7 +49,9 @@ export function getArchiveBrowseResult({
 }: ArchiveBrowseQuery): ArchiveBrowseResult {
   const statusScopedDreams = applyArchiveStatusFilter(dreams, filter);
   const monthDreams = selectedMonthKey
-    ? statusScopedDreams.filter(dream => getMonthKey(dream) === selectedMonthKey)
+    ? statusScopedDreams.filter(
+        dream => getMonthKey(dream) === selectedMonthKey,
+      )
     : [];
   const tagFilteredDreams = tagFilter
     ? monthDreams.filter(dream => matchesArchiveTag(dream, tagFilter))

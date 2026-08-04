@@ -13,7 +13,7 @@ import {
 } from './dreamList';
 
 /**
- * @deprecated Transitional exports for the remaining UI and hook callers that
+ * @deprecated Transitional exports for remaining UI and hook callers that
  * still use the retired Home timeline module name. New code belongs in
  * `dreamList` or `archiveSearch`.
  */

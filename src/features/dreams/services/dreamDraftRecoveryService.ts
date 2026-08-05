@@ -12,9 +12,7 @@ import {
 } from './dreamDraftService';
 
 export type DreamDraftRecoveryStatus =
-  | 'missing'
-  | 'ready'
-  | 'discarded-corrupt';
+  'missing' | 'ready' | 'discarded-corrupt';
 
 export type DreamDraftRecoveryResult = {
   status: DreamDraftRecoveryStatus;
@@ -65,7 +63,9 @@ const STRING_ARRAY_FIELDS = [
   'nightmareGroundingUsed',
 ] as const;
 
-function hasExpectedStoredDraftShape(value: unknown): value is Partial<DreamDraft> {
+function hasExpectedStoredDraftShape(
+  value: unknown,
+): value is Partial<DreamDraft> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     return false;
   }
@@ -73,22 +73,25 @@ function hasExpectedStoredDraftShape(value: unknown): value is Partial<DreamDraf
   const record = value as Record<string, unknown>;
 
   for (const field of STRING_FIELDS) {
-    if (record[field] !== undefined && typeof record[field] !== 'string') {
+    const stored = record[field];
+    if (stored !== undefined && typeof stored !== 'string') {
       return false;
     }
   }
 
   for (const field of NUMBER_FIELDS) {
+    const stored = record[field];
     if (
-      record[field] !== undefined &&
-      (typeof record[field] !== 'number' || !Number.isFinite(record[field]))
+      stored !== undefined &&
+      (typeof stored !== 'number' || !Number.isFinite(stored))
     ) {
       return false;
     }
   }
 
   for (const field of BOOLEAN_FIELDS) {
-    if (record[field] !== undefined && typeof record[field] !== 'boolean') {
+    const stored = record[field];
+    if (stored !== undefined && typeof stored !== 'boolean') {
       return false;
     }
   }
@@ -172,10 +175,8 @@ function readStoredDraft(
 }
 
 export function readDreamDraftForRecovery(): DreamDraftRecoveryResult {
-  return readStoredDraft(
-    DREAM_DRAFT_STORAGE_KEY,
-    getDreamDraft,
-    () => scheduleDreamWidgetSync({ draftSnapshot: null }),
+  return readStoredDraft(DREAM_DRAFT_STORAGE_KEY, getDreamDraft, () =>
+    scheduleDreamWidgetSync({ draftSnapshot: null }),
   );
 }
 

@@ -3,6 +3,7 @@ import { StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import RootNavigator from './src/app/navigation/RootNavigator';
 import { AppProviders } from './src/app/AppProvider';
+import { AudioCleanupMaintenance } from './src/features/dreams/components/AudioCleanupMaintenance';
 import { AppLockGate } from './src/features/security/components/AppLockGate';
 
 // Lock copy lives here as plain strings because AppLockGate renders outside
@@ -25,6 +26,7 @@ export default function App() {
           subtitle={LOCK_COPY.subtitle}
           appName={LOCK_COPY.appName}
         >
+          <AudioCleanupMaintenance />
           <RootNavigator />
         </AppLockGate>
       </AppProviders>

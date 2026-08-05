@@ -18,6 +18,28 @@ const MISSING_RECOVERY_RESULT: DreamDraftRecoveryResult = {
   draft: null,
 };
 
+type RecoverySession = {
+  key: string;
+  result: DreamDraftRecoveryResult;
+};
+
+function getRecoverySessionKey({
+  mode,
+  initialDream,
+}: Pick<DreamComposerProps, 'mode' | 'initialDream'>) {
+  if (mode === 'create') {
+    return 'create';
+  }
+
+  if (!initialDream) {
+    return 'edit:missing';
+  }
+
+  return `edit:${initialDream.id}:${
+    initialDream.updatedAt ?? initialDream.createdAt
+  }`;
+}
+
 function readRecoveryResult({
   mode,
   initialDream,
@@ -39,25 +61,41 @@ function readRecoveryResult({
 /**
  * Resolves local draft recovery before DreamComposer reads its initial fields.
  *
- * A corrupt or stale key is removed during the lazy state initializer, then the
- * child composer mounts against clean storage. Valid drafts remain untouched and
- * are restored by the existing composer form without a second recovery policy.
+ * The first render deliberately mounts no composer. The layout effect performs
+ * the storage recovery, then the child mounts against clean storage before the
+ * frame is presented. This keeps MMKV writes out of render and remains safe
+ * when React Strict Mode repeats render-phase work in development.
  */
 export function DreamComposerWithRecovery(props: DreamComposerProps) {
   const { locale } = useI18n();
-  const [recoveryResult] = React.useState(() => readRecoveryResult(props));
-  const [showNotice, setShowNotice] = React.useState(() =>
-    isDreamDraftRecoveryNoticeStatus(recoveryResult.status),
+  const sessionKey = getRecoverySessionKey(props);
+  const [session, setSession] = React.useState<RecoverySession | null>(null);
+  const [dismissedSessionKey, setDismissedSessionKey] = React.useState<
+    string | null
+  >(null);
+
+  React.useLayoutEffect(() => {
+    setSession({
+      key: sessionKey,
+      result: readRecoveryResult(props),
+    });
+  }, [
+    props.initialDream,
+    props.mode,
+    sessionKey,
+  ]);
+
+  if (!session || session.key !== sessionKey) {
+    return null;
+  }
+
+  const { result } = session;
+  const noticeCopy = isDreamDraftRecoveryNoticeStatus(result.status)
+    ? getDreamDraftRecoveryNoticeCopy(locale, result.status)
+    : null;
+  const showNotice = Boolean(
+    noticeCopy && dismissedSessionKey !== sessionKey,
   );
-  const dismissNotice = React.useCallback(() => setShowNotice(false), []);
-
-  const noticeCopy = React.useMemo(() => {
-    if (!isDreamDraftRecoveryNoticeStatus(recoveryResult.status)) {
-      return null;
-    }
-
-    return getDreamDraftRecoveryNoticeCopy(locale, recoveryResult.status);
-  }, [locale, recoveryResult.status]);
 
   return (
     <>
@@ -67,7 +105,7 @@ export function DreamComposerWithRecovery(props: DreamComposerProps) {
           title={noticeCopy.title}
           description={noticeCopy.description}
           dismissLabel={noticeCopy.dismissLabel}
-          onDismiss={dismissNotice}
+          onDismiss={() => setDismissedSessionKey(sessionKey)}
         />
       ) : null}
     </>

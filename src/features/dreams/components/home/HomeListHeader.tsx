@@ -1,107 +1,78 @@
 import React from 'react';
-import { View } from 'react-native';
-import { type PatternDetailKind } from '../../../../app/navigation/routes';
+import { Pressable, StyleSheet, View } from 'react-native';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import { useTheme } from '@shopify/restyle';
 import { Card } from '../../../../components/ui/Card';
 import { SectionHeader } from '../../../../components/ui/SectionHeader';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
+import { type Theme } from '../../../../theme/theme';
 import { type HomeRevisitCue } from '../../model/homeOverview';
-import { selectHomeReturnReason } from '../../model/homeReturnReason';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
-import { HomeShortcutSection } from './sections/HomeShortcutSection';
 import { HomeSpotlightSection } from './sections/HomeSpotlightSection';
 
-/**
- * Home is the way back into the journal, not a second archive.
- *
- * It presents at most one contextual reason to return before the recent-dream
- * timeline. Search, filters, sorting, weekly browsing and practice navigation
- * belong to their dedicated surfaces instead of being duplicated here.
- */
 type HomeListHeaderProps = {
   copy: DreamCopy;
   styles: ReturnType<typeof createHomeScreenStyles>;
-  visibleDreamCount: number;
-  archiveScopedCount: number;
-  lastViewedDreamTitle?: string | null;
-  lastViewedDreamMeta?: string | null;
-  onOpenLastDream?: (() => void) | null;
-  spotlightPattern: string;
-  spotlightPatternKind: PatternDetailKind | null;
-  spotlightCountLabel: string;
+  recentDreamCount: number;
+  activeDreamCount: number;
+  archiveActionLabel: string;
   revisitCue: HomeRevisitCue | null;
-  attentionValue: string;
-  attentionHint: string;
   onOpenRevisitDream: (dreamId: string) => void;
-  onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
+  onOpenArchive: () => void;
 };
 
 export const HomeListHeader = React.memo(function HomeListHeader({
   copy,
   styles,
-  visibleDreamCount,
-  archiveScopedCount,
-  lastViewedDreamTitle,
-  lastViewedDreamMeta,
-  onOpenLastDream,
-  spotlightPattern,
-  spotlightPatternKind,
-  spotlightCountLabel,
+  recentDreamCount,
+  activeDreamCount,
+  archiveActionLabel,
   revisitCue,
-  attentionValue,
-  attentionHint,
   onOpenRevisitDream,
-  onOpenPatternDetail,
+  onOpenArchive,
 }: HomeListHeaderProps) {
-  const hasAttentionCue = attentionValue !== copy.homeSpotlightAttentionClear;
-  const returnReason = selectHomeReturnReason({
-    hasSpotlightPattern: Boolean(spotlightPatternKind),
-    hasRevisitCue: Boolean(revisitCue),
-    hasAttentionCue,
-    hasLastViewedDream: Boolean(lastViewedDreamTitle),
-    canOpenLastViewedDream: Boolean(onOpenLastDream),
-  });
-  const showSpotlightCard = returnReason === 'spotlight';
-  const showLastViewedShortcut = returnReason === 'lastViewed';
+  const theme = useTheme<Theme>();
+  const localStyles = React.useMemo(() => createLocalStyles(theme), [theme]);
+  const isHomeTruncated = activeDreamCount > recentDreamCount;
 
   return (
     <View style={styles.listHeaderContent}>
       <HomeSpotlightSection
         copy={copy}
         styles={styles}
-        showSpotlightCard={showSpotlightCard}
-        spotlightPattern={spotlightPattern}
-        spotlightPatternKind={spotlightPatternKind}
-        spotlightCountLabel={spotlightCountLabel}
-        hasAttentionCue={hasAttentionCue}
-        attentionValue={attentionValue}
-        attentionHint={attentionHint}
         revisitCue={revisitCue}
-        onOpenPatternDetail={onOpenPatternDetail}
         onOpenRevisitDream={onOpenRevisitDream}
-      />
-
-      <HomeShortcutSection
-        copy={copy}
-        styles={styles}
-        showLastViewedShortcut={showLastViewedShortcut}
-        lastViewedDreamTitle={lastViewedDreamTitle}
-        lastViewedDreamMeta={lastViewedDreamMeta}
-        onOpenLastDream={onOpenLastDream}
       />
 
       <View style={styles.timelineHeaderRow}>
         <View style={styles.timelineHeaderCopy}>
           <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
+          {isHomeTruncated ? (
+            <Text style={localStyles.limitHint}>{copy.homeRecentLimitHint}</Text>
+          ) : null}
         </View>
-        {visibleDreamCount > 0 ? (
-          <View style={styles.timelineCountPill}>
-            <Text style={styles.timelineCountLabel}>{visibleDreamCount}</Text>
-          </View>
-        ) : null}
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={archiveActionLabel}
+          onPress={onOpenArchive}
+          style={({ pressed }) => [
+            localStyles.archiveAction,
+            pressed ? localStyles.archiveActionPressed : null,
+          ]}
+        >
+          <Text style={localStyles.archiveActionText}>
+            {archiveActionLabel}
+          </Text>
+          <Ionicons
+            name="arrow-forward-outline"
+            size={14}
+            color={theme.colors.accent}
+          />
+        </Pressable>
       </View>
 
-      {!archiveScopedCount ? (
+      {!activeDreamCount ? (
         <Card style={styles.emptyCard}>
           <SectionHeader
             title={copy.emptyActiveTitle}
@@ -112,3 +83,38 @@ export const HomeListHeader = React.memo(function HomeListHeader({
     </View>
   );
 });
+
+function createLocalStyles(theme: Theme) {
+  return StyleSheet.create({
+    limitHint: {
+      maxWidth: 260,
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 15,
+    },
+    archiveAction: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      maxWidth: 170,
+      borderRadius: 999,
+      borderWidth: 1,
+      borderColor: `${theme.colors.accent}55`,
+      backgroundColor: theme.colors.surface,
+      paddingVertical: 7,
+      paddingHorizontal: 10,
+    },
+    archiveActionPressed: {
+      opacity: 0.9,
+    },
+    archiveActionText: {
+      flexShrink: 1,
+      color: theme.colors.accent,
+      fontSize: 10,
+      lineHeight: 14,
+      fontWeight: '800',
+      textAlign: 'center',
+    },
+  });
+}

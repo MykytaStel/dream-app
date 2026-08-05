@@ -15,7 +15,14 @@ import { Theme } from '../../../theme/theme';
 import { fontFamilies } from '../../../theme/fonts';
 import { Dream } from '../model/dream';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
-import { getPostSaveFollowUps } from '../model/postSaveFollowUp';
+import {
+  getCaptureFlowCopy,
+  getCaptureFollowUpDestination,
+} from '../model/captureFollowUp';
+import {
+  getPostSaveFollowUps,
+  type PostSaveFollowUp,
+} from '../model/postSaveFollowUp';
 
 type CaptureSavedSheetProps = {
   visible: boolean;
@@ -24,6 +31,7 @@ type CaptureSavedSheetProps = {
   onClose: () => void;
   onCaptureAnother: () => void;
   onOpenDetail: (focusSection?: DreamDetailFocusSection) => void;
+  onOpenEditor?: () => void;
 };
 
 function formatSavedDreamTitle(dream: Dream | null, fallback: string) {
@@ -41,9 +49,14 @@ export function CaptureSavedSheet({
   onClose,
   onCaptureAnother,
   onOpenDetail,
+  onOpenEditor,
 }: CaptureSavedSheetProps) {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const captureFlowCopy = React.useMemo(
+    () => getCaptureFlowCopy(locale),
+    [locale],
+  );
   const t = useTheme<Theme>();
   const insets = useSafeAreaInsets();
   const styles = React.useMemo(
@@ -65,6 +78,23 @@ export function CaptureSavedSheet({
         year: 'numeric',
       })
     : null;
+
+  const openFollowUp = React.useCallback(
+    (followUp: PostSaveFollowUp) => {
+      if (getCaptureFollowUpDestination(followUp) === 'editor') {
+        if (onOpenEditor) {
+          onOpenEditor();
+          return;
+        }
+
+        onOpenDetail('written');
+        return;
+      }
+
+      onOpenDetail(followUp.focusSection);
+    },
+    [onOpenDetail, onOpenEditor],
+  );
 
   return (
     <Modal
@@ -157,7 +187,7 @@ export function CaptureSavedSheet({
             <View style={styles.actions}>
               <Button
                 title={primaryFollowUp.actionLabel}
-                onPress={() => onOpenDetail(primaryFollowUp.focusSection)}
+                onPress={() => openFollowUp(primaryFollowUp)}
                 variant="ghost"
                 icon="arrow-forward-outline"
                 iconPosition="right"
@@ -166,7 +196,7 @@ export function CaptureSavedSheet({
               {secondaryFollowUp ? (
                 <Pressable
                   accessibilityRole="button"
-                  onPress={() => onOpenDetail(secondaryFollowUp.focusSection)}
+                  onPress={() => openFollowUp(secondaryFollowUp)}
                   style={({ pressed }) => [
                     styles.secondaryFollowUpRow,
                     pressed ? styles.secondaryFollowUpRowPressed : null,
@@ -207,7 +237,7 @@ export function CaptureSavedSheet({
                 ]}
               >
                 <Text style={styles.footerActionLabel}>
-                  {copy.postSaveContinueLater}
+                  {captureFlowCopy.reflectLaterAction}
                 </Text>
               </Pressable>
             </View>

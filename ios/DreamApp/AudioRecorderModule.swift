@@ -73,6 +73,7 @@ class AudioRecorderImpl: NSObject {
    * is documented as a hint, so nothing downstream may treat this as a clock.
    */
   private static let progressInterval: TimeInterval = 0.25
+  private static let secondsPerDay: TimeInterval = 86_400
 
   override init() {
     super.init()
@@ -201,6 +202,48 @@ class AudioRecorderImpl: NSObject {
     return url.standardizedFileURL.path.hasPrefix(
       directory.standardizedFileURL.path
     )
+  }
+
+  private func normalizedAudioDirectory() throws -> URL {
+    try audioDirectory().standardizedFileURL.resolvingSymlinksInPath()
+  }
+
+  private func protectedAudioPaths(
+    _ protectedUris: [String],
+    in directory: URL
+  ) -> Set<String> {
+    var paths = Set<String>()
+
+    for rawValue in protectedUris {
+      let value = rawValue.trimmingCharacters(in: .whitespacesAndNewlines)
+      guard !value.isEmpty else { continue }
+
+      let candidate: URL?
+      if value.hasPrefix("file://") {
+        candidate = URL(string: value)
+      } else if value.hasPrefix("/") {
+        candidate = URL(fileURLWithPath: value)
+      } else {
+        candidate = nil
+      }
+
+      guard let normalized = candidate?
+        .standardizedFileURL
+        .resolvingSymlinksInPath()
+      else {
+        continue
+      }
+
+      // Cleanup owns only direct children of Documents/audio. A malformed,
+      // external or non-file URI cannot protect or delete anything outside it.
+      guard normalized.deletingLastPathComponent() == directory else {
+        continue
+      }
+
+      paths.insert(normalized.path)
+    }
+
+    return paths
   }
 
   // MARK: - Session
@@ -511,12 +554,29 @@ class AudioRecorderImpl: NSObject {
   @objc
   func cleanupOrphanedAudioFiles(
     _ maxAgeDays: Double,
+    protectedUris: [String],
     resolver resolve: @escaping RCTPromiseResolveBlock,
     rejecter reject: @escaping RCTPromiseRejectBlock
   ) {
+    guard maxAgeDays.isFinite, maxAgeDays >= 0 else {
+      reject(
+        "cleanup_invalid_age",
+        "Audio cleanup age must be a finite non-negative number.",
+        nil
+      )
+      return
+    }
+
     do {
-      let directory = try audioDirectory()
-      let cutoff = Date().addingTimeInterval(-maxAgeDays * 24 * 60 * 60)
+      let directory = try normalizedAudioDirectory()
+      let protectedPaths = protectedAudioPaths(protectedUris, in: directory)
+      let currentPath = currentOutputURL?
+        .standardizedFileURL
+        .resolvingSymlinksInPath()
+        .path
+      let cutoff = Date().addingTimeInterval(
+        -maxAgeDays * Self.secondsPerDay
+      )
 
       let contents = try FileManager.default.contentsOfDirectory(
         at: directory,
@@ -525,7 +585,10 @@ class AudioRecorderImpl: NSObject {
 
       var deleted = 0
 
-      for url in contents {
+      for rawURL in contents {
+        let url = rawURL.standardizedFileURL.resolvingSymlinksInPath()
+        guard url.deletingLastPathComponent() == directory else { continue }
+
         let values = try? url.resourceValues(
           forKeys: [.contentModificationDateKey, .isRegularFileKey]
         )
@@ -533,9 +596,8 @@ class AudioRecorderImpl: NSObject {
         guard values?.isRegularFile == true else { continue }
         // The recording in progress is not orphaned, however old its timestamp
         // looks once a long session has been running.
-        guard url.standardizedFileURL != currentOutputURL?.standardizedFileURL else {
-          continue
-        }
+        guard url.path != currentPath else { continue }
+        guard !protectedPaths.contains(url.path) else { continue }
         guard let modified = values?.contentModificationDate, modified < cutoff else {
           continue
         }

@@ -11,9 +11,8 @@ jest
   .spyOn(TurboModuleRegistry, 'getEnforcing')
   .mockReturnValue(RNWhisper as never);
 
-const { initWhisper } = require(
-  '../src/features/dreams/services/whisperNative',
-) as typeof import('../src/features/dreams/services/whisperNative');
+const { initWhisper } =
+  require('../src/features/dreams/services/whisperNative') as typeof import('../src/features/dreams/services/whisperNative');
 
 describe('whisper native bridgeless adapter', () => {
   beforeEach(() => {

@@ -94,8 +94,15 @@ export interface Spec extends TurboModule {
    * displayed on.
    */
   getDuration(filePath: string): Promise<number>;
-  /** Returns how many files were removed. */
-  cleanupOrphanedAudioFiles(maxAgeDays: number): Promise<number>;
+
+  /**
+   * Removes old files only when their canonical app-audio path is absent from
+   * `protectedUris`. Returns how many files were removed.
+   */
+  cleanupOrphanedAudioFiles(
+    maxAgeDays: number,
+    protectedUris: ReadonlyArray<string>,
+  ): Promise<number>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('AudioRecorder');

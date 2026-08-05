@@ -98,10 +98,14 @@ RCT_EXPORT_MODULE()
 }
 
 - (void)cleanupOrphanedAudioFiles:(double)maxAgeDays
-                          resolve:(RCTPromiseResolveBlock)resolve
-                           reject:(RCTPromiseRejectBlock)reject
+                  protectedUris:(NSArray<NSString *> *)protectedUris
+                         resolve:(RCTPromiseResolveBlock)resolve
+                          reject:(RCTPromiseRejectBlock)reject
 {
-  [_impl cleanupOrphanedAudioFiles:maxAgeDays resolver:resolve rejecter:reject];
+  [_impl cleanupOrphanedAudioFiles:maxAgeDays
+                    protectedUris:protectedUris
+                          resolver:resolve
+                           rejecter:reject];
 }
 
 - (std::shared_ptr<facebook::react::TurboModule>)

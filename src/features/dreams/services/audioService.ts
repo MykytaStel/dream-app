@@ -151,9 +151,17 @@ export async function getDuration(uri: string): Promise<number> {
   }
 }
 
-/** Deletes orphaned recording files in the app audio directory. */
+/**
+ * Deletes only old app-owned recordings absent from the caller's ownership
+ * snapshot. The caller must fail closed and skip this function when that
+ * snapshot is incomplete.
+ */
 export async function cleanupOrphanedAudioFiles(
   maxAgeDays: number,
+  protectedUris: readonly string[],
 ): Promise<number> {
-  return NativeAudioRecorder.cleanupOrphanedAudioFiles(maxAgeDays);
+  return NativeAudioRecorder.cleanupOrphanedAudioFiles(
+    maxAgeDays,
+    protectedUris,
+  );
 }

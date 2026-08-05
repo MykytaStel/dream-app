@@ -4,13 +4,15 @@ import Animated, { FadeIn } from 'react-native-reanimated';
 import { Text } from '../../../../components/ui/Text';
 import { createHomeScreenStyles } from '../../screens/HomeScreen.styles';
 
-const STREAK_MILESTONES = new Set([3, 7, 14, 30]);
-
 type HomeHeroProps = {
   styles: ReturnType<typeof createHomeScreenStyles>;
   insetTop: number;
   greeting: string;
   dateLabel: string;
+  /**
+   * Kept temporarily while HomeScreen and its timeline model are migrated in
+   * separate small slices. Home no longer renders streak pressure.
+   */
   streak?: number;
   streakLabel?: string;
 };
@@ -20,12 +22,7 @@ export const HomeHero = React.memo(function HomeHero({
   insetTop,
   greeting,
   dateLabel,
-  streak,
-  streakLabel,
 }: HomeHeroProps) {
-  const isMilestone =
-    streak != null && streak >= 2 && STREAK_MILESTONES.has(streak);
-
   return (
     <Animated.View
       entering={FadeIn.duration(400)}
@@ -48,23 +45,6 @@ export const HomeHero = React.memo(function HomeHero({
               <View style={styles.heroDateChip}>
                 <Text style={styles.heroDateChipLabel}>{dateLabel}</Text>
               </View>
-              {streak != null && streak >= 2 && streakLabel ? (
-                <View
-                  style={[
-                    styles.heroStreakChip,
-                    isMilestone ? styles.heroStreakChipMilestone : null,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.heroStreakChipText,
-                      isMilestone ? styles.heroStreakChipTextMilestone : null,
-                    ]}
-                  >
-                    {streakLabel}
-                  </Text>
-                </View>
-              ) : null}
             </View>
           </View>
           <View style={styles.heroVisualShell}>

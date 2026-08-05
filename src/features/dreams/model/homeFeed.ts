@@ -1,3 +1,5 @@
+import type { AppLocale } from '../../../i18n/types';
+
 export const HOME_RECENT_DREAM_LIMIT = 3;
 
 export type HomeFeedItem = {
@@ -11,6 +13,10 @@ export type HomeFeedState<T extends HomeFeedItem> = {
   activeItems: T[];
   recentItems: T[];
   activeCount: number;
+};
+
+export type HomeFeedCopy = {
+  openArchiveAction: string;
 };
 
 function toLocalDateKey(epoch: number) {
@@ -52,4 +58,10 @@ export function getHomeFeedState<T extends HomeFeedItem>(
     recentItems: activeItems.slice(0, HOME_RECENT_DREAM_LIMIT),
     activeCount: activeItems.length,
   };
+}
+
+export function getHomeFeedCopy(locale: AppLocale): HomeFeedCopy {
+  return locale === 'uk'
+    ? { openArchiveAction: 'Відкрити весь архів' }
+    : { openArchiveAction: 'Open full archive' };
 }

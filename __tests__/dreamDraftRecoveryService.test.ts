@@ -105,4 +105,29 @@ describe('dream draft recovery boundary', () => {
     expect(result.status).toBe('ready');
     expect(result.draft?.text).toBe('A quiet train platform');
   });
+
+  test('discards an edit draft that is not newer than the saved dream', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(100);
+    saveDreamEditDraft('dream-1', VALID_DRAFT);
+
+    const result = readDreamEditDraftForRecovery('dream-1', 100);
+
+    expect(result).toEqual({
+      status: 'discarded-stale',
+      draft: null,
+    });
+    expect(
+      kv.getString(`${DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX}dream-1`),
+    ).toBeUndefined();
+  });
+
+  test('keeps an edit draft that is newer than the saved dream', () => {
+    jest.spyOn(Date, 'now').mockReturnValue(200);
+    saveDreamEditDraft('dream-1', VALID_DRAFT);
+
+    const result = readDreamEditDraftForRecovery('dream-1', 100);
+
+    expect(result.status).toBe('ready');
+    expect(result.draft?.updatedAt).toBe(200);
+  });
 });

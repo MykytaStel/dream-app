@@ -15,7 +15,7 @@ import {
   type RootStackParamList,
 } from '../../../app/navigation/routes';
 import { useI18n } from '../../../i18n/I18nProvider';
-import { DreamComposer } from '../components/DreamComposer';
+import { DreamComposerWithRecovery } from '../components/DreamComposerWithRecovery';
 import { getDream } from '../repository/dreamsRepository';
 
 export default function EditDreamScreen() {
@@ -52,7 +52,8 @@ export default function EditDreamScreen() {
   }
 
   return (
-    <DreamComposer
+    <DreamComposerWithRecovery
+      key={`${dream.id}:${dream.updatedAt ?? dream.createdAt}`}
       mode="edit"
       initialDream={dream}
       onSaved={() => navigation.goBack()}

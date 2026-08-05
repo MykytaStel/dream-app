@@ -11,7 +11,7 @@ import {
   type TabParamList,
 } from '../../../app/navigation/routes';
 import type { Dream } from '../model/dream';
-import { DreamComposer } from '../components/DreamComposer';
+import { DreamComposerWithRecovery } from '../components/DreamComposerWithRecovery';
 import { CaptureSavedSheet } from '../components/CaptureSavedSheet';
 import { listDreamListItems } from '../repository/dreamsRepository';
 import { getCurrentStreak } from '../model/dreamAnalytics';
@@ -180,7 +180,7 @@ export default function NewDreamScreen() {
 
   return (
     <>
-      <DreamComposer
+      <DreamComposerWithRecovery
         key={composerKey}
         mode="create"
         entryMode={entryMode}

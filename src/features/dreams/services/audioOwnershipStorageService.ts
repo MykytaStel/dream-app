@@ -132,11 +132,11 @@ export function readStoredAudioOwnership(
 
   return {
     protectedUris: collectProtectedAudioUris({
-      savedDreams,
+      dreams: savedDreams,
       createDraft,
       editDrafts,
-      activeRecordingUri: runtime.activeRecordingUri,
-      pendingRecordingUri: runtime.pendingRecordingUri,
+      activeAudioUri: runtime.activeRecordingUri,
+      pendingAudioUri: runtime.pendingRecordingUri,
     }),
     isComplete: uniqueUnreadableStorageKeys.length === 0,
     unreadableStorageKeys: uniqueUnreadableStorageKeys,

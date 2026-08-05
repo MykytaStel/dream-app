@@ -116,10 +116,7 @@ describe('stored audio ownership', () => {
       DREAMS_STORAGE_KEY,
       JSON.stringify([storedDream('dream-1', 100, 'file:///saved.m4a')]),
     );
-    kv.set(
-      `${DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX}deleted-dream`,
-      'not-json',
-    );
+    kv.set(`${DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX}deleted-dream`, 'not-json');
 
     expect(readStoredAudioOwnership()).toEqual({
       protectedUris: ['file:///saved.m4a'],

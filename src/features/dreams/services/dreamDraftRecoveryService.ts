@@ -28,7 +28,6 @@ const STRING_FIELDS = [
   'audioUri',
   'mood',
   'dreamIntensity',
-  'stressLevel',
   'medications',
   'importantEvents',
   'healthNotes',
@@ -42,6 +41,7 @@ const STRING_FIELDS = [
 const NUMBER_FIELDS = [
   'updatedAt',
   'lucidity',
+  'stressLevel',
   'recallScore',
   'nightmareDistress',
 ] as const;

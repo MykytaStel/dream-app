@@ -124,7 +124,7 @@ describe('Ukrainian transcription', () => {
     expect(initWhisper).toHaveBeenCalledTimes(1);
   });
 
-  test('switching language deletes the model that is no longer used', async () => {
+  test('switching language keeps the active model and deletes superseded models', async () => {
     saveLocale('uk');
     (RNFS.readDir as jest.Mock).mockResolvedValue([
       {
@@ -135,15 +135,26 @@ describe('Ukrainian transcription', () => {
         name: 'ggml-base.bin',
         path: '/documents/whisper-models/ggml-base.bin',
       },
+      {
+        name: 'ggml-small-q5_1.bin',
+        path: '/documents/whisper-models/ggml-small-q5_1.bin',
+      },
     ]);
 
     const removed = await pruneUnusedTranscriptionModels();
 
-    // 74 MB that nothing will ever read again, and a settings screen that would
-    // otherwise report a model as installed while the needed one is missing.
-    expect(removed).toEqual(['ggml-tiny.en.bin']);
+    // Both the English model and the previous Ukrainian base model are now
+    // unused. The active small-q5_1 model must remain available.
+    expect(removed).toEqual(['ggml-tiny.en.bin', 'ggml-base.bin']);
+    expect(RNFS.unlink).toHaveBeenCalledTimes(2);
     expect(RNFS.unlink).toHaveBeenCalledWith(
       '/documents/whisper-models/ggml-tiny.en.bin',
+    );
+    expect(RNFS.unlink).toHaveBeenCalledWith(
+      '/documents/whisper-models/ggml-base.bin',
+    );
+    expect(RNFS.unlink).not.toHaveBeenCalledWith(
+      '/documents/whisper-models/ggml-small-q5_1.bin',
     );
   });
 

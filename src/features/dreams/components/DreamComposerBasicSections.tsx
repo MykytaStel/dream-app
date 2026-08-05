@@ -59,18 +59,28 @@ export function DreamComposerHeroCard({
     );
   }
 
+  if (!isEdit) {
+    return (
+      <View style={styles.heroCopyCompact}>
+        <Text style={styles.heroEyebrow}>{copy.quickAddKicker}</Text>
+        <SectionHeader
+          title={copy.createHeroTitle}
+          subtitle={copy.createSubtitle}
+        />
+      </View>
+    );
+  }
+
   return (
     <Card style={styles.heroCard}>
       <View pointerEvents="none" style={styles.heroGlowLarge} />
       <View pointerEvents="none" style={styles.heroGlowSmall} />
       <View style={styles.heroTopRow}>
         <View style={styles.heroCopy}>
-          <Text style={styles.heroEyebrow}>
-            {isEdit ? copy.editTitle : copy.createTitle}
-          </Text>
+          <Text style={styles.heroEyebrow}>{copy.editTitle}</Text>
           <SectionHeader
-            title={isEdit ? copy.editHeroTitle : copy.createHeroTitle}
-            subtitle={isEdit ? copy.editSubtitle : copy.createSubtitle}
+            title={copy.editHeroTitle}
+            subtitle={copy.editSubtitle}
             large
           />
         </View>

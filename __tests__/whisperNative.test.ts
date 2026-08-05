@@ -1,21 +1,19 @@
-jest.mock('whisper.rn/NativeRNWhisper', () => ({
-  __esModule: true,
-  default: {
-    installJSIBindings: jest.fn(),
-    initContext: jest.fn(),
-    transcribeFile: jest.fn(),
-    abortTranscribe: jest.fn(),
-  },
-}));
+import { TurboModuleRegistry } from 'react-native';
 
-import { initWhisper } from '../src/features/dreams/services/whisperNative';
-
-const RNWhisper = require('whisper.rn/NativeRNWhisper').default as {
-  installJSIBindings: jest.Mock;
-  initContext: jest.Mock;
-  transcribeFile: jest.Mock;
-  abortTranscribe: jest.Mock;
+const RNWhisper = {
+  installJSIBindings: jest.fn(),
+  initContext: jest.fn(),
+  transcribeFile: jest.fn(),
+  abortTranscribe: jest.fn(),
 };
+
+jest
+  .spyOn(TurboModuleRegistry, 'getEnforcing')
+  .mockReturnValue(RNWhisper as never);
+
+const { initWhisper } = require(
+  '../src/features/dreams/services/whisperNative',
+) as typeof import('../src/features/dreams/services/whisperNative');
 
 describe('whisper native bridgeless adapter', () => {
   beforeEach(() => {
@@ -30,7 +28,7 @@ describe('whisper native bridgeless adapter', () => {
     RNWhisper.abortTranscribe.mockResolvedValue(undefined);
   });
 
-  test('uses the file TurboModule path without installing legacy JSI bindings', async () => {
+  test('uses the registered file TurboModule without installing legacy JSI bindings', async () => {
     const context = await initWhisper({
       filePath: 'file:///documents/whisper-models/ggml-small-q5_1.bin',
       useGpu: false,

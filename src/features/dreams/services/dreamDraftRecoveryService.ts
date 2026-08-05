@@ -12,7 +12,10 @@ import {
 } from './dreamDraftService';
 
 export type DreamDraftRecoveryStatus =
-  'missing' | 'ready' | 'discarded-corrupt';
+  | 'missing'
+  | 'ready'
+  | 'discarded-corrupt'
+  | 'discarded-stale';
 
 export type DreamDraftRecoveryResult = {
   status: DreamDraftRecoveryStatus;
@@ -182,9 +185,22 @@ export function readDreamDraftForRecovery(): DreamDraftRecoveryResult {
 
 export function readDreamEditDraftForRecovery(
   dreamId: string,
+  savedDreamUpdatedAt?: number,
 ): DreamDraftRecoveryResult {
-  return readStoredDraft(
-    `${DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX}${dreamId}`,
-    () => getDreamEditDraft(dreamId),
-  );
+  const storageKey = `${DREAM_EDIT_DRAFT_STORAGE_KEY_PREFIX}${dreamId}`;
+  const result = readStoredDraft(storageKey, () => getDreamEditDraft(dreamId));
+
+  if (
+    result.status === 'ready' &&
+    typeof savedDreamUpdatedAt === 'number' &&
+    (result.draft?.updatedAt ?? 0) <= savedDreamUpdatedAt
+  ) {
+    kv.remove(storageKey);
+    return {
+      status: 'discarded-stale',
+      draft: null,
+    };
+  }
+
+  return result;
 }

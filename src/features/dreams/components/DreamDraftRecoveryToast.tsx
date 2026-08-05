@@ -1,7 +1,11 @@
 import React from 'react';
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTheme } from '@shopify/restyle';
-import Animated, { FadeIn, SlideInDown, SlideOutDown } from 'react-native-reanimated';
+import Animated, {
+  FadeIn,
+  SlideInDown,
+  SlideOutDown,
+} from 'react-native-reanimated';
 import { Text } from '../../../components/ui/Text';
 import type { Theme } from '../../../theme/theme';
 
@@ -41,13 +45,22 @@ export function DreamDraftRecoveryToast({
     >
       <View style={styles.accentRow} pointerEvents="none">
         <View
-          style={[styles.accentSegment, { backgroundColor: theme.colors.auroraStart }]}
+          style={[
+            styles.accentSegment,
+            { backgroundColor: theme.colors.auroraStart },
+          ]}
         />
         <View
-          style={[styles.accentSegment, { backgroundColor: theme.colors.auroraMid }]}
+          style={[
+            styles.accentSegment,
+            { backgroundColor: theme.colors.auroraMid },
+          ]}
         />
         <View
-          style={[styles.accentSegment, { backgroundColor: theme.colors.auroraEnd }]}
+          style={[
+            styles.accentSegment,
+            { backgroundColor: theme.colors.auroraEnd },
+          ]}
         />
       </View>
 
@@ -58,7 +71,9 @@ export function DreamDraftRecoveryToast({
         style={styles.content}
       >
         <View style={styles.textBlock}>
-          <Text style={[styles.title, { color: theme.colors.text }]}>{title}</Text>
+          <Text style={[styles.title, { color: theme.colors.text }]}>
+            {title}
+          </Text>
           <Text style={[styles.description, { color: theme.colors.textDim }]}>
             {description}
           </Text>
@@ -67,7 +82,9 @@ export function DreamDraftRecoveryToast({
           entering={FadeIn.delay(180).duration(240)}
           style={[styles.dismiss, { borderColor: theme.colors.border }]}
         >
-          <Text style={[styles.dismissText, { color: theme.colors.textDim }]}>✕</Text>
+          <Text style={[styles.dismissText, { color: theme.colors.textDim }]}>
+            ✕
+          </Text>
         </Animated.View>
       </Pressable>
     </Animated.View>

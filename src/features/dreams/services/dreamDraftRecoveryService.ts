@@ -12,10 +12,7 @@ import {
 } from './dreamDraftService';
 
 export type DreamDraftRecoveryStatus =
-  | 'missing'
-  | 'ready'
-  | 'discarded-corrupt'
-  | 'discarded-stale';
+  'missing' | 'ready' | 'discarded-corrupt' | 'discarded-stale';
 
 export type DreamDraftRecoveryResult = {
   status: DreamDraftRecoveryStatus;

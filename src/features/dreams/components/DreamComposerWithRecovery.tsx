@@ -68,7 +68,8 @@ function readRecoveryResult({
  */
 export function DreamComposerWithRecovery(props: DreamComposerProps) {
   const { locale } = useI18n();
-  const sessionKey = getRecoverySessionKey(props);
+  const { mode, initialDream } = props;
+  const sessionKey = getRecoverySessionKey({ mode, initialDream });
   const recoveredSessionRef = React.useRef<RecoverySession | null>(null);
   const [session, setSession] = React.useState<RecoverySession | null>(null);
   const [dismissedSessionKey, setDismissedSessionKey] = React.useState<
@@ -82,12 +83,12 @@ export function DreamComposerWithRecovery(props: DreamComposerProps) {
         ? cached
         : {
             key: sessionKey,
-            result: readRecoveryResult(props),
+            result: readRecoveryResult({ mode, initialDream }),
           };
 
     recoveredSessionRef.current = nextSession;
     setSession(nextSession);
-  }, [props, sessionKey]);
+  }, [initialDream, mode, sessionKey]);
 
   if (!session || session.key !== sessionKey) {
     return null;

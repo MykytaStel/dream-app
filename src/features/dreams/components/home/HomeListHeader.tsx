@@ -49,7 +49,9 @@ export const HomeListHeader = React.memo(function HomeListHeader({
         <View style={styles.timelineHeaderCopy}>
           <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
           {isHomeTruncated ? (
-            <Text style={localStyles.limitHint}>{copy.homeRecentLimitHint}</Text>
+            <Text style={localStyles.limitHint}>
+              {copy.homeRecentLimitHint}
+            </Text>
           ) : null}
         </View>
         <Pressable

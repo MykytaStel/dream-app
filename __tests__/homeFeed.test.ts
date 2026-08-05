@@ -75,9 +75,7 @@ describe('homeFeed', () => {
   });
 
   test('provides a clear full-archive action in both locales', () => {
-    expect(getHomeFeedCopy('uk').openArchiveAction).toBe(
-      'Відкрити весь архів',
-    );
+    expect(getHomeFeedCopy('uk').openArchiveAction).toBe('Відкрити весь архів');
     expect(getHomeFeedCopy('en').openArchiveAction).toBe('Open full archive');
   });
 });

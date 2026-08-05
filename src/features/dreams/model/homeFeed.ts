@@ -29,11 +29,10 @@ function resolveItemDate(item: HomeFeedItem) {
   return item.sleepDate?.trim() || toLocalDateKey(item.createdAt);
 }
 
-function compareHomeItemsNewestFirst(
-  left: HomeFeedItem,
-  right: HomeFeedItem,
-) {
-  const dateCompare = resolveItemDate(right).localeCompare(resolveItemDate(left));
+function compareHomeItemsNewestFirst(left: HomeFeedItem, right: HomeFeedItem) {
+  const dateCompare = resolveItemDate(right).localeCompare(
+    resolveItemDate(left),
+  );
   if (dateCompare !== 0) {
     return dateCompare;
   }

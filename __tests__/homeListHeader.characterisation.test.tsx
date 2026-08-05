@@ -15,9 +15,9 @@ const SAFE_AREA_METRICS = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-function renderHeader(
+async function renderHeader(
   overrides: Partial<React.ComponentProps<typeof HomeListHeader>> = {},
-): ReturnType<typeof render> {
+) {
   const props: React.ComponentProps<typeof HomeListHeader> = {
     copy,
     styles,
@@ -40,25 +40,25 @@ function renderHeader(
 }
 
 describe('home list header', () => {
-  test('shows the focused recent-dream header and full Archive action', () => {
-    const { getByText } = renderHeader();
+  test('shows the focused recent-dream header and full Archive action', async () => {
+    const { getByText } = await renderHeader();
 
     expect(getByText(copy.homeSectionLabel)).toBeTruthy();
     expect(getByText(copy.homeRecentLimitHint)).toBeTruthy();
     expect(getByText('Open full archive')).toBeTruthy();
   });
 
-  test('opens Archive from the explicit action', () => {
+  test('opens Archive from the explicit action', async () => {
     const onOpenArchive = jest.fn();
-    const { getByText } = renderHeader({ onOpenArchive });
+    const { getByText } = await renderHeader({ onOpenArchive });
 
     fireEvent.press(getByText('Open full archive'));
 
     expect(onOpenArchive).toHaveBeenCalledTimes(1);
   });
 
-  test('hides the recent-limit explanation when all active dreams fit', () => {
-    const { queryByText } = renderHeader({
+  test('hides the recent-limit explanation when all active dreams fit', async () => {
+    const { queryByText } = await renderHeader({
       recentDreamCount: 3,
       activeDreamCount: 3,
     });
@@ -66,8 +66,8 @@ describe('home list header', () => {
     expect(queryByText(copy.homeRecentLimitHint)).toBeNull();
   });
 
-  test('shows the active-journal empty state when no dreams exist', () => {
-    const { getByText } = renderHeader({
+  test('shows the active-journal empty state when no dreams exist', async () => {
+    const { getByText } = await renderHeader({
       recentDreamCount: 0,
       activeDreamCount: 0,
     });
@@ -76,8 +76,8 @@ describe('home list header', () => {
     expect(getByText(copy.emptyActiveDescription)).toBeTruthy();
   });
 
-  test('does not render removed spotlight and last-viewed content', () => {
-    const { queryByText } = renderHeader();
+  test('does not render removed spotlight and last-viewed content', async () => {
+    const { queryByText } = await renderHeader();
 
     expect(queryByText(copy.homeSpotlightPatternLabel)).toBeNull();
     expect(queryByText(copy.homeSpotlightAttentionLabel)).toBeNull();

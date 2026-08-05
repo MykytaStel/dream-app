@@ -1,7 +1,6 @@
 import React from 'react';
 import { Alert, Platform } from 'react-native';
 import {
-  cleanupOrphanedAudioFiles,
   onRecordingInterrupted,
   startRecording,
   stopRecording,
@@ -204,12 +203,6 @@ export function useRecordingLifecycle({
         recordingIntervalRef.current = null;
       }
     };
-  }, []);
-
-  React.useEffect(() => {
-    cleanupOrphanedAudioFiles(7).catch(e =>
-      logActionError('useRecordingLifecycle.cleanupOrphanedAudioFiles', e),
-    );
   }, []);
 
   React.useEffect(() => {

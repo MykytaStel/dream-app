@@ -52,8 +52,7 @@ import {
   useDreamComposerForm,
 } from './useDreamComposerForm';
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
-import { DreamComposerTemplateRow } from './DreamComposerTemplateRow';
-import { type DreamTemplate } from '../model/dreamTemplates';
+import { DreamComposerQuickCaptureCard } from './DreamComposerQuickCaptureCard';
 
 // Object.entries widens keys to string, which loses the union the option props
 // require. The record's own key type is the accurate one, so it is restored here
@@ -126,12 +125,24 @@ export function DreamComposer({
     () => getNightmareRescriptStatusLabels(locale),
     [locale],
   );
+  const isCreateMode = mode === 'create';
+  const [showCreateMeta, setShowCreateMeta] = React.useState(false);
+  const hasInitializedCreateMeta = React.useRef(false);
+  const handleSaved = React.useCallback<
+    NonNullable<DreamComposerProps['onSaved']>
+  >(
+    dream => {
+      setShowCreateMeta(false);
+      onSaved?.(dream);
+    },
+    [onSaved],
+  );
 
   const form = useDreamComposerForm({
     mode,
     entryMode,
     initialDream,
-    onSaved,
+    onSaved: onSaved ? handleSaved : undefined,
     autoStartRecordingKey,
     copy,
   });
@@ -151,35 +162,18 @@ export function DreamComposer({
   const [showRestoredDraftCard, setShowRestoredDraftCard] = React.useState(
     form.hasRestoredDraft,
   );
-  const isCreateMode = mode === 'create';
   const isCreateVoiceFlow = isCreateMode && entryMode === 'voice';
   const isCreateTextFlow = isCreateMode && entryMode === 'default';
 
-  const showTemplateRow =
-    mode === 'create' &&
-    !form.isWakeMode &&
-    form.isEntryEmpty &&
-    !form.hasRestoredDraft;
+  React.useEffect(() => {
+    if (hasInitializedCreateMeta.current || !isCreateMode || form.isWakeMode) {
+      return;
+    }
 
-  const handleApplyTemplate = React.useCallback(
-    (template: DreamTemplate) => {
-      form.setTags(template.tags);
-      if (template.mood !== undefined) {
-        form.setMood(template.mood);
-      }
-      if (template.wakeEmotions && template.wakeEmotions.length > 0) {
-        form.setWakeEmotions(template.wakeEmotions);
-      }
-      if (template.lucidity !== undefined) {
-        form.setLucidity(template.lucidity);
-      }
-      if (template.opensMoodSection) {
-        form.setShowMoodSection(true);
-      }
-      form.setShowTagsSection(true);
-    },
-    [form],
-  );
+    hasInitializedCreateMeta.current = true;
+    setShowCreateMeta(form.hasEditedMeta);
+  }, [form.hasEditedMeta, form.isWakeMode, isCreateMode]);
+
   const lucidTechniqueOptions = React.useMemo(
     () => toChoiceOptions(lucidTechniqueLabels),
     [lucidTechniqueLabels],
@@ -310,6 +304,27 @@ export function DreamComposer({
     />
   );
 
+  const quickCaptureCard =
+    isCreateMode && !form.isWakeMode ? (
+      <DreamComposerQuickCaptureCard
+        styles={styles}
+        copy={copy}
+        text={form.text}
+        onChangeText={form.setText}
+        title={form.title}
+        onChangeTitle={form.setTitle}
+        sleepDate={form.sleepDate}
+        onChangeSleepDate={form.setSleepDate}
+        hasInvalidSleepDate={form.hasInvalidSleepDate}
+        hasTriedSave={form.hasTriedSave}
+        hasMissingContent={form.hasMissingContent}
+        textWordCount={form.textWordCount}
+        showMeta={showCreateMeta}
+        onToggleMeta={() => setShowCreateMeta(current => !current)}
+        autoFocus={isCreateTextFlow && !form.hasRestoredDraft}
+      />
+    ) : null;
+
   const inlineSaveButton = isCreateMode ? (
     <Button
       title={copy.saveDream}
@@ -329,13 +344,6 @@ export function DreamComposer({
         hasAudio={Boolean(form.audioUri)}
         hasRestoredDraft={form.hasRestoredDraft}
       />
-
-      {showTemplateRow ? (
-        <DreamComposerTemplateRow
-          copy={copy}
-          onApplyTemplate={handleApplyTemplate}
-        />
-      ) : null}
 
       {showRestoredDraftCard ? (
         <Card style={styles.card}>
@@ -360,6 +368,7 @@ export function DreamComposer({
             title={copy.recordDraftStartFreshAction}
             onPress={() => {
               form.discardDraftAndReset();
+              setShowCreateMeta(false);
               setShowRestoredDraftCard(false);
             }}
             variant="ghost"
@@ -414,11 +423,11 @@ export function DreamComposer({
         <>
           {voiceCard}
           {inlineSaveButton}
-          {coreCard}
+          {quickCaptureCard}
         </>
       ) : isCreateTextFlow ? (
         <>
-          {coreCard}
+          {quickCaptureCard}
           {inlineSaveButton}
           {voiceCard}
         </>
@@ -430,15 +439,11 @@ export function DreamComposer({
       )}
 
       {/*
-        Quick Capture: the five detail toggles are not on the way in.
-        Capturing a dream is text or voice, a date, an optional title and
-        Save — thirty to sixty seconds — and every switch offered before that
-        is a decision taken from someone with a fading dream and no reason to
-        care about tags yet. Detail is offered once the dream is safe, which
-        is the only point at which it is a free choice rather than a delay.
-
-        Editing keeps the card: by then there is nothing to lose and the whole
-        reason for opening the screen is usually one of these sections.
+        Quick Capture keeps the raw memory on the path to Save. Title and date
+        are optional disclosure inside the create-only card, while mood,
+        context, tags and practice fields stay in the editor after the dream is
+        safe. Editing keeps the full refine surface because adding detail is the
+        reason that screen was opened.
       */}
       {form.isEdit ? (
         <DreamComposerRefineCard

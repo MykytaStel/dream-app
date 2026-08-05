@@ -43,6 +43,14 @@ const mockedRuntimeSnapshot =
     typeof getAudioRuntimeOwnershipSnapshot
   >;
 
+function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  const promise = new Promise<T>(nextResolve => {
+    resolve = nextResolve;
+  });
+  return { promise, resolve };
+}
+
 describe('audioCleanupMaintenanceService', () => {
   beforeEach(() => {
     kv.clearAll();
@@ -140,15 +148,9 @@ describe('audioCleanupMaintenanceService', () => {
   });
 
   test('deduplicates concurrent lifecycle triggers onto one operation', async () => {
-    let resolveCleanup:
-      ((value: Awaited<ReturnType<typeof runAudioCleanup>>) => void) | null =
-      null;
-    mockedRunAudioCleanup.mockImplementation(
-      () =>
-        new Promise(resolve => {
-          resolveCleanup = resolve;
-        }),
-    );
+    const deferred =
+      createDeferred<Awaited<ReturnType<typeof runAudioCleanup>>>();
+    mockedRunAudioCleanup.mockImplementation(() => deferred.promise);
 
     const first = runAudioCleanupMaintenance({
       trigger: 'startup',
@@ -162,7 +164,7 @@ describe('audioCleanupMaintenanceService', () => {
     expect(first).toBe(second);
     expect(mockedRunAudioCleanup).toHaveBeenCalledTimes(1);
 
-    resolveCleanup?.({
+    deferred.resolve({
       status: 'completed',
       deletedCount: 1,
       protectedUriCount: 2,

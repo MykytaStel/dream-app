@@ -8,6 +8,7 @@ import {
   ROOT_ROUTE_NAMES,
   type RootStackParamList,
 } from '../../../app/navigation/routes';
+import { getStorageDiagnosticsCopy } from '../../../constants/copy/storageDiagnostics';
 import { SettingsActionRow } from '../components/SettingsActionRow';
 import { useSettingsSpoke } from './useSettingsSpoke';
 
@@ -29,7 +30,11 @@ import { useSettingsSpoke } from './useSettingsSpoke';
  * it already worked this way is most of the argument for the others.
  */
 export default function SettingsScreen() {
-  const { copy, styles, controller } = useSettingsSpoke();
+  const { copy, styles, controller, locale } = useSettingsSpoke();
+  const storageCopy = React.useMemo(
+    () => getStorageDiagnosticsCopy(locale),
+    [locale],
+  );
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -87,6 +92,12 @@ export default function SettingsScreen() {
           title={copy.hubAnalysisTitle}
           meta={copy.hubAnalysisMeta}
           onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.SettingsAnalysis)}
+        />
+
+        <SettingsActionRow
+          title={storageCopy.hubTitle}
+          meta={storageCopy.hubMeta}
+          onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.SettingsStorage)}
         />
 
         <SettingsActionRow

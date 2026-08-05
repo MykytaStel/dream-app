@@ -105,22 +105,7 @@ export default function NewDreamScreen() {
       current === nextKey ? current : nextKey,
     );
   }, [route.params?.launchKey, shouldAutoStartRecording]);
-  /**
-   * Saving used to navigate on its own.
-   *
-   * The dream was written and the app moved to the detail screen, focused on
-   * a section, without being asked. At six in the morning that is the opposite
-   * of what a person wants to hear: they wanted "it is safe, go back to bed",
-   * and got a new screen with more to read.
-   *
-   * The sheet says the dream is saved and offers the three things someone
-   * might actually want next — add detail, write another, or nothing. Doing
-   * nothing is the default and costs one tap on the backdrop.
-   *
-   * It still waits for both toasts. The widget prompt used to be left out of
-   * that condition, so a prompt rendered behind the user on a tab they had
-   * already left.
-   */
+
   const savedSheetVisible = Boolean(
     pendingSavedDream && !streakToast && !showWidgetPinToast,
   );
@@ -145,6 +130,18 @@ export default function NewDreamScreen() {
     },
     [navigation, pendingSavedDream],
   );
+
+  const openSavedDreamEditor = React.useCallback(() => {
+    const saved = pendingSavedDream;
+    if (!saved) {
+      return;
+    }
+
+    setPendingSavedDream(null);
+    navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
+      dreamId: saved.dream.id,
+    });
+  }, [navigation, pendingSavedDream]);
 
   const handleWidgetPinAction = React.useCallback(async () => {
     if (Platform.OS === 'android') {
@@ -193,7 +190,6 @@ export default function NewDreamScreen() {
             focusSection: getPostSaveFocusSection(dream),
           });
 
-          // Check streak milestones and widget pin prompt (fire-and-forget, non-blocking)
           try {
             const allDreams = listDreamListItems();
             const streak = getCurrentStreak(allDreams);
@@ -208,12 +204,6 @@ export default function NewDreamScreen() {
               setStreakToast(toast);
             }
 
-            // Show widget pin prompt after first dream, if not seen before.
-            //
-            // Shown synchronously, because whether to show it is a synchronous
-            // question — one dream, prompt not seen. Only the button's label
-            // depends on `isPinNativelySupported`, and waiting for that answer
-            // before deciding is what let the navigation below win the race.
             if (allDreams.length === 1 && !hasWidgetPinPromptBeenSeen()) {
               setShowWidgetPinToast(true);
               isPinNativelySupported()
@@ -233,6 +223,7 @@ export default function NewDreamScreen() {
         onClose={closeSavedSheet}
         onCaptureAnother={closeSavedSheet}
         onOpenDetail={openSavedDreamDetail}
+        onOpenEditor={openSavedDreamEditor}
       />
       {streakToast ? (
         <StreakMilestoneToast

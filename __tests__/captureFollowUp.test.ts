@@ -9,12 +9,8 @@ describe('capture follow-up routing', () => {
   });
 
   test('keeps transcript and reflection follow-ups in dream detail', () => {
-    expect(getCaptureFollowUpDestination({ key: 'transcript' })).toBe(
-      'detail',
-    );
-    expect(getCaptureFollowUpDestination({ key: 'reflection' })).toBe(
-      'detail',
-    );
+    expect(getCaptureFollowUpDestination({ key: 'transcript' })).toBe('detail');
+    expect(getCaptureFollowUpDestination({ key: 'reflection' })).toBe('detail');
   });
 
   test('provides an explicit deferred-reflection action in both locales', () => {

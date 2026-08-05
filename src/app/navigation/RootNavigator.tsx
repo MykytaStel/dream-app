@@ -22,6 +22,7 @@ import SettingsAnalysisScreen from '../../features/settings/screens/SettingsAnal
 import SettingsAppearanceScreen from '../../features/settings/screens/SettingsAppearanceScreen';
 import SettingsRemindersScreen from '../../features/settings/screens/SettingsRemindersScreen';
 import SettingsSecurityScreen from '../../features/settings/screens/SettingsSecurityScreen';
+import SettingsStorageScreen from '../../features/settings/screens/SettingsStorageScreen';
 import OnboardingScreen from '../../features/onboarding/screens/OnboardingScreen';
 import DreamPracticeScreen from '../../features/practice/screens/DreamPracticeScreen';
 import { hasSeenOnboarding } from '../../features/onboarding/services/onboardingService';
@@ -246,6 +247,11 @@ export default function RootNavigator() {
           name={ROOT_ROUTE_NAMES.SettingsAnalysis}
           component={SettingsAnalysisScreen}
           options={{ headerShown: true, title: 'Analysis' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SettingsStorage}
+          component={SettingsStorageScreen}
+          options={{ headerShown: true, title: 'Storage' }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.SettingsAbout}

@@ -32,9 +32,7 @@ describe('audio cleanup maintenance integration', () => {
   });
 
   test('startup waits for interactions and foregrounding retries maintenance', () => {
-    expect(maintenanceComponent).toContain(
-      'InteractionManager.runAfterInteractions',
-    );
+    expect(maintenanceComponent).toContain('requestIdleCallback');
     expect(maintenanceComponent).toContain(
       "AppState.addEventListener('change'",
     );

@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppState, InteractionManager } from 'react-native';
+import { AppState } from 'react-native';
 import { runAudioCleanupMaintenance } from '../services/audioCleanupMaintenanceService';
 import {
   getAudioRuntimeOwnershipSnapshot,
@@ -25,10 +25,10 @@ export function AudioCleanupMaintenance(): null {
         return;
       }
 
-      void runAudioCleanupMaintenance({ trigger: source });
+      runAudioCleanupMaintenance({ trigger: source });
     };
 
-    const startupTask = InteractionManager.runAfterInteractions(() => {
+    const startupTaskHandle = requestIdleCallback(() => {
       trigger('startup');
     });
 
@@ -52,7 +52,7 @@ export function AudioCleanupMaintenance(): null {
 
     return () => {
       disposed = true;
-      startupTask.cancel();
+      cancelIdleCallback(startupTaskHandle);
       appStateSubscription.remove();
       runtimeSubscription.remove();
     };

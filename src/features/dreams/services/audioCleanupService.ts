@@ -4,6 +4,7 @@ import {
   readStoredAudioOwnership,
   type RuntimeAudioOwnership,
 } from './audioOwnershipStorageService';
+import { getAudioRuntimeOwnershipSnapshot } from './audioRuntimeOwnershipService';
 
 export const DEFAULT_AUDIO_CLEANUP_MAX_AGE_DAYS = 7;
 
@@ -26,6 +27,13 @@ export type AudioCleanupResult =
       maxAgeDays: number;
     }
   | {
+      status: 'skipped';
+      reason: 'recording-active';
+      protectedUriCount: number;
+      unreadableStorageKeys: [];
+      maxAgeDays: number;
+    }
+  | {
       status: 'failed';
       reason: 'invalid-max-age' | 'native-cleanup-failed';
       protectedUriCount: number;
@@ -37,41 +45,38 @@ function isValidMaxAgeDays(value: number) {
 }
 
 /**
- * Builds one complete ownership snapshot before allowing native deletion.
+ * Every cleanup trigger shares this tail.
  *
- * This is the only application-level entry point that should call the native
- * cleanup primitive. Storage uncertainty is treated as ownership uncertainty:
- * known URIs remain protected, but no deletion is attempted until every current
- * owner can be read.
- *
- * Scheduling belongs above this function. The caller decides when a maintenance
- * window runs; this function decides whether that window is safe to execute.
+ * Scheduled maintenance and the explicit settings action are allowed to use
+ * different age thresholds, so concurrent calls must be serialized rather
+ * than deduplicated. Each caller still receives the result of its own request,
+ * but native directory enumeration and deletion can never overlap.
  */
-export async function runAudioCleanup(
-  request: AudioCleanupRequest = {},
+let cleanupTail: Promise<void> = Promise.resolve();
+
+async function performAudioCleanup(
+  request: AudioCleanupRequest,
+  maxAgeDays: number,
 ): Promise<AudioCleanupResult> {
-  const maxAgeDays = request.maxAgeDays ?? DEFAULT_AUDIO_CLEANUP_MAX_AGE_DAYS;
-
-  if (!isValidMaxAgeDays(maxAgeDays)) {
-    const error = new Error(
-      'Audio cleanup age must be finite and non-negative.',
-    );
-    reportActionError('audio_cleanup', error, {
-      reason: 'invalid_max_age',
-      max_age_days: maxAgeDays,
-    });
-
+  // This is deliberately read after the request reaches the front of the
+  // queue. A recording may have started while it was waiting behind another
+  // cleanup, and the URIs captured by the caller are then stale.
+  const runtime = getAudioRuntimeOwnershipSnapshot();
+  if (runtime.recordingActive) {
     return {
-      status: 'failed',
-      reason: 'invalid-max-age',
+      status: 'skipped',
+      reason: 'recording-active',
       protectedUriCount: 0,
+      unreadableStorageKeys: [],
       maxAgeDays,
     };
   }
 
   const ownership = readStoredAudioOwnership({
-    activeRecordingUri: request.activeRecordingUri,
-    pendingRecordingUri: request.pendingRecordingUri,
+    activeRecordingUri:
+      runtime.activeRecordingUri ?? request.activeRecordingUri,
+    pendingRecordingUri:
+      runtime.pendingRecordingUri ?? request.pendingRecordingUri,
   });
 
   if (!ownership.isComplete) {
@@ -110,4 +115,55 @@ export async function runAudioCleanup(
       maxAgeDays,
     };
   }
+}
+
+/**
+ * Builds one complete ownership snapshot before allowing native deletion.
+ *
+ * This is the only application-level entry point that should call the native
+ * cleanup primitive. Storage uncertainty is treated as ownership uncertainty:
+ * known URIs remain protected, but no deletion is attempted until every current
+ * owner can be read.
+ *
+ * Scheduling belongs above this function. The caller decides when a maintenance
+ * window runs; this function decides whether that window is safe to execute.
+ * All callers are serialized so an explicit cleanup cannot race scheduled
+ * maintenance inside the native audio directory.
+ */
+export function runAudioCleanup(
+  request: AudioCleanupRequest = {},
+): Promise<AudioCleanupResult> {
+  const maxAgeDays = request.maxAgeDays ?? DEFAULT_AUDIO_CLEANUP_MAX_AGE_DAYS;
+
+  if (!isValidMaxAgeDays(maxAgeDays)) {
+    const error = new Error(
+      'Audio cleanup age must be finite and non-negative.',
+    );
+    reportActionError('audio_cleanup', error, {
+      reason: 'invalid_max_age',
+      max_age_days: maxAgeDays,
+    });
+
+    return Promise.resolve({
+      status: 'failed',
+      reason: 'invalid-max-age',
+      protectedUriCount: 0,
+      maxAgeDays,
+    });
+  }
+
+  const queuedRequest = { ...request };
+  const operation = cleanupTail.then(
+    () => performAudioCleanup(queuedRequest, maxAgeDays),
+    () => performAudioCleanup(queuedRequest, maxAgeDays),
+  );
+  cleanupTail = operation.then(
+    () => undefined,
+    () => undefined,
+  );
+  return operation;
+}
+
+export function __unsafeResetAudioCleanupQueueForTests() {
+  cleanupTail = Promise.resolve();
 }

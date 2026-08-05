@@ -160,6 +160,21 @@ async function performAudioCleanupMaintenance(
       activeRecordingUri: runtime.activeRecordingUri,
       pendingRecordingUri: runtime.pendingRecordingUri,
     });
+
+    // The request may have waited behind an explicit cleanup. If recording
+    // began while queued, the shared cleanup boundary skips before native
+    // deletion. This is a deferral, not an attempted maintenance window, so it
+    // must not suppress the recording-ended retry for 24 hours.
+    if (cleanup.status === 'skipped' && cleanup.reason === 'recording-active') {
+      const result: AudioCleanupMaintenanceResult = {
+        status: 'deferred',
+        trigger: options.trigger,
+        reason: 'recording-active',
+      };
+      reportMaintenanceResult(result);
+      return result;
+    }
+
     persistLastAttemptAt(now);
 
     const result: AudioCleanupMaintenanceResult = {

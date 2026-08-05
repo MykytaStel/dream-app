@@ -1,5 +1,14 @@
 import 'react-native-gesture-handler/jestSetup';
 
+// react-native polyfills requestIdleCallback/cancelIdleCallback at startup
+// (Libraries/Core/setUpTimers.js), but that init path never runs under Jest,
+// so components that call the real global need a stand-in here.
+if (typeof global.requestIdleCallback !== 'function') {
+  global.requestIdleCallback = callback =>
+    setTimeout(() => callback({ didTimeout: false, timeRemaining: () => 0 }), 0);
+  global.cancelIdleCallback = handle => clearTimeout(handle);
+}
+
 jest.mock('@notifee/react-native', () => {
   const AuthorizationStatus = {
     NOT_DETERMINED: 0,
@@ -337,6 +346,25 @@ jest.mock('./src/specs/NativeDreamWidget', () => ({
     getWidgetStatus: jest.fn(async () => ({ hasWidget: false })),
     isPinSupported: jest.fn(async () => false),
     requestPinWidget: jest.fn(async () => false),
+  },
+}));
+
+// The audio recording/playback TurboModule — same reasoning as
+// NativeDreamWidget above. Tests that care about specific call behavior
+// mock this module themselves; this is only the fallback so requiring it
+// transitively (e.g. through AudioCleanupMaintenance) doesn't throw.
+jest.mock('./src/specs/NativeAudioRecorder', () => ({
+  __esModule: true,
+  default: {
+    onPlaybackProgress: jest.fn(() => ({ remove: jest.fn() })),
+    onPlaybackFinished: jest.fn(() => ({ remove: jest.fn() })),
+    onRecordingInterrupted: jest.fn(() => ({ remove: jest.fn() })),
+    startRecording: jest.fn(async () => ''),
+    stopRecording: jest.fn(async () => null),
+    play: jest.fn(async () => undefined),
+    stop: jest.fn(async () => undefined),
+    getDuration: jest.fn(async () => 0),
+    cleanupOrphanedAudioFiles: jest.fn(async () => 0),
   },
 }));
 

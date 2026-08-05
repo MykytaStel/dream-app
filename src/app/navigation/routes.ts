@@ -30,6 +30,7 @@ export const ROOT_ROUTE_NAMES = {
   SettingsReminders: 'SettingsReminders',
   SettingsSecurity: 'SettingsSecurity',
   SettingsAnalysis: 'SettingsAnalysis',
+  SettingsStorage: 'SettingsStorage',
   SettingsAbout: 'SettingsAbout',
 } as const;
 
@@ -104,6 +105,7 @@ export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.SettingsReminders]: undefined;
   [ROOT_ROUTE_NAMES.SettingsSecurity]: undefined;
   [ROOT_ROUTE_NAMES.SettingsAnalysis]: undefined;
+  [ROOT_ROUTE_NAMES.SettingsStorage]: undefined;
   [ROOT_ROUTE_NAMES.SettingsAbout]: undefined;
   [ROOT_ROUTE_NAMES.MonthlyReport]:
     | {

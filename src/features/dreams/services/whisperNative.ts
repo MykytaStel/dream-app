@@ -2,6 +2,7 @@ import {
   DeviceEventEmitter,
   NativeEventEmitter,
   Platform,
+  TurboModuleRegistry,
   type EmitterSubscription,
 } from 'react-native';
 
@@ -54,21 +55,18 @@ type WhisperNativeModule = {
   abortTranscribe: (contextId: number, jobId: number) => Promise<void>;
 };
 
-type WhisperNativeModuleExport =
-  WhisperNativeModule | { default: WhisperNativeModule };
-
-// Import the TurboModule directly instead of the package root. whisper.rn 0.5.5
-// installs optional ArrayBuffer JSI bindings from its root entry point. That
-// installer depends on the legacy Catalyst bridge and emits "Bridge not
-// available" in React Native's bridgeless New Architecture. Dream transcription
-// only uses file paths, so the TurboModule's initContext/transcribeFile contract
-// is both sufficient and the correct bridgeless boundary.
-const nativeModuleExport =
-  require('whisper.rn/NativeRNWhisper') as WhisperNativeModuleExport;
-const RNWhisper =
-  'default' in nativeModuleExport
-    ? nativeModuleExport.default
-    : nativeModuleExport;
+// Resolve the codegen TurboModule by its registered native name instead of
+// importing a private package file. whisper.rn@0.5.5 does not expose
+// `whisper.rn/NativeRNWhisper` as a Metro-resolvable subpath, while the module is
+// still registered as `RNWhisper` in both architectures.
+//
+// This also avoids the package root, whose optional ArrayBuffer JSI installer
+// asks for the legacy Catalyst bridge and emits "Bridge not available" in
+// bridgeless React Native. Dream transcription only needs initContext,
+// transcribeFile and abortTranscribe.
+const RNWhisper = TurboModuleRegistry.getEnforcing(
+  'RNWhisper',
+) as WhisperNativeModule;
 
 const EVENT_ON_TRANSCRIBE_PROGRESS = '@RNWhisper_onTranscribeProgress';
 let nextJobId = 1;

@@ -43,6 +43,10 @@ export const CLOUD_SYNC_EVENTS_STORAGE_KEY = 'cloud-sync-events';
 export const CLOUD_SUPABASE_URL_STORAGE_KEY = 'cloud-supabase-url';
 export const CLOUD_SUPABASE_ANON_KEY_STORAGE_KEY = 'cloud-supabase-anon-key';
 
+/** Last completed/skipped/failed housekeeping attempt; never contains URIs. */
+export const AUDIO_CLEANUP_LAST_ATTEMPT_STORAGE_KEY =
+  'maintenance-audio-cleanup-last-attempt';
+
 export const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
 export const DREAM_PRACTICE_REMINDER_SETTINGS_KEY =
   'dream-practice-reminder-settings';

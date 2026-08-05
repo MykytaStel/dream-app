@@ -1,5 +1,12 @@
 import NativeAudioRecorder from '../../../specs/NativeAudioRecorder';
 import { ensureRecordAudioPermission } from './audioPermissions';
+import {
+  markAudioRecordingFailed,
+  markAudioRecordingInterrupted,
+  markAudioRecordingStarted,
+  markAudioRecordingStarting,
+  markAudioRecordingStopped,
+} from './audioRuntimeOwnershipService';
 
 export type AudioPermissionCode =
   'audio-permission-denied' | 'audio-permission-unavailable';
@@ -34,20 +41,29 @@ function normalizeUriForStorage(value: string | null | undefined): string {
 }
 
 export async function startRecording(): Promise<string> {
-  const permission = await ensureRecordAudioPermission();
-  if (permission !== 'granted') {
-    throw new AudioPermissionError(
-      'Audio recording permission is required.',
-      permission === 'denied'
-        ? 'audio-permission-denied'
-        : 'audio-permission-unavailable',
-    );
-  }
+  // The permission prompt and native startup are part of the recording
+  // critical section. Cleanup must defer before a file URI is available too.
+  markAudioRecordingStarting();
 
   try {
-    const uri = await NativeAudioRecorder.startRecording();
-    return normalizeUriForStorage(uri);
+    const permission = await ensureRecordAudioPermission();
+    if (permission !== 'granted') {
+      throw new AudioPermissionError(
+        'Audio recording permission is required.',
+        permission === 'denied'
+          ? 'audio-permission-denied'
+          : 'audio-permission-unavailable',
+      );
+    }
+
+    const uri = normalizeUriForStorage(
+      await NativeAudioRecorder.startRecording(),
+    );
+    markAudioRecordingStarted(uri);
+    return uri;
   } catch (error) {
+    markAudioRecordingFailed();
+
     if ((error as { code?: string })?.code === NATIVE_PERMISSION_DENIED) {
       throw new AudioPermissionError(
         'Audio recording permission is required.',
@@ -60,8 +76,16 @@ export async function startRecording(): Promise<string> {
 }
 
 export async function stopRecording(): Promise<string> {
-  const uri = await NativeAudioRecorder.stopRecording();
-  return normalizeUriForStorage(uri ?? '');
+  try {
+    const uri = normalizeUriForStorage(
+      (await NativeAudioRecorder.stopRecording()) ?? '',
+    );
+    markAudioRecordingStopped(uri);
+    return uri;
+  } catch (error) {
+    markAudioRecordingFailed();
+    throw error;
+  }
 }
 
 /**
@@ -76,7 +100,9 @@ export function onRecordingInterrupted(listener: (uri: string) => void): {
   remove: () => void;
 } {
   return NativeAudioRecorder.onRecordingInterrupted(({ uri }) => {
-    listener(normalizeUriForStorage(uri));
+    const normalizedUri = normalizeUriForStorage(uri);
+    markAudioRecordingInterrupted(normalizedUri);
+    listener(normalizedUri);
   });
 }
 

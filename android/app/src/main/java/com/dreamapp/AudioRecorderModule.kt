@@ -67,6 +67,7 @@ class AudioRecorderModule(
 
   private companion object {
     const val PROGRESS_INTERVAL_MS = 250L
+    const val MILLIS_PER_DAY = 86_400_000.0
   }
 
   init {
@@ -210,18 +211,78 @@ class AudioRecorderModule(
     return path.startsWith(audioDir)
   }
 
-  override fun cleanupOrphanedAudioFiles(maxAgeDays: Double, promise: Promise) {
+  private fun protectedAudioPaths(
+    audioDirectory: File,
+    protectedUris: ReadableArray,
+  ): Set<String> {
+    val paths = mutableSetOf<String>()
+
+    for (index in 0 until protectedUris.size()) {
+      val value = protectedUris.getString(index)?.trim().orEmpty()
+      if (value.isEmpty()) continue
+
+      val rawPath =
+        when {
+          value.startsWith("file://") -> Uri.parse(value).path
+          value.startsWith("/") -> value
+          else -> null
+        } ?: continue
+
+      val candidate = runCatching { File(rawPath).canonicalFile }.getOrNull() ?: continue
+      val parent = runCatching { candidate.parentFile?.canonicalFile }.getOrNull()
+
+      // Cleanup owns only direct children of filesDir/audio. A malformed,
+      // external or content URI cannot protect or delete anything outside it.
+      if (parent == audioDirectory) {
+        paths.add(candidate.path)
+      }
+    }
+
+    return paths
+  }
+
+  override fun cleanupOrphanedAudioFiles(
+    maxAgeDays: Double,
+    protectedUris: ReadableArray,
+    promise: Promise,
+  ) {
+    if (!maxAgeDays.isFinite() || maxAgeDays < 0) {
+      promise.reject(
+        "cleanup_invalid_age",
+        "Audio cleanup age must be a finite non-negative number.",
+      )
+      return
+    }
+
     val context = reactApplicationContext
     try {
-      val dir = getAudioDirectory(context)
-      val files = dir.listFiles() ?: arrayOf()
-      val cutoff = System.currentTimeMillis() - (maxAgeDays * 24 * 60 * 60 * 1000).toLong()
+      val directory = getAudioDirectory(context).canonicalFile
+      val protectedPaths = protectedAudioPaths(directory, protectedUris)
+      val currentPath =
+        currentOutputFile?.let { runCatching { it.canonicalPath }.getOrNull() }
+      val ageMillis = maxAgeDays * MILLIS_PER_DAY
+      val now = System.currentTimeMillis()
+      val cutoff =
+        if (!ageMillis.isFinite() || ageMillis >= now.toDouble()) {
+          Long.MIN_VALUE
+        } else {
+          now - ageMillis.toLong()
+        }
       var deleted = 0
-      for (f in files) {
-        if (!f.isFile) continue
-        if (f == currentOutputFile) continue
-        if (f.lastModified() < cutoff) {
-          if (f.delete()) deleted++
+
+      for (rawFile in directory.listFiles() ?: emptyArray()) {
+        val file = runCatching { rawFile.canonicalFile }.getOrNull() ?: continue
+        val parent = runCatching { file.parentFile?.canonicalFile }.getOrNull()
+
+        if (!file.isFile || parent != directory) continue
+        if (file.path == currentPath) continue
+        if (protectedPaths.contains(file.path)) continue
+
+        val modified = file.lastModified()
+        if (modified <= 0 || modified >= cutoff) continue
+
+        if (file.delete()) {
+          deleted += 1
         }
       }
       promise.resolve(deleted)
@@ -544,4 +605,3 @@ class AudioRecorderModule(
     reactApplicationContext.removeLifecycleEventListener(this)
   }
 }
-

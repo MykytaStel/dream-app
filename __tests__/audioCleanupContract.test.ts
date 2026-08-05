@@ -25,6 +25,13 @@ const android = readProjectFile(
 const ios = readProjectFile('ios', 'DreamApp', 'AudioRecorderModule.swift');
 const iosBridge = readProjectFile('ios', 'DreamApp', 'AudioRecorderModule.mm');
 
+function sourceFrom(source: string, marker: string): string {
+  const markerIndex = source.indexOf(marker);
+
+  expect(markerIndex).toBeGreaterThanOrEqual(0);
+  return source.slice(markerIndex);
+}
+
 function expectBefore(source: string, first: string, second: string) {
   const firstIndex = source.indexOf(first);
   const secondIndex = source.indexOf(second);
@@ -43,43 +50,50 @@ describe('protected audio cleanup contract', () => {
   });
 
   test('Android canonicalizes app-owned paths before applying ownership', () => {
-    expect(android).toContain('protectedUris: ReadableArray');
+    const cleanup = sourceFrom(
+      android,
+      'override fun cleanupOrphanedAudioFiles(',
+    );
+
+    expect(cleanup).toContain('protectedUris: ReadableArray');
     expect(android).toContain('File(rawPath).canonicalFile');
     expect(android).toContain('candidate.parentFile?.canonicalFile');
     expect(android).toContain('parent == audioDirectory');
-    expect(android).toContain('protectedPaths.contains(file.path)');
-    expect(android).toContain('file.path == currentPath');
-    expect(android).toContain('cleanup_invalid_age');
+    expect(cleanup).toContain('protectedPaths.contains(file.path)');
+    expect(cleanup).toContain('file.path == currentPath');
+    expect(cleanup).toContain('cleanup_invalid_age');
 
     expectBefore(
-      android,
+      cleanup,
       'if (protectedPaths.contains(file.path)) continue',
       'if (file.delete())',
     );
     expectBefore(
-      android,
+      cleanup,
       'if (modified <= 0 || modified >= cutoff) continue',
       'if (file.delete())',
     );
   });
 
   test('iOS resolves file paths and checks ownership before removal', () => {
-    expect(ios).toContain('protectedUris: [String]');
+    const cleanup = sourceFrom(ios, 'func cleanupOrphanedAudioFiles(');
+
+    expect(cleanup).toContain('protectedUris: [String]');
     expect(ios).toContain('resolvingSymlinksInPath()');
     expect(ios).toContain(
       'normalized.deletingLastPathComponent() == directory',
     );
-    expect(ios).toContain('protectedPaths.contains(url.path)');
-    expect(ios).toContain('url.path != currentPath');
-    expect(ios).toContain('cleanup_invalid_age');
+    expect(cleanup).toContain('protectedPaths.contains(url.path)');
+    expect(cleanup).toContain('url.path != currentPath');
+    expect(cleanup).toContain('cleanup_invalid_age');
 
     expectBefore(
-      ios,
+      cleanup,
       'guard !protectedPaths.contains(url.path) else { continue }',
       'FileManager.default.removeItem(at: url)',
     );
     expectBefore(
-      ios,
+      cleanup,
       'guard let modified = values?.contentModificationDate, modified < cutoff',
       'FileManager.default.removeItem(at: url)',
     );

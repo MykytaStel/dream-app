@@ -20,8 +20,7 @@ function getActiveTranscriptionModel(): WhisperModel {
 }
 
 export type DreamTranscriptionProgressPhase =
-  | 'preparing-model'
-  | 'transcribing';
+  'preparing-model' | 'transcribing';
 export type DreamTranscriptionProgress = {
   phase: DreamTranscriptionProgressPhase;
   progress: number | null;

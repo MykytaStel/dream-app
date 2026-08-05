@@ -121,6 +121,7 @@ jest.mock('react-native-mmkv', () => {
         const value = store.get(key);
         return typeof value === 'number' ? value : undefined;
       },
+      getAllKeys: () => Array.from(store.keys()),
       delete: key => {
         store.delete(key);
       },

@@ -55,8 +55,7 @@ type WhisperNativeModule = {
 };
 
 type WhisperNativeModuleExport =
-  | WhisperNativeModule
-  | { default: WhisperNativeModule };
+  WhisperNativeModule | { default: WhisperNativeModule };
 
 // Import the TurboModule directly instead of the package root. whisper.rn 0.5.5
 // installs optional ArrayBuffer JSI bindings from its root entry point. That
@@ -64,9 +63,8 @@ type WhisperNativeModuleExport =
 // available" in React Native's bridgeless New Architecture. Dream transcription
 // only uses file paths, so the TurboModule's initContext/transcribeFile contract
 // is both sufficient and the correct bridgeless boundary.
-const nativeModuleExport = require(
-  'whisper.rn/NativeRNWhisper',
-) as WhisperNativeModuleExport;
+const nativeModuleExport =
+  require('whisper.rn/NativeRNWhisper') as WhisperNativeModuleExport;
 const RNWhisper =
   'default' in nativeModuleExport
     ? nativeModuleExport.default
@@ -109,11 +107,7 @@ export async function initWhisper(options: {
       if (onProgress) {
         progressSubscription = createProgressEmitter().addListener(
           EVENT_ON_TRANSCRIBE_PROGRESS,
-          (event: {
-            contextId: number;
-            jobId: number;
-            progress: number;
-          }) => {
+          (event: { contextId: number; jobId: number; progress: number }) => {
             if (
               event.contextId !== nativeContext.contextId ||
               event.jobId !== jobId

@@ -1,4 +1,5 @@
 import {
+  getHomeFeedCopy,
   getHomeFeedState,
   HOME_RECENT_DREAM_LIMIT,
   type HomeFeedItem,
@@ -71,5 +72,12 @@ describe('homeFeed', () => {
     getHomeFeedState(source);
 
     expect(source.map(entry => entry.id)).toEqual(['older', 'newer']);
+  });
+
+  test('provides a clear full-archive action in both locales', () => {
+    expect(getHomeFeedCopy('uk').openArchiveAction).toBe(
+      'Відкрити весь архів',
+    );
+    expect(getHomeFeedCopy('en').openArchiveAction).toBe('Open full archive');
   });
 });

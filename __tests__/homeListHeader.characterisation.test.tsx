@@ -17,7 +17,7 @@ const SAFE_AREA_METRICS = {
 
 function renderHeader(
   overrides: Partial<React.ComponentProps<typeof HomeListHeader>> = {},
-) {
+): ReturnType<typeof render> {
   const props: React.ComponentProps<typeof HomeListHeader> = {
     copy,
     styles,
@@ -30,16 +30,13 @@ function renderHeader(
     ...overrides,
   };
 
-  return {
-    ...render(
-      <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
-        <ThemeProvider theme={themes.kaleidoscope}>
-          <HomeListHeader {...props} />
-        </ThemeProvider>
-      </SafeAreaProvider>,
-    ),
-    props,
-  };
+  return render(
+    <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
+      <ThemeProvider theme={themes.kaleidoscope}>
+        <HomeListHeader {...props} />
+      </ThemeProvider>
+    </SafeAreaProvider>,
+  );
 }
 
 describe('home list header', () => {

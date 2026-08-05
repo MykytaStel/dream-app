@@ -9,7 +9,11 @@ import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { Text } from '../../../components/ui/Text';
 import { getTabBarReservedSpace } from '../../../app/navigation/tabBarLayout';
-import { type RootStackParamList } from '../../../app/navigation/routes';
+import {
+  ROOT_ROUTE_NAMES,
+  TAB_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import {
   openBackupScreen,
   openNewDreamTab,
@@ -29,6 +33,7 @@ import { HomeDraftPrompt } from '../components/home/HomeDraftPrompt';
 import { HomeListHeader } from '../components/home/HomeListHeader';
 import { isWakeCaptureWindow } from '../model/homeOverview';
 import { getDreamDraftResumeDescription } from '../model/dreamDraftPresentation';
+import { getHomeFeedCopy, getHomeFeedState } from '../model/homeFeed';
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 import { createHomeScreenStyles } from './HomeScreen.styles';
 import { useHomeScreenData } from '../hooks/useHomeScreenData';
@@ -72,6 +77,7 @@ export default function HomeScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
+  const homeFeedCopy = React.useMemo(() => getHomeFeedCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
   const styles = React.useMemo(() => createHomeScreenStyles(theme), [theme]);
   const listContentStyle = React.useMemo(
@@ -87,22 +93,20 @@ export default function HomeScreen() {
     dreamListItems,
     dreams,
     draft,
-    lastViewedDream,
     detailsReady,
     loading,
     refreshing,
     loadError,
     refreshDreams,
   } = useHomeScreenData();
+  const lightweightFeed = React.useMemo(
+    () => getHomeFeedState(dreamListItems),
+    [dreamListItems],
+  );
   const dreamIds = React.useMemo(() => dreams.map(dream => dream.id), [dreams]);
   const showWakeCapturePrompt = isWakeCaptureWindow();
   const [hasSeenBackupOnboardingState, setHasSeenBackupOnboardingState] =
     React.useState(() => hasSeenBackupOnboarding());
-  const fullLastViewedDream = React.useMemo(
-    () =>
-      lastViewedDream && 'tags' in lastViewedDream ? lastViewedDream : null,
-    [lastViewedDream],
-  );
   const draftSnapshot = React.useMemo(
     () => getDreamDraftSnapshot(draft),
     [draft],
@@ -129,13 +133,11 @@ export default function HomeScreen() {
     openDreamQuickActions,
     toggleArchiveFromList,
     removeDreamFromList,
-    openPatternDetail,
   } = swipeActions;
   const timeline = useHomeTimelineState({
     dreams,
     copy,
     locale,
-    lastViewedDream: fullLastViewedDream,
   });
   const openDefaultCapture = React.useCallback(() => {
     openNewDreamTab({
@@ -176,6 +178,11 @@ export default function HomeScreen() {
     openWakeCapture,
     showWakeCapturePrompt,
   ]);
+  const openArchive = React.useCallback(() => {
+    navigation.navigate(ROOT_ROUTE_NAMES.Tabs, {
+      screen: TAB_ROUTE_NAMES.Archive,
+    });
+  }, [navigation]);
   const refreshOnboardingState = React.useCallback(() => {
     setHasSeenBackupOnboardingState(hasSeenBackupOnboarding());
   }, []);
@@ -255,21 +262,12 @@ export default function HomeScreen() {
         <HomeListHeader
           copy={copy}
           styles={styles}
-          visibleDreamCount={timeline.activeDreamCount}
-          archiveScopedCount={timeline.activeDreamCount}
-          lastViewedDreamTitle={lastViewedDream?.title || copy.untitled}
-          lastViewedDreamMeta={timeline.lastViewedDreamMeta}
-          onOpenLastDream={
-            lastViewedDream ? () => openDreamDetail(lastViewedDream.id) : null
-          }
-          spotlightPattern={timeline.spotlightPattern}
-          spotlightPatternKind={timeline.spotlightPatternKind}
-          spotlightCountLabel={timeline.spotlightCountLabel}
+          recentDreamCount={timeline.displayedDreams.length}
+          activeDreamCount={timeline.activeDreamCount}
+          archiveActionLabel={homeFeedCopy.openArchiveAction}
           revisitCue={timeline.revisitCue}
-          attentionValue={timeline.attentionValue}
-          attentionHint={timeline.attentionHint}
           onOpenRevisitDream={openDreamDetail}
-          onOpenPatternDetail={openPatternDetail}
+          onOpenArchive={openArchive}
         />
 
         <BackupOnboardingModal
@@ -284,13 +282,13 @@ export default function HomeScreen() {
       closeBackupOnboarding,
       copy,
       dreams.length,
+      homeFeedCopy.openArchiveAction,
       isBackupOnboardingVisible,
-      openDreamDetail,
+      openArchive,
       openBackupFromOnboarding,
-      openPatternDetail,
+      openDreamDetail,
       heroPrompt,
       insets.top,
-      lastViewedDream,
       styles,
       theme.spacing.sm,
       timeline,
@@ -305,7 +303,7 @@ export default function HomeScreen() {
       <Pressable
         accessibilityRole="button"
         onPress={() =>
-          navigation.navigate('DreamDetail', {
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
             dreamId: dream.id,
           })
         }
@@ -451,12 +449,10 @@ export default function HomeScreen() {
   }
 
   if (!detailsReady) {
-    const latestSleepDate = dreamListItems[0]?.sleepDate ?? null;
-
     return (
       <ScreenContainer scroll={false} padded={false}>
         <FlatList
-          data={dreamListItems}
+          data={lightweightFeed.recentItems}
           keyExtractor={item => item.id}
           ListHeaderComponent={
             <>
@@ -473,12 +469,22 @@ export default function HomeScreen() {
                 }
               />
               <HomeDraftPrompt styles={styles} prompt={heroPrompt} />
+              <HomeListHeader
+                copy={copy}
+                styles={styles}
+                recentDreamCount={lightweightFeed.recentItems.length}
+                activeDreamCount={lightweightFeed.activeCount}
+                archiveActionLabel={homeFeedCopy.openArchiveAction}
+                revisitCue={null}
+                onOpenRevisitDream={openDreamDetail}
+                onOpenArchive={openArchive}
+              />
             </>
           }
           showsVerticalScrollIndicator={false}
-          initialNumToRender={8}
-          maxToRenderPerBatch={10}
-          windowSize={7}
+          initialNumToRender={3}
+          maxToRenderPerBatch={3}
+          windowSize={5}
           removeClippedSubviews
           refreshControl={
             <RefreshControl
@@ -496,16 +502,6 @@ export default function HomeScreen() {
                 getTabBarReservedSpace(insets.bottom) + theme.spacing.xs,
             },
           ]}
-          ListEmptyComponent={
-            <Card style={styles.emptyCard}>
-              <Text style={styles.sectionLabel}>{copy.homeSectionLabel}</Text>
-              <Text style={styles.heroSubtitle}>
-                {latestSleepDate
-                  ? `${copy.homeLastDreamMetaPrefix} ${latestSleepDate}`
-                  : copy.homeSearchEmptyDescription}
-              </Text>
-            </Card>
-          }
           renderItem={renderListItem}
         />
       </ScreenContainer>
@@ -519,9 +515,9 @@ export default function HomeScreen() {
         keyExtractor={item => item.id}
         ListHeaderComponent={listHeader}
         showsVerticalScrollIndicator={false}
-        initialNumToRender={8}
-        maxToRenderPerBatch={10}
-        windowSize={7}
+        initialNumToRender={3}
+        maxToRenderPerBatch={3}
+        windowSize={5}
         removeClippedSubviews
         refreshControl={
           <RefreshControl

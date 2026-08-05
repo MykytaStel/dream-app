@@ -8,138 +8,63 @@ import type { Theme } from '../../../../../theme/theme';
 import type { DreamCopy } from '../../../../../constants/copy/dreams';
 import type { createHomeScreenStyles } from '../../../screens/HomeScreen.styles';
 import type { HomeRevisitCue } from '../../../model/homeOverview';
-import type { PatternDetailKind } from '../../../../../app/navigation/routes';
-
-/**
- * One recurring signal, and one thing worth cleaning up.
- *
- * The counterpart of `HomeShortcutSection`, out of the same component for the
- * same reason. Returns null when there is nothing worth spotlighting, which is
- * why the parent renders each section inside a fragment rather than a spacer.
- */
 
 type HomeSpotlightSectionProps = {
   copy: DreamCopy;
   styles: ReturnType<typeof createHomeScreenStyles>;
-  showSpotlightCard: boolean;
-  spotlightPattern: string;
-  spotlightPatternKind: PatternDetailKind | null;
-  spotlightCountLabel: string;
-  hasAttentionCue: boolean;
-  attentionValue: string;
-  attentionHint: string;
   revisitCue: HomeRevisitCue | null;
-  onOpenPatternDetail: (signal: string, kind: PatternDetailKind) => void;
   onOpenRevisitDream: (dreamId: string) => void;
 };
 
 export function HomeSpotlightSection({
   copy,
   styles,
-  showSpotlightCard,
-  spotlightPattern,
-  spotlightPatternKind,
-  spotlightCountLabel,
-  hasAttentionCue,
-  attentionValue,
-  attentionHint,
   revisitCue,
-  onOpenPatternDetail,
   onOpenRevisitDream,
 }: HomeSpotlightSectionProps) {
-  const t = useTheme<Theme>();
+  const theme = useTheme<Theme>();
 
-  if (!showSpotlightCard) {
+  if (!revisitCue) {
     return null;
   }
 
   return (
     <Card style={styles.spotlightCard}>
-      <View style={styles.spotlightHeader}>
-        {/*
-          Heading only. The line under it named the two things in the card —
-          a repeating signal and something to revisit — which the card then
-          labels itself, one row further down.
-        */}
-        <View style={styles.spotlightHeaderCopy}>
-          <Text style={styles.sectionLabel}>{copy.homeSpotlightTitle}</Text>
-        </View>
-      </View>
-
-      {spotlightPatternKind ? (
-        <View style={styles.spotlightLeadRow}>
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.spotlightTile,
-              styles.spotlightTileLead,
-              styles.spotlightTileFeatured,
-              pressed ? styles.spotlightTilePressed : null,
-            ]}
-            onPress={() =>
-              onOpenPatternDetail(spotlightPattern, spotlightPatternKind)
-            }
-          >
-            <Text style={styles.spotlightLabel}>
-              {copy.homeSpotlightPatternLabel}
-            </Text>
-            <Text style={styles.spotlightValue}>{spotlightPattern}</Text>
-            <Text style={styles.spotlightHint}>{spotlightCountLabel}</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {revisitCue ? (
-        <Pressable
-          accessibilityRole="button"
-          style={({ pressed }) => [
-            styles.spotlightTile,
-            styles.spotlightTileLead,
-            pressed ? styles.spotlightTilePressed : null,
-          ]}
-          onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
-        >
-          <View style={styles.spotlightCueHeader}>
-            <Text style={styles.spotlightLabel}>
-              {copy.homeSpotlightRevisitLabel}
-            </Text>
-            <View style={styles.spotlightCueBadge}>
-              <Ionicons
-                name={revisitCue.icon}
-                size={12}
-                color={t.colors.accent}
-              />
-              <Text style={styles.spotlightCueBadgeText}>
-                {revisitCue.contextLabel}
-              </Text>
-            </View>
-          </View>
-          <Text style={styles.spotlightValue}>{revisitCue.title}</Text>
-          <Text style={styles.spotlightHint}>{revisitCue.reason}</Text>
-          <View style={styles.spotlightCueActionRow}>
-            <Text style={styles.spotlightActionHint}>
-              {revisitCue.actionLabel}
-            </Text>
+      <Text style={styles.sectionLabel}>{copy.homeSpotlightRevisitLabel}</Text>
+      <Pressable
+        accessibilityRole="button"
+        style={({ pressed }) => [
+          styles.spotlightTile,
+          styles.spotlightTileLead,
+          pressed ? styles.spotlightTilePressed : null,
+        ]}
+        onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
+      >
+        <View style={styles.spotlightCueHeader}>
+          <View style={styles.spotlightCueBadge}>
             <Ionicons
-              name="arrow-forward-outline"
-              size={14}
-              color={t.colors.accent}
+              name={revisitCue.icon}
+              size={12}
+              color={theme.colors.accent}
             />
-          </View>
-        </Pressable>
-      ) : null}
-
-      {hasAttentionCue ? (
-        <View style={styles.spotlightSupportRow}>
-          <View style={[styles.spotlightTile, styles.spotlightCompactTile]}>
-            <Text style={styles.spotlightLabel}>
-              {copy.homeSpotlightAttentionLabel}
+            <Text style={styles.spotlightCueBadgeText}>
+              {revisitCue.contextLabel}
             </Text>
-            <Text style={styles.spotlightCompactValue}>{attentionValue}</Text>
-            <Text style={styles.spotlightHint}>{attentionHint}</Text>
           </View>
         </View>
-      ) : null}
+        <Text style={styles.spotlightValue}>{revisitCue.title}</Text>
+        <Text style={styles.spotlightHint}>{revisitCue.reason}</Text>
+        <View style={styles.spotlightCueActionRow}>
+          <Text style={styles.spotlightActionHint}>
+            {revisitCue.actionLabel}
+          </Text>
+          <Ionicons
+            name="arrow-forward-outline"
+            size={14}
+            color={theme.colors.accent}
+          />
+        </View>
+      </Pressable>
     </Card>
   );
 }

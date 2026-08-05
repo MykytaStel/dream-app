@@ -28,7 +28,6 @@ function Harness({ dreams }: { dreams: Dream[] }) {
     dreams,
     copy,
     locale: 'en',
-    lastViewedDream: null,
   });
   return null;
 }
@@ -50,7 +49,7 @@ describe('simplified Home timeline state', () => {
     latestState = null;
   });
 
-  test('shows the 12 newest active dreams only', () => {
+  test('shows the three newest active dreams only', () => {
     const activeDreams = Array.from({ length: 14 }, (_, index) =>
       makeDream(index + 1),
     );
@@ -61,20 +60,11 @@ describe('simplified Home timeline state', () => {
     });
 
     expect(state().activeDreamCount).toBe(14);
-    expect(state().displayedDreams).toHaveLength(12);
+    expect(state().displayedDreams).toHaveLength(3);
     expect(state().displayedDreams.map(dream => dream.id)).toEqual([
       'dream-14',
       'dream-13',
       'dream-12',
-      'dream-11',
-      'dream-10',
-      'dream-9',
-      'dream-8',
-      'dream-7',
-      'dream-6',
-      'dream-5',
-      'dream-4',
-      'dream-3',
     ]);
     expect(
       state().displayedDreams.some(dream => dream.id === 'archived-latest'),

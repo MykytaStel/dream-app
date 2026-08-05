@@ -1,5 +1,5 @@
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { ThemeProvider } from '@shopify/restyle';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { HomeListHeader } from '../src/features/dreams/components/home/HomeListHeader';
@@ -15,105 +15,72 @@ const SAFE_AREA_METRICS = {
   insets: { top: 47, left: 0, right: 0, bottom: 34 },
 };
 
-function renderHeader(overrides?: Record<string, unknown>) {
+async function renderHeader(
+  overrides: Partial<React.ComponentProps<typeof HomeListHeader>> = {},
+) {
+  const props: React.ComponentProps<typeof HomeListHeader> = {
+    copy,
+    styles,
+    recentDreamCount: 3,
+    activeDreamCount: 4,
+    archiveActionLabel: 'Open full archive',
+    revisitCue: null,
+    onOpenRevisitDream: jest.fn(),
+    onOpenArchive: jest.fn(),
+    ...overrides,
+  };
+
   return render(
     <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
       <ThemeProvider theme={themes.kaleidoscope}>
-        <HomeListHeader
-          copy={copy}
-          styles={styles}
-          visibleDreamCount={4}
-          archiveScopedCount={4}
-          lastViewedDreamTitle="Ocean room"
-          lastViewedDreamMeta="Yesterday"
-          onOpenLastDream={jest.fn()}
-          spotlightPattern="stairs"
-          spotlightPatternKind="word"
-          spotlightCountLabel="in 3 dreams"
-          revisitCue={null}
-          attentionValue="1 voice note"
-          attentionHint="Transcripts would make them easier to revisit."
-          onOpenRevisitDream={jest.fn()}
-          onOpenPatternDetail={jest.fn()}
-          {...overrides}
-        />
+        <HomeListHeader {...props} />
       </ThemeProvider>
     </SafeAreaProvider>,
   );
 }
 
 describe('home list header', () => {
-  test('shows one data-led return reason before the timeline', async () => {
+  test('shows the focused recent-dream header and full Archive action', async () => {
     const { getByText } = await renderHeader();
 
-    expect(getByText('stairs')).toBeTruthy();
-    expect(getByText('1 voice note')).toBeTruthy();
     expect(getByText(copy.homeSectionLabel)).toBeTruthy();
-    expect(getByText('4')).toBeTruthy();
+    expect(getByText(copy.homeRecentLimitHint)).toBeTruthy();
+    expect(getByText('Open full archive')).toBeTruthy();
   });
 
-  test('a spotlight signal suppresses the last-viewed shortcut', async () => {
-    const { queryByText } = await renderHeader();
+  test('opens Archive from the explicit action', async () => {
+    const onOpenArchive = jest.fn();
+    const { getByText } = await renderHeader({ onOpenArchive });
 
-    expect(queryByText(copy.homeLastDreamLabel)).toBeNull();
-    expect(queryByText('Ocean room')).toBeNull();
+    fireEvent.press(getByText('Open full archive'));
+
+    expect(onOpenArchive).toHaveBeenCalledTimes(1);
   });
 
-  test('falls back to the last-viewed dream when no spotlight signal exists', async () => {
-    const { getByText, queryByText } = await renderHeader({
-      spotlightPattern: '',
-      spotlightPatternKind: null,
-      attentionValue: copy.homeSpotlightAttentionClear,
-      attentionHint: '',
-    });
-
-    expect(getByText(copy.homeLastDreamLabel)).toBeTruthy();
-    expect(getByText('Ocean room')).toBeTruthy();
-    expect(getByText('Yesterday')).toBeTruthy();
-    expect(queryByText('stairs')).toBeNull();
-  });
-
-  test('does not render legacy browsing and practice controls', async () => {
+  test('hides the recent-limit explanation when all active dreams fit', async () => {
     const { queryByText } = await renderHeader({
-      practiceShortcutTitle: 'Practice lucidity',
-      onOpenPractice: jest.fn(),
-      nightmareShortcutTitle: 'After a nightmare',
-      onOpenNightmarePractice: jest.fn(),
-      weeklyPatternCards: [
-        {
-          key: 'rhythm',
-          label: 'RHYTHM',
-          title: '3 entries this week',
-          hint: '+1 vs previous 7 days',
-        },
-      ],
-      sortOptions: [
-        { key: 'newest', label: 'Newest first' },
-        { key: 'oldest', label: 'Oldest first' },
-      ],
+      recentDreamCount: 3,
+      activeDreamCount: 3,
     });
 
-    expect(queryByText('Practice lucidity')).toBeNull();
-    expect(queryByText('After a nightmare')).toBeNull();
-    expect(queryByText('RHYTHM')).toBeNull();
-    expect(queryByText('Newest first')).toBeNull();
-    expect(queryByText('Oldest first')).toBeNull();
+    expect(queryByText(copy.homeRecentLimitHint)).toBeNull();
   });
 
   test('shows the active-journal empty state when no dreams exist', async () => {
-    const { getByText, queryByText } = await renderHeader({
-      visibleDreamCount: 0,
-      archiveScopedCount: 0,
-      lastViewedDreamTitle: null,
-      onOpenLastDream: null,
-      spotlightPattern: '',
-      spotlightPatternKind: null,
-      attentionValue: copy.homeSpotlightAttentionClear,
-      attentionHint: '',
+    const { getByText } = await renderHeader({
+      recentDreamCount: 0,
+      activeDreamCount: 0,
     });
 
     expect(getByText(copy.emptyActiveTitle)).toBeTruthy();
     expect(getByText(copy.emptyActiveDescription)).toBeTruthy();
-    expect(queryByText('4')).toBeNull();
+  });
+
+  test('does not render removed spotlight and last-viewed content', async () => {
+    const { queryByText } = await renderHeader();
+
+    expect(queryByText(copy.homeSpotlightPatternLabel)).toBeNull();
+    expect(queryByText(copy.homeSpotlightAttentionLabel)).toBeNull();
+    expect(queryByText(copy.homeLastDreamLabel)).toBeNull();
   });
 });

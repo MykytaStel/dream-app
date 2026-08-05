@@ -6,6 +6,7 @@ jest.mock('react-native-fs', () => ({
   ),
   stat: jest.fn().mockResolvedValue({ size: '0' }),
   unlink: jest.fn().mockResolvedValue(undefined),
+  readDir: jest.fn().mockResolvedValue([]),
   downloadFile: jest.fn(() => ({
     promise: Promise.resolve({ statusCode: 200 }),
   })),
@@ -37,6 +38,7 @@ jest.mock('../src/features/dreams/services/whisperNative', () => ({
 import RNFS from 'react-native-fs';
 import { initWhisper } from '../src/features/dreams/services/whisperNative';
 import { kv } from '../src/services/storage/mmkv';
+import { saveLocale } from '../src/i18n/localeStore';
 import {
   saveDream,
   getDream,
@@ -53,6 +55,7 @@ import {
 describe('dreamTranscriptionService', () => {
   beforeEach(() => {
     kv.clearAll();
+    saveLocale('en');
     jest.clearAllMocks();
     __unsafeResetDreamTranscriptionContextForTests();
   });
@@ -76,12 +79,59 @@ describe('dreamTranscriptionService', () => {
       useGpu: expect.any(Boolean),
       useCoreMLIos: expect.any(Boolean),
     });
+
+    const context = await (initWhisper as jest.Mock).mock.results[0].value;
+    expect(context.transcribe).toHaveBeenCalledWith(
+      'file:///voice.m4a',
+      expect.objectContaining({
+        language: 'en',
+        translate: false,
+        temperature: 0,
+        temperatureInc: 0.2,
+        beamSize: 5,
+      }),
+    );
     expect(progressEvents).toEqual(['transcribing:48', 'transcribing:100']);
     expect(getDream('dream-audio-1')).toMatchObject({
       transcript: 'Glass hallway above the sea',
       transcriptStatus: 'ready',
       transcriptSource: 'generated',
     });
+  });
+
+  test('uses the stronger multilingual model and Ukrainian decoding policy', async () => {
+    saveLocale('uk');
+    const mockedExists = RNFS.exists as jest.MockedFunction<typeof RNFS.exists>;
+    mockedExists.mockResolvedValue(true);
+
+    saveDream({
+      id: 'dream-audio-uk',
+      createdAt: 2,
+      sleepDate: '2026-08-05',
+      audioUri: 'file:///ukrainian-dream.m4a',
+      tags: [],
+    });
+
+    await transcribeDreamAudio('dream-audio-uk');
+
+    expect(initWhisper).toHaveBeenCalledWith({
+      filePath: '/documents/whisper-models/ggml-small-q5_1.bin',
+      useGpu: expect.any(Boolean),
+      useCoreMLIos: expect.any(Boolean),
+    });
+
+    const context = await (initWhisper as jest.Mock).mock.results[0].value;
+    expect(context.transcribe).toHaveBeenCalledWith(
+      'file:///ukrainian-dream.m4a',
+      expect.objectContaining({
+        language: 'uk',
+        translate: false,
+        temperature: 0,
+        temperatureInc: 0.2,
+        beamSize: 5,
+        prompt: expect.stringContaining('українською мовою'),
+      }),
+    );
   });
 
   test('downloads the model when it is not available locally', async () => {

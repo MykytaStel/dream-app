@@ -14,13 +14,7 @@ import { getStoredLocale } from '../../../i18n/localeStore';
 
 const DREAM_TRANSCRIPTION_MODEL_DIRECTORY = 'whisper-models';
 
-/**
- * Which model this device should be using, right now.
- *
- * Read on every call rather than captured once: the language can change in
- * settings while the app is running, and a transcript produced by the previous
- * language's model would be nonsense with no sign of why.
- */
+/** Read on every operation so a language change is respected without restart. */
 function getActiveTranscriptionModel(): WhisperModel {
   return selectTranscriptionModel(getStoredLocale());
 }
@@ -45,31 +39,34 @@ function getDreamTranscriptionModelDirectoryPath() {
   return `${RNFS.DocumentDirectoryPath}/${DREAM_TRANSCRIPTION_MODEL_DIRECTORY}`;
 }
 
+function getModelFilePath(model: WhisperModel) {
+  return `${getDreamTranscriptionModelDirectoryPath()}/${model.filename}`;
+}
+
 export function getDreamTranscriptionModelFilePath() {
-  return `${getDreamTranscriptionModelDirectoryPath()}/${getActiveTranscriptionModel().filename}`;
+  return getModelFilePath(getActiveTranscriptionModel());
 }
 
 /**
  * Removes models the app is no longer going to use.
  *
- * Switching language changes which file is wanted, and the old one is 74 to
- * 141 MB of a user's storage that nothing will ever read again. Worse, leaving
- * it means the settings screen reports a model as installed while the one
- * actually needed is missing.
+ * The replacement must already exist before this runs. Keeping the known legacy
+ * filenames in the model policy lets an upgraded app remove the previous
+ * Ukrainian base model without touching unrelated files in the directory.
  */
-export async function pruneUnusedTranscriptionModels(): Promise<string[]> {
+export async function pruneUnusedTranscriptionModels(
+  activeModel: WhisperModel = getActiveTranscriptionModel(),
+): Promise<string[]> {
   const directoryPath = getDreamTranscriptionModelDirectoryPath();
   if (!(await RNFS.exists(directoryPath))) {
     return [];
   }
 
-  const keep = getActiveTranscriptionModel().filename;
+  const keep = activeModel.filename;
   const known = new Set(listTranscriptionModelFilenames());
   const removed: string[] = [];
 
   for (const entry of await RNFS.readDir(directoryPath)) {
-    // Only files this app is known to have downloaded. Deleting anything else
-    // found in the directory would be someone else's data.
     if (entry.name === keep || !known.has(entry.name)) {
       continue;
     }
@@ -119,10 +116,11 @@ export async function deleteDreamTranscriptionModel() {
 }
 
 async function ensureDreamTranscriptionModel(
+  model: WhisperModel,
   onProgress?: (progress: DreamTranscriptionProgress) => void,
 ) {
   const directoryPath = getDreamTranscriptionModelDirectoryPath();
-  const filePath = getDreamTranscriptionModelFilePath();
+  const filePath = getModelFilePath(model);
 
   await RNFS.mkdir(directoryPath);
 
@@ -136,7 +134,7 @@ async function ensureDreamTranscriptionModel(
   });
 
   const download = RNFS.downloadFile({
-    fromUrl: getActiveTranscriptionModel().url,
+    fromUrl: model.url,
     toFile: filePath,
     discretionary: true,
     progressInterval: 250,
@@ -165,9 +163,7 @@ async function ensureDreamTranscriptionModel(
       throw new Error(`model-download-failed:${result.statusCode}`);
     }
 
-    // Only once the replacement is on disk. Pruning first would leave someone
-    // who switched language with no model at all if the download then failed.
-    await pruneUnusedTranscriptionModels().catch(() => undefined);
+    await pruneUnusedTranscriptionModels(model).catch(() => undefined);
 
     return filePath;
   } catch (error) {
@@ -181,27 +177,41 @@ async function ensureDreamTranscriptionModel(
 export async function ensureDreamTranscriptionModelInstalled(
   onProgress?: (progress: DreamTranscriptionProgress) => void,
 ) {
-  const filePath = await ensureDreamTranscriptionModel(onProgress);
+  const model = getActiveTranscriptionModel();
+  const filePath = await ensureDreamTranscriptionModel(model, onProgress);
+  const installed = await RNFS.exists(filePath);
+  let sizeBytes: number | null = null;
+
+  if (installed) {
+    try {
+      const stat = await RNFS.stat(filePath);
+      sizeBytes = Number(stat.size);
+    } catch {
+      sizeBytes = null;
+    }
+  }
+
   return {
     filePath,
-    status: await getDreamTranscriptionModelStatus(),
+    status: {
+      installed,
+      filePath,
+      sizeBytes,
+    },
   };
 }
 
 async function getWhisperContext(
+  model: WhisperModel,
   onProgress?: (progress: DreamTranscriptionProgress) => void,
 ) {
-  const model = getActiveTranscriptionModel();
-
-  // A context built from the English model would keep being reused after the
-  // user switched to Ukrainian, and whisper would go on producing English.
   if (loadedModelFilename && loadedModelFilename !== model.filename) {
     whisperContextPromise = null;
   }
 
   if (!whisperContextPromise) {
     loadedModelFilename = model.filename;
-    whisperContextPromise = ensureDreamTranscriptionModel(onProgress)
+    whisperContextPromise = ensureDreamTranscriptionModel(model, onProgress)
       .then(filePath =>
         initWhisper({
           filePath,
@@ -228,6 +238,7 @@ export async function transcribeDreamAudio(
     throw new Error('dream-audio-missing');
   }
 
+  const model = getActiveTranscriptionModel();
   const startedAt = Date.now();
   updateDreamTranscriptState(dreamId, {
     transcriptStatus: 'processing',
@@ -235,11 +246,10 @@ export async function transcribeDreamAudio(
   });
 
   try {
-    const whisperContext = await getWhisperContext(onProgress);
+    const whisperContext = await getWhisperContext(model, onProgress);
     const { promise } = whisperContext.transcribe(dream.audioUri, {
-      // Was hardcoded to 'en'. Ukrainian speech fed to an English model does
-      // not fail — it returns confident English nonsense.
-      language: getActiveTranscriptionModel().language,
+      language: model.language,
+      ...model.decoding,
       onProgress: (progress: number) => {
         onProgress?.({
           phase: 'transcribing',

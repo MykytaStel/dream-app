@@ -61,7 +61,7 @@ export function MemoryDetailsToggle({
       onPress={onPress}
       style={({ pressed }) => [
         styles.detailsButton,
-        pressed ? styles.detailsButtonPressed : null,
+        pressed ? styles.buttonPressed : null,
       ]}
     >
       <View style={styles.detailsCopy}>
@@ -79,6 +79,75 @@ export function MemoryDetailsToggle({
         />
       </View>
     </Pressable>
+  );
+}
+
+function MemorySecondaryAction({
+  title,
+  description,
+  icon,
+  onPress,
+}: {
+  title: string;
+  description: string;
+  icon: string;
+  onPress: () => void;
+}) {
+  const theme = useTheme<Theme>();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      accessibilityHint={description}
+      onPress={onPress}
+      style={({ pressed }) => [
+        styles.secondaryAction,
+        pressed ? styles.buttonPressed : null,
+      ]}
+    >
+      <View style={styles.secondaryIcon}>
+        <Ionicons name={icon} size={17} color={theme.colors.accent} />
+      </View>
+      <View style={styles.secondaryCopy}>
+        <Text style={styles.secondaryTitle}>{title}</Text>
+        <Text style={styles.secondaryDescription} numberOfLines={2}>
+          {description}
+        </Text>
+      </View>
+      <Ionicons name="chevron-forward" size={16} color={theme.colors.textDim} />
+    </Pressable>
+  );
+}
+
+export function MemorySecondaryActions({
+  copy,
+  onOpenPractice,
+  onOpenProgress,
+}: {
+  copy: MemoryDisclosureCopy;
+  onOpenPractice: () => void;
+  onOpenProgress: () => void;
+}) {
+  const theme = useTheme<Theme>();
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
+
+  return (
+    <View style={styles.secondaryActionsRow}>
+      <MemorySecondaryAction
+        title={copy.practiceTitle}
+        description={copy.practiceDescription}
+        icon="moon-outline"
+        onPress={onOpenPractice}
+      />
+      <MemorySecondaryAction
+        title={copy.progressTitle}
+        description={copy.progressDescription}
+        icon="flag-outline"
+        onPress={onOpenProgress}
+      />
+    </View>
   );
 }
 
@@ -146,7 +215,7 @@ function createStyles(theme: Theme) {
       paddingVertical: 12,
       paddingHorizontal: 14,
     },
-    detailsButtonPressed: {
+    buttonPressed: {
       opacity: 0.94,
     },
     detailsCopy: {
@@ -176,6 +245,51 @@ function createStyles(theme: Theme) {
       fontSize: 11,
       lineHeight: 15,
       fontWeight: '700',
+    },
+    secondaryActionsRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 10,
+    },
+    secondaryAction: {
+      flexGrow: 1,
+      flexBasis: '48%',
+      minWidth: 150,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      borderRadius: 16,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.surface,
+      paddingVertical: 11,
+      paddingHorizontal: 12,
+    },
+    secondaryIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: `${theme.colors.accent}44`,
+      backgroundColor: theme.colors.background,
+    },
+    secondaryCopy: {
+      flex: 1,
+      minWidth: 0,
+      gap: 2,
+    },
+    secondaryTitle: {
+      color: theme.colors.text,
+      fontSize: 12,
+      lineHeight: 16,
+      fontWeight: '800',
+    },
+    secondaryDescription: {
+      color: theme.colors.textDim,
+      fontSize: 10,
+      lineHeight: 14,
     },
   });
 }

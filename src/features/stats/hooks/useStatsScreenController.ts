@@ -64,7 +64,6 @@ export function useStatsScreenController({
   const [selectedMode, setSelectedMode] =
     React.useState<InsightMode>('snapshot');
   const [isDetailsExpanded, setIsDetailsExpanded] = React.useState(false);
-  const [isMilestonesExpanded, setIsMilestonesExpanded] = React.useState(false);
 
   const scopedDreams = React.useMemo(
     () => filterDreamsByRange(dreams, selectedRange),
@@ -120,8 +119,6 @@ export function useStatsScreenController({
     rangeOptions.find(option => option.key === selectedRange)?.label ??
     copy.rangeAll;
   const {
-    achievementSummary,
-    achievements,
     activityBars,
     attentionItems,
     compareMetrics,
@@ -137,21 +134,16 @@ export function useStatsScreenController({
     lucidHistoryItems,
     lucidMetrics,
     memoryNudge,
-    milestoneSummaryHint,
     nightmareMetrics,
     nightmareCount,
     monthlyReportPreviewSignals,
-    overallLastSevenDays,
     patternGroups,
     savedMonthItems,
     savedOverviewThreadItems,
     savedSetItems,
     savedThreadItems,
     summaryTiles,
-    topSignal,
     weeklyPatternCards,
-    weeklyGoalComplete,
-    weeklyGoalTarget,
     workQueueItems,
   } = derivedContent;
   React.useEffect(() => {
@@ -172,8 +164,6 @@ export function useStatsScreenController({
     setSelectedMode,
     isDetailsExpanded,
     setIsDetailsExpanded,
-    isMilestonesExpanded,
-    setIsMilestonesExpanded,
     rangeOptions,
     canCompare,
     compareOptions,
@@ -182,7 +172,6 @@ export function useStatsScreenController({
     activityBars,
     emotionalTrendSeries,
     emotionalTrendInsight,
-    topSignal,
     memoryNudge,
     coverageGap,
     nightmareMetrics,
@@ -194,7 +183,6 @@ export function useStatsScreenController({
     fingerprintFacets,
     patternGroups,
     summaryTiles,
-    overallLastSevenDays,
     weeklyPatternCards,
     coverageItems,
     attentionItems,
@@ -206,10 +194,5 @@ export function useStatsScreenController({
     savedMonthItems,
     savedThreadItems,
     savedOverviewThreadItems,
-    weeklyGoalTarget,
-    weeklyGoalComplete,
-    achievements,
-    achievementSummary,
-    milestoneSummaryHint,
   };
 }

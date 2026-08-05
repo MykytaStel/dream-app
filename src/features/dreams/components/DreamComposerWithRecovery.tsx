@@ -64,26 +64,30 @@ function readRecoveryResult({
  * The first render deliberately mounts no composer. The layout effect performs
  * the storage recovery, then the child mounts against clean storage before the
  * frame is presented. This keeps MMKV writes out of render and remains safe
- * when React Strict Mode repeats render-phase work in development.
+ * when React Strict Mode repeats render-phase work and effects in development.
  */
 export function DreamComposerWithRecovery(props: DreamComposerProps) {
   const { locale } = useI18n();
   const sessionKey = getRecoverySessionKey(props);
+  const recoveredSessionRef = React.useRef<RecoverySession | null>(null);
   const [session, setSession] = React.useState<RecoverySession | null>(null);
   const [dismissedSessionKey, setDismissedSessionKey] = React.useState<
     string | null
   >(null);
 
   React.useLayoutEffect(() => {
-    setSession({
-      key: sessionKey,
-      result: readRecoveryResult(props),
-    });
-  }, [
-    props.initialDream,
-    props.mode,
-    sessionKey,
-  ]);
+    const cached = recoveredSessionRef.current;
+    const nextSession =
+      cached?.key === sessionKey
+        ? cached
+        : {
+            key: sessionKey,
+            result: readRecoveryResult(props),
+          };
+
+    recoveredSessionRef.current = nextSession;
+    setSession(nextSession);
+  }, [props, sessionKey]);
 
   if (!session || session.key !== sessionKey) {
     return null;
@@ -93,9 +97,7 @@ export function DreamComposerWithRecovery(props: DreamComposerProps) {
   const noticeCopy = isDreamDraftRecoveryNoticeStatus(result.status)
     ? getDreamDraftRecoveryNoticeCopy(locale, result.status)
     : null;
-  const showNotice = Boolean(
-    noticeCopy && dismissedSessionKey !== sessionKey,
-  );
+  const showNotice = Boolean(noticeCopy && dismissedSessionKey !== sessionKey);
 
   return (
     <>

@@ -8,6 +8,7 @@ import {
 
 describe('dream draft service', () => {
   beforeEach(() => {
+    jest.restoreAllMocks();
     kv.clearAll();
   });
 
@@ -63,6 +64,34 @@ describe('dream draft service', () => {
       hasTags: true,
       updatedAt: 1_762_361_234_567,
     });
+  });
+
+  test('does not rewrite an unchanged draft but persists real changes', () => {
+    let now = 100;
+    jest.spyOn(Date, 'now').mockImplementation(() => now);
+
+    const draft = {
+      title: '',
+      text: 'A room full of mirrors',
+      sleepDate: '2026-08-05',
+      medications: '',
+      importantEvents: '',
+      healthNotes: '',
+      tags: [],
+    };
+
+    saveDreamDraft(draft);
+    expect(getDreamDraft()?.updatedAt).toBe(100);
+
+    now = 200;
+    saveDreamDraft({ ...draft });
+
+    expect(getDreamDraft()?.updatedAt).toBe(100);
+
+    saveDreamDraft({ ...draft, text: 'A room full of open windows' });
+
+    expect(getDreamDraft()?.updatedAt).toBe(200);
+    expect(getDreamDraft()?.text).toBe('A room full of open windows');
   });
 
   test('does not persist an empty draft and can clear existing draft', () => {

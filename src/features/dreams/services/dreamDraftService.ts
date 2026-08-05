@@ -258,6 +258,28 @@ function hasDraftContent(draft: DreamDraft) {
   );
 }
 
+function getDraftContentSignature(draft: DreamDraft) {
+  const { updatedAt: _updatedAt, ...content } = normalizeDraft(draft);
+  return JSON.stringify(content);
+}
+
+function hasSameStoredDraft(storageKey: string, draft: DreamDraft) {
+  const raw = kv.getString(storageKey);
+  if (!raw) {
+    return false;
+  }
+
+  try {
+    const stored = normalizeDraft(JSON.parse(raw) as Partial<DreamDraft>);
+    return getDraftContentSignature(stored) === getDraftContentSignature(draft);
+  } catch {
+    // A corrupted value must be overwritten by the next valid draft. The read
+    // path reports corruption; the write path only needs to avoid treating it
+    // as an unchanged draft.
+    return false;
+  }
+}
+
 export function getDreamDraft() {
   const raw = kv.getString(DREAM_DRAFT_STORAGE_KEY);
   if (!raw) {
@@ -284,6 +306,10 @@ export function saveDreamDraft(draft: DreamDraft) {
   if (!hasDraftContent(normalized)) {
     kv.remove(DREAM_DRAFT_STORAGE_KEY);
     scheduleDreamWidgetSync({ draftSnapshot: null });
+    return;
+  }
+
+  if (hasSameStoredDraft(DREAM_DRAFT_STORAGE_KEY, normalized)) {
     return;
   }
 
@@ -325,6 +351,7 @@ export function getDreamEditDraft(dreamId: string) {
 }
 
 export function saveDreamEditDraft(dreamId: string, draft: DreamDraft) {
+  const storageKey = editDraftKey(dreamId);
   const normalized = normalizeDraft({
     ...draft,
     updatedAt:
@@ -337,11 +364,15 @@ export function saveDreamEditDraft(dreamId: string, draft: DreamDraft) {
   // that exists but says nothing would still be compared against the dream on
   // every open.
   if (!hasDraftContent(normalized)) {
-    kv.remove(editDraftKey(dreamId));
+    kv.remove(storageKey);
     return;
   }
 
-  kv.set(editDraftKey(dreamId), JSON.stringify(normalized));
+  if (hasSameStoredDraft(storageKey, normalized)) {
+    return;
+  }
+
+  kv.set(storageKey, JSON.stringify(normalized));
 }
 
 export function clearDreamEditDraft(dreamId: string) {

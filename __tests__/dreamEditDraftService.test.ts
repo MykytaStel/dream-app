@@ -109,6 +109,29 @@ describe('the draft kept while editing a saved dream', () => {
     expect(getDreamEditDraft(DREAM_ID)?.updatedAt).toBe(1_762_361_234_567);
   });
 
+  test('does not rewrite an unchanged edit draft but persists real changes', () => {
+    let now = 100;
+    jest.spyOn(Date, 'now').mockImplementation(() => now);
+
+    saveDreamEditDraft(DREAM_ID, draft({ ...BASE }));
+    expect(getDreamEditDraft(DREAM_ID)?.updatedAt).toBe(100);
+
+    now = 200;
+    saveDreamEditDraft(DREAM_ID, draft({ ...BASE }));
+
+    expect(getDreamEditDraft(DREAM_ID)?.updatedAt).toBe(100);
+
+    saveDreamEditDraft(
+      DREAM_ID,
+      draft({ ...BASE, text: 'A newly remembered staircase.' }),
+    );
+
+    expect(getDreamEditDraft(DREAM_ID)?.updatedAt).toBe(200);
+    expect(getDreamEditDraft(DREAM_ID)?.text).toBe(
+      'A newly remembered staircase.',
+    );
+  });
+
   test('unreadable stored text answers null rather than throwing', () => {
     kv.set(`dream-edit-draft:${DREAM_ID}`, '{ not json');
 

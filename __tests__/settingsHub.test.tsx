@@ -27,6 +27,9 @@ const mockNavigate = jest.fn();
 
 jest.mock('@react-navigation/native', () => ({
   useNavigation: () => ({ navigate: mockNavigate }),
+  useFocusEffect: (effect: () => (() => void) | void) => {
+    require('react').useEffect(effect, [effect]);
+  },
 }));
 
 jest.mock('../src/i18n/I18nProvider', () => ({

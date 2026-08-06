@@ -48,6 +48,9 @@ export const AUDIO_CLEANUP_LAST_ATTEMPT_STORAGE_KEY =
   'maintenance-audio-cleanup-last-attempt';
 /** Aggregate scan/repair history only; never contains dream IDs or file paths. */
 export const ARCHIVE_HEALTH_HISTORY_STORAGE_KEY = 'archive-health-history';
+/** Last weekly read-only health scan; never contains archive content. */
+export const ARCHIVE_HEALTH_LAST_CHECK_STORAGE_KEY =
+  'maintenance-archive-health-last-check';
 
 export const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
 export const DREAM_PRACTICE_REMINDER_SETTINGS_KEY =

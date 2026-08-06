@@ -47,6 +47,12 @@ export const CLOUD_SUPABASE_ANON_KEY_STORAGE_KEY = 'cloud-supabase-anon-key';
 export const AUDIO_CLEANUP_LAST_ATTEMPT_STORAGE_KEY =
   'maintenance-audio-cleanup-last-attempt';
 
+/** Weekly read-only integrity check cadence; never contains dream content. */
+export const ARCHIVE_HEALTH_LAST_CHECK_STORAGE_KEY =
+  'maintenance-archive-health-last-check';
+/** Aggregate status/counts shown in Settings without re-reading the archive. */
+export const ARCHIVE_HEALTH_SUMMARY_STORAGE_KEY = 'archive-health-summary';
+
 export const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
 export const DREAM_PRACTICE_REMINDER_SETTINGS_KEY =
   'dream-practice-reminder-settings';

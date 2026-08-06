@@ -9,6 +9,8 @@ import {
   type RootStackParamList,
 } from '../../../app/navigation/routes';
 import { getStorageDiagnosticsCopy } from '../../../constants/copy/storageDiagnostics';
+import { getArchiveHealthCopy } from '../../../constants/copy/archiveHealth';
+import { getArchiveHealthSummary } from '../services/archiveHealthMaintenanceService';
 import { SettingsActionRow } from '../components/SettingsActionRow';
 import { useSettingsSpoke } from './useSettingsSpoke';
 
@@ -35,6 +37,18 @@ export default function SettingsScreen() {
     () => getStorageDiagnosticsCopy(locale),
     [locale],
   );
+  const archiveHealthCopy = React.useMemo(
+    () => getArchiveHealthCopy(locale),
+    [locale],
+  );
+  const archiveHealthSummary = getArchiveHealthSummary();
+  const archiveHealthValue = archiveHealthSummary
+    ? archiveHealthSummary.status === 'healthy'
+      ? archiveHealthCopy.statusHealthy
+      : archiveHealthSummary.status === 'attention'
+        ? archiveHealthCopy.statusAttention
+        : archiveHealthCopy.statusBlocked
+    : undefined;
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
@@ -98,6 +112,15 @@ export default function SettingsScreen() {
           title={storageCopy.hubTitle}
           meta={storageCopy.hubMeta}
           onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.SettingsStorage)}
+        />
+
+        <SettingsActionRow
+          title={archiveHealthCopy.hubTitle}
+          meta={archiveHealthCopy.hubMeta}
+          value={archiveHealthValue}
+          onPress={() =>
+            navigation.navigate(ROOT_ROUTE_NAMES.SettingsArchiveHealth)
+          }
         />
 
         <SettingsActionRow

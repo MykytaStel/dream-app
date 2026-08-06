@@ -20,6 +20,7 @@ import PrivacyScreen from '../../features/settings/screens/PrivacyScreen';
 import SettingsAboutScreen from '../../features/settings/screens/SettingsAboutScreen';
 import SettingsAnalysisScreen from '../../features/settings/screens/SettingsAnalysisScreen';
 import SettingsAppearanceScreen from '../../features/settings/screens/SettingsAppearanceScreen';
+import SettingsArchiveHealthScreen from '../../features/settings/screens/SettingsArchiveHealthScreen';
 import SettingsRemindersScreen from '../../features/settings/screens/SettingsRemindersScreen';
 import SettingsSecurityScreen from '../../features/settings/screens/SettingsSecurityScreen';
 import SettingsStorageScreen from '../../features/settings/screens/SettingsStorageScreen';
@@ -252,6 +253,11 @@ export default function RootNavigator() {
           name={ROOT_ROUTE_NAMES.SettingsStorage}
           component={SettingsStorageScreen}
           options={{ headerShown: true, title: 'Storage' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.SettingsArchiveHealth}
+          component={SettingsArchiveHealthScreen}
+          options={{ headerShown: true, title: 'Archive health' }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.SettingsAbout}

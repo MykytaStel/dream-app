@@ -5,6 +5,7 @@ import RootNavigator from './src/app/navigation/RootNavigator';
 import { AppProviders } from './src/app/AppProvider';
 import { AudioCleanupMaintenance } from './src/features/dreams/components/AudioCleanupMaintenance';
 import { ArchiveHealthMaintenance } from './src/features/settings/components/ArchiveHealthMaintenance';
+import { LocalDataRecoveryGate } from './src/features/settings/components/LocalDataRecoveryGate';
 import { AppLockGate } from './src/features/security/components/AppLockGate';
 
 // Lock copy lives here as plain strings because AppLockGate renders outside
@@ -20,18 +21,20 @@ const LOCK_COPY = {
 export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
-      <AppProviders>
-        <AppLockGate
-          promptMessage={LOCK_COPY.promptMessage}
-          unlockLabel={LOCK_COPY.unlockLabel}
-          subtitle={LOCK_COPY.subtitle}
-          appName={LOCK_COPY.appName}
-        >
-          <AudioCleanupMaintenance />
-          <ArchiveHealthMaintenance />
-          <RootNavigator />
-        </AppLockGate>
-      </AppProviders>
+      <LocalDataRecoveryGate>
+        <AppProviders>
+          <AppLockGate
+            promptMessage={LOCK_COPY.promptMessage}
+            unlockLabel={LOCK_COPY.unlockLabel}
+            subtitle={LOCK_COPY.subtitle}
+            appName={LOCK_COPY.appName}
+          >
+            <AudioCleanupMaintenance />
+            <ArchiveHealthMaintenance />
+            <RootNavigator />
+          </AppLockGate>
+        </AppProviders>
+      </LocalDataRecoveryGate>
     </GestureHandlerRootView>
   );
 }

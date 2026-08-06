@@ -1,11 +1,18 @@
 import React from 'react';
 import { ActivityIndicator, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
+import {
+  ROOT_ROUTE_NAMES,
+  type RootStackParamList,
+} from '../../../app/navigation/routes';
 import { Button } from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
+import { getArchiveHealthCopy } from '../../../constants/copy/archiveHealth';
 import { Theme } from '../../../theme/theme';
 import {
   formatStorageBytes,
@@ -40,8 +47,14 @@ export default function SettingsStorageScreen() {
     () => createSettingsStorageScreenStyles(theme),
     [theme],
   );
+  const navigation =
+    useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const controller = useStorageDiagnosticsController();
   const { copy, locale, snapshot } = controller;
+  const healthCopy = React.useMemo(
+    () => getArchiveHealthCopy(locale),
+    [locale],
+  );
   const displayBytes = React.useCallback(
     (value: number | null | undefined) =>
       formatStorageBytes(value, locale) ?? copy.unavailableValue,
@@ -100,6 +113,20 @@ export default function SettingsStorageScreen() {
                 disabled={
                   controller.isLoading || controller.activeAction !== null
                 }
+              />
+            </Card>
+
+            <Card style={styles.card}>
+              <SectionHeader
+                title={healthCopy.storageEntryTitle}
+                subtitle={healthCopy.storageEntryDescription}
+              />
+              <Button
+                title={healthCopy.storageEntryTitle}
+                onPress={() =>
+                  navigation.navigate(ROOT_ROUTE_NAMES.ArchiveHealth)
+                }
+                disabled={controller.activeAction !== null}
               />
             </Card>
 

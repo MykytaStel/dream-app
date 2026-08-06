@@ -11,21 +11,23 @@ import {
 import {
   listLocalDreamExportArtifacts,
   listLocalDreamExportFiles,
-  loadDreamImportPreview,
-  restoreDreamImportFromFile,
   type DreamImportMode,
-  type DreamImportPreview,
   type LocalDreamExportArtifact,
   type LocalDreamExportFile,
 } from '../services/dataImportService';
 import {
-  buildRestorePreviewItems,
+  loadValidatedDreamImportPreview,
+  restoreDreamImportTransactionally,
+  type ValidatedDreamImportPreview,
+} from '../services/transactionalDreamImportService';
+import {
   buildRestoreSuccessItems,
   formatBackupListMeta,
   formatBackupListTitle,
   formatBackupTimestamp,
   getRestoreConfirmContent,
 } from '../model/settingsPresentation';
+import { buildValidatedRestorePreviewItems } from '../model/dreamImportHealthPresentation';
 import {
   openLocalBackupFile,
   shareLocalBackupFile,
@@ -72,7 +74,7 @@ export function useBackupScreenController({
   const [isLoadingLocalExports, setIsLoadingLocalExports] =
     React.useState(false);
   const [selectedImportPreview, setSelectedImportPreview] =
-    React.useState<DreamImportPreview | null>(null);
+    React.useState<ValidatedDreamImportPreview | null>(null);
   const [selectedImportPath, setSelectedImportPath] = React.useState<
     string | null
   >(null);
@@ -86,7 +88,7 @@ export function useBackupScreenController({
     React.useState(false);
   const [isRestoringImport, setIsRestoringImport] = React.useState(false);
   const [lastRestorePreview, setLastRestorePreview] =
-    React.useState<DreamImportPreview | null>(null);
+    React.useState<ValidatedDreamImportPreview | null>(null);
   const cloudBackup = useCloudBackupController({
     locale,
     copy,
@@ -107,7 +109,7 @@ export function useBackupScreenController({
   const restorePreviewItems = React.useMemo(
     () =>
       selectedImportPreview
-        ? buildRestorePreviewItems(copy, selectedImportPreview, locale)
+        ? buildValidatedRestorePreviewItems(copy, selectedImportPreview, locale)
         : [],
     [copy, locale, selectedImportPreview],
   );
@@ -176,7 +178,7 @@ export function useBackupScreenController({
     setIsLoadingImportPreview(true);
     setImportPreviewError(null);
 
-    loadDreamImportPreview(selectedImportPath, importMode)
+    loadValidatedDreamImportPreview(selectedImportPath, importMode)
       .then(preview => {
         if (!cancelled) {
           setSelectedImportPreview(preview);
@@ -429,7 +431,7 @@ export function useBackupScreenController({
           setIsRestoringImport(true);
           trackRestoreStarted({ mode: importMode });
 
-          restoreDreamImportFromFile(selectedImportPath, importMode)
+          restoreDreamImportTransactionally(selectedImportPath, importMode)
             .then(async preview => {
               trackRestoreCompleted({
                 mode: preview.mode,

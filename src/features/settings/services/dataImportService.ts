@@ -443,7 +443,7 @@ export async function listLocalDreamExportArtifacts(): Promise<
     .sort((left, right) => right.modifiedAt - left.modifiedAt);
 }
 
-async function readDreamImportPayload(filePath: string) {
+export async function readDreamImportPayload(filePath: string) {
   const raw = await RNFS.readFile(filePath, 'utf8');
   let parsed: unknown;
 
@@ -470,11 +470,16 @@ export async function loadDreamImportPreview(
   });
 }
 
-export async function restoreDreamImportFromFile(
+/**
+ * Applies one already parsed payload. Callers that need validation stronger
+ * than the structural backup parser can prepare and normalize the payload once,
+ * then pass that exact immutable snapshot here without a second file read.
+ */
+export async function restoreDreamImportPayload(
+  payload: DreamExportV1,
   filePath: string,
   mode: DreamImportMode,
 ) {
-  const payload = await readDreamImportPayload(filePath);
   const currentDreams = listDreams();
   const nextDreams =
     mode === 'replace'
@@ -521,4 +526,15 @@ export async function restoreDreamImportFromFile(
     mode,
     currentDreams,
   });
+}
+
+export async function restoreDreamImportFromFile(
+  filePath: string,
+  mode: DreamImportMode,
+) {
+  return restoreDreamImportPayload(
+    await readDreamImportPayload(filePath),
+    filePath,
+    mode,
+  );
 }

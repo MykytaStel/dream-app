@@ -35,10 +35,57 @@ function normalizeTombstone(
   };
 }
 
-function persistTombstones(tombstones: DreamDeletionTombstone[]) {
-  const normalized = tombstones
+/**
+ * Keeps duplicate identities visible to health diagnostics. Within one identity
+ * the oldest record comes first, so `new Map(list.map(...))` retains the newest
+ * value while still allowing the caller to count how many duplicates existed.
+ */
+function normalizeTombstonesForRead(tombstones: DreamDeletionTombstone[]) {
+  return tombstones.map(normalizeTombstone).sort((left, right) => {
+    if (left.dreamId === right.dreamId) {
+      return left.deletedAt - right.deletedAt;
+    }
+    return right.deletedAt - left.deletedAt;
+  });
+}
+
+/** Every write collapses duplicates and preserves the newest deletion. */
+function normalizeTombstonesForPersist(tombstones: DreamDeletionTombstone[]) {
+  const newestFirst = tombstones
     .map(normalizeTombstone)
     .sort((left, right) => right.deletedAt - left.deletedAt);
+  const seen = new Set<string>();
+
+  return newestFirst.filter(tombstone => {
+    if (seen.has(tombstone.dreamId)) {
+      return false;
+    }
+    seen.add(tombstone.dreamId);
+    return true;
+  });
+}
+
+function findNewestTombstoneIndex(
+  tombstones: DreamDeletionTombstone[],
+  dreamId: string,
+) {
+  let newestIndex = -1;
+  for (let index = 0; index < tombstones.length; index += 1) {
+    if (tombstones[index].dreamId !== dreamId) {
+      continue;
+    }
+    if (
+      newestIndex < 0 ||
+      tombstones[index].deletedAt > tombstones[newestIndex].deletedAt
+    ) {
+      newestIndex = index;
+    }
+  }
+  return newestIndex;
+}
+
+function persistTombstones(tombstones: DreamDeletionTombstone[]) {
+  const normalized = normalizeTombstonesForPersist(tombstones);
   const raw = JSON.stringify(normalized);
   kv.set(DREAM_DELETION_TOMBSTONES_STORAGE_KEY, raw);
   tombstoneCache = normalized;
@@ -59,15 +106,14 @@ export function listDreamDeletionTombstones() {
 
   try {
     const parsed = JSON.parse(raw) as DreamDeletionTombstone[];
-    const normalized = parsed
-      .filter(
+    const normalized = normalizeTombstonesForRead(
+      parsed.filter(
         tombstone =>
           tombstone &&
           typeof tombstone.dreamId === 'string' &&
           typeof tombstone.deletedAt === 'number',
-      )
-      .map(normalizeTombstone)
-      .sort((left, right) => right.deletedAt - left.deletedAt);
+      ),
+    );
     tombstoneCache = normalized;
     tombstoneCacheRaw = raw;
     return normalized;
@@ -80,9 +126,9 @@ export function listDreamDeletionTombstones() {
 }
 
 export function getDreamDeletionTombstone(dreamId: string) {
-  return listDreamDeletionTombstones().find(
-    tombstone => tombstone.dreamId === dreamId,
-  );
+  const all = listDreamDeletionTombstones();
+  const index = findNewestTombstoneIndex(all, dreamId);
+  return index >= 0 ? all[index] : undefined;
 }
 
 export function saveDreamDeletionTombstone(
@@ -90,7 +136,7 @@ export function saveDreamDeletionTombstone(
   deletedAt = Date.now(),
 ) {
   const all = listDreamDeletionTombstones();
-  const idx = all.findIndex(tombstone => tombstone.dreamId === dreamId);
+  const idx = findNewestTombstoneIndex(all, dreamId);
   const nextTombstone = normalizeTombstone({
     dreamId,
     deletedAt,
@@ -112,7 +158,7 @@ export function applyRemoteDreamDeletionTombstone(
   deletedAt: number,
 ) {
   const all = listDreamDeletionTombstones();
-  const idx = all.findIndex(tombstone => tombstone.dreamId === dreamId);
+  const idx = findNewestTombstoneIndex(all, dreamId);
   const nextTombstone = normalizeTombstone({
     dreamId,
     deletedAt,
@@ -132,7 +178,7 @@ export function applyRemoteDreamDeletionTombstone(
 
 export function markDreamDeletionTombstoneSyncing(dreamId: string) {
   const all = listDreamDeletionTombstones();
-  const idx = all.findIndex(tombstone => tombstone.dreamId === dreamId);
+  const idx = findNewestTombstoneIndex(all, dreamId);
   if (idx < 0) {
     throw new Error(`Dream deletion tombstone not found: ${dreamId}`);
   }
@@ -151,7 +197,7 @@ export function markDreamDeletionTombstoneSynced(
   syncedAt = Date.now(),
 ) {
   const all = listDreamDeletionTombstones();
-  const idx = all.findIndex(tombstone => tombstone.dreamId === dreamId);
+  const idx = findNewestTombstoneIndex(all, dreamId);
   if (idx < 0) {
     throw new Error(`Dream deletion tombstone not found: ${dreamId}`);
   }
@@ -171,7 +217,7 @@ export function markDreamDeletionTombstoneSyncError(
   errorMessage?: string,
 ) {
   const all = listDreamDeletionTombstones();
-  const idx = all.findIndex(tombstone => tombstone.dreamId === dreamId);
+  const idx = findNewestTombstoneIndex(all, dreamId);
   if (idx < 0) {
     throw new Error(`Dream deletion tombstone not found: ${dreamId}`);
   }
@@ -200,6 +246,17 @@ export function clearDreamDeletionTombstonesForDreamIds(dreamIds: string[]) {
       tombstone => !ids.has(tombstone.dreamId),
     ),
   );
+}
+
+/**
+ * Replaces the complete tombstone collection through the same normalization
+ * and cache boundary as normal sync writes. Duplicate identities collapse to
+ * the newest deletion timestamp before persistence.
+ */
+export function replaceAllDreamDeletionTombstones(
+  tombstones: DreamDeletionTombstone[],
+) {
+  persistTombstones(tombstones);
 }
 
 export function clearAllDreamDeletionTombstones() {

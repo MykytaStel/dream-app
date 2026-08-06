@@ -46,6 +46,8 @@ export const CLOUD_SUPABASE_ANON_KEY_STORAGE_KEY = 'cloud-supabase-anon-key';
 /** Last completed/skipped/failed housekeeping attempt; never contains URIs. */
 export const AUDIO_CLEANUP_LAST_ATTEMPT_STORAGE_KEY =
   'maintenance-audio-cleanup-last-attempt';
+/** Aggregate scan/repair history only; never contains dream IDs or file paths. */
+export const ARCHIVE_HEALTH_HISTORY_STORAGE_KEY = 'archive-health-history';
 
 export const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
 export const DREAM_PRACTICE_REMINDER_SETTINGS_KEY =

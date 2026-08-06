@@ -14,6 +14,7 @@ import MonthlyReportScreen from '../../features/stats/screens/MonthlyReportScree
 import PatternDetailScreen from '../../features/stats/screens/PatternDetailScreen';
 import ProgressScreen from '../../features/stats/screens/ProgressScreen';
 import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
+import ArchiveHealthScreen from '../../features/settings/screens/ArchiveHealthScreen';
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
 import PrivacyScreen from '../../features/settings/screens/PrivacyScreen';
@@ -252,6 +253,11 @@ export default function RootNavigator() {
           name={ROOT_ROUTE_NAMES.SettingsStorage}
           component={SettingsStorageScreen}
           options={{ headerShown: true, title: 'Storage' }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.ArchiveHealth}
+          component={ArchiveHealthScreen}
+          options={{ headerShown: true, title: 'Archive health' }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.SettingsAbout}

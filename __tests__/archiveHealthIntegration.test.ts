@@ -104,6 +104,41 @@ describe('archive health and recovery integration', () => {
     expect(repair).toContain("status: 'blocked'");
   });
 
+  test('inspects derived stores without invoking their auto-healing read APIs', () => {
+    const health = source(
+      'src/features/settings/services/archiveHealthService.ts',
+    );
+    const derived = source(
+      'src/features/dreams/repository/dreamDerivedDataRepository.ts',
+    );
+
+    expect(health).toContain('inspectDreamDerivedData(plan.dreams)');
+    expect(health).not.toContain('listDreamListItems(');
+    expect(health).not.toContain('getDreamsMeta(');
+    expect(derived).toContain('export function inspectDreamDerivedData(');
+    expect(derived).not.toContain('listDreamListItems(');
+    expect(derived).not.toContain('getDreamsMeta(');
+  });
+
+  test('repairs derived stores inside the checkpointed transaction without rewriting dreams', () => {
+    const health = source(
+      'src/features/settings/services/archiveHealthService.ts',
+    );
+    const derived = source(
+      'src/features/dreams/repository/dreamDerivedDataRepository.ts',
+    );
+
+    expectBefore(
+      health,
+      "checkpointPolicy: 'required'",
+      'rebuildDreamDerivedData(plan.dreams)',
+    );
+    expect(derived).toContain('kv.set(DREAMS_INDEX_STORAGE_KEY');
+    expect(derived).toContain('kv.set(DREAMS_META_STORAGE_KEY');
+    expect(derived).not.toContain('kv.set(DREAMS_STORAGE_KEY');
+    expect(derived).not.toContain('replaceAllDreams(');
+  });
+
   test('stores aggregate history without ids, audio paths, or dream content', () => {
     const service = source(
       'src/features/settings/services/archiveHealthService.ts',

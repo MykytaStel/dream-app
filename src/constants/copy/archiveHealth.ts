@@ -107,7 +107,7 @@ const EN: ArchiveHealthCopy = {
   issuesTitle: 'Detected issues',
   issuesEmptyTitle: 'No issues found',
   issuesEmptyDescription:
-    'Dreams, drafts, audio references, and deletion records are structurally consistent.',
+    'Dreams, drafts, audio references, derived views, and deletion records are structurally consistent.',
   historyTitle: 'Recent health activity',
   historyEmpty: 'No scans or repairs have been recorded yet.',
   historyScan: 'Scan',
@@ -172,6 +172,36 @@ const EN: ArchiveHealthCopy = {
       title: 'Audio-only dream file is missing',
       description:
         'Removing the reference would leave the dream without saveable content, so recovery needs a backup or manual decision.',
+    },
+    'dream-index-missing': {
+      title: 'Dream list index is missing',
+      description:
+        'The source archive is readable, so the fast list view can be regenerated without changing any dream.',
+    },
+    'dream-index-invalid': {
+      title: 'Dream list index is invalid',
+      description:
+        'The cached list structure is malformed. It can be replaced from the readable source archive.',
+    },
+    'dream-index-stale': {
+      title: 'Dream list index is out of date',
+      description:
+        'The cached list no longer matches the source dreams and can be rebuilt deterministically.',
+    },
+    'dream-meta-missing': {
+      title: 'Archive summary is missing',
+      description:
+        'Counts and month summaries can be regenerated from the readable source archive.',
+    },
+    'dream-meta-invalid': {
+      title: 'Archive summary is invalid',
+      description:
+        'The cached aggregate structure is malformed and can be replaced safely.',
+    },
+    'dream-meta-stale': {
+      title: 'Archive summary is out of date',
+      description:
+        'Cached counts or month groups no longer match the source dreams and can be rebuilt.',
     },
     'draft-store-unreadable': {
       title: 'Create draft cannot be read',
@@ -277,7 +307,7 @@ const UK: ArchiveHealthCopy = {
   issuesTitle: 'Знайдені проблеми',
   issuesEmptyTitle: 'Проблем не знайдено',
   issuesEmptyDescription:
-    'Сни, чернетки, аудіопосилання та записи видалення структурно узгоджені.',
+    'Сни, чернетки, аудіопосилання, похідні представлення та записи видалення структурно узгоджені.',
   historyTitle: 'Останні перевірки',
   historyEmpty: 'Сканувань або ремонтів ще не записано.',
   historyScan: 'Сканування',
@@ -342,6 +372,36 @@ const UK: ArchiveHealthCopy = {
       title: 'Відсутній файл audio-only сну',
       description:
         'Видалення посилання залишить сон без вмісту. Потрібен backup або ручне рішення.',
+    },
+    'dream-index-missing': {
+      title: 'Відсутній індекс списку снів',
+      description:
+        'Основний архів читається, тому швидке представлення списку можна відновити без зміни снів.',
+    },
+    'dream-index-invalid': {
+      title: 'Некоректний індекс списку снів',
+      description:
+        'Структура кешованого списку пошкоджена. Її можна замінити з читабельного основного архіву.',
+    },
+    'dream-index-stale': {
+      title: 'Індекс списку снів застарів',
+      description:
+        'Кешований список більше не відповідає основним записам і може бути детерміновано перебудований.',
+    },
+    'dream-meta-missing': {
+      title: 'Відсутня зведена інформація архіву',
+      description:
+        'Лічильники та групи місяців можна повторно побудувати з читабельного основного архіву.',
+    },
+    'dream-meta-invalid': {
+      title: 'Некоректна зведена інформація архіву',
+      description:
+        'Структура агрегованого кешу пошкоджена й може бути безпечно замінена.',
+    },
+    'dream-meta-stale': {
+      title: 'Зведена інформація архіву застаріла',
+      description:
+        'Кешовані лічильники або групи місяців більше не відповідають основним записам.',
     },
     'draft-store-unreadable': {
       title: 'Чернетка створення не читається',

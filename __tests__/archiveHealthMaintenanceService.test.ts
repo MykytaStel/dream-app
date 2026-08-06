@@ -36,6 +36,8 @@ const snapshot = {
   draftCount: 1,
   editDraftCount: 2,
   tombstoneCount: 3,
+  derivedIndexStatus: 'current' as const,
+  derivedMetaStatus: 'current' as const,
   issueCount: 4,
   repairableIssueCount: 3,
   criticalCount: 0,

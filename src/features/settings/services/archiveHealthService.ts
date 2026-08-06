@@ -21,6 +21,11 @@ import {
   validateDreamForSave,
 } from '../../dreams/model/dreamRules';
 import {
+  inspectDreamDerivedData,
+  rebuildDreamDerivedData,
+  type DreamDerivedStoreStatus,
+} from '../../dreams/repository/dreamDerivedDataRepository';
+import {
   clearDreamDeletionTombstone,
   listDreamDeletionTombstones,
   replaceAllDreamDeletionTombstones,
@@ -43,6 +48,7 @@ const STALE_TRANSCRIPT_PROCESSING_MS = 15 * 60 * 1000;
 const ARCHIVE_HEALTH_HISTORY_LIMIT = 20;
 
 type RecordShape = Record<string, unknown>;
+type DerivedStoreKind = 'index' | 'meta';
 
 export type ArchiveHealthSeverity = 'info' | 'warning' | 'critical';
 export type ArchiveHealthStatus = 'healthy' | 'attention' | 'critical';
@@ -57,6 +63,12 @@ export type ArchiveHealthIssueCode =
   | 'stale-transcript-processing'
   | 'missing-dream-audio'
   | 'missing-audio-only-dream'
+  | 'dream-index-missing'
+  | 'dream-index-invalid'
+  | 'dream-index-stale'
+  | 'dream-meta-missing'
+  | 'dream-meta-invalid'
+  | 'dream-meta-stale'
   | 'draft-store-unreadable'
   | 'missing-draft-audio'
   | 'missing-audio-only-draft'
@@ -67,6 +79,15 @@ export type ArchiveHealthIssueCode =
   | 'tombstone-store-unreadable'
   | 'tombstone-conflict'
   | 'duplicate-tombstone';
+
+const DERIVED_ISSUE_CODES = new Set<ArchiveHealthIssueCode>([
+  'dream-index-missing',
+  'dream-index-invalid',
+  'dream-index-stale',
+  'dream-meta-missing',
+  'dream-meta-invalid',
+  'dream-meta-stale',
+]);
 
 export type ArchiveHealthIssue = {
   code: ArchiveHealthIssueCode;
@@ -82,6 +103,8 @@ export type ArchiveHealthSnapshot = {
   draftCount: number | null;
   editDraftCount: number | null;
   tombstoneCount: number | null;
+  derivedIndexStatus: DreamDerivedStoreStatus | null;
+  derivedMetaStatus: DreamDerivedStoreStatus | null;
   issueCount: number;
   repairableIssueCount: number;
   criticalCount: number;
@@ -125,6 +148,7 @@ type RepairPlan = {
   dreams: Dream[];
   clearDreamAudioIds: Set<string>;
   staleTranscriptIds: Set<string>;
+  rebuildDerivedData: boolean;
   clearCreateDraftAudio: boolean;
   clearEditDraftAudioIds: Set<string>;
   orphanEditDraftIds: Set<string>;
@@ -152,6 +176,27 @@ function addIssue(
     return;
   }
   issues.set(issue.code, { ...issue, count });
+}
+
+function addDerivedStoreIssue(
+  issues: Map<ArchiveHealthIssueCode, ArchiveHealthIssue>,
+  kind: DerivedStoreKind,
+  status: DreamDerivedStoreStatus,
+) {
+  if (status === 'current') {
+    return;
+  }
+
+  const code = `dream-${kind}-${status}` as ArchiveHealthIssueCode;
+  addIssue(issues, {
+    code,
+    severity: status === 'invalid' ? 'warning' : 'info',
+    repair: 'automatic',
+  });
+}
+
+function isDerivedIssueCode(code: ArchiveHealthIssueCode) {
+  return DERIVED_ISSUE_CODES.has(code);
 }
 
 function normalizeAudioPath(uri: string) {
@@ -241,6 +286,8 @@ function buildSnapshot(
     draftCount: number | null;
     editDraftCount: number | null;
     tombstoneCount: number | null;
+    derivedIndexStatus: DreamDerivedStoreStatus | null;
+    derivedMetaStatus: DreamDerivedStoreStatus | null;
   },
 ): ArchiveHealthSnapshot {
   const issues = Array.from(issuesMap.values()).sort((left, right) => {
@@ -269,6 +316,8 @@ function buildSnapshot(
     draftCount: input.draftCount,
     editDraftCount: input.editDraftCount,
     tombstoneCount: input.tombstoneCount,
+    derivedIndexStatus: input.derivedIndexStatus,
+    derivedMetaStatus: input.derivedMetaStatus,
     issueCount,
     repairableIssueCount,
     criticalCount,
@@ -284,6 +333,7 @@ async function scanInternal(now = Date.now()): Promise<InternalScan> {
     dreams: [],
     clearDreamAudioIds: new Set(),
     staleTranscriptIds: new Set(),
+    rebuildDerivedData: false,
     clearCreateDraftAudio: false,
     clearEditDraftAudioIds: new Set(),
     orphanEditDraftIds: new Set(),
@@ -416,6 +466,26 @@ async function scanInternal(now = Date.now()): Promise<InternalScan> {
 
       plan.dreams.push(dream);
     }
+  }
+
+  let derivedIndexStatus: DreamDerivedStoreStatus | null = null;
+  let derivedMetaStatus: DreamDerivedStoreStatus | null = null;
+  const canInspectDerivedData =
+    rawDreams.status === 'readable' &&
+    Array.isArray(rawDreams.parsed) &&
+    !issues.has('newer-storage-schema') &&
+    !issues.has('dream-store-unreadable') &&
+    !issues.has('invalid-dream-record') &&
+    !issues.has('duplicate-dream-id');
+
+  if (canInspectDerivedData) {
+    const derived = inspectDreamDerivedData(plan.dreams);
+    derivedIndexStatus = derived.indexStatus;
+    derivedMetaStatus = derived.metaStatus;
+    addDerivedStoreIssue(issues, 'index', derived.indexStatus);
+    addDerivedStoreIssue(issues, 'meta', derived.metaStatus);
+    plan.rebuildDerivedData =
+      derived.indexStatus !== 'current' || derived.metaStatus !== 'current';
   }
 
   let draftCount: number | null = 0;
@@ -560,6 +630,8 @@ async function scanInternal(now = Date.now()): Promise<InternalScan> {
       draftCount,
       editDraftCount,
       tombstoneCount,
+      derivedIndexStatus,
+      derivedMetaStatus,
     }),
   };
 }
@@ -597,11 +669,16 @@ export function getArchiveHealthHistory() {
 
 export async function scanArchiveHealth(options: { record?: boolean } = {}) {
   const result = await scanInternal();
+  const derivedIssueCount = result.snapshot.issues
+    .filter(issue => isDerivedIssueCode(issue.code))
+    .reduce((sum, issue) => sum + issue.count, 0);
+
   observability.trackEvent('archive_health_scanned', {
     status: result.snapshot.status,
     issue_count: result.snapshot.issueCount,
     repairable_issue_count: result.snapshot.repairableIssueCount,
     critical_count: result.snapshot.criticalCount,
+    derived_issue_count: derivedIssueCount,
   });
 
   if (options.record) {
@@ -669,6 +746,9 @@ export async function repairArchiveHealth(): Promise<ArchiveRepairResult> {
 
         let repairedIssueCount = 0;
         const plan = current.plan;
+        const derivedIssueCount = current.snapshot.issues
+          .filter(issue => isDerivedIssueCode(issue.code))
+          .reduce((sum, issue) => sum + issue.count, 0);
         const shouldRewriteDreams =
           plan.clearDreamAudioIds.size > 0 ||
           plan.staleTranscriptIds.size > 0 ||
@@ -695,6 +775,10 @@ export async function repairArchiveHealth(): Promise<ArchiveRepairResult> {
           )?.count;
           repairedIssueCount += invalidDateCount ?? 0;
           replaceAllDreams(nextDreams);
+          repairedIssueCount += derivedIssueCount;
+        } else if (plan.rebuildDerivedData) {
+          rebuildDreamDerivedData(plan.dreams);
+          repairedIssueCount += derivedIssueCount;
         }
 
         if (plan.clearCreateDraftAudio) {

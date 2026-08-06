@@ -17,11 +17,12 @@ describe('crash-safe local transaction integration', () => {
     const app = source('App.tsx');
     const providers = source('src/app/AppProvider.tsx');
 
-    expectBefore(app, '<LocalDataRecoveryGate>', '<AppProviders>');
+    expectBefore(app, '<LocalDataRecoveryGate>', '<StorageMigrationGate>');
+    expectBefore(app, '<StorageMigrationGate>', '<AppProviders>');
     expectBefore(app, '<AppProviders>', '<AudioCleanupMaintenance />');
     expectBefore(app, '<AppProviders>', '<ArchiveHealthMaintenance />');
     expectBefore(app, '<AppProviders>', '<RootNavigator />');
-    expect(providers).toContain('runStorageMigrations();');
+    expect(providers).not.toContain('runStorageMigrations();');
   });
 
   test('captures after checkpoint and brackets mutation with journal phases', () => {
@@ -64,8 +65,10 @@ describe('crash-safe local transaction integration', () => {
       'src/features/settings/services/localDataTransactionJournalService.ts',
     );
     const eventCalls = [
-      ...transaction.matchAll(/observability\.trackEvent\([\s\S]*?\n  \}\);/g),
-      ...journal.matchAll(/observability\.trackEvent\([\s\S]*?\n  \}\);/g),
+      ...transaction.matchAll(
+        /observability\.trackEvent\([\s\S]*?\n {2}\}\);/g,
+      ),
+      ...journal.matchAll(/observability\.trackEvent\([\s\S]*?\n {2}\}\);/g),
     ].map(match => match[0]);
 
     expect(eventCalls.length).toBeGreaterThan(0);

@@ -8,6 +8,8 @@ import {
 } from 'react-native';
 import { getStoredLocale } from '../../../i18n/localeStore';
 import { reportActionError } from '../../../services/observability/errorReporting';
+import { getStoredThemeId } from '../../../theme/themePreferences';
+import { themes, type Theme } from '../../../theme/theme';
 import {
   quarantineInterruptedLocalDataTransaction,
   recoverInterruptedLocalDataTransaction,
@@ -57,13 +59,13 @@ const COPY = {
   },
 } as const;
 
-export function LocalDataRecoveryGate({
-  children,
-}: React.PropsWithChildren) {
+export function LocalDataRecoveryGate({ children }: React.PropsWithChildren) {
   const [state, setState] = React.useState<GateState>({ status: 'checking' });
   const mountedRef = React.useRef(true);
   const locale = getStoredLocale();
   const copy = COPY[locale];
+  const theme = themes[getStoredThemeId()];
+  const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   React.useEffect(() => {
     return () => {
@@ -119,7 +121,7 @@ export function LocalDataRecoveryGate({
   if (state.status === 'checking') {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#8F7CFF" />
+        <ActivityIndicator size="large" color={theme.colors.auroraMid} />
         <Text style={styles.title}>{copy.checkingTitle}</Text>
         <Text style={styles.body}>{copy.checkingBody}</Text>
       </View>
@@ -168,93 +170,95 @@ export function LocalDataRecoveryGate({
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#111018',
-    paddingHorizontal: 32,
-    gap: 16,
-  },
-  warningIcon: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#3B252D',
-    borderWidth: 1,
-    borderColor: '#D56C82',
-  },
-  warningMark: {
-    color: '#FF9CB0',
-    fontSize: 28,
-    fontWeight: '800',
-  },
-  title: {
-    color: '#F5F2FF',
-    fontSize: 22,
-    lineHeight: 28,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  body: {
-    color: '#C8C2D8',
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: 'center',
-    maxWidth: 560,
-  },
-  checkpoint: {
-    color: '#BEB3FF',
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'center',
-  },
-  actions: {
-    width: '100%',
-    maxWidth: 440,
-    gap: 10,
-    marginTop: 8,
-  },
-  primaryButton: {
-    minHeight: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#8F7CFF',
-    paddingHorizontal: 18,
-  },
-  primaryLabel: {
-    color: '#151020',
-    fontSize: 15,
-    fontWeight: '700',
-    textAlign: 'center',
-  },
-  secondaryButton: {
-    minHeight: 48,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#5F586E',
-    paddingHorizontal: 18,
-  },
-  secondaryLabel: {
-    color: '#E6E0F2',
-    fontSize: 15,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  pressed: {
-    opacity: 0.72,
-  },
-  hint: {
-    color: '#9890A8',
-    fontSize: 12,
-    lineHeight: 18,
-    textAlign: 'center',
-    maxWidth: 560,
-  },
-});
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    container: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.background,
+      paddingHorizontal: 32,
+      gap: 16,
+    },
+    warningIcon: {
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: `${theme.colors.danger}26`,
+      borderWidth: 1,
+      borderColor: `${theme.colors.danger}88`,
+    },
+    warningMark: {
+      color: theme.colors.danger,
+      fontSize: 28,
+      fontWeight: '800',
+    },
+    title: {
+      color: theme.colors.text,
+      fontSize: 22,
+      lineHeight: 28,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    body: {
+      color: theme.colors.textDim,
+      fontSize: 15,
+      lineHeight: 22,
+      textAlign: 'center',
+      maxWidth: 560,
+    },
+    checkpoint: {
+      color: theme.colors.primaryAlt,
+      fontSize: 14,
+      lineHeight: 20,
+      textAlign: 'center',
+    },
+    actions: {
+      width: '100%',
+      maxWidth: 440,
+      gap: 10,
+      marginTop: 8,
+    },
+    primaryButton: {
+      minHeight: 48,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.auroraMid,
+      paddingHorizontal: 18,
+    },
+    primaryLabel: {
+      color: theme.colors.ink,
+      fontSize: 15,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    secondaryButton: {
+      minHeight: 48,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: 18,
+    },
+    secondaryLabel: {
+      color: theme.colors.text,
+      fontSize: 15,
+      fontWeight: '600',
+      textAlign: 'center',
+    },
+    pressed: {
+      opacity: 0.72,
+    },
+    hint: {
+      color: theme.colors.textDim,
+      fontSize: 12,
+      lineHeight: 18,
+      textAlign: 'center',
+      maxWidth: 560,
+    },
+  });
+}

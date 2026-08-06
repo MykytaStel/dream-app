@@ -7,6 +7,7 @@ import { AudioCleanupMaintenance } from './src/features/dreams/components/AudioC
 import { ArchiveHealthMaintenance } from './src/features/settings/components/ArchiveHealthMaintenance';
 import { LocalDataRecoveryGate } from './src/features/settings/components/LocalDataRecoveryGate';
 import { AppLockGate } from './src/features/security/components/AppLockGate';
+import { StorageMigrationGate } from './src/services/storage/StorageMigrationGate';
 
 // Lock copy lives here as plain strings because AppLockGate renders outside
 // ThemeProvider and i18n context. These are intentionally not localised —
@@ -22,18 +23,20 @@ export default function App() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <LocalDataRecoveryGate>
-        <AppProviders>
-          <AppLockGate
-            promptMessage={LOCK_COPY.promptMessage}
-            unlockLabel={LOCK_COPY.unlockLabel}
-            subtitle={LOCK_COPY.subtitle}
-            appName={LOCK_COPY.appName}
-          >
-            <AudioCleanupMaintenance />
-            <ArchiveHealthMaintenance />
-            <RootNavigator />
-          </AppLockGate>
-        </AppProviders>
+        <StorageMigrationGate>
+          <AppProviders>
+            <AppLockGate
+              promptMessage={LOCK_COPY.promptMessage}
+              unlockLabel={LOCK_COPY.unlockLabel}
+              subtitle={LOCK_COPY.subtitle}
+              appName={LOCK_COPY.appName}
+            >
+              <AudioCleanupMaintenance />
+              <ArchiveHealthMaintenance />
+              <RootNavigator />
+            </AppLockGate>
+          </AppProviders>
+        </StorageMigrationGate>
       </LocalDataRecoveryGate>
     </GestureHandlerRootView>
   );

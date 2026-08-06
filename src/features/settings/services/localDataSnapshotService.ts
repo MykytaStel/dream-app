@@ -260,8 +260,10 @@ export function parseLocalDataSnapshot(value: unknown): LocalDataSnapshot {
     tombstonesReadable: value.tombstonesReadable,
     draftReadable: value.draftReadable,
     locale: value.locale,
-    analysisSettings: value.analysisSettings as LocalDataSnapshot['analysisSettings'],
-    reminderSettings: value.reminderSettings as LocalDataSnapshot['reminderSettings'],
+    analysisSettings:
+      value.analysisSettings as LocalDataSnapshot['analysisSettings'],
+    reminderSettings:
+      value.reminderSettings as LocalDataSnapshot['reminderSettings'],
     practiceReminderSettings:
       value.practiceReminderSettings as LocalDataSnapshot['practiceReminderSettings'],
   };

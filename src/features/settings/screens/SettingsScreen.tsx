@@ -1,6 +1,6 @@
 import React from 'react';
 import { View } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
@@ -8,8 +8,10 @@ import {
   ROOT_ROUTE_NAMES,
   type RootStackParamList,
 } from '../../../app/navigation/routes';
+import { getArchiveHealthCopy } from '../../../constants/copy/archiveHealth';
 import { getStorageDiagnosticsCopy } from '../../../constants/copy/storageDiagnostics';
 import { SettingsActionRow } from '../components/SettingsActionRow';
+import { getLatestArchiveHealthStatus } from '../services/archiveHealthMaintenanceService';
 import { useSettingsSpoke } from './useSettingsSpoke';
 
 /**
@@ -35,8 +37,21 @@ export default function SettingsScreen() {
     () => getStorageDiagnosticsCopy(locale),
     [locale],
   );
+  const archiveHealthCopy = React.useMemo(
+    () => getArchiveHealthCopy(locale),
+    [locale],
+  );
+  const [archiveHealthStatus, setArchiveHealthStatus] = React.useState(() =>
+    getLatestArchiveHealthStatus(),
+  );
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      setArchiveHealthStatus(getLatestArchiveHealthStatus());
+    }, []),
+  );
 
   const backupMeta =
     controller.cloudSession.status === 'signed-in'
@@ -98,6 +113,17 @@ export default function SettingsScreen() {
           title={storageCopy.hubTitle}
           meta={storageCopy.hubMeta}
           onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.SettingsStorage)}
+        />
+
+        <SettingsActionRow
+          title={archiveHealthCopy.storageEntryTitle}
+          meta={archiveHealthCopy.storageEntryDescription}
+          value={
+            archiveHealthStatus
+              ? archiveHealthCopy.status[archiveHealthStatus.status]
+              : undefined
+          }
+          onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.ArchiveHealth)}
         />
 
         <SettingsActionRow

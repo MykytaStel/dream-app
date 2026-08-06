@@ -15,7 +15,6 @@ import {
 import { initSentry } from '../services/observability/sentryObservability';
 import { OBS_EVENTS } from '../services/observability/events';
 import { I18nProvider } from '../i18n/I18nProvider';
-import { runStorageMigrations } from '../services/storage/migrations';
 import { AppThemeProvider, useAppTheme } from '../theme/AppThemeProvider';
 import { CalmModeProvider } from './CalmModeProvider';
 import { syncDreamWidgetSnapshot } from '../features/widgets/services/dreamWidgetSyncService';
@@ -42,22 +41,13 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
   children,
 }) => {
   React.useEffect(() => {
-    // Registered before anything else runs, so a failure during startup is
-    // still reported. Returns null when no DSN is configured, which leaves the
-    // console provider in place.
+    // Storage recovery and migrations are completed by the startup gates before
+    // providers mount, so every provider observes one stable current schema.
     const sentry = initSentry();
     if (sentry) {
       setObservabilityProvider(sentry);
     }
 
-    try {
-      runStorageMigrations();
-    } catch (error) {
-      reportError(error, { event: 'storage_migration_failed' });
-    }
-
-    // Kept outside the try: it is async, so a rejection would never have
-    // reached that catch. Its own failure is reported separately.
     syncDreamWidgetSnapshot().catch(error => {
       reportError(error, { event: 'widget_snapshot_sync_failed' });
     });

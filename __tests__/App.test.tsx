@@ -13,6 +13,21 @@ jest.mock('../src/app/AppProvider', () => ({
 jest.mock('../src/features/security/components/AppLockGate', () => ({
   AppLockGate: ({ children }: { children: React.ReactNode }) => children,
 }));
+jest.mock('../src/features/settings/components/LocalDataRecoveryGate', () => ({
+  LocalDataRecoveryGate: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+jest.mock('../src/services/storage/StorageMigrationGate', () => ({
+  StorageMigrationGate: ({ children }: { children: React.ReactNode }) =>
+    children,
+}));
+jest.mock('../src/features/dreams/components/AudioCleanupMaintenance', () => ({
+  AudioCleanupMaintenance: () => null,
+}));
+jest.mock(
+  '../src/features/settings/components/ArchiveHealthMaintenance',
+  () => ({ ArchiveHealthMaintenance: () => null }),
+);
 
 test('renders correctly', async () => {
   await ReactTestRenderer.act(() => {

@@ -67,6 +67,9 @@ export const LOCAL_DATA_TRANSACTION_QUARANTINE_STORAGE_KEY =
 /** Aggregate recovery outcomes only; never contains snapshot values or paths. */
 export const LOCAL_DATA_RECOVERY_HISTORY_STORAGE_KEY =
   'local-data-recovery-history';
+/** Aggregate migration outcomes only; never contains archive or journal data. */
+export const STORAGE_MIGRATION_HISTORY_STORAGE_KEY =
+  'storage-migration-history';
 
 export const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
 export const DREAM_PRACTICE_REMINDER_SETTINGS_KEY =

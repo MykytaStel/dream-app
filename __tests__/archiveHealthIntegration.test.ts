@@ -101,7 +101,7 @@ describe('archive health and recovery integration', () => {
     expectBefore(
       transaction,
       'const checkpointFilePath = await createCheckpoint(',
-      'const value = await operation();',
+      'value = await operation();',
     );
     expect(repair).toContain("checkpointPolicy: 'required'");
     expect(repair).toContain("status: 'blocked'");

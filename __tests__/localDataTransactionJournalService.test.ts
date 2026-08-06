@@ -1,10 +1,7 @@
-jest.mock(
-  '../src/features/settings/services/localDataSnapshotService',
-  () => ({
-    parseLocalDataSnapshot: jest.fn((value: unknown) => value),
-    restoreLocalDataSnapshot: jest.fn().mockResolvedValue(undefined),
-  }),
-);
+jest.mock('../src/features/settings/services/localDataSnapshotService', () => ({
+  parseLocalDataSnapshot: jest.fn((value: unknown) => value),
+  restoreLocalDataSnapshot: jest.fn().mockResolvedValue(undefined),
+}));
 
 jest.mock('../src/services/observability', () => ({
   observability: { trackEvent: jest.fn() },
@@ -137,10 +134,7 @@ describe('local data transaction journal service', () => {
       kv.getString(LOCAL_DATA_TRANSACTION_JOURNAL_STORAGE_KEY) as string,
     );
     raw.label = 'changed-after-signing';
-    kv.set(
-      LOCAL_DATA_TRANSACTION_JOURNAL_STORAGE_KEY,
-      JSON.stringify(raw),
-    );
+    kv.set(LOCAL_DATA_TRANSACTION_JOURNAL_STORAGE_KEY, JSON.stringify(raw));
 
     await expect(recoverInterruptedLocalDataTransaction()).resolves.toEqual({
       status: 'blocked',

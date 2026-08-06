@@ -39,7 +39,7 @@ describe('verifiable backup integrity integration', () => {
     expectBefore(
       transaction,
       'const result = await exportDreamDataSnapshot();',
-      'const value = await operation();',
+      'value = await operation();',
     );
   });
 

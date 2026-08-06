@@ -95,14 +95,16 @@ function reportTransactionFailure(input: {
   rollbackError: unknown;
   checkpointFilePath: string | null;
 }) {
+  const rollbackCompleted = !input.rollbackError;
+  const checkpointCreated = Boolean(input.checkpointFilePath);
   reportActionError('local_data_transaction.operation', input.operationError, {
     transaction_label: input.label,
-    rollback_completed: !input.rollbackError,
+    rollback_completed: rollbackCompleted,
   });
   observability.trackEvent('local_data_transaction_failed', {
     transaction_label: input.label,
-    rollback_completed: !input.rollbackError,
-    checkpoint_created: Boolean(input.checkpointFilePath),
+    rollback_completed: rollbackCompleted,
+    checkpoint_created: checkpointCreated,
   });
 }
 
@@ -115,6 +117,7 @@ async function performTransaction<T>(
     checkpointPolicy,
     options.label,
   );
+  const checkpointCreated = Boolean(checkpointFilePath);
 
   // Capture as late as possible: checkpoint creation may await file IO, so the
   // exact rollback state must be the state immediately before the prepared
@@ -128,7 +131,7 @@ async function performTransaction<T>(
 
   observability.trackEvent('local_data_transaction_started', {
     transaction_label: options.label,
-    checkpoint_created: Boolean(checkpointFilePath),
+    checkpoint_created: checkpointCreated,
   });
 
   let value: T;
@@ -187,7 +190,7 @@ async function performTransaction<T>(
 
   observability.trackEvent('local_data_transaction_completed', {
     transaction_label: options.label,
-    checkpoint_created: Boolean(checkpointFilePath),
+    checkpoint_created: checkpointCreated,
   });
   return { value, checkpointFilePath };
 }

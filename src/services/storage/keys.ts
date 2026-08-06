@@ -51,6 +51,22 @@ export const ARCHIVE_HEALTH_HISTORY_STORAGE_KEY = 'archive-health-history';
 /** Last weekly read-only health scan; never contains archive content. */
 export const ARCHIVE_HEALTH_LAST_CHECK_STORAGE_KEY =
   'maintenance-archive-health-last-check';
+/**
+ * One signed write-ahead record for the archive-wide mutation currently in
+ * flight. It contains an exact local snapshot and therefore never leaves the
+ * device or observability boundary.
+ */
+export const LOCAL_DATA_TRANSACTION_JOURNAL_STORAGE_KEY =
+  'local-data-transaction-journal';
+/**
+ * A damaged or explicitly bypassed recovery record retained for manual
+ * inspection instead of being silently discarded.
+ */
+export const LOCAL_DATA_TRANSACTION_QUARANTINE_STORAGE_KEY =
+  'local-data-transaction-quarantine';
+/** Aggregate recovery outcomes only; never contains snapshot values or paths. */
+export const LOCAL_DATA_RECOVERY_HISTORY_STORAGE_KEY =
+  'local-data-recovery-history';
 
 export const REMINDER_SETTINGS_KEY = 'dream-reminder-settings';
 export const DREAM_PRACTICE_REMINDER_SETTINGS_KEY =

@@ -32,11 +32,19 @@ import {
   type DreamBackup,
   type DreamExportV1,
 } from './dataExportService';
+import {
+  DREAM_BACKUP_INTEGRITY_ALGORITHM,
+  computeDreamBackupDigest,
+  verifyDreamBackupIntegrity,
+  type DreamBackupIntegrityStatus,
+} from './dreamBackupIntegrityService';
 import { getDerivedReviewStateSnapshot } from '../../stats/services/reviewShelfStateService';
 import { saveSavedReviewStateSnapshot } from '../../stats/services/reviewStateStorageService';
 import { normalizePatternSignal } from '../../stats/model/patternMatches';
 
 type RecordShape = Record<string, unknown>;
+
+const SUPPORTED_DREAM_EXPORT_VERSIONS = new Set([7, 8, DREAM_EXPORT_VERSION]);
 
 export type LocalDreamExportFile = {
   fileName: string;
@@ -58,6 +66,11 @@ export type DreamImportDiff = {
   resultingDreamCount: number;
 };
 
+export type DreamImportPayload = DreamExportV1 & {
+  integrityStatus: DreamBackupIntegrityStatus;
+  sourceDigest: string;
+};
+
 export type DreamImportPreview = {
   fileName: string;
   filePath: string;
@@ -69,6 +82,9 @@ export type DreamImportPreview = {
   mode: DreamImportMode;
   settingsAction: 'replace' | 'keep-current';
   draftAction: 'replace' | 'keep-current' | 'import-if-empty';
+  integrityStatus?: DreamBackupIntegrityStatus;
+  integrityAlgorithm?: typeof DREAM_BACKUP_INTEGRITY_ALGORITHM | null;
+  sourceDigest?: string;
   summary: DreamExportV1['summary'];
   diff: DreamImportDiff;
 };
@@ -110,17 +126,23 @@ function buildSummaryFromDreams(input: {
   };
 }
 
-function parseDreamExport(value: unknown): DreamExportV1 {
+function parseDreamExport(value: unknown): DreamImportPayload {
   if (!isRecordShape(value)) {
     throw new Error('Backup file is not a valid JSON object.');
   }
 
   if (
-    value.version !== DREAM_EXPORT_VERSION &&
-    value.version !== DREAM_EXPORT_VERSION - 1
+    typeof value.version !== 'number' ||
+    !Number.isInteger(value.version) ||
+    !SUPPORTED_DREAM_EXPORT_VERSIONS.has(value.version)
   ) {
     throw new Error(`Unsupported backup version: ${String(value.version)}.`);
   }
+
+  const integrityStatus = verifyDreamBackupIntegrity(value, {
+    required: value.version >= DREAM_EXPORT_VERSION,
+  });
+  const sourceDigest = computeDreamBackupDigest(value);
 
   if (!isAppLocale(value.locale)) {
     throw new Error('Backup locale is not supported.');
@@ -220,7 +242,7 @@ function parseDreamExport(value: unknown): DreamExportV1 {
         };
 
   return {
-    version: DREAM_EXPORT_VERSION,
+    version: value.version,
     exportedAt:
       typeof value.exportedAt === 'string' && value.exportedAt.trim()
         ? value.exportedAt
@@ -273,6 +295,12 @@ function parseDreamExport(value: unknown): DreamExportV1 {
     analysisSettings:
       value.analysisSettings as DreamExportV1['analysisSettings'],
     reviewState,
+    integrity:
+      integrityStatus === 'verified'
+        ? (value.integrity as DreamExportV1['integrity'])
+        : undefined,
+    integrityStatus,
+    sourceDigest,
   };
 }
 
@@ -370,7 +398,7 @@ function buildImportDiff(
 }
 
 function createPreviewFromPayload(
-  payload: DreamExportV1,
+  payload: DreamImportPayload,
   input: {
     fileName: string;
     filePath: string;
@@ -389,9 +417,28 @@ function createPreviewFromPayload(
     mode: input.mode,
     settingsAction: input.mode === 'replace' ? 'replace' : 'keep-current',
     draftAction: input.mode === 'replace' ? 'replace' : 'import-if-empty',
+    integrityStatus: payload.integrityStatus,
+    integrityAlgorithm:
+      payload.integrityStatus === 'verified'
+        ? DREAM_BACKUP_INTEGRITY_ALGORITHM
+        : null,
+    sourceDigest: payload.sourceDigest,
     summary: payload.summary,
     diff: buildImportDiff(payload, input.mode, input.currentDreams),
   };
+}
+
+export function createDreamImportPreviewFromPayload(
+  payload: DreamImportPayload,
+  filePath: string,
+  mode: DreamImportMode,
+) {
+  return createPreviewFromPayload(payload, {
+    fileName: filePath.split('/').filter(Boolean).pop() ?? filePath,
+    filePath,
+    mode,
+    currentDreams: listDreams(),
+  });
 }
 
 export async function listLocalDreamExportFiles(): Promise<
@@ -460,14 +507,11 @@ export async function loadDreamImportPreview(
   filePath: string,
   mode: DreamImportMode,
 ) {
-  const payload = await readDreamImportPayload(filePath);
-  const fileName = filePath.split('/').filter(Boolean).pop() ?? filePath;
-  return createPreviewFromPayload(payload, {
-    fileName,
+  return createDreamImportPreviewFromPayload(
+    await readDreamImportPayload(filePath),
     filePath,
     mode,
-    currentDreams: listDreams(),
-  });
+  );
 }
 
 /**
@@ -476,7 +520,7 @@ export async function loadDreamImportPreview(
  * then pass that exact immutable snapshot here without a second file read.
  */
 export async function restoreDreamImportPayload(
-  payload: DreamExportV1,
+  payload: DreamImportPayload,
   filePath: string,
   mode: DreamImportMode,
 ) {

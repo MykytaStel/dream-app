@@ -25,6 +25,10 @@ import {
 import { getDerivedReviewStateSnapshot } from '../../stats/services/reviewShelfStateService';
 import { buildDreamArchivePdfHtml } from './dreamArchivePdf';
 import {
+  attachDreamBackupIntegrity,
+  type DreamBackupIntegrityManifest,
+} from './dreamBackupIntegrityService';
+import {
   buildDreamReadableExportDocument,
   type DreamReadableExportFormat,
 } from './dreamArchiveReadable';
@@ -33,7 +37,7 @@ export {
   type DreamReadableExportFormat,
 } from './dreamArchiveReadable';
 
-export const DREAM_EXPORT_VERSION = 8;
+export const DREAM_EXPORT_VERSION = 9;
 const DREAM_EXPORT_DIRECTORY = 'exports';
 const PDF_OUTPUT_DIRECTORY = 'Documents';
 
@@ -43,7 +47,7 @@ export type DreamBackup = Omit<
 >;
 
 export type DreamExportV1 = {
-  version: typeof DREAM_EXPORT_VERSION;
+  version: number;
   exportedAt: string;
   appVersion: string;
   platform: typeof Platform.OS;
@@ -76,6 +80,7 @@ export type DreamExportV1 = {
       savedAt: number;
     }>;
   };
+  integrity?: DreamBackupIntegrityManifest;
 };
 
 function buildCurrentDreamExportSnapshot() {
@@ -191,7 +196,7 @@ function getExportDirectoryPath() {
 export { getExportDirectoryPath };
 
 export async function exportDreamDataSnapshot() {
-  const payload = buildCurrentDreamExportSnapshot();
+  const payload = attachDreamBackupIntegrity(buildCurrentDreamExportSnapshot());
   const directoryPath = getExportDirectoryPath();
   const fileName = createDreamExportFileName(payload.exportedAt);
   const filePath = `${directoryPath}/${fileName}`;

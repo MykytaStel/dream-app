@@ -64,19 +64,22 @@ describe('archive health and recovery integration', () => {
     expect(controller).toContain('restoreDreamImportTransactionally(');
     expect(controller).toContain('buildValidatedRestorePreviewItems(');
     expect(controller).not.toContain('restoreDreamImportFromFile(');
-    expect(facade).toContain('prepareDreamImport(parsed.dreams)');
+    expect(facade).toContain('prepareDreamImport(preflightPayload.dreams)');
     expectBefore(
       facade,
-      'await readImportHealth(filePath);',
+      'const preflightPayload = await readDreamImportPayload(filePath);',
       'runLocalDataTransaction(',
     );
     const transactionStart = facade.indexOf('runLocalDataTransaction(');
     expect(
-      facade.indexOf('const payload = await readDreamImportPayload(filePath);'),
+      facade.indexOf(
+        'const payload = await readDreamImportPayload(filePath);',
+        transactionStart,
+      ),
     ).toBeGreaterThan(transactionStart);
-    expect(facade.indexOf('restoreDreamImportPayload(')).toBeGreaterThan(
-      transactionStart,
-    );
+    expect(
+      facade.indexOf('restoreDreamImportPayload(', transactionStart),
+    ).toBeGreaterThan(transactionStart);
     expect(importService).toContain(
       'export async function restoreDreamImportPayload(',
     );

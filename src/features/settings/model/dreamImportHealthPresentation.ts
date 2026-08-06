@@ -9,6 +9,9 @@ type SettingsCopy = ReturnType<typeof getSettingsCopy>;
 function labels(locale: AppLocale) {
   return locale === 'uk'
     ? {
+        integrity: 'Цілісність backup',
+        integrityVerified: 'Перевірено SHA-256',
+        integrityLegacy: 'Legacy backup без вбудованої перевірки',
         total: 'Попередження preflight',
         normalized: 'Нормалізовані записи',
         invalidDates: 'Виправлення дат',
@@ -16,6 +19,9 @@ function labels(locale: AppLocale) {
         deviceAudio: 'Локальні аудіопосилання',
       }
     : {
+        integrity: 'Backup integrity',
+        integrityVerified: 'SHA-256 verified',
+        integrityLegacy: 'Legacy backup without embedded verification',
         total: 'Preflight warnings',
         normalized: 'Normalized records',
         invalidDates: 'Date repairs',
@@ -24,7 +30,7 @@ function labels(locale: AppLocale) {
       };
 }
 
-/** Adds aggregate, content-free preflight results to the existing restore grid. */
+/** Adds aggregate, content-free integrity and preflight results to restore. */
 export function buildValidatedRestorePreviewItems(
   copy: SettingsCopy,
   preview: ValidatedDreamImportPreview,
@@ -33,6 +39,14 @@ export function buildValidatedRestorePreviewItems(
   const base = buildRestorePreviewItems(copy, preview, locale);
   const label = labels(locale);
   const healthItems: SettingsMetaItem[] = [
+    {
+      label: label.integrity,
+      value:
+        preview.integrityStatus === 'verified'
+          ? label.integrityVerified
+          : label.integrityLegacy,
+      wide: true,
+    },
     {
       label: label.total,
       value: String(preview.health.warningCount),

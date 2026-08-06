@@ -1,13 +1,12 @@
-import RNFS from 'react-native-fs';
 import { observability } from '../../../services/observability';
-import { reportActionError } from '../../../services/observability/errorReporting';
 import {
-  loadDreamImportPreview,
+  createDreamImportPreviewFromPayload,
   readDreamImportPayload,
   restoreDreamImportPayload,
   type DreamImportMode,
   type DreamImportPreview,
 } from './dataImportService';
+import { DreamBackupIntegrityError } from './dreamBackupIntegrityService';
 import {
   DreamImportPreflightError,
   prepareDreamImport,
@@ -18,79 +17,73 @@ import {
   runLocalDataTransaction,
 } from './localDataTransactionService';
 
-type RecordShape = Record<string, unknown>;
-
 export type ValidatedDreamImportPreview = DreamImportPreview & {
   health: DreamImportHealth;
   recoveryCheckpointFilePath?: string | null;
 };
 
-function isRecord(value: unknown): value is RecordShape {
-  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+const previewSourceDigests = new Map<string, string>();
+
+function previewKey(filePath: string, mode: DreamImportMode) {
+  return `${mode}:${filePath}`;
 }
 
-async function readImportHealth(filePath: string): Promise<DreamImportHealth> {
-  let raw: string;
-  try {
-    raw = await RNFS.readFile(filePath, 'utf8');
-  } catch (error) {
-    reportActionError('dream_import_preflight.read', error);
-    throw new Error('Backup file could not be read.');
+function assertSourceDigest(actual: string, expected: string) {
+  if (actual !== expected) {
+    throw new DreamBackupIntegrityError('integrity-preview-changed');
   }
+}
 
-  let parsed: unknown;
-  try {
-    parsed = JSON.parse(raw) as unknown;
-  } catch {
-    throw new Error('Backup file could not be parsed.');
-  }
-
-  if (!isRecord(parsed) || !Array.isArray(parsed.dreams)) {
-    throw new Error('Backup is missing a valid dreams array.');
-  }
-
-  return prepareDreamImport(parsed.dreams).health;
+export function __unsafeResetDreamImportPreviewGuardsForTests() {
+  previewSourceDigests.clear();
 }
 
 /**
- * Preview and restore share the exact same record-level preflight. This makes
- * duplicate identities and unsaveable records visible before confirmation,
- * while the restore path still re-runs the check immediately before mutation.
+ * Preview parses and verifies one exact payload, then stores only its digest as
+ * an in-process confirmation guard. No dream content or file bytes are retained.
  */
 export async function loadValidatedDreamImportPreview(
   filePath: string,
   mode: DreamImportMode,
 ): Promise<ValidatedDreamImportPreview> {
-  const [preview, health] = await Promise.all([
-    loadDreamImportPreview(filePath, mode),
-    readImportHealth(filePath),
-  ]);
+  const key = previewKey(filePath, mode);
+  previewSourceDigests.delete(key);
+
+  const payload = await readDreamImportPayload(filePath);
+  const prepared = prepareDreamImport(payload.dreams);
+  const preview = createDreamImportPreviewFromPayload(payload, filePath, mode);
+
+  previewSourceDigests.set(key, payload.sourceDigest);
 
   observability.trackEvent('dream_import_preflight_completed', {
-    warning_count: health.warningCount,
-    normalized_dream_count: health.normalizedDreamCount,
-    invalid_sleep_date_count: health.invalidSleepDateCount,
-    stale_transcript_count: health.staleTranscriptCount,
-    device_bound_audio_reference_count: health.deviceBoundAudioReferenceCount,
+    integrity_status: preview.integrityStatus,
+    warning_count: prepared.health.warningCount,
+    normalized_dream_count: prepared.health.normalizedDreamCount,
+    invalid_sleep_date_count: prepared.health.invalidSleepDateCount,
+    stale_transcript_count: prepared.health.staleTranscriptCount,
+    device_bound_audio_reference_count:
+      prepared.health.deviceBoundAudioReferenceCount,
   });
 
-  return { ...preview, health };
+  return { ...preview, health: prepared.health };
 }
 
 /**
- * Restore is one serialized archive mutation with an in-memory rollback
- * snapshot. The checkpoint is best-effort because a restore must remain capable
- * of replacing an unreadable current archive; rollback still preserves its raw
- * bytes if any later settings or reminder write fails.
+ * Restore verifies the file once before entering the mutation queue and again
+ * inside the transaction. The second read must match the previewed fingerprint,
+ * or the first verified read when restore is invoked without a prior preview.
  */
 export async function restoreDreamImportTransactionally(
   filePath: string,
   mode: DreamImportMode,
 ): Promise<ValidatedDreamImportPreview> {
-  // Fast preflight before waiting for the archive mutation queue. The file is
-  // parsed once more inside the transaction, normalized, and that exact in-memory
-  // payload is passed to the mutation boundary without another file read.
-  await readImportHealth(filePath);
+  const key = previewKey(filePath, mode);
+  const preflightPayload = await readDreamImportPayload(filePath);
+  const expectedSourceDigest =
+    previewSourceDigests.get(key) ?? preflightPayload.sourceDigest;
+
+  assertSourceDigest(preflightPayload.sourceDigest, expectedSourceDigest);
+  prepareDreamImport(preflightPayload.dreams);
 
   const transaction = await runLocalDataTransaction(
     {
@@ -99,6 +92,8 @@ export async function restoreDreamImportTransactionally(
     },
     async () => {
       const payload = await readDreamImportPayload(filePath);
+      assertSourceDigest(payload.sourceDigest, expectedSourceDigest);
+
       const prepared = prepareDreamImport(payload.dreams);
       const preview = await restoreDreamImportPayload(
         { ...payload, dreams: prepared.dreams },
@@ -108,18 +103,23 @@ export async function restoreDreamImportTransactionally(
       return { preview, health: prepared.health };
     },
   ).catch(error => {
-    if (
-      error instanceof LocalDataTransactionError &&
-      error.operationError instanceof DreamImportPreflightError
-    ) {
-      throw error.operationError;
+    if (error instanceof LocalDataTransactionError) {
+      if (
+        error.operationError instanceof DreamImportPreflightError ||
+        error.operationError instanceof DreamBackupIntegrityError
+      ) {
+        throw error.operationError;
+      }
     }
     throw error;
   });
 
+  previewSourceDigests.delete(key);
+
   const { preview, health } = transaction.value;
   observability.trackEvent('dream_import_transaction_completed', {
     mode,
+    integrity_status: preview.integrityStatus ?? 'legacy-unverified',
     warning_count: health.warningCount,
     checkpoint_created: Boolean(transaction.checkpointFilePath),
     resulting_dream_count: preview.diff.resultingDreamCount,

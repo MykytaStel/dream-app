@@ -55,7 +55,7 @@ describe('data import service', () => {
 
     (RNFS.readFile as jest.Mock).mockResolvedValue(
       JSON.stringify({
-        version: DREAM_EXPORT_VERSION,
+        version: DREAM_EXPORT_VERSION - 1,
         exportedAt: '2026-04-10T08:00:00.000Z',
         appVersion: '0.6.0',
         platform: 'ios',
@@ -128,7 +128,7 @@ describe('data import service', () => {
 
     (RNFS.readFile as jest.Mock).mockResolvedValue(
       JSON.stringify({
-        version: DREAM_EXPORT_VERSION,
+        version: DREAM_EXPORT_VERSION - 1,
         exportedAt: '2026-04-10T08:00:00.000Z',
         appVersion: '0.6.0',
         platform: 'ios',
@@ -199,7 +199,7 @@ describe('data import service', () => {
 
     (RNFS.readFile as jest.Mock).mockResolvedValue(
       JSON.stringify({
-        version: DREAM_EXPORT_VERSION,
+        version: DREAM_EXPORT_VERSION - 1,
         exportedAt: '2026-04-10T08:00:00.000Z',
         appVersion: '0.6.1',
         platform: 'ios',

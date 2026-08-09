@@ -6,7 +6,6 @@ import { type getStatsCopy } from '../../../constants/copy/stats';
 import { type Dream, type Mood } from '../../dreams/model/dream';
 import { type DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import {
-  getEntriesLastSevenDays,
   getDreamDate,
   getDreamLucidityLevel,
   getLucidDreamStats,
@@ -23,14 +22,9 @@ import {
   getTranscriptArchiveStats,
 } from '../model/dreamReflection';
 import {
-  getDreamAchievementSummary,
-  getDreamAchievements,
-} from '../model/achievements';
-import {
   buildRecentActivityBars,
   formatDreamCountLabel,
   formatEntryCountLabel,
-  getAchievementContent,
   getMemoryNudge,
   getMemoryWorkQueue,
   getPreviousRangeDreams,
@@ -143,10 +137,6 @@ export function useStatsOverviewContent(args: {
     () => getLucidPracticeStats(measuredDreams),
     [measuredDreams],
   );
-  const overallLastSevenDays = React.useMemo(
-    () => (isOverviewMode ? getEntriesLastSevenDays(dreams) : 0),
-    [dreams, isOverviewMode],
-  );
   const weeklyPatternCards = React.useMemo<WeeklyPatternCard[]>(
     () =>
       isOverviewMode
@@ -212,17 +202,6 @@ export function useStatsOverviewContent(args: {
     () => (isOverviewMode ? getRecurringWordSignals(scopedDreams, 6) : []),
     [isOverviewMode, scopedDreams],
   );
-  const achievements = React.useMemo(
-    () => (isOverviewMode ? getDreamAchievements(dreams) : []),
-    [dreams, isOverviewMode],
-  );
-  const achievementSummary = React.useMemo(
-    () => getDreamAchievementSummary(achievements),
-    [achievements],
-  );
-
-  const weeklyGoalTarget = 3;
-  const weeklyGoalComplete = overallLastSevenDays >= weeklyGoalTarget;
   const topTheme = recurringThemes[0];
   const topSymbol = recurringSymbols[0];
   const topWord = recurringWords[0];
@@ -593,17 +572,7 @@ export function useStatsOverviewContent(args: {
     wakeEmotionLabels,
     isOverviewMode,
   });
-  const highlightedAchievementTitle = achievementSummary.highlightedId
-    ? getAchievementContent(achievementSummary.highlightedId, copy).title
-    : null;
-  const milestoneSummaryHint =
-    achievementSummary.unlockedCount === achievementSummary.totalCount
-      ? copy.milestonesCompleteTitle
-      : (highlightedAchievementTitle ?? copy.milestoneInProgress);
-
   return {
-    achievementSummary,
-    achievements,
     activityBars,
     attentionItems,
     compareMetrics,
@@ -617,18 +586,14 @@ export function useStatsOverviewContent(args: {
     lucidHistoryItems,
     lucidMetrics,
     memoryNudge,
-    milestoneSummaryHint,
     nightmareMetrics,
     nightmareCount: scopedNightmareStats.nightmareCount,
-    overallLastSevenDays,
     savedMonthItems,
     savedOverviewThreadItems,
     savedSetItems,
     summaryTiles,
     topSignal,
     weeklyPatternCards,
-    weeklyGoalComplete,
-    weeklyGoalTarget,
     workQueueItems,
   };
 }

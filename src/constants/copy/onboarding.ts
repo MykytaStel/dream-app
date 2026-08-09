@@ -1,49 +1,25 @@
 import { AppLocale } from '../../i18n/types';
 
 const ONBOARDING_COPY_EN = {
-  slide1Eyebrow: 'Capture',
-  slide1Title: 'Write before it fades',
-  slide1Description:
-    'Dreams disappear in minutes. Open Kaleidoscope right after waking — before the details slip away.',
-  slide2Eyebrow: 'Reflect',
-  slide2Title: 'Find patterns and dream signs',
-  slide2Description:
-    'Track moods, recurring themes, lucid moments, and the signals that come back night after night.',
-  slide3Eyebrow: 'Support',
-  slide3Title: 'Lucid and nightmare tools',
-  slide3Description:
-    'Train lucidity gently, use wake capture fast, and track nightmares without turning the app into a medical product.',
-  slide4Eyebrow: 'Private',
-  slide4Title: 'Yours alone',
-  slide4Description:
-    'Everything stays on your device. No account required. Your dream journal is private by design.',
-  continueAction: 'Continue',
-  getStartedAction: 'Get started',
-  skipAction: 'Skip',
+  promiseEyebrow: 'Kaleidoscope',
+  promiseTitle: 'Write before it fades',
+  promiseDescription:
+    'Dreams disappear in minutes. See what keeps coming back — privately, without your journal leaving the device.',
+  voiceAction: 'Record a voice memo',
+  textAction: 'Write it down',
+  noMemoryAction: "I don't remember, but I want to start",
 };
 
 type OnboardingCopy = typeof ONBOARDING_COPY_EN;
 
 const ONBOARDING_COPY_UK: OnboardingCopy = {
-  slide1Eyebrow: 'Захоплення',
-  slide1Title: 'Запиши, поки не забув',
-  slide1Description:
-    'Сни зникають за лічені хвилини. Відкрий Kaleidoscope одразу після пробудження — поки деталі ще свіжі.',
-  slide2Eyebrow: 'Рефлексія',
-  slide2Title: 'Знайди патерни і ознаки сну',
-  slide2Description:
-    'Відстежуй настрої, повторювані теми, усвідомлені моменти і сигнали, що повертаються ніч за ніччю.',
-  slide3Eyebrow: 'Підтримка',
-  slide3Title: 'Інструменти для усвідомлених снів і кошмарів',
-  slide3Description:
-    'Тренуй усвідомленість м’яко, швидко записуй після пробудження і відстежуй кошмари без медичних обіцянок.',
-  slide4Eyebrow: 'Приватність',
-  slide4Title: 'Тільки твоє',
-  slide4Description:
-    'Все зберігається на твоєму пристрої. Акаунт не потрібен. Твій щоденник снів — повністю приватний.',
-  continueAction: 'Далі',
-  getStartedAction: 'Почати',
-  skipAction: 'Пропустити',
+  promiseEyebrow: 'Калейдоскоп',
+  promiseTitle: 'Запиши, поки не забув',
+  promiseDescription:
+    'Сни зникають за лічені хвилини. Побач, що повертається у твоїх снах — приватно, без хмари.',
+  voiceAction: 'Записати голосом',
+  textAction: 'Написати текстом',
+  noMemoryAction: 'Не пам’ятаю сон, але хочу почати',
 };
 
 export function getOnboardingCopy(locale: AppLocale): OnboardingCopy {

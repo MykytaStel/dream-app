@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -15,16 +15,11 @@ import { getOnboardingCopy } from '../../../constants/copy/onboarding';
 import { markOnboardingSeen } from '../services/onboardingService';
 import {
   ROOT_ROUTE_NAMES,
+  TAB_ROUTE_NAMES,
   type RootStackParamList,
 } from '../../../app/navigation/routes';
 
-type Slide = {
-  id: string;
-  icon: string;
-  eyebrow: string;
-  title: string;
-  description: string;
-};
+type CaptureEntryMode = 'default' | 'voice';
 
 export default function OnboardingScreen() {
   const theme = useTheme<Theme>();
@@ -38,120 +33,59 @@ export default function OnboardingScreen() {
     [theme, insets.top, insets.bottom],
   );
 
-  const slides = React.useMemo<Slide[]>(
-    () => [
-      {
-        id: 'capture',
-        icon: 'moon-outline',
-        eyebrow: copy.slide1Eyebrow,
-        title: copy.slide1Title,
-        description: copy.slide1Description,
-      },
-      {
-        id: 'explore',
-        icon: 'sparkles-outline',
-        eyebrow: copy.slide2Eyebrow,
-        title: copy.slide2Title,
-        description: copy.slide2Description,
-      },
-      {
-        id: 'support',
-        icon: 'lock-closed-outline',
-        eyebrow: copy.slide3Eyebrow,
-        title: copy.slide3Title,
-        description: copy.slide3Description,
-      },
-      {
-        id: 'private',
-        icon: 'shield-checkmark-outline',
-        eyebrow: copy.slide4Eyebrow,
-        title: copy.slide4Title,
-        description: copy.slide4Description,
-      },
-    ],
-    [copy],
+  const finish = React.useCallback(
+    (entryMode: CaptureEntryMode) => {
+      markOnboardingSeen();
+      navigation.replace(ROOT_ROUTE_NAMES.Tabs, {
+        screen: TAB_ROUTE_NAMES.New,
+        params: {
+          entryMode,
+          autoStartRecording: entryMode === 'voice',
+        },
+      });
+    },
+    [navigation],
   );
-
-  const [index, setIndex] = React.useState(0);
-  const slide = slides[index];
-  const isLast = index === slides.length - 1;
-
-  const finish = React.useCallback(() => {
-    markOnboardingSeen();
-    navigation.replace(ROOT_ROUTE_NAMES.Tabs);
-  }, [navigation]);
-
-  const handleNext = React.useCallback(() => {
-    if (isLast) {
-      finish();
-    } else {
-      setIndex(i => i + 1);
-    }
-  }, [finish, isLast]);
 
   return (
     <View style={styles.root}>
-      {/* Skip */}
-      <View style={styles.topBar}>
-        {!isLast ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={finish}
-            style={({ pressed }) => [
-              styles.skipButton,
-              pressed ? styles.skipButtonPressed : null,
-            ]}
-          >
-            <Text style={styles.skipLabel}>{copy.skipAction}</Text>
-          </Pressable>
-        ) : (
-          <View />
-        )}
-      </View>
-
-      {/* Slide content — key forces remount + FadeIn on index change */}
-      <Animated.View
-        key={slide.id}
-        entering={FadeIn.duration(260)}
-        style={styles.content}
-      >
+      <Animated.View entering={FadeIn.duration(260)} style={styles.content}>
         <View style={styles.iconArea}>
           <View style={styles.glowOuter} />
           <View style={styles.glowInner} />
           <View style={styles.iconWrap}>
             <Ionicons
-              name={slide.icon}
+              name="moon-outline"
               size={32}
               color={theme.colors.primary}
             />
           </View>
         </View>
 
-        <Text style={styles.eyebrow}>{slide.eyebrow}</Text>
-        <Text style={styles.title}>{slide.title}</Text>
-        <Text style={styles.description}>{slide.description}</Text>
+        <Text style={styles.eyebrow}>{copy.promiseEyebrow}</Text>
+        <Text style={styles.title}>{copy.promiseTitle}</Text>
+        <Text style={styles.description}>{copy.promiseDescription}</Text>
       </Animated.View>
 
-      {/* Bottom */}
       <View style={styles.bottom}>
-        <View style={styles.dots}>
-          {slides.map((s, i) => (
-            <View
-              key={s.id}
-              style={[
-                styles.dot,
-                i === index ? styles.dotActive : styles.dotInactive,
-              ]}
-            />
-          ))}
-        </View>
-
         <Button
-          title={isLast ? copy.getStartedAction : copy.continueAction}
-          onPress={handleNext}
+          title={copy.voiceAction}
+          onPress={() => finish('voice')}
           size="lg"
-          icon={isLast ? 'arrow-forward-outline' : undefined}
-          iconPosition="right"
+          icon="mic-outline"
+        />
+        <Button
+          title={copy.textAction}
+          onPress={() => finish('default')}
+          variant="ghost"
+          size="lg"
+          icon="create-outline"
+        />
+        <Button
+          title={copy.noMemoryAction}
+          onPress={() => finish('default')}
+          variant="ghost"
+          size="sm"
         />
       </View>
     </View>
@@ -164,25 +98,7 @@ function createStyles(theme: Theme, topInset: number, bottomInset: number) {
       flex: 1,
       backgroundColor: theme.colors.background,
       paddingHorizontal: theme.spacing.xl,
-    },
-    topBar: {
-      paddingTop: topInset + theme.spacing.sm,
-      alignItems: 'flex-end',
-      height: topInset + 52,
-      justifyContent: 'flex-end',
-    },
-    skipButton: {
-      paddingVertical: 6,
-      paddingHorizontal: 12,
-    },
-    skipButtonPressed: {
-      opacity: 0.5,
-    },
-    skipLabel: {
-      color: theme.colors.textDim,
-      fontSize: 14,
-      fontFamily: fontFamilies.sans,
-      fontWeight: '500',
+      paddingTop: topInset + theme.spacing.lg,
     },
     content: {
       flex: 1,
@@ -250,24 +166,7 @@ function createStyles(theme: Theme, topInset: number, bottomInset: number) {
     },
     bottom: {
       paddingBottom: bottomInset + theme.spacing.xl,
-      gap: theme.spacing.lg,
-    },
-    dots: {
-      flexDirection: 'row',
-      gap: 7,
-      alignSelf: 'center',
-    },
-    dot: {
-      height: 6,
-      borderRadius: 999,
-    },
-    dotActive: {
-      width: 22,
-      backgroundColor: theme.colors.primary,
-    },
-    dotInactive: {
-      width: 6,
-      backgroundColor: theme.colors.border,
+      gap: theme.spacing.sm,
     },
   });
 }

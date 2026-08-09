@@ -102,24 +102,42 @@ In `src/theme/tokens.ts`'s `ThemePalette` type and each of the four palettes
 
 ## Migration (file-by-file, all verified to exist at the line given)
 
-**`onPrimary`** — replace `theme.colors.background` used as a `color:` (foreground)
-value with `theme.colors.onPrimary`; replace `theme.colors.ink` used as a `color:`
-value (the actual bug) with `theme.colors.onPrimary`:
+**Correction, made while mapping files for the implementation plan:** the original
+grep for this section (`color:\s*theme\.colors\.background\b`) only matched the
+object-literal `color:` property shape, missing every site that assigns
+`theme.colors.background` inside a ternary, a template literal, or a JSX `color={}`
+prop — including `src/components/ui/Button.styles.ts`, the shared component behind
+every primary/danger button in the app. Re-grepped for `theme.colors.background` in
+any position, manually excluding legitimate `backgroundColor:` uses. The token design
+above is unchanged; only this inventory grew, from 14 files to 19.
 
-- `src/features/settings/screens/SettingsScreen.styles.ts`
-- `src/features/dreams/screens/HomeScreen.styles.ts`
-- `src/features/dreams/screens/WakeEntryScreen.styles.ts`
-- `src/features/dreams/screens/ArchiveScreen.styles.ts`
-- `src/features/dreams/screens/NewDreamScreen.styles.ts`
-- `src/features/dreams/components/archive/ArchiveFilterSheet.tsx`
-- `src/features/stats/screens/MonthlyReportScreen.styles.ts`
-- `src/features/stats/screens/ProgressScreen.styles.ts`
-- `src/features/stats/screens/StatsScreen.styles.ts`
-- `src/features/stats/components/MemoryPatternCard.tsx`
-- `src/features/widgets/components/WidgetPinToast.tsx`
-- `src/components/ui/SegmentedControl.tsx`
-- `src/features/settings/components/LocalDataRecoveryGate.tsx:233` (bug fix)
-- `src/services/storage/StorageMigrationGate.tsx:248` (bug fix)
+**`onPrimary`** — replace `theme.colors.background` used as a foreground (not
+`backgroundColor:`) with `theme.colors.onPrimary`; replace `theme.colors.ink` used as
+a foreground (the actual bug) with `theme.colors.onPrimary`:
+
+- `src/features/settings/screens/SettingsScreen.styles.ts:50,147`
+- `src/features/dreams/screens/HomeScreen.styles.ts:149,723,810`
+- `src/features/dreams/screens/WakeEntryScreen.styles.ts:144,153,169`
+- `src/features/dreams/screens/ArchiveScreen.styles.ts:138,192,396,907,916`
+- `src/features/dreams/screens/NewDreamScreen.styles.ts:110,140,200,227,276,307`
+- `src/features/dreams/components/archive/ArchiveFilterSheet.tsx:333,379`
+- `src/features/stats/screens/MonthlyReportScreen.styles.ts:138`
+- `src/features/stats/screens/ProgressScreen.styles.ts:150`
+- `src/features/stats/screens/StatsScreen.styles.ts:105,1080`
+- `src/features/stats/components/MemoryPatternCard.tsx:53,454,543`
+- `src/features/widgets/components/WidgetPinToast.tsx:109`
+- `src/components/ui/SegmentedControl.tsx:99`
+- `src/components/ui/Button.styles.ts:65` — shared `Button` component label colour
+- `src/components/ui/TagChip.styles.ts:23` — selected-chip label colour
+- `src/features/dreams/components/DreamDetailActionTile.tsx:33,71,76`
+- `src/features/settings/components/BackupOnboardingModal.tsx:69`
+- `src/features/dreams/components/detail/DreamCaptureSection.tsx:87`
+- `src/features/settings/components/LocalDataRecoveryGate.tsx:233` (bug fix: `ink`, not `background`)
+- `src/services/storage/StorageMigrationGate.tsx:248` (bug fix: `ink`, not `background`)
+
+`src/theme/surfaces.ts:25` (`resolveSurfaceColor`'s `case 'background':` branch) also
+matches the raw grep but is excluded: it returns `background` as an actual background
+colour for the `'background'` surface tone, the legitimate use, not a foreground.
 
 **`ink` → `scrim`** — every remaining `theme.colors.ink` reference becomes
 `theme.colors.scrim`, value unchanged:
@@ -134,14 +152,20 @@ value (the actual bug) with `theme.colors.onPrimary`:
 
 **`destructiveSurface` / `destructiveBorder`**:
 
-- `src/features/dreams/components/home/HomeDreamRow.tsx:183-184`
-- `src/features/dreams/components/archive/ArchiveDreamRow.tsx:66-67`
-- `src/features/dreams/components/DreamDetailActionTile.tsx:61` only (line 66's
-  `` `${danger}20` `` is a distinct pressed-state shade, not this convention —
-  left untouched)
-- `src/features/settings/components/LocalDataRecoveryGate.tsx` (`warningIcon` block,
-  currently `` `${danger}26` ``/`` `${danger}88` ``)
-- `src/services/storage/StorageMigrationGate.tsx` (`warningIcon` block, same)
+- `src/features/dreams/components/home/HomeDreamRow.tsx:183` (surface),
+  `:184` (border)
+- `src/features/dreams/components/archive/ArchiveDreamRow.tsx:66` (surface),
+  `:67` (border)
+- `src/features/dreams/components/DreamDetailActionTile.tsx:61` (surface) only —
+  line 66's `` `${danger}20` `` is a distinct pressed-state shade, not this
+  convention, left untouched
+- `src/features/dreams/screens/DreamDetailScreen.styles.ts:51` (border only,
+  found in the same re-grep pass — `heroIconButtonDanger.borderColor`)
+- `src/features/settings/components/LocalDataRecoveryGate.tsx:189` (surface),
+  `:191` (border) — currently `` `${danger}26` ``/`` `${danger}88` ``, canonicalising
+  to the token changes the rendered alpha, not just the name
+- `src/services/storage/StorageMigrationGate.tsx:207` (surface), `:209` (border) —
+  same canonicalisation
 - `src/features/settings/components/ArchiveKeyStrandedModal.tsx` does not have a
   danger-tinted surface — not in scope.
 

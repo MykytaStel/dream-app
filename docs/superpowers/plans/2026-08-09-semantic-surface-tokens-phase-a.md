@@ -3,9 +3,13 @@
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add three real semantic colour tokens (`onPrimary`, `scrim` replacing `ink`,
-`destructiveSurface`/`destructiveBorder`), migrate every existing call site currently
-faking one of those roles, and add a check that catches the most common recurrence of
-this mistake going forward.
+`destructiveSurface`/`destructiveBorder`) and migrate every existing call site
+currently faking one of those roles.
+
+**Task 5 outcome (post-execution note):** the planned automated prevention check was
+built, reviewed, and reverted (commit `3d7dfe7`) — see "Task 5" section below for what
+was tried and why both text-scan granularities fail empirically against this
+codebase's actual code shapes. Tasks 1-4 are the delivered scope.
 
 **Architecture:** `onPrimary` and the two destructive tokens are *derived* — computed
 inside `theme.ts`'s `createAppTheme` from existing raw palette values (`bg`, `danger`),
@@ -704,7 +708,13 @@ git commit -m "refactor: migrate destructive tint call sites to destructiveSurfa
 
 ---
 
-## Task 5: Prevention check for the general pattern
+## Task 5: Prevention check for the general pattern — ABANDONED, kept for the record
+
+**Outcome: built, reviewed, reverted.** The steps below are left as written and
+executed, followed by what was found once real code review pushed on the design.
+Do not re-attempt this task as specified — read the finding at the end first.
+
+Original task text (executed as-is):
 
 **Files:**
 - Modify: `__tests__/themeTokens.test.ts`
@@ -817,3 +827,47 @@ Expected: PASS — every suite.
 git add __tests__/themeTokens.test.ts
 git commit -m "test: catch a colour-filled surface drawing its own foreground with text or background"
 ```
+
+### Why this was reverted
+
+The test above shipped as commit `e85098e` and passed — vacuously. Task review
+found the block-extraction regex (`/StyleSheet\.create\(\{[\s\S]*?\n\}\);/g`) only
+matches a `StyleSheet.create` call whose closing brace sits at column 0, which is
+this codebase's *minority* pattern; the dominant `return StyleSheet.create({...});`
+inside an indented factory function (e.g. every gate/screen `createStyles`
+function) was silently skipped — 10 of 58 real call sites were ever scanned,
+missing `LocalDataRecoveryGate.tsx` itself.
+
+Fixing the extraction regex to reach all 58 sites (verified) surfaced the real
+problem underneath: the co-occurrence check's granularity — "one style *rule*
+object contains both a fill `backgroundColor` and a wrong `color`" — cannot fire on
+any of the real bugs this plan fixed, because in every one of them the fill and the
+wrong foreground are in **separate, sibling** rules (a filled container `View` and
+a nested `Text`'s own style key), never the same object. Verified empirically: 0
+files trigger a same-rule check today.
+
+The alternative — checking the whole file for "has a fill `backgroundColor`
+*anywhere*" and "has a wrong `color` *anywhere*" — was tried next and also
+verified empirically:
+
+```bash
+comm -12 \
+  <(grep -rlE "backgroundColor:\s*theme\.colors\.(primary|danger|accent)\b" --include="*.tsx" --include="*.ts" src | sort) \
+  <(grep -rlE "\bcolor:\s*theme\.colors\.(text|background)\b" --include="*.tsx" --include="*.ts" src | sort)
+```
+
+16 of the 19 files that use any fill colour also contain an unrelated `text`/
+`background` foreground somewhere else on the same screen — an ordinary button
+next to ordinary body text, not a bug. A check with a 16/19 false-positive rate on
+an already-correct codebase is not a usable regression guard.
+
+**Conclusion:** telling "this fill and this foreground are visually paired" from
+"these two unrelated rules happen to share a file" requires JSX-nesting
+information — which component is a parent of which — that a source-text scan over
+a `StyleSheet.create` object cannot see. The spec's own non-goals section already
+ruled out the tool that *can* see it (a custom, AST-aware ESLint rule) as too large
+for this phase. Reverted in commit `3d7dfe7` rather than ship a check that is
+either silent or noisy. The token rename itself (Task 1: `ink` removed, not
+aliased) remains the durable guard — a future misuse of the old name is a `tsc`
+error, which is what actually caught this plan's own two-file regression when it
+was written.

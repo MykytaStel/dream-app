@@ -146,6 +146,9 @@ const SETTINGS_COPY_EN = {
   archiveKeyEntryInvalid:
     'That is not a complete code. Check for a missing or mistyped word — the code carries a checksum, so it can tell.',
   archiveKeyEntryAccepted: 'Key accepted. Sync again to read the archive.',
+  archiveKeyStrandedDisclosureTitle:
+    'This key cannot leave this phone on its own',
+  archiveKeyStrandedDisclosureAction: 'Got it',
   cloudTitle: 'Cloud backup',
   cloudDescription: 'Optional device-to-device sync for one archive.',
   cloudConfigLabel: 'Runtime config',
@@ -738,6 +741,9 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'Код неповний. Перевір, чи не пропущене або не переплутане слово — у коді є контрольна сума, тож це видно.',
   archiveKeyEntryAccepted:
     'Ключ прийнято. Синхронізуйте ще раз, щоб прочитати архів.',
+  archiveKeyStrandedDisclosureTitle:
+    'Цей ключ не може сам покинути цей телефон',
+  archiveKeyStrandedDisclosureAction: 'Зрозуміло',
   cloudTitle: 'Хмарний backup',
   cloudDescription: 'Опційний sync одного архіву між пристроями.',
   cloudConfigLabel: 'Runtime-конфіг',

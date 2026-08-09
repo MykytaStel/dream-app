@@ -47,7 +47,7 @@ export function createSettingsScreenStyles(theme: Theme) {
       fontSize: 11,
     },
     inlineLanguageChipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     sectionCard: {
       gap: 8,
@@ -144,7 +144,7 @@ export function createSettingsScreenStyles(theme: Theme) {
       backgroundColor: theme.colors.primary,
     },
     backupGuideStepBadgeText: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
       fontSize: 11,
       fontWeight: '700',
     },

@@ -146,7 +146,7 @@ export function createHomeScreenStyles(theme: Theme) {
       textAlign: 'center',
     },
     swipeActionTextInverted: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     heroCard: {
       gap: 8,
@@ -720,7 +720,7 @@ export function createHomeScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     inlineActionButtonTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     activeFiltersRow: {
       flexDirection: 'row',
@@ -807,7 +807,7 @@ export function createHomeScreenStyles(theme: Theme) {
       fontWeight: '600',
     },
     filterButtonLabelActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     clearFiltersButton: {
       alignSelf: 'flex-start',
@@ -839,7 +839,7 @@ export function createHomeScreenStyles(theme: Theme) {
     filterSheetRoot: {
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: `${theme.colors.ink}59`,
+      backgroundColor: `${theme.colors.scrim}59`,
     },
     filterSheetBackdrop: {
       flex: 1,

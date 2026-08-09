@@ -147,7 +147,7 @@ export function createProgressScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     achievementBadgeTextUnlocked: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     achievementProgressTrack: {
       height: 8,

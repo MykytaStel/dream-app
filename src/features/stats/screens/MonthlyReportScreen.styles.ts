@@ -135,7 +135,7 @@ export function createMonthlyReportScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     monthChipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     coverCard: {
       ...createSoftTile(theme, {

@@ -30,7 +30,7 @@ export function DreamDetailActionTile({
   const iconColor = danger
     ? theme.colors.danger
     : active
-      ? theme.colors.background
+      ? theme.colors.onPrimary
       : theme.colors.text;
 
   return (
@@ -68,12 +68,12 @@ function createStyles(theme: Theme, active: boolean, danger: boolean) {
       ? // Follows labelColor below, which is already `background` when active:
         // an active tile is filled with `primary`, and everything drawn on it
         // belongs to the same on-primary colour.
-        hexToRgba(theme.colors.background, 0.18)
+        hexToRgba(theme.colors.onPrimary, 0.18)
       : theme.colors.surface;
   const labelColor = danger
     ? theme.colors.danger
     : active
-      ? theme.colors.background
+      ? theme.colors.onPrimary
       : theme.colors.text;
 
   return StyleSheet.create({

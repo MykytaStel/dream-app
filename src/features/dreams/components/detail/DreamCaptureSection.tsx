@@ -84,7 +84,7 @@ function AudioPlayerWidget({
             <Ionicons
               name={isPlaying ? 'pause' : 'play'}
               size={18}
-              color={theme.colors.background}
+              color={theme.colors.onPrimary}
             />
           </View>
         </Pressable>

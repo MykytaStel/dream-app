@@ -102,7 +102,7 @@ export function createStatsScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     rangeChipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     compareHint: {
       color: theme.colors.textDim,
@@ -1077,7 +1077,7 @@ export function createStatsScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     achievementBadgeTextUnlocked: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     achievementProgressTrack: {
       height: 8,

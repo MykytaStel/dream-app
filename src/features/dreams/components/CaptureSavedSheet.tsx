@@ -256,7 +256,7 @@ function createStyles(theme: Theme, bottomInset: number) {
     },
     backdrop: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: `${theme.colors.ink}8F`,
+      backgroundColor: `${theme.colors.scrim}8F`,
     },
     sheetWrap: {
       paddingHorizontal: theme.spacing.md,

@@ -20,7 +20,7 @@ export function createTagChipStyles(theme: Theme, selected = false) {
       borderColor: selected ? theme.colors.primary : theme.colors.border,
     },
     label: {
-      color: selected ? theme.colors.background : theme.colors.text,
+      color: selected ? theme.colors.onPrimary : theme.colors.text,
       fontSize: 11,
       fontWeight: '700',
     },

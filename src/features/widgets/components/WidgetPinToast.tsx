@@ -106,7 +106,7 @@ export function WidgetPinToast({
                 <Text
                   style={[
                     styles.primaryBtnLabel,
-                    { color: theme.colors.background },
+                    { color: theme.colors.onPrimary },
                   ]}
                 >
                   {actionLabel}

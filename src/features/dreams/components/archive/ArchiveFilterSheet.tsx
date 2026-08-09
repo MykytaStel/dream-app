@@ -251,7 +251,7 @@ function createStyles(theme: Theme) {
     backdrop: {
       flex: 1,
       justifyContent: 'flex-end',
-      backgroundColor: `${theme.colors.ink}8F`,
+      backgroundColor: `${theme.colors.scrim}8F`,
     },
     sheet: {
       maxHeight: '86%',
@@ -330,7 +330,7 @@ function createStyles(theme: Theme) {
       fontWeight: '700',
     },
     chipTextSelected: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     emptyLabel: {
       color: theme.colors.textDim,
@@ -376,7 +376,7 @@ function createStyles(theme: Theme) {
       backgroundColor: theme.colors.primary,
     },
     primaryButtonText: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
       fontSize: 12,
       lineHeight: 16,
       fontWeight: '700',

@@ -219,7 +219,7 @@ export function createTabsStyles(theme: Theme, bottomInset: number) {
     },
     quickAddBackdrop: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: hexToRgba(theme.colors.ink, 0.6),
+      backgroundColor: hexToRgba(theme.colors.scrim, 0.6),
     },
     quickAddSheet: {
       marginHorizontal: TAB_BAR_SIDE_OFFSET,

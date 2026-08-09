@@ -66,7 +66,7 @@ export function BackupOnboardingModal({
                 <Ionicons
                   name="cloud-upload-outline"
                   size={22}
-                  color={theme.colors.background}
+                  color={theme.colors.onPrimary}
                 />
               </View>
               <View style={styles.heroCopy}>
@@ -142,7 +142,7 @@ function createStyles(theme: Theme, bottomInset: number) {
     },
     backdrop: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: hexToRgba(theme.colors.ink, 0.58),
+      backgroundColor: hexToRgba(theme.colors.scrim, 0.58),
     },
     sheetWrap: {
       paddingHorizontal: theme.spacing.md,

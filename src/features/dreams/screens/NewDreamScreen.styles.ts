@@ -107,7 +107,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       fontSize: 11,
     },
     helperChipLabelActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
       fontSize: 11,
       fontWeight: '700',
     },
@@ -137,7 +137,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     refineActionLabelActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     refineHint: {
       color: theme.colors.textDim,
@@ -197,7 +197,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       color: theme.colors.text,
     },
     moodLabelSelected: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     intensityRow: {
       flexDirection: 'row',
@@ -224,7 +224,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       color: theme.colors.text,
     },
     intensityOptionLabelSelected: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     contextBlock: {
       gap: 8,
@@ -273,7 +273,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       color: theme.colors.text,
     },
     contextOptionLabelSelected: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     contextTextInput: {
       minHeight: 96,
@@ -304,7 +304,7 @@ export function createNewDreamScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     scaleSegmentLabelSelected: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     scaleAnchorRow: {
       flexDirection: 'row',

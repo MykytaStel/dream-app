@@ -96,7 +96,7 @@ function createStyles(theme: Theme, columns: 2 | 3, minWidth: number) {
       textAlign: 'center',
     },
     chipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
   });
 }

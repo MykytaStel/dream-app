@@ -50,7 +50,7 @@ function PatternAction({
       <Ionicons
         name={icon}
         size={14}
-        color={active ? theme.colors.background : theme.colors.text}
+        color={active ? theme.colors.onPrimary : theme.colors.text}
       />
       <Text
         style={[styles.actionText, active ? styles.actionTextActive : null]}
@@ -451,7 +451,7 @@ function createStyles(theme: Theme) {
       fontWeight: '700',
     },
     actionTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     modalRoot: {
       flex: 1,
@@ -459,7 +459,7 @@ function createStyles(theme: Theme) {
     },
     backdrop: {
       ...StyleSheet.absoluteFill,
-      backgroundColor: `${theme.colors.ink}8F`,
+      backgroundColor: `${theme.colors.scrim}8F`,
     },
     modalCard: {
       gap: 16,
@@ -540,7 +540,7 @@ function createStyles(theme: Theme) {
       paddingHorizontal: 14,
     },
     modalPrimaryText: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
       fontSize: 12,
       fontWeight: '800',
     },

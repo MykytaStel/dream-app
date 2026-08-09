@@ -62,7 +62,7 @@ export function createButtonStyles(
       lineHeight: labelSize + 2,
       letterSpacing: 0.1,
       color:
-        isPrimary || isDanger ? theme.colors.background : theme.colors.text,
+        isPrimary || isDanger ? theme.colors.onPrimary : theme.colors.text,
     },
   });
 }

@@ -135,7 +135,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     filterChipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     controlsFooterRow: {
       flexDirection: 'row',
@@ -189,7 +189,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     modeChipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     browseModeRow: {
       flexDirection: 'row',
@@ -393,7 +393,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       textTransform: 'capitalize',
     },
     quickJumpChipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     monthPagerButton: {
       ...createControlPill(theme, {
@@ -904,7 +904,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontWeight: '700',
     },
     tagChipTextActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
     },
     tagChipCount: {
       color: theme.colors.textDim,
@@ -913,7 +913,7 @@ export function createArchiveScreenStyles(theme: Theme) {
       opacity: 0.7,
     },
     tagChipCountActive: {
-      color: theme.colors.background,
+      color: theme.colors.onPrimary,
       opacity: 0.8,
     },
   });

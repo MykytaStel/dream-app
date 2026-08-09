@@ -102,7 +102,7 @@ function createStyles(theme: Theme) {
       justifyContent: 'center',
       alignItems: 'center',
       paddingHorizontal: 20,
-      backgroundColor: `${theme.colors.ink}8F`,
+      backgroundColor: `${theme.colors.scrim}8F`,
     },
     sheet: {
       width: '100%',

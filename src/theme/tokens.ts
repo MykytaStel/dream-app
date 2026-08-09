@@ -18,7 +18,7 @@ export type ThemePalette = {
   success: string;
   tabIcon: string;
   glow: string;
-  ink: string;
+  scrim: string;
   switchTrackOff: string;
   switchThumb: string;
   /**
@@ -48,7 +48,7 @@ export const palette = {
     success: '#74D6B0',
     tabIcon: '#8D94AD',
     glow: '#78B8FF',
-    ink: '#0B1220',
+    scrim: '#0B1220',
     switchTrackOff: '#444B5A',
     switchThumb: '#F2F4FB',
     shadow: '#000000',
@@ -71,7 +71,7 @@ export const palette = {
     success: '#7ED9B3',
     tabIcon: '#B48893',
     glow: '#FF9A7A',
-    ink: '#0E090A',
+    scrim: '#0E090A',
     switchTrackOff: '#5A4348',
     switchThumb: '#FAF2F3',
     shadow: '#000000',
@@ -94,7 +94,7 @@ export const palette = {
     success: '#7DE3C0',
     tabIcon: '#89A89F',
     glow: '#7DE3C0',
-    ink: '#08110F',
+    scrim: '#08110F',
     switchTrackOff: '#41534E',
     switchThumb: '#EEF8F4',
     shadow: '#000000',
@@ -110,7 +110,7 @@ export const palette = {
    * 4.5:1, interface elements at 3:1 — because a light theme is designed on a
    * bright desk and read on a dim one.
    *
-   * `ink` stays dark: it is the colour of a scrim laid over content, and a pale
+   * `scrim` stays dark: it is the colour laid over content to dim it, and a pale
    * scrim would not dim anything.
    */
   daylight: {
@@ -131,7 +131,7 @@ export const palette = {
     success: '#1B7D5C',
     tabIcon: '#666E8B',
     glow: '#2F63C7',
-    ink: '#0B1220',
+    scrim: '#0B1220',
     switchTrackOff: '#BFC6DA',
     // The knob, not the label. This used to read `text` at the call site,
     // which is near-white in the dark themes and near-black here — so the one

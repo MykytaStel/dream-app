@@ -40,10 +40,15 @@ function createAppTheme(colors: ThemePalette) {
       auroraEnd: colors.auroraEnd,
       border: colors.border,
       danger: colors.danger,
+      // Same value `background` used to stand in for: the colour of content
+      // drawn on a primary/danger/accent fill.
+      onPrimary: colors.bg,
+      destructiveSurface: `${colors.danger}14`,
+      destructiveBorder: `${colors.danger}44`,
       success: colors.success,
       tabIcon: colors.tabIcon,
       glow: colors.glow,
-      ink: colors.ink,
+      scrim: colors.scrim,
       switchTrackOff: colors.switchTrackOff,
       switchThumb: colors.switchThumb,
       shadow: colors.shadow,

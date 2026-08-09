@@ -59,25 +59,25 @@ const PAIRINGS: Pairing[] = [
     because: 'the same, on a card',
   },
   {
-    foreground: 'background',
+    foreground: 'onPrimary',
     background: 'primary',
     minimum: CONTRAST_BODY_TEXT,
-    because: 'the label on a primary button, which uses background as its ink',
+    because: 'the label on a primary button',
   },
   {
-    foreground: 'background',
+    foreground: 'onPrimary',
     background: 'danger',
     minimum: CONTRAST_BODY_TEXT,
     because: 'the same on a destructive button, where misreading costs most',
   },
   {
-    foreground: 'background',
+    foreground: 'onPrimary',
     minimum: CONTRAST_LARGE_TEXT,
     background: 'accent',
     because:
       'icons sitting on an accent fill — the pairing that was missing when ' +
-      'six of them used `ink`, which is dark in every theme and so vanished ' +
-      'against a light theme’s darker primary',
+      'six sites used `ink`, which is dark in every theme and so vanished ' +
+      'against a light theme\'s darker primary',
   },
   {
     foreground: 'auroraStart',

@@ -85,6 +85,39 @@ describe('theme tokens', () => {
     expect(offenders).toEqual([]);
   });
 
+  test('a colour-filled surface does not draw its own foreground with text or background', () => {
+    const offenders: string[] = [];
+    const FILL_TOKENS = ['primary', 'danger', 'accent'];
+    const WRONG_FOREGROUND_TOKENS = ['text', 'background'];
+
+    for (const file of walk(SRC)) {
+      const key = relative(SRC, file);
+      const contents = readFileSync(file, 'utf8');
+
+      // One block per `StyleSheet.create({ ... })` call — matched non-greedily
+      // up to the first top-level closing `});`, which is how every style
+      // object in this codebase is written.
+      const blocks = contents.match(/StyleSheet\.create\(\{[\s\S]*?\n\}\);/g) ?? [];
+
+      for (const block of blocks) {
+        const hasFillBackground = FILL_TOKENS.some(token =>
+          new RegExp(`backgroundColor:\\s*theme\\.colors\\.${token}\\b`).test(
+            block,
+          ),
+        );
+        const wrongForeground = WRONG_FOREGROUND_TOKENS.find(token =>
+          new RegExp(`\\bcolor:\\s*theme\\.colors\\.${token}\\b`).test(block),
+        );
+
+        if (hasFillBackground && wrongForeground) {
+          offenders.push(`${key}: color: theme.colors.${wrongForeground} in a block with a primary/danger/accent backgroundColor`);
+        }
+      }
+    }
+
+    expect(offenders).toEqual([]);
+  });
+
   test('every exception is a real file, so the list cannot rot', () => {
     for (const key of Object.keys(FIXED_PALETTE_FILES)) {
       expect(() => readFileSync(join(SRC, key), 'utf8')).not.toThrow();

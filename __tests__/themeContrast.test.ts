@@ -77,7 +77,7 @@ const PAIRINGS: Pairing[] = [
     because:
       'icons sitting on an accent fill — the pairing that was missing when ' +
       'six sites used `ink`, which is dark in every theme and so vanished ' +
-      'against a light theme\'s darker primary',
+      'against a light theme’s darker primary',
   },
   {
     foreground: 'auroraStart',
@@ -165,6 +165,13 @@ describe('theme contrast', () => {
 
       expect(contrastRatio(theme.colors.text, tinted)).toBeGreaterThanOrEqual(
         CONTRAST_BODY_TEXT,
+      );
+    });
+
+    test('the warning glyph reads on the destructive-tinted icon badge', () => {
+      const badge = blend(theme.colors.danger, 0x14 / 255, theme.colors.background);
+      expect(contrastRatio(theme.colors.danger, badge)).toBeGreaterThanOrEqual(
+        CONTRAST_LARGE_TEXT,
       );
     });
   });

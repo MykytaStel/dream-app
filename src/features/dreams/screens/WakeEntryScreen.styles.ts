@@ -129,12 +129,12 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       borderRadius: 16,
       alignItems: 'center',
       justifyContent: 'center',
-      // Follows the icon it sits behind, which is drawn in `background`. This
+      // Follows the icon it sits behind, which is drawn in `onPrimary`. This
       // was `ink` — a fixed near-black in every palette — so on the one light
       // theme a dark disc appeared behind a white glyph on a blue card. In the
-      // dark themes `ink` and `background` are near enough that the look is
+      // dark themes `ink` and `onPrimary` are near enough that the look is
       // unchanged.
-      backgroundColor: hexToRgba(theme.colors.background, 0.18),
+      backgroundColor: hexToRgba(theme.colors.onPrimary, 0.18),
     },
     primaryActionCopy: {
       flex: 1,
@@ -147,9 +147,10 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       fontWeight: '800',
     },
     primaryActionHint: {
-      // `background` is this app's ink-on-primary, the same colour the title
-      // above uses. It was `ink` — dark in every palette — which on the light
-      // theme's deeper blue left the hint barely readable.
+      // `onPrimary` is the colour of content drawn on a primary/danger/accent
+      // fill, the same one the title above uses. It was `ink` — dark in every
+      // palette — which on the light theme's deeper blue left the hint barely
+      // readable.
       color: hexToRgba(theme.colors.onPrimary, 0.82),
       fontSize: 14,
       lineHeight: 20,
@@ -163,7 +164,7 @@ export function createWakeEntryScreenStyles(theme: Theme) {
       borderRadius: 999,
       paddingHorizontal: 10,
       paddingVertical: 6,
-      backgroundColor: hexToRgba(theme.colors.background, 0.18),
+      backgroundColor: hexToRgba(theme.colors.onPrimary, 0.18),
     },
     primaryActionMetaLabel: {
       color: theme.colors.onPrimary,

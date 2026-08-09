@@ -48,7 +48,7 @@ export function createDreamDetailScreenStyles(theme: Theme) {
       backgroundColor: theme.colors.surfaceAlt,
     },
     heroIconButtonDanger: {
-      borderColor: `${theme.colors.danger}44`,
+      borderColor: theme.colors.destructiveBorder,
     },
     heroIconButtonPressed: {
       opacity: 0.92,

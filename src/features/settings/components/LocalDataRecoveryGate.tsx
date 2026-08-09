@@ -186,9 +186,9 @@ function createStyles(theme: Theme) {
       borderRadius: 28,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: `${theme.colors.danger}26`,
+      backgroundColor: theme.colors.destructiveSurface,
       borderWidth: 1,
-      borderColor: `${theme.colors.danger}88`,
+      borderColor: theme.colors.destructiveBorder,
     },
     warningMark: {
       color: theme.colors.danger,

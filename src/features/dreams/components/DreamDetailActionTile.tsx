@@ -58,7 +58,7 @@ function createStyles(theme: Theme, active: boolean, danger: boolean) {
       ? theme.colors.primary
       : theme.colors.border;
   const backgroundColor = danger
-    ? `${theme.colors.danger}14`
+    ? theme.colors.destructiveSurface
     : active
       ? theme.colors.primary
       : theme.colors.surfaceAlt;

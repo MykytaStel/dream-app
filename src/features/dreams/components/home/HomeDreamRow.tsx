@@ -180,8 +180,8 @@ function getSignalTone(theme: Theme, tone: DreamSignalTone) {
       };
     case 'danger':
       return {
-        backgroundColor: `${theme.colors.danger}14`,
-        borderColor: `${theme.colors.danger}44`,
+        backgroundColor: theme.colors.destructiveSurface,
+        borderColor: theme.colors.destructiveBorder,
         color: theme.colors.danger,
       };
     case 'primary':

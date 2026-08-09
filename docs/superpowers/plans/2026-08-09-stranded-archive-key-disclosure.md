@@ -313,6 +313,10 @@ const mockHasSeen = jest.fn();
 const mockMarkSeen = jest.fn();
 
 jest.mock('../src/services/crypto/archiveKeyService', () => ({
+  // presentArchiveKey() imports this from the same module and compares it
+  // against lastSyncErrorMessage; omitting it leaves both sides undefined,
+  // which spuriously matches and forces tone 'blocking' in every test.
+  ARCHIVE_KEY_REQUIRED: 'archive-key-required',
   getArchiveKey: (...args: unknown[]) => mockGetArchiveKey(...args),
   getArchiveRecoveryCode: (...args: unknown[]) =>
     mockGetArchiveRecoveryCode(...args),
@@ -364,7 +368,9 @@ describe('useArchiveKeyController stranded disclosure', () => {
     await act(async () => {});
     expect(result.current.showStrandedDisclosure).toBe(true);
 
-    act(() => {
+    // Awaited: an un-awaited act() here leaves the renderer mid-flush, which
+    // both misses this state update and corrupts the next test in the file.
+    await act(async () => {
       result.current.onDismissStrandedDisclosure();
     });
 

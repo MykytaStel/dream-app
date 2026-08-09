@@ -13,7 +13,7 @@ no list at all.
 | `partial` | real implementation exists, the flow or polish is incomplete |
 | `planned` | intent only, no meaningful code |
 
-Last verified against the code: 2026-08-04, at `abf6f59`.
+Last verified against the code: 2026-08-09, at `17c468f`.
 
 The commit matters more than the date. A date says when someone looked; a SHA says
 what they looked at, and lets the next person diff the code since. A row whose
@@ -28,6 +28,8 @@ before trusting the statuses.
 | Draft autosave and recovery | `works` | `features/dreams/services/dreamDraftService.ts` — 400ms debounce, plus an immediate write when the app backgrounds |
 | Draft recovery while editing a saved dream | `works` | `features/dreams/services/dreamDraftService.ts` (`saveDreamEditDraft`), one key per dream, restored only when newer than the dream |
 | Recording survives an interruption | `works` | `ios/DreamApp/AudioRecorderModule.swift` (`AVAudioSession` observer), `AudioRecorderModule.kt` (audio focus + `onHostPause`) — the partial file is kept and reported |
+| Orphaned audio cleanup, ownership-protected | `works` | `features/dreams/services/audioCleanupService.ts`, `audioOwnershipService.ts` — will not delete a file a draft or an in-flight recording still owns |
+| Scheduled audio cleanup maintenance | `works` | `features/dreams/services/audioCleanupMaintenanceService.ts` — runs at most once a day, deferred while a recording is active |
 | Title and body | `works` | `features/dreams/model/dream.ts` |
 | Sleep date, separate from creation time | `works` | `dream.ts` (`sleepDate`), `dreamRules.ts` (`resolveDreamSleepDate`) |
 | Voice capture with on-device transcription | `works` | `features/dreams/services/whisperNative.ts`, `dreamTranscriptionService.ts` |
@@ -65,6 +67,9 @@ before trusting the statuses.
 | Emotional trend cards | `works` | `features/stats/components/EmotionalTrendSection.tsx` |
 | Pattern detail view | `works` | `features/stats/screens/PatternDetailScreen.tsx` |
 | Weekly pattern cards | `works` | `features/stats/model/weeklyPatternCards.ts` |
+| Memory progressive disclosure by dream count | `works` | `features/stats/model/memoryDisclosure.ts`, `components/MemoryProgressiveDisclosure.tsx` — five stages from "not enough dreams yet" to monthly comparisons |
+| User-confirmed memory patterns | `works` | `features/stats/model/memoryPattern.ts`, `components/MemoryPatternCard.tsx` — confirm, dismiss, or rename a detected recurrence |
+| Memory pattern feedback storage | `works` | `features/stats/services/memoryPatternFeedbackService.ts` (`confirmMemoryPattern`, `dismissMemoryPattern`, `renameMemoryPattern`) |
 | Monthly report | `works` | `features/stats/screens/MonthlyReportScreen.tsx` |
 | Review workspace | `works` | `features/stats/screens/ReviewWorkspaceScreen.tsx` |
 | Dream analysis, heuristic | `works` | `features/analysis/services/manualDreamAnalysisProvider.ts` |
@@ -81,9 +86,18 @@ work and start only after real archives show that they are needed.
 |---|---|---|
 | Biometric app lock | `works` | `services/security/biometricService.ts`, `features/security/components/AppLockGate.tsx` |
 | Local-first storage | `works` | `services/storage/` (MMKV) |
-| Storage migrations | `works` | `services/storage/migrations.ts` |
+| Storage migrations, transactional with checkpoint rollback | `works` | `services/storage/storageMigrationService.ts`, `StorageMigrationGate.tsx` — wraps `migrations.ts` in a checkpointed transaction so a failed migration rolls back |
+| Crash-safe local data transactions | `works` | `features/settings/services/localDataTransactionService.ts` — checkpoint before mutation, journal-tracked commit, rollback on failure |
+| Interrupted-transaction recovery at startup | `works` | `features/settings/services/localDataTransactionJournalService.ts`, `components/LocalDataRecoveryGate.tsx` — runs before storage migrations or any provider mounts |
+| Verifiable backup integrity | `works` | `features/settings/services/dreamBackupIntegrityService.ts` — signed digest on export, checked before import/restore |
+| Validated, transactional restore from backup | `works` | `features/settings/services/transactionalDreamImportService.ts`, `dreamImportPreflight.ts` |
+| Archive health check and repair | `works` | `features/settings/services/archiveHealthService.ts`, `screens/ArchiveHealthScreen.tsx` — checkpointed repair, blocks on an unreadable dream store |
+| Weekly scheduled archive health check | `works` | `features/settings/services/archiveHealthMaintenanceService.ts`, `components/ArchiveHealthMaintenance.tsx` |
+| Derived archive data validation and rebuild | `works` | `features/dreams/repository/dreamDerivedDataRepository.ts` — index/meta stores checked for `current`/`missing`/`invalid`/`stale`, rebuilt without rewriting dreams |
+| Local storage diagnostics | `works` | `features/settings/services/storageDiagnosticsService.ts`, `screens/SettingsStorageScreen.tsx` — per-bucket size, orphaned audio, transcription model status |
 | Explicit local-vs-cloud settings | `works` | `features/settings/screens/SettingsSecurityScreen.tsx`, `PrivacyScreen.tsx` |
 | Network analysis off by default | `works` | `features/analysis/model/dreamAnalysis.ts` (`allowNetwork: false`) |
+| Cloud archive recovery code | `works` | `services/crypto/archiveKeyService.ts`, `features/settings/components/SettingsArchiveKeySection.tsx`, `ArchiveKeyStrandedModal.tsx` — reveal/enter works; a one-time modal surfaces the code proactively the first time the key turns out unable to travel on its own, closing the "explained before it happens" gate for that case. Detection accuracy of *when* a key is stranded is still weak (see `docs/superpowers/specs/2026-08-09-stranded-archive-key-disclosure-design.md`'s explicit non-goals) — a real gap, but a detection problem, not a disclosure one |
 
 ## Cloud
 
@@ -97,7 +111,7 @@ All cloud features are optional. The app is fully usable without an account.
 | Conflict resolution | `works` | `services/cloud/syncResolution.ts` |
 | Deletion tombstones | `works` | `services/cloud/sync.ts` |
 | Audio upload and download | `works` | `services/cloud/audioUpload.ts`, `audioDownload.ts` |
-| Sync diagnostics | `partial` | `features/settings/screens/SyncDiagnosticsPreviewScreen.tsx` — reachable only from the `__DEV__` section of Settings |
+| Sync diagnostics (cloud) | `partial` | `features/settings/screens/SyncDiagnosticsPreviewScreen.tsx` — reachable only from the `__DEV__` section of Settings |
 
 ## Platform integration
 

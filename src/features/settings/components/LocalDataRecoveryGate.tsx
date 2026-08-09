@@ -230,7 +230,7 @@ function createStyles(theme: Theme) {
       paddingHorizontal: 18,
     },
     primaryLabel: {
-      color: theme.colors.ink,
+      color: theme.colors.onPrimary,
       fontSize: 15,
       fontWeight: '700',
       textAlign: 'center',

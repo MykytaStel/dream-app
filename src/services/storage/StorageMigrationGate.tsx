@@ -245,7 +245,7 @@ function createStyles(theme: Theme) {
       marginTop: 4,
     },
     primaryLabel: {
-      color: theme.colors.ink,
+      color: theme.colors.onPrimary,
       fontSize: 15,
       fontWeight: '700',
       textAlign: 'center',

@@ -10,7 +10,12 @@ import {
 } from '../../../services/security/archiveKeyStorage';
 import { isRecoveryCodeValid } from '../../../services/crypto/recoveryCode';
 import { presentArchiveKey } from '../model/archiveKeyPresentation';
+import { shouldShowArchiveKeyStrandedDisclosure } from '../model/archiveKeyStrandedDisclosure';
 import { reportError } from '../../../services/observability/errorReporting';
+import {
+  hasSeenArchiveKeyStrandedDisclosure,
+  markArchiveKeyStrandedDisclosureSeen,
+} from '../services/archiveKeyStrandedDisclosureService';
 
 /**
  * Wires the archive-key section to the services behind it.
@@ -34,6 +39,8 @@ export function useArchiveKeyController(lastSyncErrorMessage?: string) {
     'invalid' | 'accepted' | null
   >(null);
   const [isCheckingKey, setIsCheckingKey] = React.useState(true);
+  const [strandedDisclosureDismissed, setStrandedDisclosureDismissed] =
+    React.useState(() => hasSeenArchiveKeyStrandedDisclosure());
 
   const refresh = React.useCallback(async () => {
     try {
@@ -97,6 +104,16 @@ export function useArchiveKeyController(lastSyncErrorMessage?: string) {
     [availability, hasKey, lastSyncErrorMessage],
   );
 
+  const showStrandedDisclosure = shouldShowArchiveKeyStrandedDisclosure({
+    tone: presentation.tone,
+    hasSeen: strandedDisclosureDismissed,
+  });
+
+  const onDismissStrandedDisclosure = React.useCallback(() => {
+    markArchiveKeyStrandedDisclosureSeen();
+    setStrandedDisclosureDismissed(true);
+  }, []);
+
   return {
     presentation,
     // The section stays hidden until the check resolves rather than flashing
@@ -105,6 +122,8 @@ export function useArchiveKeyController(lastSyncErrorMessage?: string) {
     recoveryCode,
     enteredCode,
     entryFeedback,
+    showStrandedDisclosure,
+    onDismissStrandedDisclosure,
     onToggleRecoveryCode,
     onChangeEnteredCode,
     onSubmitRecoveryCode,

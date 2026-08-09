@@ -18,6 +18,7 @@ import { Theme } from '../../../theme/theme';
 import { SettingsActionRow } from '../components/SettingsActionRow';
 import { CloudSection } from '../components/SettingsCloudSection';
 import { SettingsArchiveKeySection } from '../components/SettingsArchiveKeySection';
+import { ArchiveKeyStrandedModal } from '../components/ArchiveKeyStrandedModal';
 import { useArchiveKeyController } from '../hooks/useArchiveKeyController';
 import { SettingsMetaGrid } from '../components/SettingsMetaGrid';
 import {
@@ -260,6 +261,11 @@ export default function BackupScreen() {
         onDismissCloudActionFeedback={controller.clearCloudActionFeedback}
       />
       <SettingsArchiveKeySection copy={copy} controller={archiveKey} />
+      <ArchiveKeyStrandedModal
+        visible={archiveKey.showStrandedDisclosure}
+        copy={copy}
+        onDismiss={archiveKey.onDismissStrandedDisclosure}
+      />
       <Card style={styles.sectionCard}>
         <SectionHeader
           title={copy.backupStatusTitle}

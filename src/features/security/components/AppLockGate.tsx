@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAppTheme } from '../../../theme/AppThemeProvider';
 import { Theme } from '../../../theme/theme';
@@ -11,6 +11,9 @@ type AppLockGateProps = {
   unlockLabel: string;
   subtitle: string;
   appName: string;
+  lockDisabledTitle: string;
+  lockDisabledDescriptionNotEnrolled: string;
+  lockDisabledDescriptionUnsupported: string;
 };
 
 export function AppLockGate({
@@ -19,10 +22,33 @@ export function AppLockGate({
   unlockLabel,
   subtitle,
   appName,
+  lockDisabledTitle,
+  lockDisabledDescriptionNotEnrolled,
+  lockDisabledDescriptionUnsupported,
 }: AppLockGateProps) {
-  const { locked, triggerAuth } = useAppLockGate(promptMessage);
+  const { locked, triggerAuth, autoDisabledReason, dismissAutoDisabledNotice } =
+    useAppLockGate(promptMessage);
   const { theme } = useAppTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
+
+  React.useEffect(() => {
+    if (!autoDisabledReason) {
+      return;
+    }
+    Alert.alert(
+      lockDisabledTitle,
+      autoDisabledReason === 'not-enrolled'
+        ? lockDisabledDescriptionNotEnrolled
+        : lockDisabledDescriptionUnsupported,
+      [{ text: 'OK', onPress: dismissAutoDisabledNotice }],
+    );
+  }, [
+    autoDisabledReason,
+    dismissAutoDisabledNotice,
+    lockDisabledDescriptionNotEnrolled,
+    lockDisabledDescriptionUnsupported,
+    lockDisabledTitle,
+  ]);
 
   return (
     <>

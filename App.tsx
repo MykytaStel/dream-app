@@ -17,6 +17,11 @@ const LOCK_COPY = {
   unlockLabel: 'Unlock',
   subtitle: 'Your dreams are protected.',
   appName: 'Kaleidoscope',
+  lockDisabledTitle: 'App lock turned off',
+  lockDisabledDescriptionNotEnrolled:
+    'No biometrics are set up on this device anymore, so App Lock was turned off automatically. You can turn it back on in Settings once Face ID or a fingerprint is set up again.',
+  lockDisabledDescriptionUnsupported:
+    'This device no longer supports biometric authentication, so App Lock was turned off automatically.',
 };
 
 export default function App() {
@@ -30,6 +35,13 @@ export default function App() {
               unlockLabel={LOCK_COPY.unlockLabel}
               subtitle={LOCK_COPY.subtitle}
               appName={LOCK_COPY.appName}
+              lockDisabledTitle={LOCK_COPY.lockDisabledTitle}
+              lockDisabledDescriptionNotEnrolled={
+                LOCK_COPY.lockDisabledDescriptionNotEnrolled
+              }
+              lockDisabledDescriptionUnsupported={
+                LOCK_COPY.lockDisabledDescriptionUnsupported
+              }
             >
               <AudioCleanupMaintenance />
               <ArchiveHealthMaintenance />

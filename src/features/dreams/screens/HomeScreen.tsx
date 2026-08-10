@@ -1,5 +1,11 @@
 import React from 'react';
-import { FlatList, Pressable, RefreshControl, View } from 'react-native';
+import {
+  FlatList,
+  Platform,
+  Pressable,
+  RefreshControl,
+  View,
+} from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
@@ -115,6 +121,18 @@ export default function HomeScreen() {
     React.useState(() => hasSeenBackupOnboarding());
   const [hasSeenReminderOnboardingState, setHasSeenReminderOnboardingState] =
     React.useState(() => hasSeenReminderOnboarding());
+  // Gates the backup-onboarding handoff so it never mounts its <Modal> in
+  // the same commit the reminder <Modal> is transitioning from visible to
+  // hidden (iOS drops/garbles a Modal presented while another is still
+  // animating out). Starts `true` (nothing to wait for); flips to `false`
+  // once the reminder modal is shown, and back to `true` only once it has
+  // actually finished dismissing — via native `onDismiss` on iOS, or
+  // immediately in `closeReminderOnboarding` on Android, which never fires
+  // `onDismiss` at all.
+  const [
+    reminderOnboardingReadyForHandoff,
+    setReminderOnboardingReadyForHandoff,
+  ] = React.useState(true);
   const draftSnapshot = React.useMemo(
     () => getDreamDraftSnapshot(draft),
     [draft],
@@ -209,10 +227,16 @@ export default function HomeScreen() {
       }),
     [dreams.length, hasSeenReminderOnboardingState, loading],
   );
+  React.useEffect(() => {
+    if (isReminderOnboardingVisible) {
+      setReminderOnboardingReadyForHandoff(false);
+    }
+  }, [isReminderOnboardingVisible]);
   const isBackupOnboardingVisible = React.useMemo(
     () =>
       !loading &&
       !isReminderOnboardingVisible &&
+      reminderOnboardingReadyForHandoff &&
       shouldShowBackupOnboarding({
         dreamCount: dreams.length,
         hasSeen: hasSeenBackupOnboardingState,
@@ -222,6 +246,7 @@ export default function HomeScreen() {
       hasSeenBackupOnboardingState,
       isReminderOnboardingVisible,
       loading,
+      reminderOnboardingReadyForHandoff,
     ],
   );
   const heroPrompt = React.useMemo(
@@ -264,6 +289,16 @@ export default function HomeScreen() {
   const closeReminderOnboarding = React.useCallback(() => {
     markReminderOnboardingSeen();
     setHasSeenReminderOnboardingState(true);
+    if (Platform.OS === 'android') {
+      // Android's Modal never fires `onDismiss`, and there's no risk of two
+      // <Modal>s overlapping there, so unblock the backup handoff right away.
+      setReminderOnboardingReadyForHandoff(true);
+    }
+  }, []);
+  const handleReminderOnboardingDismissed = React.useCallback(() => {
+    // iOS-only: fires once the reminder modal's dismiss animation actually
+    // completes, so the backup modal is safe to mount afterward.
+    setReminderOnboardingReadyForHandoff(true);
   }, []);
   const openBackupFromOnboarding = React.useCallback(() => {
     closeBackupOnboarding();
@@ -307,6 +342,7 @@ export default function HomeScreen() {
         <ReminderOnboardingModal
           visible={isReminderOnboardingVisible}
           onClose={closeReminderOnboarding}
+          onDismiss={handleReminderOnboardingDismissed}
         />
       </>
     ),
@@ -315,6 +351,7 @@ export default function HomeScreen() {
       closeReminderOnboarding,
       copy,
       dreams.length,
+      handleReminderOnboardingDismissed,
       homeFeedCopy.openArchiveAction,
       isBackupOnboardingVisible,
       isReminderOnboardingVisible,

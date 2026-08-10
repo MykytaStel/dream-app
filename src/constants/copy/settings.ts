@@ -850,7 +850,7 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   reminderOnboardingEyebrow: 'Формуй звичку',
   reminderOnboardingTitle: 'Нагадування записати сон',
   reminderOnboardingDescription:
-    'М\'яке нагадування перед звичним часом пробудження — ніколи не вимагає, і його легко вимкнути.',
+    'М’яке нагадування перед звичним часом пробудження — ніколи не вимагає, і його легко вимкнути.',
   reminderOnboardingPrimaryAction: 'Увімкнути нагадування',
   reminderOnboardingLaterAction: 'Не зараз',
   backupScreenTitle: 'Backup і sync',

@@ -22,6 +22,7 @@ import { trackReminderToggled } from '../../../services/observability/events';
 type ReminderOnboardingModalProps = {
   visible: boolean;
   onClose: () => void;
+  onDismiss?: () => void;
 };
 
 /**
@@ -32,6 +33,7 @@ type ReminderOnboardingModalProps = {
 export function ReminderOnboardingModal({
   visible,
   onClose,
+  onDismiss,
 }: ReminderOnboardingModalProps) {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getSettingsCopy(locale), [locale]);
@@ -55,11 +57,21 @@ export function ReminderOnboardingModal({
       return;
     }
 
-    await applyDreamReminderSettings({
+    const applied = await applyDreamReminderSettings({
       ...DEFAULT_REMINDER_SETTINGS,
       enabled: true,
     });
-    trackReminderToggled({ enabled: true });
+    if (!applied.enabled) {
+      // Same rule as the permission-denial path above: leave the modal open
+      // so the user dismisses it themselves rather than reporting success
+      // while no reminder was actually scheduled.
+      Alert.alert(
+        copy.reminderPermissionDeniedTitle,
+        copy.reminderPermissionDeniedDescription,
+      );
+      return;
+    }
+    trackReminderToggled({ enabled: applied.enabled });
     onClose();
   }, [copy, onClose]);
 
@@ -69,6 +81,7 @@ export function ReminderOnboardingModal({
       animationType="fade"
       visible={visible}
       onRequestClose={onClose}
+      onDismiss={onDismiss}
     >
       <View style={styles.root}>
         {/* The backdrop is a dismiss target, and without a label a screen
@@ -98,9 +111,7 @@ export function ReminderOnboardingModal({
                 <Text style={styles.eyebrow}>
                   {copy.reminderOnboardingEyebrow}
                 </Text>
-                <Text style={styles.title}>
-                  {copy.reminderOnboardingTitle}
-                </Text>
+                <Text style={styles.title}>{copy.reminderOnboardingTitle}</Text>
                 <Text style={styles.description}>
                   {copy.reminderOnboardingDescription}
                 </Text>
@@ -111,7 +122,12 @@ export function ReminderOnboardingModal({
               <Button
                 title={copy.reminderOnboardingPrimaryAction}
                 onPress={() => {
-                  onEnable().catch(() => undefined);
+                  onEnable().catch(error => {
+                    Alert.alert(
+                      copy.reminderSaveErrorTitle,
+                      error instanceof Error ? error.message : String(error),
+                    );
+                  });
                 }}
                 icon="notifications-outline"
                 size="md"

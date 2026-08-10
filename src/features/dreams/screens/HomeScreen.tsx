@@ -59,6 +59,17 @@ import {
   hasSeenReminderOnboarding,
   markReminderOnboardingSeen,
 } from '../../reminders/services/reminderOnboardingService';
+import { BiometricOnboardingModal } from '../../security/components/BiometricOnboardingModal';
+import { shouldShowBiometricOnboarding } from '../../security/model/biometricOnboarding';
+import {
+  hasSeenBiometricOnboarding,
+  markBiometricOnboardingSeen,
+} from '../../security/services/biometricOnboardingService';
+import { checkBiometricAvailability } from '../../../services/security/biometricService';
+import {
+  pickActiveOnboardingModal,
+  type HomeOnboardingModalKind,
+} from '../model/homeOnboardingPriority';
 
 function formatPreview(
   dream: DreamListItem,
@@ -121,18 +132,21 @@ export default function HomeScreen() {
     React.useState(() => hasSeenBackupOnboarding());
   const [hasSeenReminderOnboardingState, setHasSeenReminderOnboardingState] =
     React.useState(() => hasSeenReminderOnboarding());
-  // Gates the backup-onboarding handoff so it never mounts its <Modal> in
-  // the same commit the reminder <Modal> is transitioning from visible to
-  // hidden (iOS drops/garbles a Modal presented while another is still
-  // animating out). Starts `true` (nothing to wait for); flips to `false`
-  // once the reminder modal is shown, and back to `true` only once it has
-  // actually finished dismissing — via native `onDismiss` on iOS, or
-  // immediately in `closeReminderOnboarding` on Android, which never fires
-  // `onDismiss` at all.
-  const [
-    reminderOnboardingReadyForHandoff,
-    setReminderOnboardingReadyForHandoff,
-  ] = React.useState(true);
+  const [hasSeenBiometricOnboardingState, setHasSeenBiometricOnboardingState] =
+    React.useState(() => hasSeenBiometricOnboarding());
+  const [biometricAvailable, setBiometricAvailable] = React.useState(false);
+  // The onboarding modal actually mounted right now, as opposed to whichever
+  // one the raw eligibility data says should be active (computed below as
+  // `rawOnboardingCandidate`). Kept as separate state so a higher-priority
+  // candidate becoming eligible mid-display (e.g. biometrics just got
+  // enrolled while the reminder modal is up) can't stack a second <Modal> on
+  // top of one that's still visible or still animating out — the handoff to
+  // a new modal only happens once `onboardingHandoffReady` says the
+  // previous one has actually finished dismissing.
+  const [visibleOnboardingModal, setVisibleOnboardingModal] =
+    React.useState<HomeOnboardingModalKind | null>(null);
+  const [onboardingHandoffReady, setOnboardingHandoffReady] =
+    React.useState(true);
   const draftSnapshot = React.useMemo(
     () => getDreamDraftSnapshot(draft),
     [draft],
@@ -212,43 +226,62 @@ export default function HomeScreen() {
   const refreshOnboardingState = React.useCallback(() => {
     setHasSeenBackupOnboardingState(hasSeenBackupOnboarding());
     setHasSeenReminderOnboardingState(hasSeenReminderOnboarding());
+    setHasSeenBiometricOnboardingState(hasSeenBiometricOnboarding());
+    checkBiometricAvailability()
+      .then(availability => setBiometricAvailable(availability.available))
+      .catch(() => setBiometricAvailable(false));
   }, []);
   useFocusEffect(
     React.useCallback(() => {
       refreshOnboardingState();
     }, [refreshOnboardingState]),
   );
-  const isReminderOnboardingVisible = React.useMemo(
+  const rawOnboardingCandidate = React.useMemo<HomeOnboardingModalKind | null>(
     () =>
-      !loading &&
-      shouldShowReminderOnboarding({
-        dreamCount: dreams.length,
-        hasSeen: hasSeenReminderOnboardingState,
-      }),
-    [dreams.length, hasSeenReminderOnboardingState, loading],
-  );
-  React.useEffect(() => {
-    if (isReminderOnboardingVisible) {
-      setReminderOnboardingReadyForHandoff(false);
-    }
-  }, [isReminderOnboardingVisible]);
-  const isBackupOnboardingVisible = React.useMemo(
-    () =>
-      !loading &&
-      !isReminderOnboardingVisible &&
-      reminderOnboardingReadyForHandoff &&
-      shouldShowBackupOnboarding({
-        dreamCount: dreams.length,
-        hasSeen: hasSeenBackupOnboardingState,
-      }),
+      loading
+        ? null
+        : pickActiveOnboardingModal({
+            biometric:
+              biometricAvailable &&
+              shouldShowBiometricOnboarding({
+                dreamCount: dreams.length,
+                hasSeen: hasSeenBiometricOnboardingState,
+              }),
+            reminder: shouldShowReminderOnboarding({
+              dreamCount: dreams.length,
+              hasSeen: hasSeenReminderOnboardingState,
+            }),
+            backup: shouldShowBackupOnboarding({
+              dreamCount: dreams.length,
+              hasSeen: hasSeenBackupOnboardingState,
+            }),
+          }),
     [
+      biometricAvailable,
       dreams.length,
       hasSeenBackupOnboardingState,
-      isReminderOnboardingVisible,
+      hasSeenBiometricOnboardingState,
+      hasSeenReminderOnboardingState,
       loading,
-      reminderOnboardingReadyForHandoff,
     ],
   );
+  // The only place that ever promotes a new candidate into
+  // `visibleOnboardingModal`. Runs after every render where the candidate and
+  // the currently-mounted modal disagree; does nothing until
+  // `onboardingHandoffReady` is true, so it naturally waits out an in-flight
+  // dismiss animation before showing whatever should be active next.
+  React.useEffect(() => {
+    if (rawOnboardingCandidate === visibleOnboardingModal) {
+      return;
+    }
+    if (rawOnboardingCandidate !== null && onboardingHandoffReady) {
+      setVisibleOnboardingModal(rawOnboardingCandidate);
+      setOnboardingHandoffReady(false);
+    }
+  }, [onboardingHandoffReady, rawOnboardingCandidate, visibleOnboardingModal]);
+  const isBiometricOnboardingVisible = visibleOnboardingModal === 'biometric';
+  const isReminderOnboardingVisible = visibleOnboardingModal === 'reminder';
+  const isBackupOnboardingVisible = visibleOnboardingModal === 'backup';
   const heroPrompt = React.useMemo(
     () =>
       draft
@@ -282,23 +315,37 @@ export default function HomeScreen() {
       showWakeCapturePrompt,
     ],
   );
+  const closeBiometricOnboarding = React.useCallback(() => {
+    markBiometricOnboardingSeen();
+    setHasSeenBiometricOnboardingState(true);
+    setVisibleOnboardingModal(null);
+    if (Platform.OS === 'android') {
+      // Android's Modal never fires `onDismiss`, and there's no risk of two
+      // <Modal>s overlapping there, so unblock the next modal's handoff
+      // right away.
+      setOnboardingHandoffReady(true);
+    }
+  }, []);
+  const handleBiometricOnboardingDismissed = React.useCallback(() => {
+    // iOS-only: fires once the biometric modal's dismiss animation actually
+    // completes, so the next onboarding modal is safe to mount afterward.
+    setOnboardingHandoffReady(true);
+  }, []);
   const closeBackupOnboarding = React.useCallback(() => {
     markBackupOnboardingSeen();
     setHasSeenBackupOnboardingState(true);
+    setVisibleOnboardingModal(null);
   }, []);
   const closeReminderOnboarding = React.useCallback(() => {
     markReminderOnboardingSeen();
     setHasSeenReminderOnboardingState(true);
+    setVisibleOnboardingModal(null);
     if (Platform.OS === 'android') {
-      // Android's Modal never fires `onDismiss`, and there's no risk of two
-      // <Modal>s overlapping there, so unblock the backup handoff right away.
-      setReminderOnboardingReadyForHandoff(true);
+      setOnboardingHandoffReady(true);
     }
   }, []);
   const handleReminderOnboardingDismissed = React.useCallback(() => {
-    // iOS-only: fires once the reminder modal's dismiss animation actually
-    // completes, so the backup modal is safe to mount afterward.
-    setReminderOnboardingReadyForHandoff(true);
+    setOnboardingHandoffReady(true);
   }, []);
   const openBackupFromOnboarding = React.useCallback(() => {
     closeBackupOnboarding();
@@ -333,27 +380,35 @@ export default function HomeScreen() {
           onOpenArchive={openArchive}
         />
 
-        <BackupOnboardingModal
-          visible={isBackupOnboardingVisible}
-          dreamCount={dreams.length}
-          onClose={closeBackupOnboarding}
-          onOpenBackup={openBackupFromOnboarding}
+        <BiometricOnboardingModal
+          visible={isBiometricOnboardingVisible}
+          onClose={closeBiometricOnboarding}
+          onDismiss={handleBiometricOnboardingDismissed}
         />
         <ReminderOnboardingModal
           visible={isReminderOnboardingVisible}
           onClose={closeReminderOnboarding}
           onDismiss={handleReminderOnboardingDismissed}
         />
+        <BackupOnboardingModal
+          visible={isBackupOnboardingVisible}
+          dreamCount={dreams.length}
+          onClose={closeBackupOnboarding}
+          onOpenBackup={openBackupFromOnboarding}
+        />
       </>
     ),
     [
       closeBackupOnboarding,
+      closeBiometricOnboarding,
       closeReminderOnboarding,
       copy,
       dreams.length,
+      handleBiometricOnboardingDismissed,
       handleReminderOnboardingDismissed,
       homeFeedCopy.openArchiveAction,
       isBackupOnboardingVisible,
+      isBiometricOnboardingVisible,
       isReminderOnboardingVisible,
       openArchive,
       openBackupFromOnboarding,

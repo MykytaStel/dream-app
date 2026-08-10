@@ -134,7 +134,9 @@ export default function HomeScreen() {
     React.useState(() => hasSeenReminderOnboarding());
   const [hasSeenBiometricOnboardingState, setHasSeenBiometricOnboardingState] =
     React.useState(() => hasSeenBiometricOnboarding());
-  const [biometricAvailable, setBiometricAvailable] = React.useState(false);
+  const [biometricAvailable, setBiometricAvailable] = React.useState<
+    boolean | null
+  >(null);
   // The onboarding modal actually mounted right now, as opposed to whichever
   // one the raw eligibility data says should be active (computed below as
   // `rawOnboardingCandidate`). Kept as separate state so a higher-priority
@@ -238,7 +240,7 @@ export default function HomeScreen() {
   );
   const rawOnboardingCandidate = React.useMemo<HomeOnboardingModalKind | null>(
     () =>
-      loading
+      loading || biometricAvailable === null
         ? null
         : pickActiveOnboardingModal({
             biometric:
@@ -326,15 +328,18 @@ export default function HomeScreen() {
       setOnboardingHandoffReady(true);
     }
   }, []);
-  const handleBiometricOnboardingDismissed = React.useCallback(() => {
-    // iOS-only: fires once the biometric modal's dismiss animation actually
-    // completes, so the next onboarding modal is safe to mount afterward.
+  // Fires once a modal's dismiss animation actually completes (iOS), or
+  // immediately on Android via the `close*` handlers above, so the next
+  // onboarding modal is safe to mount afterward. Shared across every modal
+  // that has a successor waiting in priority order.
+  const handleOnboardingDismissed = React.useCallback(() => {
     setOnboardingHandoffReady(true);
   }, []);
   const closeBackupOnboarding = React.useCallback(() => {
     markBackupOnboardingSeen();
     setHasSeenBackupOnboardingState(true);
     setVisibleOnboardingModal(null);
+    setOnboardingHandoffReady(true);
   }, []);
   const closeReminderOnboarding = React.useCallback(() => {
     markReminderOnboardingSeen();
@@ -343,9 +348,6 @@ export default function HomeScreen() {
     if (Platform.OS === 'android') {
       setOnboardingHandoffReady(true);
     }
-  }, []);
-  const handleReminderOnboardingDismissed = React.useCallback(() => {
-    setOnboardingHandoffReady(true);
   }, []);
   const openBackupFromOnboarding = React.useCallback(() => {
     closeBackupOnboarding();
@@ -383,12 +385,12 @@ export default function HomeScreen() {
         <BiometricOnboardingModal
           visible={isBiometricOnboardingVisible}
           onClose={closeBiometricOnboarding}
-          onDismiss={handleBiometricOnboardingDismissed}
+          onDismiss={handleOnboardingDismissed}
         />
         <ReminderOnboardingModal
           visible={isReminderOnboardingVisible}
           onClose={closeReminderOnboarding}
-          onDismiss={handleReminderOnboardingDismissed}
+          onDismiss={handleOnboardingDismissed}
         />
         <BackupOnboardingModal
           visible={isBackupOnboardingVisible}
@@ -404,8 +406,7 @@ export default function HomeScreen() {
       closeReminderOnboarding,
       copy,
       dreams.length,
-      handleBiometricOnboardingDismissed,
-      handleReminderOnboardingDismissed,
+      handleOnboardingDismissed,
       homeFeedCopy.openArchiveAction,
       isBackupOnboardingVisible,
       isBiometricOnboardingVisible,

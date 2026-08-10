@@ -242,6 +242,12 @@ const SETTINGS_COPY_EN = {
   backupOnboardingPreviewMarkSeenAction: 'Mark as seen',
   backupOnboardingPreviewFootnote:
     'In production this modal opens once after the archive reaches 3 saved dreams.',
+  reminderOnboardingEyebrow: 'Build the habit',
+  reminderOnboardingTitle: 'A nightly nudge to write it down',
+  reminderOnboardingDescription:
+    'A gentle reminder before your usual wake time — never demanding, and easy to turn off.',
+  reminderOnboardingPrimaryAction: 'Enable reminders',
+  reminderOnboardingLaterAction: 'Not now',
   backupScreenTitle: 'Backup & sync',
   backupScreenSubtitle:
     'Restore backups bring data back into the app. Markdown, text, and PDFs are for reading or moving elsewhere. Cloud backup stays optional.',
@@ -841,6 +847,12 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   backupOnboardingPreviewMarkSeenAction: 'Позначити як показаний',
   backupOnboardingPreviewFootnote:
     'У production цей modal відкривається один раз після 3 збережених снів.',
+  reminderOnboardingEyebrow: 'Формуй звичку',
+  reminderOnboardingTitle: 'Нагадування записати сон',
+  reminderOnboardingDescription:
+    'М\'яке нагадування перед звичним часом пробудження — ніколи не вимагає, і його легко вимкнути.',
+  reminderOnboardingPrimaryAction: 'Увімкнути нагадування',
+  reminderOnboardingLaterAction: 'Не зараз',
   backupScreenTitle: 'Backup і sync',
   backupScreenSubtitle:
     'Restore-backup повертає дані в застосунок. Markdown, text і PDF потрібні для читання або перенесення деінде. Хмарний backup лишається опційним.',

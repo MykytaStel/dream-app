@@ -589,6 +589,12 @@ const SETTINGS_COPY_EN = {
     'No biometrics are set up on this device. Enable Face ID or fingerprint in system settings first.',
   biometricLockEnableErrorFailed:
     'Biometric check failed. App lock was not enabled.',
+  biometricOnboardingEyebrow: 'Keep it private',
+  biometricOnboardingTitle: 'Add a lock to your dreams',
+  biometricOnboardingDescription:
+    'Face ID, Touch ID, or a fingerprint keeps entries private if someone else picks up your phone — easy to turn off anytime.',
+  biometricOnboardingPrimaryAction: 'Enable app lock',
+  biometricOnboardingLaterAction: 'Not now',
   analysisTitle: 'Dream analysis',
   analysisDescription: 'Generate a local reflection from saved dream data.',
   analysisProviderLabel: 'Provider',
@@ -1198,6 +1204,12 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
     'На цьому пристрої не налаштовано біометрію. Спочатку увімкни Face ID або відбиток у системних налаштуваннях.',
   biometricLockEnableErrorFailed:
     'Біометрична перевірка не пройшла. Блокування не увімкнено.',
+  biometricOnboardingEyebrow: 'Захисти приватність',
+  biometricOnboardingTitle: 'Додай блокування для своїх снів',
+  biometricOnboardingDescription:
+    'Face ID, Touch ID або відбиток пальця приховають записи від чужих очей — вимкнути можна будь-коли.',
+  biometricOnboardingPrimaryAction: 'Увімкнути блокування',
+  biometricOnboardingLaterAction: 'Не зараз',
   analysisTitle: 'Аналіз сну',
   analysisDescription: 'Генеруй локальну рефлексію зі збережених даних сну.',
   analysisProviderLabel: 'Провайдер',

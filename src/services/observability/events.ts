@@ -8,6 +8,7 @@ export const OBS_EVENTS = {
   DraftResumed: 'draft_resumed',
   DreamSaved: 'dream_saved',
   ReminderToggled: 'reminder_toggled',
+  BiometricLockToggled: 'biometric_lock_toggled',
   PracticeHubOpened: 'practice_hub_opened',
   LucidPracticeStarted: 'lucid_practice_started',
   RealityCheckCompleted: 'reality_check_completed',
@@ -93,6 +94,12 @@ export function trackDreamSaved(input: {
 
 export function trackReminderToggled(input: { enabled: boolean }) {
   trackEvent(OBS_EVENTS.ReminderToggled, {
+    enabled: input.enabled,
+  });
+}
+
+export function trackBiometricLockToggled(input: { enabled: boolean }) {
+  trackEvent(OBS_EVENTS.BiometricLockToggled, {
     enabled: input.enabled,
   });
 }

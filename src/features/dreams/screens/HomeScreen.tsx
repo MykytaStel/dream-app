@@ -47,6 +47,12 @@ import {
   hasSeenBackupOnboarding,
   markBackupOnboardingSeen,
 } from '../../settings/services/backupOnboardingService';
+import { ReminderOnboardingModal } from '../../reminders/components/ReminderOnboardingModal';
+import { shouldShowReminderOnboarding } from '../../reminders/model/reminderOnboarding';
+import {
+  hasSeenReminderOnboarding,
+  markReminderOnboardingSeen,
+} from '../../reminders/services/reminderOnboardingService';
 
 function formatPreview(
   dream: DreamListItem,
@@ -107,6 +113,8 @@ export default function HomeScreen() {
   const showWakeCapturePrompt = isWakeCaptureWindow();
   const [hasSeenBackupOnboardingState, setHasSeenBackupOnboardingState] =
     React.useState(() => hasSeenBackupOnboarding());
+  const [hasSeenReminderOnboardingState, setHasSeenReminderOnboardingState] =
+    React.useState(() => hasSeenReminderOnboarding());
   const draftSnapshot = React.useMemo(
     () => getDreamDraftSnapshot(draft),
     [draft],
@@ -185,20 +193,36 @@ export default function HomeScreen() {
   }, [navigation]);
   const refreshOnboardingState = React.useCallback(() => {
     setHasSeenBackupOnboardingState(hasSeenBackupOnboarding());
+    setHasSeenReminderOnboardingState(hasSeenReminderOnboarding());
   }, []);
   useFocusEffect(
     React.useCallback(() => {
       refreshOnboardingState();
     }, [refreshOnboardingState]),
   );
+  const isReminderOnboardingVisible = React.useMemo(
+    () =>
+      !loading &&
+      shouldShowReminderOnboarding({
+        dreamCount: dreams.length,
+        hasSeen: hasSeenReminderOnboardingState,
+      }),
+    [dreams.length, hasSeenReminderOnboardingState, loading],
+  );
   const isBackupOnboardingVisible = React.useMemo(
     () =>
       !loading &&
+      !isReminderOnboardingVisible &&
       shouldShowBackupOnboarding({
         dreamCount: dreams.length,
         hasSeen: hasSeenBackupOnboardingState,
       }),
-    [dreams.length, hasSeenBackupOnboardingState, loading],
+    [
+      dreams.length,
+      hasSeenBackupOnboardingState,
+      isReminderOnboardingVisible,
+      loading,
+    ],
   );
   const heroPrompt = React.useMemo(
     () =>
@@ -236,6 +260,10 @@ export default function HomeScreen() {
   const closeBackupOnboarding = React.useCallback(() => {
     markBackupOnboardingSeen();
     setHasSeenBackupOnboardingState(true);
+  }, []);
+  const closeReminderOnboarding = React.useCallback(() => {
+    markReminderOnboardingSeen();
+    setHasSeenReminderOnboardingState(true);
   }, []);
   const openBackupFromOnboarding = React.useCallback(() => {
     closeBackupOnboarding();
@@ -276,14 +304,20 @@ export default function HomeScreen() {
           onClose={closeBackupOnboarding}
           onOpenBackup={openBackupFromOnboarding}
         />
+        <ReminderOnboardingModal
+          visible={isReminderOnboardingVisible}
+          onClose={closeReminderOnboarding}
+        />
       </>
     ),
     [
       closeBackupOnboarding,
+      closeReminderOnboarding,
       copy,
       dreams.length,
       homeFeedCopy.openArchiveAction,
       isBackupOnboardingVisible,
+      isReminderOnboardingVisible,
       openArchive,
       openBackupFromOnboarding,
       openDreamDetail,

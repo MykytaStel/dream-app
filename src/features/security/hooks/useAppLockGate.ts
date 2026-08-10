@@ -6,17 +6,12 @@ import {
   getBiometricLockEnabled,
   setBiometricLockEnabled,
 } from '../../../services/security/biometricService';
+import { shouldAutoDisableBiometricLock } from '../model/biometricLockAutoDisable';
 import { hapticUnlock } from '../../../services/haptics/hapticService';
-
-export type BiometricLockAutoDisabledReason =
-  | 'not-supported'
-  | 'not-enrolled'
-  | 'unknown';
 
 export function useAppLockGate(promptMessage: string) {
   const [locked, setLocked] = React.useState(() => getBiometricLockEnabled());
-  const [autoDisabledReason, setAutoDisabledReason] =
-    React.useState<BiometricLockAutoDisabledReason | null>(null);
+  const [autoDisabled, setAutoDisabled] = React.useState(false);
   const appStateRef = React.useRef<AppStateStatus>(AppState.currentState);
   const authInProgressRef = React.useRef(false);
 
@@ -36,16 +31,18 @@ export function useAppLockGate(promptMessage: string) {
       }
 
       const availability = await checkBiometricAvailability();
-      if (!availability.available) {
-        // The device itself confirms biometric auth cannot succeed right
-        // now (hardware/enrollment changed, e.g. after an OS update).
-        // Continuing to require it would lock the user out of their own
-        // journal permanently, and protects nothing — there's no attacker
-        // to keep out if the OS can't verify anyone either. Disable the
-        // lock instead of leaving them stuck.
+      if (shouldAutoDisableBiometricLock(availability)) {
+        // No biometrics are enrolled on this device at all — continuing to
+        // require them would lock the user out of their own journal
+        // permanently. Deliberately narrow: `available: false` can also
+        // mean a transient state (e.g. a biometric lockout after repeated
+        // failed attempts, which an attacker could trigger on purpose), so
+        // only this one durable, unambiguous reason auto-disables the lock
+        // — see shouldAutoDisableBiometricLock for why the other reasons
+        // must not.
         setBiometricLockEnabled(false);
         setLocked(false);
-        setAutoDisabledReason(availability.reason);
+        setAutoDisabled(true);
       }
       return false;
     } finally {
@@ -54,7 +51,7 @@ export function useAppLockGate(promptMessage: string) {
   }, [promptMessage]);
 
   const dismissAutoDisabledNotice = React.useCallback(() => {
-    setAutoDisabledReason(null);
+    setAutoDisabled(false);
   }, []);
 
   // Auto-trigger on initial mount if locked
@@ -92,7 +89,7 @@ export function useAppLockGate(promptMessage: string) {
   return {
     locked,
     triggerAuth,
-    autoDisabledReason,
+    autoDisabled,
     dismissAutoDisabledNotice,
   };
 }

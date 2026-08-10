@@ -1,5 +1,12 @@
 import React from 'react';
-import { Alert, Modal, Pressable, StyleSheet, View } from 'react-native';
+import {
+  Alert,
+  InteractionManager,
+  Modal,
+  Pressable,
+  StyleSheet,
+  View,
+} from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAppTheme } from '../../../theme/AppThemeProvider';
 import { Theme } from '../../../theme/theme';
@@ -12,8 +19,7 @@ type AppLockGateProps = {
   subtitle: string;
   appName: string;
   lockDisabledTitle: string;
-  lockDisabledDescriptionNotEnrolled: string;
-  lockDisabledDescriptionUnsupported: string;
+  lockDisabledDescription: string;
 };
 
 export function AppLockGate({
@@ -23,30 +29,31 @@ export function AppLockGate({
   subtitle,
   appName,
   lockDisabledTitle,
-  lockDisabledDescriptionNotEnrolled,
-  lockDisabledDescriptionUnsupported,
+  lockDisabledDescription,
 }: AppLockGateProps) {
-  const { locked, triggerAuth, autoDisabledReason, dismissAutoDisabledNotice } =
+  const { locked, triggerAuth, autoDisabled, dismissAutoDisabledNotice } =
     useAppLockGate(promptMessage);
   const { theme } = useAppTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   React.useEffect(() => {
-    if (!autoDisabledReason) {
+    if (!autoDisabled) {
       return;
     }
-    Alert.alert(
-      lockDisabledTitle,
-      autoDisabledReason === 'not-enrolled'
-        ? lockDisabledDescriptionNotEnrolled
-        : lockDisabledDescriptionUnsupported,
-      [{ text: 'OK', onPress: dismissAutoDisabledNotice }],
-    );
+    // Deferred past the lock screen's own dismiss animation — presenting an
+    // Alert onto a Modal that's still animating out is a known way for iOS
+    // to drop it, which would leave this security-relevant change (the lock
+    // just turned itself off) with no visible notice at all.
+    const task = InteractionManager.runAfterInteractions(() => {
+      Alert.alert(lockDisabledTitle, lockDisabledDescription, [
+        { text: 'OK', onPress: dismissAutoDisabledNotice },
+      ]);
+    });
+    return () => task.cancel();
   }, [
-    autoDisabledReason,
+    autoDisabled,
     dismissAutoDisabledNotice,
-    lockDisabledDescriptionNotEnrolled,
-    lockDisabledDescriptionUnsupported,
+    lockDisabledDescription,
     lockDisabledTitle,
   ]);
 

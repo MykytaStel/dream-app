@@ -24,6 +24,7 @@ export const REVIEW_SAVED_STATE_STORAGE_KEY = 'review-saved-state';
 export const MEMORY_PATTERN_FEEDBACK_STORAGE_KEY = 'memory-pattern-feedback';
 export const BACKUP_ONBOARDING_SEEN_KEY = 'backup-onboarding-seen';
 export const REMINDER_ONBOARDING_SEEN_KEY = 'reminder-onboarding-seen';
+export const BIOMETRIC_ONBOARDING_SEEN_KEY = 'biometric-onboarding-seen';
 export const ARCHIVE_KEY_STRANDED_DISCLOSURE_SEEN_KEY =
   'archive-key-stranded-disclosure-seen';
 export const APP_LOCALE_KEY = 'app-locale';

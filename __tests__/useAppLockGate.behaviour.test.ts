@@ -109,6 +109,36 @@ describe('useAppLockGate auto-disable', () => {
     expect(result.current.autoDisabled).toBe(true);
   });
 
+  test('a failed prompt classified as "not-enrolled" flips `locked` from true to false via the mount auto-trigger', async () => {
+    mockGetBiometricLockEnabled.mockReturnValue(true);
+    mockAuthenticateWithBiometrics.mockResolvedValue(false);
+    mockCheckBiometricAvailability.mockResolvedValue({
+      available: false,
+      reason: 'not-enrolled',
+    });
+
+    const { result } = await renderHook(() => useAppLockGate('Unlock'));
+
+    await act(async () => {});
+
+    expect(result.current.locked).toBe(false);
+  });
+
+  test('a failed prompt classified as "not-supported" leaves `locked` true via the mount auto-trigger', async () => {
+    mockGetBiometricLockEnabled.mockReturnValue(true);
+    mockAuthenticateWithBiometrics.mockResolvedValue(false);
+    mockCheckBiometricAvailability.mockResolvedValue({
+      available: false,
+      reason: 'not-supported',
+    });
+
+    const { result } = await renderHook(() => useAppLockGate('Unlock'));
+
+    await act(async () => {});
+
+    expect(result.current.locked).toBe(true);
+  });
+
   test('dismissAutoDisabledNotice clears the notice so a later recurrence can fire again', async () => {
     mockAuthenticateWithBiometrics.mockResolvedValue(false);
     mockCheckBiometricAvailability.mockResolvedValue({

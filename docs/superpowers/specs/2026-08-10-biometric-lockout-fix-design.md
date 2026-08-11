@@ -92,19 +92,28 @@ before this fix existed), never fails open.
 - `dismissAutoDisabledNotice: () => void` — clears it, called once the notice has
   been shown, so a later recurrence (lock re-enabled, breaks again) can fire again.
 
-`AppLockGate.tsx` shows a plain `Alert.alert` with one message. The trigger is
-platform-specific because RN's `Modal.onDismiss` **is iOS-only**
+`AppLockGate.tsx` shows a plain `Alert.alert` with one message, via two
+cooperating triggers guarded against double-firing by a ref
+(`noticeShownRef`). RN's `Modal.onDismiss` **is iOS-only**
 (`node_modules/react-native/Libraries/Modal/Modal.js`: "OnDismiss is implemented
 on iOS only"): on iOS the alert is shown from the lock `Modal`'s own `onDismiss`
-prop, which fires only after that Modal's dismiss animation genuinely completes —
-presenting an `Alert` while it's still animating out is a known way for iOS to
-drop it silently. (An earlier version of this fix tried to defer the alert with
-`InteractionManager.runAfterInteractions`; that API is a deprecated no-op stub in
-this RN version — `setImmediate` under the hood, not an animation-aware
-deferral — so it did not actually fix anything. `Modal.onDismiss` is the real,
-supported hook for this.) On Android, which never fires `onDismiss` and has no
-known equivalent presentation race, the alert shows immediately via a `useEffect`
-watching `autoDisabled`.
+prop, which fires once that Modal's dismiss animation genuinely completes. It
+cannot be the *only* trigger, though — auto-disable can resolve within tens of
+milliseconds of mount, i.e. while the Modal may still be mid-*presentation*, and
+UIKit can silently swallow a dismiss call issued in that window (the completion
+block that would fire `onDismiss` simply never runs, with no retry). A 600ms
+fallback timer covers that gap; `RCTAlertController` presents on its own
+dedicated `UIWindow` above the Modal's presentation stack, so the timer firing
+concurrently with the Modal's own animation is not itself a presentation
+conflict — this is a "make sure it fires at all" fallback, not a
+"wait for the animation to finish first" one. (An earlier version of this fix
+tried to defer the alert with `InteractionManager.runAfterInteractions`; that API
+is a deprecated no-op stub in this RN version — `setImmediate` under the hood,
+not an animation-aware deferral — so it did not actually fix anything.
+`Modal.onDismiss` is the real, supported hook, just not a sufficient one alone.)
+On Android, which never fires `onDismiss` and has no known equivalent
+presentation race, the alert shows immediately via a `useEffect` watching
+`autoDisabled`, with no fallback timer needed.
 
 ### Copy — deliberately not localized, matching the existing lock screen
 
@@ -157,21 +166,6 @@ next time the user visits Settings, with no additional wiring.
 
 ## Testing
 
-- `shouldAutoDisableBiometricLock` (`__tests__/biometricLockAutoDisable.test.ts`):
-  4 cases — `not-enrolled` → true, `not-supported` → false, `unknown` → false,
-  `available: true` → false.
-- `checkBiometricAvailability`'s classifier (`__tests__/biometricService.test.ts`):
-  a table test with `react-native-biometrics` auto-mocked (`jest.mock('react-native-biometrics')`,
-  then configuring the constructed instance via `MockedClass.mock.instances[0]` —
-  `biometricService.ts` constructs a single instance at module load and reuses it,
-  so per-test setup targets that one instance's `isSensorAvailable` mock), asserting
-  the *actual* native error strings classify correctly: iOS `Code=-7`/`Code=-5`
-  (English and non-English localized message) → `not-enrolled`; iOS `Code=-8`
-  (lockout) and `Code=-6` → `not-supported`; Android `BIOMETRIC_ERROR_NONE_ENROLLED`
-  → `not-enrolled`; `BIOMETRIC_ERROR_HW_UNAVAILABLE`/`BIOMETRIC_ERROR_NO_HARDWARE`
-  → `not-supported`; unmapped/undefined error → `not-supported`; rejected native
-  call → `unknown`. This is the layer that actually matters — a predicate that's
-  correct in isolation is only as good as the classification feeding it.
 - `useAppLockGate` (`__tests__/useAppLockGate.behaviour.test.ts`, `renderHook` from
   `@testing-library/react-native`, matching this codebase's `*.behaviour.test.ts`
   convention): this is the layer that held the original Critical bypass, and it
@@ -180,12 +174,17 @@ next time the user visits Settings, with no additional wiring.
   suite. Cases: a failed prompt with biometrics still `available: true` leaves the
   lock in place; failed + `not-supported` leaves it in place (the bucket a real
   lockout falls into); failed + `unknown` leaves it in place; failed + `not-enrolled`
-  disables the lock, unlocks, and sets the notice flag; `dismissAutoDisabledNotice`
-  clears it; a successful prompt unlocks via the normal path without touching
-  biometric-lock settings or even calling `checkBiometricAvailability`; initial
-  `locked` reflects the persisted flag. Verified by temporarily reverting the
-  auto-disable condition to pass 1's code — 2 of these tests fail, confirming they
-  actually guard the regression rather than just exercising the code.
+  disables the lock, unlocks, and sets the notice flag, including a dedicated
+  before/after assertion that `locked` genuinely transitions `true → false` (and
+  stays `true` on `not-supported`) via the mount auto-trigger, not just that the
+  auto-disable side effects fired; `dismissAutoDisabledNotice` clears the notice so
+  a later recurrence can fire again; a successful prompt unlocks via the normal
+  path without touching biometric-lock settings or even calling
+  `checkBiometricAvailability`; initial `locked` reflects the persisted flag.
+  Verified by temporarily reverting the auto-disable condition to pass 1's code —
+  2 tests fail — and separately by temporarily removing the `setLocked(false)` call
+  from the auto-disable branch — 1 more test fails — confirming these guard actual
+  regressions rather than just exercising the code.
 - `checkBiometricAvailability`'s classifier (`__tests__/biometricService.test.ts`):
   a table test with `react-native-biometrics` auto-mocked (`jest.mock('react-native-biometrics')`,
   then configuring the constructed instance via `MockedClass.mock.instances[0]` —
@@ -206,11 +205,12 @@ next time the user visits Settings, with no additional wiring.
   `available: true` → false. (Narrower value now that `useAppLockGate` itself has
   direct coverage above, but kept — it's still the cheapest, most direct
   documentation of the security boundary in isolation.)
-- `AppLockGate.tsx`'s dual-path alert trigger (`onDismiss` vs. the Android/fallback
-  effect) still has no dedicated test — verified via `npx tsc --noEmit`,
-  `npx eslint`, and the full `npx jest` suite for regressions. This remains the one
-  piece of this fix verified by reading the code and manual testing rather than an
-  automated test, noted here rather than left implicit.
+- `AppLockGate.tsx`'s dual-path alert trigger (`onDismiss` vs. the timer fallback
+  vs. the Android-immediate effect) still has no dedicated test — verified via
+  `npx tsc --noEmit`, `npx eslint`, and the full `npx jest` suite for regressions,
+  plus manual code tracing of the double-show/zero-show/re-arm paths during review.
+  This remains the one piece of this fix verified without an automated test, noted
+  here rather than left implicit.
 - Manual: with biometric lock enabled and the app locked, remove all enrolled
   biometrics at the OS level (or stub `checkBiometricAvailability` during a debug
   session) and confirm: the app unlocks, the "App lock turned off" alert appears

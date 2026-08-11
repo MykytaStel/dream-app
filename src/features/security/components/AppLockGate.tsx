@@ -64,16 +64,16 @@ export function AppLockGate({
     }
 
     // iOS: `onDismiss` (below, on the Modal) is the preferred trigger — it
-    // fires only once the lock screen's own dismiss animation genuinely
-    // completes, avoiding a drop from presenting an Alert while that Modal
-    // is still animating out. But it cannot be relied on exclusively: if
-    // `locked` flips to `false` while the Modal is still mid-*presentation*
+    // fires once the lock screen's own dismiss animation genuinely
+    // completes. It cannot be relied on exclusively, though: if `locked`
+    // flips to `false` while the Modal is still mid-*presentation*
     // (plausible here, since auto-disable can resolve within tens of
     // milliseconds of mount), UIKit can silently swallow the dismiss call
-    // entirely, and `onDismiss` then never fires at all. This fallback
-    // guarantees the notice — a security-relevant state change — is never
-    // silently lost; `showAutoDisabledNotice`'s guard above makes it safe
-    // to also fire from `onDismiss` if that happens to land first.
+    // entirely — the completion block that would have fired `onDismiss`
+    // never runs, and there is no retry. This fallback guarantees the
+    // notice — a security-relevant state change — is never silently lost;
+    // `showAutoDisabledNotice`'s guard above makes it safe to also fire
+    // from `onDismiss` if that happens to land first.
     const fallbackTimer = setTimeout(showAutoDisabledNotice, 600);
     return () => clearTimeout(fallbackTimer);
   }, [autoDisabled, showAutoDisabledNotice]);

@@ -29,27 +29,56 @@ export function AppLockGate({
   const { theme } = useAppTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
+  // Guards against showing the notice twice when both the iOS `onDismiss`
+  // trigger and its fallback timer below end up firing for the same
+  // auto-disable event.
+  const noticeShownRef = React.useRef(false);
+
   const showAutoDisabledNotice = React.useCallback(() => {
+    if (noticeShownRef.current) {
+      return;
+    }
+    noticeShownRef.current = true;
     Alert.alert(lockDisabledTitle, lockDisabledDescription, [
-      { text: 'OK', onPress: dismissAutoDisabledNotice },
+      {
+        text: 'OK',
+        onPress: () => {
+          noticeShownRef.current = false;
+          dismissAutoDisabledNotice();
+        },
+      },
     ]);
   }, [dismissAutoDisabledNotice, lockDisabledDescription, lockDisabledTitle]);
 
-  // Android's Modal never fires `onDismiss` (RN implements it iOS-only), and
-  // there's no known equivalent presentation race there, so show the notice
-  // as soon as the lock disables itself.
   React.useEffect(() => {
-    if (autoDisabled && Platform.OS === 'android') {
-      showAutoDisabledNotice();
+    if (!autoDisabled) {
+      return;
     }
+
+    if (Platform.OS === 'android') {
+      // Android's Modal never fires `onDismiss` (RN implements it iOS
+      // only), and there's no known equivalent presentation race there, so
+      // show the notice as soon as the lock disables itself.
+      showAutoDisabledNotice();
+      return;
+    }
+
+    // iOS: `onDismiss` (below, on the Modal) is the preferred trigger — it
+    // fires only once the lock screen's own dismiss animation genuinely
+    // completes, avoiding a drop from presenting an Alert while that Modal
+    // is still animating out. But it cannot be relied on exclusively: if
+    // `locked` flips to `false` while the Modal is still mid-*presentation*
+    // (plausible here, since auto-disable can resolve within tens of
+    // milliseconds of mount), UIKit can silently swallow the dismiss call
+    // entirely, and `onDismiss` then never fires at all. This fallback
+    // guarantees the notice — a security-relevant state change — is never
+    // silently lost; `showAutoDisabledNotice`'s guard above makes it safe
+    // to also fire from `onDismiss` if that happens to land first.
+    const fallbackTimer = setTimeout(showAutoDisabledNotice, 600);
+    return () => clearTimeout(fallbackTimer);
   }, [autoDisabled, showAutoDisabledNotice]);
 
   const handleLockModalDismiss = React.useCallback(() => {
-    // iOS only: fires once the lock screen's own dismiss animation actually
-    // completes. Presenting an Alert while that Modal is still animating out
-    // is a known way for iOS to drop it, which would leave this
-    // security-relevant change (the lock just turned itself off) with no
-    // visible notice at all.
     if (autoDisabled) {
       showAutoDisabledNotice();
     }

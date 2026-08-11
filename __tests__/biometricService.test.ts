@@ -1,5 +1,6 @@
 jest.mock('react-native-biometrics');
 
+import { Platform } from 'react-native';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import { checkBiometricAvailability } from '../src/services/security/biometricService';
 
@@ -13,8 +14,15 @@ const mockIsSensorAvailable = MockReactNativeBiometrics.mock.instances[0]
   .isSensorAvailable as jest.Mock;
 
 describe('checkBiometricAvailability classification', () => {
+  const originalPlatformOS = Platform.OS;
+
   beforeEach(() => {
     mockIsSensorAvailable.mockReset();
+    Platform.OS = 'ios';
+  });
+
+  afterAll(() => {
+    Platform.OS = originalPlatformOS;
   });
 
   it('reports available with the biometry type when the sensor is usable', async () => {
@@ -97,6 +105,10 @@ describe('checkBiometricAvailability classification', () => {
   });
 
   describe('Android BiometricManager constants (literal, non-localized strings)', () => {
+    beforeEach(() => {
+      Platform.OS = 'android';
+    });
+
     it('classifies BIOMETRIC_ERROR_NONE_ENROLLED as not-enrolled', async () => {
       mockIsSensorAvailable.mockResolvedValue({
         available: false,
@@ -131,6 +143,31 @@ describe('checkBiometricAvailability classification', () => {
         available: false,
         reason: 'not-supported',
       });
+    });
+
+    it('does NOT run the iOS Code= matcher on Android — an unrelated string that happens to contain "Code=-7" must not classify as not-enrolled', async () => {
+      mockIsSensorAvailable.mockResolvedValue({
+        available: false,
+        error: 'Some unrelated Android error mentioning Code=-7 by coincidence',
+      });
+
+      await expect(checkBiometricAvailability()).resolves.toEqual({
+        available: false,
+        reason: 'not-supported',
+      });
+    });
+  });
+
+  it('does NOT match an unrelated error domain that happens to carry the same numeric code — the classifier is anchored to the LocalAuthentication domain, not a bare number', async () => {
+    mockIsSensorAvailable.mockResolvedValue({
+      available: false,
+      error:
+        'Error Domain=NSSomeUnrelatedDomain Code=-7 "Unrelated failure." UserInfo={NSLocalizedDescription=Unrelated failure.}',
+    });
+
+    await expect(checkBiometricAvailability()).resolves.toEqual({
+      available: false,
+      reason: 'not-supported',
     });
   });
 

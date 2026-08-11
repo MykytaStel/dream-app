@@ -172,18 +172,57 @@ next time the user visits Settings, with no additional wiring.
   → `not-supported`; unmapped/undefined error → `not-supported`; rejected native
   call → `unknown`. This is the layer that actually matters — a predicate that's
   correct in isolation is only as good as the classification feeding it.
-- `src/features/security/hooks/useAppLockGate.ts` and `AppLockGate.tsx` still have
-  no dedicated test file (native `AppState`/`Modal` dependencies) — verified via
-  `npx tsc --noEmit`, `npx eslint`, and the full `npx jest` suite for regressions.
+- `useAppLockGate` (`__tests__/useAppLockGate.behaviour.test.ts`, `renderHook` from
+  `@testing-library/react-native`, matching this codebase's `*.behaviour.test.ts`
+  convention): this is the layer that held the original Critical bypass, and it
+  had no coverage at all through the first two revisions — a straight revert of the
+  auto-disable condition to "any unavailable reason" passed every other test in the
+  suite. Cases: a failed prompt with biometrics still `available: true` leaves the
+  lock in place; failed + `not-supported` leaves it in place (the bucket a real
+  lockout falls into); failed + `unknown` leaves it in place; failed + `not-enrolled`
+  disables the lock, unlocks, and sets the notice flag; `dismissAutoDisabledNotice`
+  clears it; a successful prompt unlocks via the normal path without touching
+  biometric-lock settings or even calling `checkBiometricAvailability`; initial
+  `locked` reflects the persisted flag. Verified by temporarily reverting the
+  auto-disable condition to pass 1's code — 2 of these tests fail, confirming they
+  actually guard the regression rather than just exercising the code.
+- `checkBiometricAvailability`'s classifier (`__tests__/biometricService.test.ts`):
+  a table test with `react-native-biometrics` auto-mocked (`jest.mock('react-native-biometrics')`,
+  then configuring the constructed instance via `MockedClass.mock.instances[0]` —
+  `biometricService.ts` constructs a single instance at module load and reuses it,
+  so per-test setup targets that one instance's `isSensorAvailable` mock), asserting
+  the *actual* native error strings classify correctly on the *correct* platform
+  (`Platform.OS` set per describe block): iOS `Code=-7`/`Code=-5` (English and
+  non-English localized message) → `not-enrolled`; iOS `Code=-8` (lockout) and
+  `Code=-6` → `not-supported`; an unrelated error domain that happens to carry
+  `Code=-7` → `not-supported` (proves the domain anchor, not just the number,
+  matters); Android `BIOMETRIC_ERROR_NONE_ENROLLED` → `not-enrolled`;
+  `BIOMETRIC_ERROR_HW_UNAVAILABLE`/`BIOMETRIC_ERROR_NO_HARDWARE` → `not-supported`;
+  an Android string that coincidentally contains `"Code=-7"` → `not-supported`
+  (proves the iOS branch never runs on Android); unmapped/undefined error →
+  `not-supported`; rejected native call → `unknown`.
+- `shouldAutoDisableBiometricLock` (`__tests__/biometricLockAutoDisable.test.ts`):
+  4 cases — `not-enrolled` → true, `not-supported` → false, `unknown` → false,
+  `available: true` → false. (Narrower value now that `useAppLockGate` itself has
+  direct coverage above, but kept — it's still the cheapest, most direct
+  documentation of the security boundary in isolation.)
+- `AppLockGate.tsx`'s dual-path alert trigger (`onDismiss` vs. the Android/fallback
+  effect) still has no dedicated test — verified via `npx tsc --noEmit`,
+  `npx eslint`, and the full `npx jest` suite for regressions. This remains the one
+  piece of this fix verified by reading the code and manual testing rather than an
+  automated test, noted here rather than left implicit.
 - Manual: with biometric lock enabled and the app locked, remove all enrolled
   biometrics at the OS level (or stub `checkBiometricAvailability` during a debug
   session) and confirm: the app unlocks, the "App lock turned off" alert appears
-  once the lock screen has fully dismissed (not layered on top of it), and Settings
-  subsequently shows the lock as Off. Separately confirm an ordinary failed/
-  cancelled Face ID prompt (biometrics still enrolled) does *not* unlock or show
-  any alert. **Explicitly test the negative case this fix exists to prevent**: fail
-  Face ID five times in a row on a device with enrollment intact (triggering iOS
-  biometric lockout) and confirm the app stays locked and App Lock stays enabled.
+  exactly once, and Settings subsequently shows the lock as Off. Separately confirm
+  an ordinary failed/cancelled Face ID prompt (biometrics still enrolled) does *not*
+  unlock or show any alert. **Explicitly test the negative case this fix exists to
+  prevent**: fail Face ID five times in a row on a device with enrollment intact
+  (triggering iOS biometric lockout) and confirm the app stays locked and App Lock
+  stays enabled. If possible, also test the fast-unlock timing case specifically:
+  a device with no biometrics enrolled at all, cold-starting the app with the lock
+  already engaged, checking whether the alert reliably appears (this is the
+  scenario the `onDismiss`-only version of the fix was found unreliable for).
 
 ## Revision History
 
@@ -202,11 +241,37 @@ next time the user visits Settings, with no additional wiring.
   `InteractionManager.runAfterInteractions` doesn't defer past the dismiss
   animation in this RN version (it's a deprecated `setImmediate` stub), so the
   dropped-alert mitigation hadn't actually taken effect either.
-- **2026-08-10, third pass (current)**: fixed both. The classifier now matches the
-  Android constant correctly and parses the iOS NSError's locale-independent
+- **2026-08-10, third pass (`46b3263`)**: fixed both. The classifier now matches
+  the Android constant correctly and parses the iOS NSError's locale-independent
   `Code=` number instead of localized text; the alert now uses `Modal.onDismiss`
   (iOS-only, but the real supported mechanism) with an immediate Android path,
   replacing `InteractionManager`. Added table-driven tests against realistic
-  native error strings on both platforms, including a non-English iOS message, so
-  a future "helpful" tweak to the string matching can't silently regress either
-  the security boundary or the platform reach again without a test failing.
+  native error strings on both platforms, including a non-English iOS message.
+- **2026-08-10, fourth pass (current)**: a third review found no Critical issue —
+  the security boundary held up under a serious independent attempt to break it —
+  but three Important gaps: (1) `useAppLockGate.ts`, the layer that held the
+  *original* Critical bypass, still had zero test coverage; a plain revert to pass
+  1's code passed all 945 existing tests. Closed with
+  `__tests__/useAppLockGate.behaviour.test.ts`, verified to actually catch that
+  exact revert. (2) The iOS `Code=` regex matched a bare number with no domain
+  check and no `Platform.OS` gate — an error from any domain carrying `Code=-7` or
+  `Code=-5` would misclassify as `not-enrolled`, and the iOS branch could run
+  against Android strings. Low real-world exploitability (today's actual error
+  sources don't produce such collisions) but the wrong direction to fail in, and
+  the same *class* of gap as passes 1 and 2. Fixed by anchoring the regex to
+  `Domain=com.apple.LocalAuthentication` and gating both branches on `Platform.OS`.
+  (3) `Modal.onDismiss` was the *sole* iOS trigger for the notice, and in the
+  primary scenario — auto-disable resolving within tens of milliseconds of mount,
+  which is exactly what happens with no biometrics enrolled — the dismiss call can
+  land while the Modal is still mid-*presentation*, which iOS can silently drop
+  with no retry, meaning `onDismiss` never fires and the notice is lost. Fixed
+  with a 600ms fallback timer (iOS only; Android already fires immediately) that
+  shows the notice regardless, guarded against double-firing with a ref so it's
+  safe if `onDismiss` also happens to fire correctly.
+
+Three consecutive reviews each found something real. The lesson: for
+security-relevant native-string classification and platform-timing logic, "I
+traced the code and it looks right" is not sufficient — an independent adversarial
+review pass caught a genuine bypass, then two rounds of "unreachable in practice"
+gaps that a passing test suite didn't expose because the layer that mattered
+(`useAppLockGate.ts` itself) had no test until the fourth pass.

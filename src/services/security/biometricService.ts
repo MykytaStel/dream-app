@@ -8,6 +8,35 @@ export type BiometricAvailability =
   | { available: false; reason: 'not-supported' | 'not-enrolled' | 'unknown' }
   | { available: true; biometryType: string };
 
+// iOS LAError codes (LocalAuthentication). These are the numeric `Code=`
+// values embedded — unlocalized — in NSError's default `%@` description,
+// ahead of the (localized) human-readable message. Matching on the number
+// keeps this correct on non-English devices, unlike matching English words
+// in the message itself.
+const IOS_ERROR_CODE_BIOMETRY_NOT_ENROLLED = -7;
+const IOS_ERROR_CODE_PASSCODE_NOT_SET = -5;
+
+function isNotEnrolledError(error: string): boolean {
+  // Android: react-native-biometrics writes the literal BiometricManager
+  // constant name, not a localized message, so this is stable across
+  // locales. Must check the exact constant, not a lowercase substring —
+  // 'BIOMETRIC_ERROR_NONE_ENROLLED' does not contain 'enrolled'.
+  if (error.includes('NONE_ENROLLED')) {
+    return true;
+  }
+
+  const iosCodeMatch = /Code=(-?\d+)/.exec(error);
+  if (iosCodeMatch) {
+    const code = Number(iosCodeMatch[1]);
+    return (
+      code === IOS_ERROR_CODE_BIOMETRY_NOT_ENROLLED ||
+      code === IOS_ERROR_CODE_PASSCODE_NOT_SET
+    );
+  }
+
+  return false;
+}
+
 export async function checkBiometricAvailability(): Promise<BiometricAvailability> {
   try {
     const { available, biometryType, error } =
@@ -15,9 +44,7 @@ export async function checkBiometricAvailability(): Promise<BiometricAvailabilit
 
     if (!available) {
       const reason =
-        error?.includes('enrolled') || error?.includes('PasscodeNotSet')
-          ? 'not-enrolled'
-          : 'not-supported';
+        error && isNotEnrolledError(error) ? 'not-enrolled' : 'not-supported';
       return { available: false, reason };
     }
 

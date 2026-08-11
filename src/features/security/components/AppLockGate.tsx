@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Alert,
-  InteractionManager,
-  Modal,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { Alert, Modal, Platform, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import { useAppTheme } from '../../../theme/AppThemeProvider';
 import { Theme } from '../../../theme/theme';
@@ -36,26 +29,31 @@ export function AppLockGate({
   const { theme } = useAppTheme();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
+  const showAutoDisabledNotice = React.useCallback(() => {
+    Alert.alert(lockDisabledTitle, lockDisabledDescription, [
+      { text: 'OK', onPress: dismissAutoDisabledNotice },
+    ]);
+  }, [dismissAutoDisabledNotice, lockDisabledDescription, lockDisabledTitle]);
+
+  // Android's Modal never fires `onDismiss` (RN implements it iOS-only), and
+  // there's no known equivalent presentation race there, so show the notice
+  // as soon as the lock disables itself.
   React.useEffect(() => {
-    if (!autoDisabled) {
-      return;
+    if (autoDisabled && Platform.OS === 'android') {
+      showAutoDisabledNotice();
     }
-    // Deferred past the lock screen's own dismiss animation — presenting an
-    // Alert onto a Modal that's still animating out is a known way for iOS
-    // to drop it, which would leave this security-relevant change (the lock
-    // just turned itself off) with no visible notice at all.
-    const task = InteractionManager.runAfterInteractions(() => {
-      Alert.alert(lockDisabledTitle, lockDisabledDescription, [
-        { text: 'OK', onPress: dismissAutoDisabledNotice },
-      ]);
-    });
-    return () => task.cancel();
-  }, [
-    autoDisabled,
-    dismissAutoDisabledNotice,
-    lockDisabledDescription,
-    lockDisabledTitle,
-  ]);
+  }, [autoDisabled, showAutoDisabledNotice]);
+
+  const handleLockModalDismiss = React.useCallback(() => {
+    // iOS only: fires once the lock screen's own dismiss animation actually
+    // completes. Presenting an Alert while that Modal is still animating out
+    // is a known way for iOS to drop it, which would leave this
+    // security-relevant change (the lock just turned itself off) with no
+    // visible notice at all.
+    if (autoDisabled) {
+      showAutoDisabledNotice();
+    }
+  }, [autoDisabled, showAutoDisabledNotice]);
 
   return (
     <>
@@ -65,6 +63,7 @@ export function AppLockGate({
         animationType="fade"
         transparent={false}
         statusBarTranslucent
+        onDismiss={handleLockModalDismiss}
       >
         <View style={styles.container}>
           <View style={styles.content}>

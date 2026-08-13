@@ -118,18 +118,9 @@ export default function ArchiveScreen() {
         moodLabels={moodLabels}
         navigation={navigation}
         styles={styles}
-        viewMode={browse.viewMode}
       />
     ),
-    [
-      browse.deferredSearchQuery,
-      browse.viewMode,
-      copy,
-      locale,
-      moodLabels,
-      navigation,
-      styles,
-    ],
+    [browse.deferredSearchQuery, copy, locale, moodLabels, navigation, styles],
   );
 
   const listHeader = React.useMemo(
@@ -156,16 +147,7 @@ export default function ArchiveScreen() {
           filtersLabel={filterSheetCopy.triggerLabel}
           activeFilterCount={activeFilterCount}
           onOpenFilters={() => setIsFilterSheetOpen(true)}
-          hasHardReset={browse.hasHardReset}
-          onReset={browse.resetArchiveView}
           visibleEntriesLabel={browse.visibleEntriesLabel}
-          revisitCue={browse.revisitCue}
-          browseModes={browse.browseModes}
-          viewMode={browse.viewMode}
-          onChangeViewMode={browse.setViewMode}
-          onOpenRevisitDream={dreamId =>
-            navigation.navigate('DreamDetail', { dreamId })
-          }
         />
 
         {browse.surfaceMode === 'calendar' && browse.selectedMonthKey ? (
@@ -211,14 +193,7 @@ export default function ArchiveScreen() {
         ) : null}
       </View>
     ),
-    [
-      activeFilterCount,
-      browse,
-      copy,
-      filterSheetCopy.triggerLabel,
-      navigation,
-      styles,
-    ],
+    [activeFilterCount, browse, copy, filterSheetCopy.triggerLabel, styles],
   );
 
   if (data.loading) {

@@ -235,26 +235,18 @@ describe('useArchiveBrowseState', () => {
     expect(result.current.filter).toBe('all');
   });
 
-  test('a chosen day is resettable but is not a hard reset', async () => {
-    // The two flags differ by exactly one term, `selectedDate`, and the
-    // difference is the point: a day is undone by tapping it again on the
-    // calendar that is already on screen, so it does not by itself justify
-    // offering to clear everything. A day only counts once calendar is the
-    // active surface — that's where selecting one has any effect.
+  test('a chosen day makes the view resettable', async () => {
+    // hasResettableView still covers this case now that hasHardReset (a
+    // narrower flag, once used only by the standalone "reset view" chip
+    // ArchiveControlsPanel no longer renders) is gone.
     const { result } = await renderArchive(threeMonths);
 
     expect(result.current.hasResettableView).toBe(false);
-    expect(result.current.hasHardReset).toBe(false);
 
     await act(async () => result.current.selectSurfaceMode('calendar'));
     await act(async () => result.current.selectCalendarDate('2026-04-04'));
 
     expect(result.current.hasResettableView).toBe(true);
-    expect(result.current.hasHardReset).toBe(false);
-
-    await act(async () => result.current.selectTagFilter('ocean'));
-
-    expect(result.current.hasHardReset).toBe(true);
   });
 
   test('an archive with nothing in it selects no month at all', async () => {

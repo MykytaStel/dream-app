@@ -9,7 +9,6 @@ import {
 } from '../../../services/observability/events';
 import { Dream } from '../model/dream';
 import {
-  getArchiveRevisitCue,
   buildCalendarCells,
   buildCalendarRows,
   formatArchiveActiveDaysCount,
@@ -21,7 +20,6 @@ import {
   getTopArchiveTags,
   type ArchiveFilter,
   type ArchiveTagSignal,
-  type ArchiveViewMode,
 } from '../model/archiveBrowser';
 import { getArchiveBrowseResult } from '../model/archiveBrowseQuery';
 import { buildArchiveBrowseSections } from '../model/archiveBrowseSections';
@@ -65,8 +63,6 @@ export function useArchiveBrowseState({
     null,
   );
   const [selectedDate, setSelectedDate] = React.useState<string | null>(null);
-  const [viewMode, setViewMode] =
-    React.useState<ArchiveViewMode>('comfortable');
   const [tagFilter, setTagFilter] = React.useState<string | null>(null);
 
   const debouncedSearchQuery = useDebouncedValue(
@@ -140,11 +136,6 @@ export function useArchiveBrowseState({
     [dateScopedDreams],
   );
 
-  const revisitCue = React.useMemo(
-    () => getArchiveRevisitCue(visibleDreams, copy),
-    [visibleDreams, copy],
-  );
-
   const sections = React.useMemo(
     () =>
       buildArchiveBrowseSections({
@@ -214,13 +205,6 @@ export function useArchiveBrowseState({
     () => getArchiveSearchPlaceholder(surfaceMode, locale, copy),
     [copy, locale, surfaceMode],
   );
-  const browseModes = React.useMemo(
-    () => [
-      { key: 'comfortable' as const, label: copy.archiveBrowseComfortable },
-      { key: 'compact' as const, label: copy.archiveBrowseCompact },
-    ],
-    [copy],
-  );
   const specialFilters = React.useMemo(
     () => [
       { key: 'all' as const, label: copy.archiveFilterAll },
@@ -247,10 +231,6 @@ export function useArchiveBrowseState({
   const hasResettableView =
     Boolean(searchQuery.trim()) ||
     Boolean(calendarDate) ||
-    Boolean(tagFilter) ||
-    specialFilter !== 'all';
-  const hasHardReset =
-    Boolean(searchQuery.trim()) ||
     Boolean(tagFilter) ||
     specialFilter !== 'all';
   const visibleEntriesLabel = formatArchiveEntryCount(
@@ -423,8 +403,6 @@ export function useArchiveBrowseState({
     setSearchQuery,
     selectedMonthKey,
     selectedDate,
-    viewMode,
-    setViewMode,
     tagFilter,
     specialFilter,
     topMonthTags,
@@ -432,11 +410,9 @@ export function useArchiveBrowseState({
     isSearchPending,
     archiveFilters,
     specialFilters,
-    browseModes,
     weekdayLabels,
     availableMonthKeys,
     visibleDreams,
-    revisitCue,
     sections,
     calendarRows,
     monthMetaText,
@@ -445,7 +421,6 @@ export function useArchiveBrowseState({
     quickJumpMonthKeys,
     archiveEmptyContent,
     hasResettableView,
-    hasHardReset,
     visibleEntriesLabel,
     selectMonth,
     moveMonth,

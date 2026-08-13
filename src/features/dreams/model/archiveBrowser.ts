@@ -16,21 +16,11 @@ import {
 import { pluralize } from '../../../i18n/plural';
 
 export type ArchiveFilter = 'all' | 'active' | 'archived' | 'starred';
-export type ArchiveViewMode = 'comfortable' | 'compact';
 
 export type ArchiveSection = {
   title: string;
   monthKey: string;
   data: Dream[];
-};
-
-export type ArchiveRevisitCue = {
-  dreamId: string;
-  title: string;
-  reason: string;
-  contextLabel: string;
-  actionLabel: string;
-  icon: string;
 };
 
 export type ArchiveCalendarCell = {
@@ -344,93 +334,6 @@ export function buildArchiveSections(
       data: dreams,
     },
   ];
-}
-
-const ARCHIVE_REVISIT_MIN_AGE_MS = 12 * 60 * 60 * 1000;
-
-function getArchiveCueTitle(dream: Dream, copy: DreamCopy) {
-  return dream.title?.trim() || copy.untitled;
-}
-
-export function getArchiveRevisitCue(
-  dreams: Dream[],
-  copy: DreamCopy,
-  now = Date.now(),
-): ArchiveRevisitCue | null {
-  const candidates = dreams
-    .filter(dream => now - dream.createdAt >= ARCHIVE_REVISIT_MIN_AGE_MS)
-    .map(dream => {
-      const isImportant = isDreamStarred(dream);
-      const hasAnalysis = Boolean(dream.analysis?.summary?.trim());
-      const hasTranscript = Boolean(dream.transcript?.trim());
-      const isArchived = isDreamArchived(dream);
-      const hasSignal = Boolean(
-        dream.tags.length ||
-        dream.wakeEmotions?.length ||
-        dream.sleepContext?.preSleepEmotions?.length,
-      );
-      const score =
-        (isImportant ? 40 : 0) +
-        (hasAnalysis ? 18 : 0) +
-        (hasTranscript ? 10 : 0) +
-        (isArchived ? 6 : 0) +
-        (hasSignal ? 4 : 0);
-
-      let reason = copy.archiveRevisitReasonSignal;
-      let contextLabel = copy.archiveRevisitContextSignal;
-      let actionLabel = copy.archiveRevisitAction;
-      let icon = 'flash-outline';
-      if (isImportant) {
-        reason = copy.archiveRevisitReasonImportant;
-        contextLabel = copy.archiveRevisitContextImportant;
-        icon = 'star-outline';
-      } else if (hasAnalysis) {
-        reason = copy.archiveRevisitReasonAnalysis;
-        contextLabel = copy.archiveRevisitContextAnalysis;
-        actionLabel = copy.archiveRevisitActionAnalysis;
-        icon = 'sparkles-outline';
-      } else if (hasTranscript) {
-        reason = copy.archiveRevisitReasonTranscript;
-        contextLabel = copy.archiveRevisitContextTranscript;
-        actionLabel = copy.archiveRevisitActionTranscript;
-        icon = 'document-text-outline';
-      } else if (isArchived) {
-        reason = copy.archiveRevisitReasonArchived;
-        contextLabel = copy.archiveRevisitContextArchived;
-        icon = 'archive-outline';
-      }
-
-      return {
-        dream,
-        score,
-        reason,
-        contextLabel,
-        actionLabel,
-        icon,
-      };
-    })
-    .filter(entry => entry.score > 0)
-    .sort((left, right) => {
-      if (right.score !== left.score) {
-        return right.score - left.score;
-      }
-
-      return right.dream.createdAt - left.dream.createdAt;
-    });
-
-  const top = candidates[0];
-  if (!top) {
-    return null;
-  }
-
-  return {
-    dreamId: top.dream.id,
-    title: getArchiveCueTitle(top.dream, copy),
-    reason: top.reason,
-    contextLabel: top.contextLabel,
-    actionLabel: top.actionLabel,
-    icon: top.icon,
-  };
 }
 
 export function getArchiveMatchReasonLabels(

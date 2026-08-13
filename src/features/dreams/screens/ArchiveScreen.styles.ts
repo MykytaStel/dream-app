@@ -214,44 +214,6 @@ export function createArchiveScreenStyles(theme: Theme) {
       flexWrap: 'wrap',
       padding: 4,
     },
-    revisitInlineCard: {
-      ...createSoftTile(theme, {
-        tone: 'surface',
-        radius: 14,
-        paddingVertical: 9,
-        paddingHorizontal: 12,
-      }),
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 10,
-      borderColor: `${theme.colors.accent}55`,
-      backgroundColor: hexToRgba(theme.colors.background, 0.26),
-    },
-    revisitInlineMain: {
-      flex: 1,
-      gap: 2,
-      minWidth: 0,
-    },
-    revisitInlineLabel: {
-      color: theme.colors.textDim,
-      fontSize: 9,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    revisitInlineTitle: {
-      color: theme.colors.text,
-      fontSize: 13,
-      lineHeight: 17,
-      fontWeight: '700',
-    },
-    revisitInlineMeta: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      flexShrink: 0,
-    },
     revisitCard: {
       ...createSoftTile(theme, {
         tone: 'surface',
@@ -261,10 +223,6 @@ export function createArchiveScreenStyles(theme: Theme) {
       }),
       gap: 4,
       borderColor: `${theme.colors.accent}66`,
-    },
-    revisitCardPressed: {
-      opacity: 0.96,
-      transform: [{ scale: 0.992 }],
     },
     revisitHeader: {
       flexDirection: 'row',
@@ -609,14 +567,6 @@ export function createArchiveScreenStyles(theme: Theme) {
       borderRadius: 999,
       opacity: 0.95,
     },
-    listRowCardCompact: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingVertical: 10,
-      paddingHorizontal: 12,
-      gap: 12,
-      backgroundColor: theme.colors.surface,
-    },
     comfortableTop: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -642,12 +592,6 @@ export function createArchiveScreenStyles(theme: Theme) {
     rowTitle: {
       fontSize: 18,
       lineHeight: 23,
-      fontWeight: '700',
-    },
-    rowTitleCompact: {
-      flex: 1,
-      fontSize: 15,
-      lineHeight: 19,
       fontWeight: '700',
     },
     rowDateChip: {
@@ -736,11 +680,6 @@ export function createArchiveScreenStyles(theme: Theme) {
       textTransform: 'uppercase',
       letterSpacing: 0.4,
     },
-    rowPreviewCompact: {
-      color: theme.colors.textDim,
-      fontSize: 12,
-      lineHeight: 16,
-    },
     matchReasonsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
@@ -781,90 +720,10 @@ export function createArchiveScreenStyles(theme: Theme) {
       fontSize: 10,
       fontWeight: '700',
     },
-    compactDateBlock: {
-      width: 52,
-      minHeight: 52,
-      borderRadius: 16,
-      backgroundColor: hexToRgba(theme.colors.background, 0.52),
-      borderWidth: 1,
-      borderColor: `${theme.colors.border}CC`,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 1,
-    },
-    compactDayLabel: {
-      color: theme.colors.text,
-      fontSize: 20,
-      lineHeight: 22,
-      fontWeight: '800',
-    },
-    compactMonthLabel: {
-      color: theme.colors.textDim,
-      fontSize: 10,
-      lineHeight: 12,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-    },
-    compactContent: {
-      flex: 1,
-      gap: 3,
-      minWidth: 0,
-    },
-    compactSignalRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      flexWrap: 'wrap',
-      minHeight: 22,
-    },
-    compactSignalChip: {
-      width: 22,
-      height: 22,
-      borderRadius: 999,
-      borderWidth: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    compactMatchText: {
-      color: theme.colors.textDim,
-      fontSize: 10,
-      lineHeight: 13,
-      fontWeight: '700',
-    },
-    compactTitleRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    compactDateMeta: {
-      color: theme.colors.textDim,
-      fontSize: 11,
-      lineHeight: 14,
-      fontWeight: '600',
-    },
     compactStatusText: {
       color: theme.colors.textDim,
       fontSize: 11,
       lineHeight: 14,
-    },
-    compactTagRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 6,
-      marginTop: 1,
-    },
-    compactTagPill: {
-      ...createControlPill(theme, {
-        tone: 'surface',
-        paddingVertical: 3,
-        paddingHorizontal: 7,
-      }),
-      backgroundColor: hexToRgba(theme.colors.background, 0.3),
-    },
-    compactTagText: {
-      color: theme.colors.textDim,
-      fontSize: 9,
-      fontWeight: '700',
     },
     emptyWrap: {
       paddingTop: theme.spacing.md,

@@ -11,10 +11,6 @@ import { FormField } from '../../../../components/ui/FormField';
 import { Text } from '../../../../components/ui/Text';
 import { type DreamCopy } from '../../../../constants/copy/dreams';
 import { Theme } from '../../../../theme/theme';
-import {
-  type ArchiveRevisitCue,
-  type ArchiveViewMode,
-} from '../../model/archiveBrowser';
 import { type ArchiveSurfaceMode } from '../../model/archiveSurface';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
 import { ArchiveSegmentedControl } from './ArchiveSegmentedControl';
@@ -29,12 +25,6 @@ const localStyles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-  },
-  footerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    flexWrap: 'wrap',
   },
 });
 
@@ -54,14 +44,7 @@ type ArchiveControlsPanelProps = {
   filtersLabel: string;
   activeFilterCount: number;
   onOpenFilters: () => void;
-  hasHardReset: boolean;
-  onReset: () => void;
   visibleEntriesLabel: string;
-  revisitCue: ArchiveRevisitCue | null;
-  browseModes: ReadonlyArray<{ key: ArchiveViewMode; label: string }>;
-  viewMode: ArchiveViewMode;
-  onChangeViewMode: (mode: ArchiveViewMode) => void;
-  onOpenRevisitDream: (dreamId: string) => void;
 };
 
 export function ArchiveControlsPanel({
@@ -77,14 +60,7 @@ export function ArchiveControlsPanel({
   filtersLabel,
   activeFilterCount,
   onOpenFilters,
-  hasHardReset,
-  onReset,
   visibleEntriesLabel,
-  revisitCue,
-  browseModes,
-  viewMode,
-  onChangeViewMode,
-  onOpenRevisitDream,
 }: ArchiveControlsPanelProps) {
   const theme = useTheme<Theme>();
 
@@ -109,6 +85,7 @@ export function ArchiveControlsPanel({
               onChangeText={onChangeSearch}
               autoCapitalize="none"
               autoCorrect={false}
+              clearButtonMode="while-editing"
               containerStyle={styles.searchFieldContainer}
               inputStyle={styles.searchInput}
             />
@@ -148,27 +125,13 @@ export function ArchiveControlsPanel({
               ) : null}
             </Pressable>
 
-            <View style={localStyles.footerActions}>
-              {hasHardReset ? (
-                <Pressable
-                  accessibilityRole="button"
-                  style={styles.controlsActionChip}
-                  onPress={onReset}
-                >
-                  <Text style={styles.controlsActionChipText}>
-                    {copy.archiveResetView}
-                  </Text>
-                </Pressable>
-              ) : null}
-
-              {isSearchPending ? (
-                <View style={styles.controlsMetaChip}>
-                  <Text style={styles.controlsMetaChipText}>
-                    {copy.timelineLoadingTitle}
-                  </Text>
-                </View>
-              ) : null}
-            </View>
+            {isSearchPending ? (
+              <View style={styles.controlsMetaChip}>
+                <Text style={styles.controlsMetaChipText}>
+                  {copy.timelineLoadingTitle}
+                </Text>
+              </View>
+            ) : null}
           </View>
         </Card>
       </Animated.View>
@@ -181,56 +144,7 @@ export function ArchiveControlsPanel({
         <View style={styles.resultsToolbarMeta}>
           <Text style={styles.resultsToolbarText}>{visibleEntriesLabel}</Text>
         </View>
-        <ArchiveSegmentedControl
-          options={browseModes}
-          value={viewMode}
-          styles={styles}
-          onChange={onChangeViewMode}
-        />
       </Animated.View>
-
-      {revisitCue ? (
-        <Animated.View
-          entering={FadeInDown.delay(86).duration(220)}
-          layout={archiveControlsLayoutTransition}
-        >
-          <Pressable
-            accessibilityRole="button"
-            style={({ pressed }) => [
-              styles.revisitInlineCard,
-              pressed ? styles.revisitCardPressed : null,
-            ]}
-            onPress={() => onOpenRevisitDream(revisitCue.dreamId)}
-          >
-            <View style={styles.revisitInlineMain}>
-              <Text style={styles.revisitInlineLabel}>
-                {copy.archiveRevisitLabel}
-              </Text>
-              <Text style={styles.revisitInlineTitle} numberOfLines={1}>
-                {revisitCue.title}
-              </Text>
-            </View>
-
-            <View style={styles.revisitInlineMeta}>
-              <View style={styles.revisitBadge}>
-                <Ionicons
-                  name={revisitCue.icon}
-                  size={12}
-                  color={theme.colors.accent}
-                />
-                <Text style={styles.revisitBadgeText}>
-                  {revisitCue.contextLabel}
-                </Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={16}
-                color={theme.colors.textDim}
-              />
-            </View>
-          </Pressable>
-        </Animated.View>
-      ) : null}
     </>
   );
 }

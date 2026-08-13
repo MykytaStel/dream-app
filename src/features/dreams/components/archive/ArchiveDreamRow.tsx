@@ -19,7 +19,6 @@ import {
   formatArchivePreview,
   getArchiveMatchReasonLabels,
   getArchiveMoodLabel,
-  type ArchiveViewMode,
 } from '../../model/archiveBrowser';
 import { createArchiveScreenStyles } from '../../screens/ArchiveScreen.styles';
 
@@ -243,7 +242,6 @@ type ArchiveDreamRowProps = {
   moodLabels: Record<Mood, string>;
   navigation: NativeStackNavigationProp<RootStackParamList>;
   styles: ReturnType<typeof createArchiveScreenStyles>;
-  viewMode: ArchiveViewMode;
 };
 
 export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
@@ -254,27 +252,21 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   moodLabels,
   navigation,
   styles,
-  viewMode,
 }: ArchiveDreamRowProps) {
   const theme = useTheme<Theme>();
   const date = getDreamDate(dream);
   const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
   const mood = getArchiveMoodLabel(dream.mood, moodLabels);
-  const isCompact = viewMode === 'compact';
   const accentColor = getAccentColor(theme, dream);
   const signalChips = React.useMemo(
-    () => buildSignalChips(dream, copy, mood).slice(0, isCompact ? 3 : 5),
-    [copy, dream, isCompact, mood],
+    () => buildSignalChips(dream, copy, mood).slice(0, 5),
+    [copy, dream, mood],
   );
   const matchReasons = React.useMemo(
-    () =>
-      getArchiveMatchReasonLabels(dream, searchQuery, copy).slice(
-        0,
-        isCompact ? 1 : 2,
-      ),
-    [copy, dream, isCompact, searchQuery],
+    () => getArchiveMatchReasonLabels(dream, searchQuery, copy).slice(0, 2),
+    [copy, dream, searchQuery],
   );
-  const visibleTags = dream.tags.slice(0, isCompact ? 1 : 2);
+  const visibleTags = dream.tags.slice(0, 2);
   const hiddenTagCount = Math.max(0, dream.tags.length - visibleTags.length);
   const rowDateLabel = `${date.toLocaleDateString(localeKey, {
     month: 'short',
@@ -282,135 +274,9 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
   })} · ${date.toLocaleDateString(localeKey, {
     weekday: 'short',
   })}`;
-  const compactMonthLabel = date.toLocaleDateString(localeKey, {
-    month: 'short',
-  });
-  const compactDayLabel = String(date.getDate());
   const preview = formatArchivePreview(dream, copy);
   const previewLabel = getPreviewLabel(dream, copy);
   const previewIcon = getPreviewIcon(dream);
-
-  if (isCompact) {
-    return (
-      <Pressable
-        accessibilityRole="button"
-        onPress={() =>
-          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
-            dreamId: dream.id,
-          })
-        }
-        style={({ pressed }: { pressed: boolean }) => [
-          styles.listRowPressable,
-          pressed ? styles.listRowPressed : null,
-        ]}
-      >
-        <Card
-          style={[
-            styles.listRowCard,
-            styles.listRowCardCompact,
-            styles.listRowCardVisual,
-            { backgroundColor: `${accentColor}0A` },
-          ]}
-        >
-          <View
-            pointerEvents="none"
-            style={[
-              styles.listRowGlow,
-              { backgroundColor: `${accentColor}16` },
-            ]}
-          />
-          <View
-            pointerEvents="none"
-            style={[styles.listRowAccentBar, { backgroundColor: accentColor }]}
-          />
-
-          <View
-            style={[
-              styles.compactDateBlock,
-              {
-                backgroundColor: `${accentColor}14`,
-                borderColor: `${accentColor}30`,
-              },
-            ]}
-          >
-            <Text style={styles.compactDayLabel}>{compactDayLabel}</Text>
-            <Text style={styles.compactMonthLabel}>{compactMonthLabel}</Text>
-          </View>
-
-          <View style={styles.compactContent}>
-            <View style={styles.compactTitleRow}>
-              <Text style={styles.rowTitleCompact} numberOfLines={1}>
-                {dream.title || copy.untitled}
-              </Text>
-              <Ionicons
-                name="chevron-forward"
-                size={15}
-                color={theme.colors.textDim}
-              />
-            </View>
-
-            <Text style={styles.compactDateMeta}>{rowDateLabel}</Text>
-
-            {signalChips.length ? (
-              <View style={styles.compactSignalRow}>
-                {signalChips.map(chip => {
-                  const tone = getSignalTone(theme, chip.tone);
-
-                  return (
-                    <View
-                      key={`${dream.id}-${chip.key}`}
-                      style={[
-                        styles.compactSignalChip,
-                        {
-                          backgroundColor: tone.backgroundColor,
-                          borderColor: tone.borderColor,
-                        },
-                      ]}
-                    >
-                      <Ionicons name={chip.icon} size={11} color={tone.color} />
-                    </View>
-                  );
-                })}
-                {matchReasons[0] ? (
-                  <Text style={styles.compactMatchText} numberOfLines={1}>
-                    {matchReasons[0]}
-                  </Text>
-                ) : null}
-              </View>
-            ) : matchReasons[0] ? (
-              <Text style={styles.compactMatchText} numberOfLines={1}>
-                {matchReasons[0]}
-              </Text>
-            ) : null}
-
-            <Text style={styles.rowPreviewCompact} numberOfLines={2}>
-              {preview}
-            </Text>
-
-            {visibleTags.length || hiddenTagCount ? (
-              <View style={styles.compactTagRow}>
-                {visibleTags.map(tag => (
-                  <View
-                    key={`${dream.id}-${tag}`}
-                    style={styles.compactTagPill}
-                  >
-                    <Text style={styles.compactTagText}>{tag}</Text>
-                  </View>
-                ))}
-                {hiddenTagCount ? (
-                  <View style={styles.compactTagPill}>
-                    <Text
-                      style={styles.compactTagText}
-                    >{`+${hiddenTagCount}`}</Text>
-                  </View>
-                ) : null}
-              </View>
-            ) : null}
-          </View>
-        </Card>
-      </Pressable>
-    );
-  }
 
   return (
     <Pressable

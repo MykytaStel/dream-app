@@ -50,13 +50,12 @@ before trusting the statuses.
 | Home recent-dream timeline | `works` | `features/dreams/hooks/useHomeTimelineState.ts`, `features/dreams/model/dreamList.ts` |
 | Home contextual return reason | `works` | `features/dreams/model/homeReturnReason.ts`, `homeOverview.ts` |
 | Archive list and calendar surfaces | `works` | `features/dreams/model/archiveSurface.ts`, `archiveBrowseQuery.ts`, `archiveBrowseSections.ts` |
-| Archive comfortable and compact row modes | `works` | `features/dreams/model/archiveBrowser.ts` (`ArchiveViewMode`) |
 | Month calendar panel with mood dots | `works` | `features/dreams/components/archive/ArchiveMonthPanel.tsx`, `archiveBrowser.ts` (`ArchiveCalendarCell`) |
 | Debounced local search across the full list or selected calendar month | `works` | `features/dreams/hooks/useArchiveBrowseState.ts`, `archiveBrowseQuery.ts` |
 | Draft/apply Archive filter sheet for status, dream type and tags | `works` | `features/dreams/components/archive/ArchiveFilterSheet.tsx`, `features/dreams/model/archiveFilterSheet.ts` |
 | Dream detail view | `works` | `features/dreams/screens/DreamDetailScreen.tsx` |
 | Related dreams | `works` | `features/dreams/model/relatedDreams.ts` |
-| Resurfacing and revisit cues | `works` | `features/dreams/model/resurfacingCue.ts`, `archiveBrowser.ts` |
+| Resurfacing and revisit cues | `works` | `features/dreams/model/resurfacingCue.ts` |
 
 ## Insight
 

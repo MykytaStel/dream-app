@@ -147,7 +147,6 @@ export function createArchiveScreenStyles(theme: Theme) {
     },
     resultsToolbar: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
       alignItems: 'center',
       gap: 8,
       marginTop: 0,

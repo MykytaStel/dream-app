@@ -140,6 +140,7 @@ export default function MonthlyReportScreen() {
         savedThreadItems={controller.savedThreadItems}
         onOpenRevisitDream={dreamId =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            source: 'stats',
             dreamId,
             focusSection: 'written',
           })

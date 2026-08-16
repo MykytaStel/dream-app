@@ -87,7 +87,7 @@ describe('error reporting', () => {
 
     expect(provider.captureError).toHaveBeenCalledWith(error, {
       error_source: 'global',
-      event: 'global_js_error',
+      event: 'diag.global_js_error',
       isFatal: true,
     });
     expect(consoleError).toHaveBeenCalled();

@@ -431,6 +431,7 @@ export default function HomeScreen() {
         accessibilityRole="button"
         onPress={() =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            source: 'home',
             dreamId: dream.id,
           })
         }

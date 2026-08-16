@@ -93,7 +93,7 @@ describe('audioCleanupMaintenanceService', () => {
     });
     expect(kv.getNumber(AUDIO_CLEANUP_LAST_ATTEMPT_STORAGE_KEY)).toBe(now);
     expect(observability.trackEvent).toHaveBeenCalledWith(
-      'audio_cleanup_maintenance',
+      'diag.audio_cleanup_maintenance',
       expect.objectContaining({
         trigger: 'startup',
         status: 'attempted',

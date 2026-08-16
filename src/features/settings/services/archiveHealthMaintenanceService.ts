@@ -1,4 +1,5 @@
 import { observability } from '../../../services/observability';
+import { DIAG_EVENTS } from '../../../services/observability/events';
 import {
   reportActionError,
   reportStorageReadFailure,
@@ -148,7 +149,7 @@ async function performArchiveHealthMaintenance(
     const snapshot = await scanArchiveHealth({ record: true });
     persistLastCheckAt(snapshot.scannedAt);
 
-    observability.trackEvent('archive_health_maintenance', {
+    observability.trackEvent(DIAG_EVENTS.ArchiveHealthMaintenance, {
       trigger: options.trigger,
       status: snapshot.status,
       issue_count: snapshot.issueCount,

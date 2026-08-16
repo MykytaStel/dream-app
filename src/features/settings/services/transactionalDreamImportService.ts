@@ -1,4 +1,5 @@
 import { observability } from '../../../services/observability';
+import { DIAG_EVENTS } from '../../../services/observability/events';
 import {
   createDreamImportPreviewFromPayload,
   readDreamImportPayload,
@@ -55,7 +56,7 @@ export async function loadValidatedDreamImportPreview(
 
   previewSourceDigests.set(key, payload.sourceDigest);
 
-  observability.trackEvent('dream_import_preflight_completed', {
+  observability.trackEvent(DIAG_EVENTS.DreamImportPreflightCompleted, {
     integrity_status: preview.integrityStatus,
     warning_count: prepared.health.warningCount,
     normalized_dream_count: prepared.health.normalizedDreamCount,
@@ -117,7 +118,7 @@ export async function restoreDreamImportTransactionally(
   previewSourceDigests.delete(key);
 
   const { preview, health } = transaction.value;
-  observability.trackEvent('dream_import_transaction_completed', {
+  observability.trackEvent(DIAG_EVENTS.DreamImportTransactionCompleted, {
     mode,
     integrity_status: preview.integrityStatus ?? 'legacy-unverified',
     warning_count: health.warningCount,

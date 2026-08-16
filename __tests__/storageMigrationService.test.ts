@@ -224,7 +224,7 @@ describe('transactional storage migration service', () => {
     expect(rawHistory).not.toContain('journal');
     expect(rawHistory).not.toContain('checkpointFilePath');
     expect(mockedTrack).toHaveBeenCalledWith(
-      'storage_migration_result',
+      'diag.storage_migration_result',
       expect.objectContaining({
         status: 'completed',
         from_version: 8,

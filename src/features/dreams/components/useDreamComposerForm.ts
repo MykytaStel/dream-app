@@ -32,7 +32,7 @@ import {
   useNightmareFields,
 } from './composer/useNightmareFields';
 import { useRecordingLifecycle } from './composer/useRecordingLifecycle';
-import { saveDream } from '../repository/dreamsRepository';
+import { getDreamsMeta, saveDream } from '../repository/dreamsRepository';
 import { logActionError } from '../../../app/errorReporting';
 import {
   clearDreamDraft,
@@ -49,6 +49,7 @@ import {
   DreamComposerMode,
 } from './DreamComposer.types';
 import { trackDreamSaved } from '../../../services/observability/events';
+import { getCaptureSessionId } from '../../../services/analytics/captureSession';
 import { hapticSave } from '../../../services/haptics/hapticService';
 
 export function getTodayDate() {
@@ -673,12 +674,31 @@ export function useDreamComposerForm({
       saveDream(dream);
       lastSavedSignatureRef.current = signature;
       hapticSave();
-      trackDreamSaved({
-        mode: isEdit ? 'edit' : 'create',
-        entryMode,
-        hasAudio: Boolean(audioUri),
-        hasText: Boolean(cleanText),
-      });
+      // Wrapped because everything in here is measurement, and the dream is
+      // already saved by this point. Reading the counter touches the
+      // repository, and no repository hiccup is worth turning a saved dream
+      // into an error the person sees.
+      try {
+        // Both correlation fields describe a capture, and an edit is not one:
+        // it has no capture_started to join back to, and the archive total is
+        // not the edited dream's position. Sending either would put wrong
+        // numbers into the funnel rather than leaving a gap, so an edit sends
+        // neither and the §9 queries read only what is actually there.
+        //
+        // dream_index is a count, never content, and is read after the save so
+        // a create is counted. It is what makes the 1→2 transition visible,
+        // which is the earliest retention signal there is.
+        trackDreamSaved({
+          captureId: isEdit ? undefined : getCaptureSessionId(),
+          mode: isEdit ? 'edit' : 'create',
+          entryMode,
+          hasAudio: Boolean(audioUri),
+          hasText: Boolean(cleanText),
+          dreamIndex: isEdit ? undefined : getDreamsMeta().totalCount,
+        });
+      } catch (error) {
+        logActionError('dream_saved_analytics', error);
+      }
 
       if (isEdit) {
         // The dream now holds everything the draft was protecting.

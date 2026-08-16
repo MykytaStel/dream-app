@@ -1,4 +1,5 @@
 import { observability } from '../../../services/observability';
+import { DIAG_EVENTS } from '../../../services/observability/events';
 import { reportActionError } from '../../../services/observability/errorReporting';
 import { exportDreamDataSnapshot } from './dataExportService';
 import {
@@ -101,7 +102,7 @@ function reportTransactionFailure(input: {
     transaction_label: input.label,
     rollback_completed: rollbackCompleted,
   });
-  observability.trackEvent('local_data_transaction_failed', {
+  observability.trackEvent(DIAG_EVENTS.LocalDataTransactionFailed, {
     transaction_label: input.label,
     rollback_completed: rollbackCompleted,
     checkpoint_created: checkpointCreated,
@@ -129,7 +130,7 @@ async function performTransaction<T>(
     snapshot,
   });
 
-  observability.trackEvent('local_data_transaction_started', {
+  observability.trackEvent(DIAG_EVENTS.LocalDataTransactionStarted, {
     transaction_label: options.label,
     checkpoint_created: checkpointCreated,
   });
@@ -188,7 +189,7 @@ async function performTransaction<T>(
     });
   }
 
-  observability.trackEvent('local_data_transaction_completed', {
+  observability.trackEvent(DIAG_EVENTS.LocalDataTransactionCompleted, {
     transaction_label: options.label,
     checkpoint_created: checkpointCreated,
   });

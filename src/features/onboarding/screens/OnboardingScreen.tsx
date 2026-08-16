@@ -14,6 +14,10 @@ import { fontFamilies } from '../../../theme/fonts';
 import { getOnboardingCopy } from '../../../constants/copy/onboarding';
 import { markOnboardingSeen } from '../services/onboardingService';
 import {
+  trackOnboardingCompleted,
+  trackOnboardingOpened,
+} from '../../../services/observability/events';
+import {
   ROOT_ROUTE_NAMES,
   TAB_ROUTE_NAMES,
   type RootStackParamList,
@@ -33,9 +37,16 @@ export default function OnboardingScreen() {
     [theme, insets.top, insets.bottom],
   );
 
+  // Funnel step one. Without it there is no denominator for §9's ">60% of
+  // people who finish onboarding save a first dream".
+  React.useEffect(() => {
+    trackOnboardingOpened();
+  }, []);
+
   const finish = React.useCallback(
-    (entryMode: CaptureEntryMode) => {
+    (entryMode: CaptureEntryMode, path: 'voice' | 'text' | 'no-dream') => {
       markOnboardingSeen();
+      trackOnboardingCompleted({ path });
       navigation.replace(ROOT_ROUTE_NAMES.Tabs, {
         screen: TAB_ROUTE_NAMES.New,
         params: {
@@ -70,20 +81,20 @@ export default function OnboardingScreen() {
       <View style={styles.bottom}>
         <Button
           title={copy.voiceAction}
-          onPress={() => finish('voice')}
+          onPress={() => finish('voice', 'voice')}
           size="lg"
           icon="mic-outline"
         />
         <Button
           title={copy.textAction}
-          onPress={() => finish('default')}
+          onPress={() => finish('default', 'text')}
           variant="ghost"
           size="lg"
           icon="create-outline"
         />
         <Button
           title={copy.noMemoryAction}
-          onPress={() => finish('default')}
+          onPress={() => finish('default', 'no-dream')}
           variant="ghost"
           size="sm"
         />

@@ -1,5 +1,6 @@
 import RNFS from 'react-native-fs';
 import { observability } from '../../../services/observability';
+import { DIAG_EVENTS } from '../../../services/observability/events';
 import {
   reportActionError,
   reportStorageReadFailure,
@@ -673,7 +674,7 @@ export async function scanArchiveHealth(options: { record?: boolean } = {}) {
     .filter(issue => isDerivedIssueCode(issue.code))
     .reduce((sum, issue) => sum + issue.count, 0);
 
-  observability.trackEvent('archive_health_scanned', {
+  observability.trackEvent(DIAG_EVENTS.ArchiveHealthScanned, {
     status: result.snapshot.status,
     issue_count: result.snapshot.issueCount,
     repairable_issue_count: result.snapshot.repairableIssueCount,
@@ -837,7 +838,7 @@ export async function repairArchiveHealth(): Promise<ArchiveRepairResult> {
       repairedIssueCount: transaction.value,
       checkpointCreated: Boolean(checkpointFilePath),
     });
-    observability.trackEvent('archive_health_repaired', {
+    observability.trackEvent(DIAG_EVENTS.ArchiveHealthRepaired, {
       repaired_issue_count: transaction.value,
       remaining_issue_count: snapshot.issueCount,
       checkpoint_created: Boolean(checkpointFilePath),

@@ -62,6 +62,8 @@ export function getTabRouteLabels(locale: AppLocale) {
 
 export type TabRouteName = keyof typeof TAB_ROUTE_NAMES;
 export type PatternDetailKind = 'word' | 'theme' | 'symbol';
+/** Where a dream detail was opened from, for the §9 revisit funnel. */
+export type DreamDetailSource = 'home' | 'archive' | 'stats' | 'other';
 export type DreamDetailFocusSection =
   'reflection' | 'written' | 'transcript' | 'analysis';
 export type DreamPracticeFocus = 'lucid' | 'nightmares';
@@ -96,6 +98,7 @@ export type RootStackParamList = {
     dreamId: string;
     justSaved?: boolean;
     focusSection?: DreamDetailFocusSection;
+    source?: DreamDetailSource;
   };
   [ROOT_ROUTE_NAMES.DreamEditor]: {
     dreamId: string;

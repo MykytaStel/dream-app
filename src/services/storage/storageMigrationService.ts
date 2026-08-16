@@ -1,4 +1,5 @@
 import { observability } from '../observability';
+import { DIAG_EVENTS } from '../observability/events';
 import {
   reportActionError,
   reportStorageReadFailure,
@@ -241,7 +242,7 @@ function recordHistory(entry: Omit<StorageMigrationHistoryEntry, 'id' | 'at'>) {
 
 function trackResult(result: StorageMigrationResult) {
   try {
-    observability.trackEvent('storage_migration_result', {
+    observability.trackEvent(DIAG_EVENTS.StorageMigrationResult, {
       status: result.status,
       from_version: result.fromVersion,
       to_version: result.toVersion,

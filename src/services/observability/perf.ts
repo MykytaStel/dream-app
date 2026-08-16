@@ -1,4 +1,5 @@
 import { observability } from './index';
+import { DIAG_EVENTS } from './events';
 
 const SLOW_SURFACE_THRESHOLD_MS = 24;
 
@@ -13,7 +14,7 @@ export function trackLocalSurfaceLoad(
 
   const durationMs = Date.now() - startedAt;
 
-  observability.trackEvent('local_surface_load', {
+  observability.trackEvent(DIAG_EVENTS.LocalSurfaceLoad, {
     surface,
     durationMs,
     itemCount,

@@ -1,4 +1,4 @@
-import { OBS_EVENTS } from './events';
+import { DIAG_EVENTS } from './events';
 import { observability } from './index';
 import { ObservabilityContext } from './types';
 
@@ -74,7 +74,7 @@ export function installGlobalErrorReporting(): () => void {
   maybeErrorUtils.setGlobalHandler((error, isFatal) => {
     reportError(error, {
       error_source: 'global',
-      event: OBS_EVENTS.GlobalJsError,
+      event: DIAG_EVENTS.GlobalJsError,
       isFatal: Boolean(isFatal),
     });
     previous(error, isFatal);

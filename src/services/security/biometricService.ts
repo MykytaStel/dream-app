@@ -19,7 +19,8 @@ export type BiometricAvailability =
 // durably "not enrolled"), the one direction this classifier must not fail in.
 const IOS_ERROR_CODE_BIOMETRY_NOT_ENROLLED = -7;
 const IOS_ERROR_CODE_PASSCODE_NOT_SET = -5;
-const IOS_LOCAL_AUTHENTICATION_ERROR = /Domain=com\.apple\.LocalAuthentication\s+Code=(-?\d+)/;
+const IOS_LOCAL_AUTHENTICATION_ERROR =
+  /Domain=com\.apple\.LocalAuthentication\s+Code=(-?\d+)/;
 
 function isNotEnrolledError(error: string): boolean {
   if (Platform.OS === 'android') {

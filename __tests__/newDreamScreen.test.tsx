@@ -84,6 +84,7 @@ describe('NewDreamScreen', () => {
       undefined,
     );
     expect(trackCaptureStarted).toHaveBeenCalledWith({
+      captureId: expect.any(String),
       entryMode: 'voice',
       autoStartedRecording: true,
       source: 'manual',
@@ -133,6 +134,7 @@ describe('NewDreamScreen', () => {
       undefined,
     );
     expect(trackCaptureStarted).toHaveBeenCalledWith({
+      captureId: expect.any(String),
       entryMode: 'default',
       autoStartedRecording: false,
       source: 'manual',
@@ -165,6 +167,7 @@ describe('NewDreamScreen', () => {
     });
 
     expect(trackCaptureStarted).toHaveBeenCalledWith({
+      captureId: expect.any(String),
       entryMode: 'wake',
       autoStartedRecording: false,
       source: 'reminder',

@@ -21,7 +21,9 @@ jest.mock('../src/services/haptics/hapticService', () => ({
   hapticUnlock: () => mockHapticUnlock(),
 }));
 
-const { useAppLockGate } = require('../src/features/security/hooks/useAppLockGate');
+const {
+  useAppLockGate,
+} = require('../src/features/security/hooks/useAppLockGate');
 
 beforeEach(() => {
   mockAuthenticateWithBiometrics.mockReset();

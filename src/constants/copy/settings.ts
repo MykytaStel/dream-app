@@ -112,6 +112,10 @@ const SETTINGS_COPY_EN = {
   privacyCrashTitle: 'Crash reports, in builds set up for them',
   privacyCrashBody:
     'Sends the error, the app version and which screen was open. Dream text, titles, transcripts, tags and your identity are stripped out before anything is sent.',
+  privacyAnalyticsTitle: 'Usage counts',
+  privacyAnalyticsBody:
+    'Counts of which screens and actions are used, so the app can be improved where it is actually failing people. Never your dreams, transcripts, titles, tags, symbols, searches or moods — the search event carries how long the query was and how many results it found, never what you typed. Not tied to your account.',
+  privacyAnalyticsToggleLabel: 'Share usage counts',
   privacyModelTitle: 'The speech model, once',
   privacyModelBody:
     'Transcription runs on this device, but the model is downloaded the first time you use it. That request carries no dream data. Afterwards transcription works offline.',
@@ -718,6 +722,10 @@ const SETTINGS_COPY_UK: typeof SETTINGS_COPY_EN = {
   privacyCrashTitle: 'Звіти про збої, у складаннях із цією опцією',
   privacyCrashBody:
     'Надсилає помилку, версію застосунку й екран, який був відкритий. Текст снів, заголовки, розшифровки, теги та ваша особа вирізаються до надсилання.',
+  privacyAnalyticsTitle: 'Підрахунки використання',
+  privacyAnalyticsBody:
+    'Підрахунки того, які екрани й дії використовуються, щоб покращувати застосунок там, де він справді підводить. Ніколи не ваші сни, розшифровки, заголовки, теги, символи, пошуки чи настрої — подія пошуку несе лише довжину запиту й кількість результатів, а не те, що ви ввели. Не пов’язано з вашим акаунтом.',
+  privacyAnalyticsToggleLabel: 'Ділитися підрахунками',
   privacyModelTitle: 'Модель розпізнавання, один раз',
   privacyModelBody:
     'Розшифровка працює на цьому пристрої, але модель завантажується під час першого використання. Той запит не містить даних про сни. Далі розшифровка працює офлайн.',

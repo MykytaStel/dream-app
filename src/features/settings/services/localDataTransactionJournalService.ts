@@ -1,4 +1,5 @@
 import { observability } from '../../../services/observability';
+import { DIAG_EVENTS } from '../../../services/observability/events';
 import { reportActionError } from '../../../services/observability/errorReporting';
 import {
   LOCAL_DATA_RECOVERY_HISTORY_STORAGE_KEY,
@@ -233,7 +234,7 @@ function trackRecovery(
   transactionLabel: string | null,
   checkpointCreated: boolean,
 ) {
-  observability.trackEvent('local_data_transaction_recovery', {
+  observability.trackEvent(DIAG_EVENTS.LocalDataTransactionRecovery, {
     status,
     transaction_label: transactionLabel,
     checkpoint_created: checkpointCreated,

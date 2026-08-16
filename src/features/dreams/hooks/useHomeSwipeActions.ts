@@ -108,6 +108,7 @@ export function useHomeSwipeActions({
   const openDreamDetail = React.useCallback(
     (dreamId: string) => {
       navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+        source: 'home',
         dreamId,
       });
     },

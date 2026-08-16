@@ -169,7 +169,11 @@ describe('theme contrast', () => {
     });
 
     test('the warning glyph reads on the destructive-tinted icon badge', () => {
-      const badge = blend(theme.colors.danger, 0x14 / 255, theme.colors.background);
+      const badge = blend(
+        theme.colors.danger,
+        0x14 / 255,
+        theme.colors.background,
+      );
       expect(contrastRatio(theme.colors.danger, badge)).toBeGreaterThanOrEqual(
         CONTRAST_LARGE_TEXT,
       );

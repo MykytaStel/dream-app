@@ -187,6 +187,7 @@ export default function ReviewWorkspaceScreen() {
                     key={`${item.focusSection}:${item.dreamId}`}
                     onPress={() =>
                       navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+                        source: 'stats',
                         dreamId: item.dreamId,
                         focusSection: item.focusSection,
                       })
@@ -247,6 +248,7 @@ export default function ReviewWorkspaceScreen() {
                     key={item.dreamId}
                     onPress={() =>
                       navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+                        source: 'stats',
                         dreamId: item.dreamId,
                       })
                     }

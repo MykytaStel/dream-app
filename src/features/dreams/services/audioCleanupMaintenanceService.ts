@@ -1,4 +1,5 @@
 import { observability } from '../../../services/observability';
+import { DIAG_EVENTS } from '../../../services/observability/events';
 import {
   reportActionError,
   reportStorageReadFailure,
@@ -51,7 +52,7 @@ let inFlight: Promise<AudioCleanupMaintenanceResult> | null = null;
 let sessionLastAttemptAt: number | undefined;
 
 function reportMaintenanceResult(result: AudioCleanupMaintenanceResult) {
-  observability.trackEvent('audio_cleanup_maintenance', {
+  observability.trackEvent(DIAG_EVENTS.AudioCleanupMaintenance, {
     trigger: result.trigger,
     status: result.status,
     reason:

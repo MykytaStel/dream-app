@@ -25,6 +25,16 @@ export const MEMORY_PATTERN_FEEDBACK_STORAGE_KEY = 'memory-pattern-feedback';
 export const BACKUP_ONBOARDING_SEEN_KEY = 'backup-onboarding-seen';
 export const REMINDER_ONBOARDING_SEEN_KEY = 'reminder-onboarding-seen';
 export const BIOMETRIC_ONBOARDING_SEEN_KEY = 'biometric-onboarding-seen';
+/**
+ * Analytics identity and its outbox.
+ *
+ * The install id is minted by the app and is deliberately unrelated to the
+ * Supabase auth user id used by cloud sync, so behaviour and (encrypted)
+ * dreams cannot be joined by anyone holding database access.
+ */
+export const ANALYTICS_INSTALL_ID_KEY = 'analytics-install-id';
+export const ANALYTICS_QUEUE_KEY = 'analytics-queue';
+export const ANALYTICS_OPTED_OUT_KEY = 'analytics-opted-out';
 export const ARCHIVE_KEY_STRANDED_DISCLOSURE_SEEN_KEY =
   'archive-key-stranded-disclosure-seen';
 export const APP_LOCALE_KEY = 'app-locale';

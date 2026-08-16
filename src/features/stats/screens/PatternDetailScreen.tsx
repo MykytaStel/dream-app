@@ -1,4 +1,5 @@
 import React from 'react';
+import { trackPatternOpened } from '../../../services/observability/events';
 import { FlatList, Pressable, View } from 'react-native';
 import {
   RouteProp,
@@ -57,6 +58,7 @@ const PatternMatchRow = React.memo(function PatternMatchRow({
       ]}
       onPress={() =>
         navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+          source: 'stats',
           dreamId: item.dreamId,
         })
       }
@@ -107,6 +109,13 @@ export default function PatternDetailScreen() {
       RouteProp<RootStackParamList, typeof ROOT_ROUTE_NAMES.PatternDetail>
     >();
   const { signal, kind } = route.params;
+
+  // `kind` only — 'word' | 'theme' | 'symbol'. The signal itself is the
+  // symbol the person's dreams are about, which §9 explicitly forbids
+  // collecting.
+  React.useEffect(() => {
+    trackPatternOpened({ kind });
+  }, [kind]);
   const [dreams, setDreams] = React.useState<Dream[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [loadError, setLoadError] = React.useState<string | null>(null);

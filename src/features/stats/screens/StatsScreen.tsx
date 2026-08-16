@@ -1,5 +1,9 @@
 import React from 'react';
-import { useNavigation } from '@react-navigation/native';
+import {
+  trackMemoryOpened,
+  trackPatternConfirmed,
+} from '../../../services/observability/events';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
@@ -119,6 +123,20 @@ export default function StatsScreen() {
   const visibleRangeOptions =
     disclosureState.stage === 'foundation' ? [] : controller.rangeOptions;
 
+  // The denominator for §9's "≥30% of people with 10+ dreams open Memory".
+  // The count is what makes that conditional answerable; nothing about the
+  // dreams themselves is sent.
+  //
+  // Keyed on focus rather than on the count: this is a bottom tab that stays
+  // mounted, so an effect watching the count would fire once for the life of
+  // the tab and make frequency of use unanswerable.
+  const totalDreamCount = controller.meta.totalCount;
+  useFocusEffect(
+    React.useCallback(() => {
+      trackMemoryOpened({ dreamCount: totalDreamCount });
+    }, [totalDreamCount]),
+  );
+
   React.useEffect(() => {
     if (!isMemoryModeAvailable(disclosureState, selectedMemoryMode)) {
       setSelectedMemoryMode('overview');
@@ -209,6 +227,7 @@ export default function StatsScreen() {
         memoryNudge={controller.memoryNudge}
         onOpenMemoryNudge={(dreamId, focusSection) =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            source: 'stats',
             dreamId,
             focusSection,
           })
@@ -222,22 +241,33 @@ export default function StatsScreen() {
         <MemoryPatternCard
           candidate={primaryMemoryPattern}
           copy={memoryPatternCopy}
-          onConfirm={() =>
+          onConfirm={() => {
+            // §9's "≥20% of people with 10+ dreams confirm a pattern" — the
+            // one number that measures §5.1, the product's stated
+            // differentiator. `kind` only: the signal is the symbol itself.
+            trackPatternConfirmed({
+              kind: primaryMemoryPattern.kind,
+              action: 'confirm',
+            });
             setMemoryPatternFeedback(
               confirmMemoryPattern(
                 primaryMemoryPattern.signal,
                 primaryMemoryPattern.kind,
               ),
-            )
-          }
-          onDismiss={() =>
+            );
+          }}
+          onDismiss={() => {
+            trackPatternConfirmed({
+              kind: primaryMemoryPattern.kind,
+              action: 'reject',
+            });
             setMemoryPatternFeedback(
               dismissMemoryPattern(
                 primaryMemoryPattern.signal,
                 primaryMemoryPattern.kind,
               ),
-            )
-          }
+            );
+          }}
           onRename={title =>
             setMemoryPatternFeedback(
               renameMemoryPattern(
@@ -248,7 +278,10 @@ export default function StatsScreen() {
             )
           }
           onOpenDream={dreamId =>
-            navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId })
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+              dreamId,
+              source: 'stats',
+            })
           }
           onOpenPattern={() =>
             openPatternDetail(
@@ -330,7 +363,10 @@ export default function StatsScreen() {
               navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
             }
             onOpenLucidDream={dreamId =>
-              navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId })
+              navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+                dreamId,
+                source: 'stats',
+              })
             }
             onOpenPatternDetail={openPatternDetail}
           />

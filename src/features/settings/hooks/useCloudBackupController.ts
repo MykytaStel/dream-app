@@ -1,5 +1,6 @@
 import React from 'react';
 import { Alert } from 'react-native';
+import { trackBackupEnabled } from '../../../services/observability/events';
 import { useFocusEffect } from '@react-navigation/native';
 import {
   clearCloudRuntimeConfig,
@@ -339,6 +340,12 @@ export function useCloudBackupController({
 
     const nextValue = setCloudSyncEnabled(!cloudSyncEnabled);
     setCloudSyncEnabledState(nextValue);
+
+    // Funnel step nine. Distinct from backup_export_started, which is a
+    // one-off file rather than turning protection on.
+    if (nextValue) {
+      trackBackupEnabled({ kind: 'cloud' });
+    }
   }, [cloudSession.status, cloudSyncEnabled]);
 
   const onSaveCloudConfig = React.useCallback(() => {

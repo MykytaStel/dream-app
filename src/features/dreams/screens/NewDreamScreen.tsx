@@ -31,6 +31,7 @@ import {
   trackCaptureStarted,
   trackDraftResumed,
 } from '../../../services/observability/events';
+import { startCaptureSession } from '../../../services/analytics/captureSession';
 import {
   getDreamDraft,
   getDreamDraftSnapshot,
@@ -123,6 +124,7 @@ export default function NewDreamScreen() {
 
       setPendingSavedDream(null);
       navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+        source: 'other',
         dreamId: saved.dream.id,
         justSaved: true,
         focusSection: focusSection ?? saved.focusSection,
@@ -161,6 +163,7 @@ export default function NewDreamScreen() {
     const draftSnapshot = getDreamDraftSnapshot(getDreamDraft());
 
     trackCaptureStarted({
+      captureId: startCaptureSession(),
       entryMode,
       autoStartedRecording: shouldAutoStartRecording,
       source,

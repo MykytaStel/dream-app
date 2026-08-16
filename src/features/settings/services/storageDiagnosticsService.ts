@@ -1,5 +1,6 @@
 import RNFS from 'react-native-fs';
 import { observability } from '../../../services/observability';
+import { DIAG_EVENTS } from '../../../services/observability/events';
 import { reportActionError } from '../../../services/observability/errorReporting';
 import { kv } from '../../../services/storage/mmkv';
 import {
@@ -317,7 +318,7 @@ export async function readStorageDiagnostics(
     exports.isComplete &&
     localData.isComplete;
 
-  observability.trackEvent('storage_diagnostics_read', {
+  observability.trackEvent(DIAG_EVENTS.StorageDiagnosticsRead, {
     complete: isComplete,
     audio_file_count: audio.fileCount ?? undefined,
     audio_unlinked_file_count: audio.unlinkedFileCount ?? undefined,
@@ -347,7 +348,7 @@ export async function cleanupUnlinkedAudioNow(): Promise<ManualAudioCleanupResul
       protectedUriCount: 0,
       maxAgeDays: 0,
     };
-    observability.trackEvent('storage_audio_cleanup_requested', {
+    observability.trackEvent(DIAG_EVENTS.StorageAudioCleanupRequested, {
       status: deferred.status,
       reason: deferred.reason,
     });
@@ -360,7 +361,7 @@ export async function cleanupUnlinkedAudioNow(): Promise<ManualAudioCleanupResul
     pendingRecordingUri: runtime.pendingRecordingUri,
   });
 
-  observability.trackEvent('storage_audio_cleanup_requested', {
+  observability.trackEvent(DIAG_EVENTS.StorageAudioCleanupRequested, {
     status: result.status,
     reason: result.status === 'completed' ? undefined : result.reason,
     deleted_count:
@@ -399,7 +400,7 @@ export async function deleteGeneratedExports(): Promise<ExportCleanupResult> {
     }
   }
 
-  observability.trackEvent('storage_exports_deleted', {
+  observability.trackEvent(DIAG_EVENTS.StorageExportsDeleted, {
     deleted_count: deletedCount,
     deleted_size_bytes: deletedSizeBytes,
     failed_count: failedCount,
@@ -410,5 +411,5 @@ export async function deleteGeneratedExports(): Promise<ExportCleanupResult> {
 
 export async function deleteStoredTranscriptionModel() {
   await deleteDreamTranscriptionModel();
-  observability.trackEvent('storage_transcription_model_deleted');
+  observability.trackEvent(DIAG_EVENTS.StorageTranscriptionModelDeleted);
 }

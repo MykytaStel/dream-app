@@ -1,19 +1,23 @@
 import React from 'react';
-import { Platform, StatusBar } from 'react-native';
+import { AppState, Platform, StatusBar } from 'react-native';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { syncDreamReminderState } from '../features/reminders/services/dreamReminderService';
 import { syncDreamPracticeReminderState } from '../features/reminders/services/dreamPracticeReminderService';
-import {
-  observability,
-  setObservabilityProvider,
-} from '../services/observability';
+import { setObservabilityProvider } from '../services/observability';
 import {
   installGlobalErrorReporting,
   reportError,
 } from '../services/observability/errorReporting';
 import { initSentry } from '../services/observability/sentryObservability';
-import { OBS_EVENTS } from '../services/observability/events';
+import { trackAppOpened } from '../services/observability/events';
+import {
+  createSupabaseAnalyticsTransport,
+  flushAnalytics,
+  noteAppBackgrounded,
+  noteAppForegrounded,
+  setAnalyticsTransport,
+} from '../services/analytics';
 import { I18nProvider } from '../i18n/I18nProvider';
 import { AppThemeProvider, useAppTheme } from '../theme/AppThemeProvider';
 import { CalmModeProvider } from './CalmModeProvider';
@@ -52,7 +56,7 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
       reportError(error, { event: 'widget_snapshot_sync_failed' });
     });
 
-    observability.trackEvent(OBS_EVENTS.AppOpened);
+    trackAppOpened();
     syncDreamReminderState().catch(error => {
       reportError(error, {
         event: 'schedule_dream_reminder_on_launch',
@@ -63,6 +67,30 @@ export const AppProviders: React.FC<React.PropsWithChildren> = ({
         event: 'schedule_dream_practice_reminder_on_launch',
       });
     });
+  }, []);
+
+  React.useEffect(() => {
+    setAnalyticsTransport(createSupabaseAnalyticsTransport());
+    flushAnalytics();
+
+    // Backgrounding is the reliable moment to send: the person has stopped,
+    // and the OS gives a short window before it stops giving anything.
+    const subscription = AppState.addEventListener('change', nextState => {
+      if (nextState === 'active') {
+        noteAppForegrounded();
+        flushAnalytics();
+        return;
+      }
+
+      if (nextState === 'background') {
+        // Start the idle clock before flushing: the session boundary is time
+        // spent away, not time since the app was last opened.
+        noteAppBackgrounded();
+        flushAnalytics();
+      }
+    });
+
+    return () => subscription.remove();
   }, []);
 
   React.useEffect(() => {

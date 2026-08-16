@@ -6,6 +6,7 @@ import { trackDreamSaved } from '../src/services/observability/events';
 
 jest.mock('../src/features/dreams/repository/dreamsRepository', () => ({
   saveDream: jest.fn(),
+  getDreamsMeta: jest.fn(() => ({ totalCount: 1 })),
 }));
 
 jest.mock('../src/features/dreams/services/audioService', () => ({
@@ -97,6 +98,8 @@ describe('useDreamComposerForm analytics', () => {
     });
 
     expect(trackDreamSaved).toHaveBeenCalledWith({
+      captureId: expect.any(String),
+      dreamIndex: 1,
       mode: 'create',
       entryMode: 'voice',
       hasAudio: true,

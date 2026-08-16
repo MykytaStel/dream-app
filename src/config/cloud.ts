@@ -53,6 +53,25 @@ function isValidSupabaseUrl(value: string) {
   }
 }
 
+/**
+ * The project this build ships with, ignoring anything the user typed into
+ * cloud settings.
+ *
+ * Analytics uses this rather than the resolved config: someone who repoints
+ * sync at their own Supabase project would otherwise have their analytics
+ * POSTed at a project with no analytics_events table, which fails forever and
+ * yields no data for that install.
+ */
+export function getBundledCloudConfig(): CloudRuntimeConfig | null {
+  const draft = readBundledConfigDraft();
+
+  if (!draft.url || !draft.anonKey || !isValidSupabaseUrl(draft.url)) {
+    return null;
+  }
+
+  return draft;
+}
+
 export function getCloudRuntimeConfigDraft(): CloudRuntimeConfigDraft {
   const bundled = readBundledConfigDraft();
 

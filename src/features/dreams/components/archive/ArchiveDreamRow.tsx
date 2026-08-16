@@ -282,7 +282,10 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
     <Pressable
       accessibilityRole="button"
       onPress={() =>
-        navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, { dreamId: dream.id })
+        navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+          dreamId: dream.id,
+          source: 'archive',
+        })
       }
       style={({ pressed }: { pressed: boolean }) => [
         styles.listRowPressable,

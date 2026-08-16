@@ -14,6 +14,7 @@ import {
   getDreamStressLabels,
   getDreamWakeEmotionLabels,
 } from '../../../constants/copy/dreams';
+import { trackDreamDetailOpened } from '../../../services/observability/events';
 import {
   getLucidControlAreaLabels,
   getLucidStabilizationLabels,
@@ -104,6 +105,7 @@ export default function DreamDetailScreen() {
   const handleOpenRelatedDream = React.useCallback(
     (dreamId: string) => {
       navigation.push(ROOT_ROUTE_NAMES.DreamDetail, {
+        source: 'other',
         dreamId,
       });
     },
@@ -123,6 +125,27 @@ export default function DreamDetailScreen() {
     onAcknowledgeSaved: handleAcknowledgeSaved,
     onDeleteComplete: handleDeleteComplete,
   });
+
+  // Fires once per opened dream, with its age rather than its identity.
+  // §9 asks for "first *old* dream reopened" — opening the dream just written
+  // is not the revisit loop, so the age is the whole point of the event.
+  const trackedDreamIdRef = React.useRef<string | null>(null);
+  React.useEffect(() => {
+    const openedDream = controller.dream;
+    if (!openedDream || trackedDreamIdRef.current === openedDream.id) {
+      return;
+    }
+
+    trackedDreamIdRef.current = openedDream.id;
+    trackDreamDetailOpened({
+      dreamAgeDays: Math.max(
+        0,
+        Math.floor((Date.now() - openedDream.createdAt) / 86_400_000),
+      ),
+      // Set by whoever navigated here; 'other' when a caller did not say.
+      source: route.params.source ?? 'other',
+    });
+  }, [controller.dream, route.params.source]);
 
   const viewModel = React.useMemo(
     () =>

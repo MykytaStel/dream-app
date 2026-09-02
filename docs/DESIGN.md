@@ -20,31 +20,51 @@ screenshot.
 
 ## Themes
 
-Three themes, each defined as a full palette in `src/theme/tokens.ts` and registered in
+Four themes, each defined as a full palette in `src/theme/tokens.ts` and registered in
 `src/theme/theme.ts`:
 
-| Theme | Mood | Base |
-|---|---|---|
-| `kaleidoscope` | midnight blue and violet, the default | `#141826` |
-| `ember` | warm dark, rust and rose | `#1A1214` |
-| `moss` | muted green dark | see `palette.moss` |
+| Theme | Mood | Appearance | Base |
+|---|---|---|---|
+| `kaleidoscope` | midnight blue and violet, the default | dark | `#141826` |
+| `ember` | warm dark, rust and rose | dark | `#1A1214` |
+| `moss` | muted green dark | dark | see `palette.moss` |
+| `daylight` | cool off-white, the light option | light | `#F4F6FC` |
 
-**All three are dark.** `AppThemeAppearance` allows `'light'`, and `appThemeMetadata`
-currently registers every theme as `'dark'`. A light palette does not exist. Any UI
-work that assumes a light background is assuming something the app cannot currently do.
+`appThemeMetadata` records each theme's `appearance` (`'dark'` or `'light'`), which
+drives the status bar and system chrome. `daylight` is a real light palette, not a
+tint of a dark one — a UI that assumed a dark background before now has to hold up on
+both, which is what `__tests__/themeContrast.test.ts` checks (13 pairs × 4 themes).
 
 ## Tokens
 
-Never hardcode a colour. The palette keys, defined by `ThemePalette` in
-`src/theme/tokens.ts`, are:
+Never hardcode a colour. Colours come in two layers:
+
+**Raw palette** — `ThemePalette` in `src/theme/tokens.ts`, one full set of values per
+theme:
 
 | Group | Keys |
 |---|---|
 | Surfaces | `bg`, `surface`, `surfaceAlt`, `surfaceElevated` |
-| Text | `text`, `textDim`, `ink` |
+| Text | `text`, `textDim` |
 | Brand | `primary`, `primaryAlt`, `accent`, `glow` |
-| Aurora gradient | `auroraStart`, `auroraMid`, `auroraEnd` |
-| Semantic | `danger`, `success`, `border`, `tabIcon`, `switchTrackOff` |
+| Aurora | `auroraStart`, `auroraMid`, `auroraEnd` |
+| Semantic | `danger`, `success`, `border`, `tabIcon`, `switchTrackOff`, `switchThumb` |
+| Depth | `scrim` (the dim laid over content), `shadow` (what a shadow is cast in) |
+
+**Restyle theme** — `createAppTheme` in `src/theme/theme.ts` exposes the palette to
+components, renaming `bg` → `background` and adding derived roles that a raw palette
+cannot express:
+
+| Key | Is | Why it exists |
+|---|---|---|
+| `onPrimary` | the colour of text/icons drawn on a `primary`/`danger`/`accent` fill | `text` and `background` were both being misused for this; on the light theme that failed contrast |
+| `destructiveSurface` | `danger` at low alpha | a tinted destructive background that stays legible in every theme |
+| `destructiveBorder` | `danger` at mid alpha | the matching border |
+
+`ink` was renamed to `scrim` — a `theme.colors.ink` reference is now a compile error.
+The remaining surface-role tokens the product plan's §7.1 lists (`surfacePrimary`,
+`onSurface`, `controlThumb`, `selectedFill`, `focusRing`) are **not built yet**; only
+phase A landed.
 
 Spacing and radii come from the same file:
 
@@ -63,8 +83,8 @@ Styles go through Restyle and `StyleSheet`. Inline style objects are not allowed
 allocate on every render, they bypass theming, and they scatter design decisions across
 components where nobody can find them.
 
-There are currently 23 lint warnings for inline styles. They are tracked as debt and
-removed before the `--max-warnings=0` gate is switched on.
+The inline-style backlog is cleared and `eslint . --max-warnings=0` is the CI gate, so
+a new inline style object fails the build rather than adding to a list.
 
 ## What to avoid
 

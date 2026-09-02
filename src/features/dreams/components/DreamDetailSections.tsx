@@ -120,6 +120,18 @@ export function DreamDetailSections({
   onOpenSettingsForAnalysis,
   onOpenDreamPractice,
 }: DreamDetailSectionsProps) {
+  // A raw capture used to show every section, most of them holding only "nothing
+  // saved" text — including nightmare grounding on a dream that was never a
+  // nightmare. Sections with no content and no reason to be looked for are
+  // hidden; the ones that stay are the content, its prompt, and real CTAs.
+  const showRelated = relatedDreams.length > 0;
+  const showLucid = Boolean(dream.lucidPractice || viewModel.lucidityLabel);
+  const showNightmare = Boolean(
+    dream.nightmare || dream.tags.includes('nightmare'),
+  );
+  const showState =
+    viewModel.hasContext || viewModel.hasEmotions || viewModel.hasLucidity;
+
   return (
     <Animated.View layout={detailLayoutTransition}>
       <Card style={styles.detailSheet}>
@@ -157,14 +169,18 @@ export function DreamDetailSections({
           onStartTranscriptEdit={onStartTranscriptEdit}
         />
 
-        <View style={styles.sheetDivider} />
-        <DreamRelatedSection
-          dream={dream}
-          copy={copy}
-          styles={styles}
-          relatedDreams={relatedDreams}
-          onOpenRelatedDream={onOpenRelatedDream}
-        />
+        {showRelated ? (
+          <>
+            <View style={styles.sheetDivider} />
+            <DreamRelatedSection
+              dream={dream}
+              copy={copy}
+              styles={styles}
+              relatedDreams={relatedDreams}
+              onOpenRelatedDream={onOpenRelatedDream}
+            />
+          </>
+        ) : null}
 
         <View style={styles.sheetDivider} />
         <DreamAnalysisSection
@@ -179,42 +195,54 @@ export function DreamDetailSections({
           onOpenSettingsForAnalysis={onOpenSettingsForAnalysis}
         />
 
-        <View style={styles.sheetDivider} />
-        <DreamLucidSection
-          dream={dream}
-          viewModel={viewModel}
-          copy={copy}
-          styles={styles}
-          practiceCopy={practiceCopy}
-          lucidTechniqueLabels={lucidTechniqueLabels}
-          lucidControlLabels={lucidControlLabels}
-          lucidStabilizationLabels={lucidStabilizationLabels}
-          onOpenDreamPractice={onOpenDreamPractice}
-        />
+        {showLucid ? (
+          <>
+            <View style={styles.sheetDivider} />
+            <DreamLucidSection
+              dream={dream}
+              viewModel={viewModel}
+              copy={copy}
+              styles={styles}
+              practiceCopy={practiceCopy}
+              lucidTechniqueLabels={lucidTechniqueLabels}
+              lucidControlLabels={lucidControlLabels}
+              lucidStabilizationLabels={lucidStabilizationLabels}
+              onOpenDreamPractice={onOpenDreamPractice}
+            />
+          </>
+        ) : null}
 
-        <View style={styles.sheetDivider} />
-        <DreamNightmareSection
-          dream={dream}
-          copy={copy}
-          styles={styles}
-          practiceCopy={practiceCopy}
-          nightmareAftereffectLabels={nightmareAftereffectLabels}
-          nightmareGroundingLabels={nightmareGroundingLabels}
-          nightmareRescriptLabels={nightmareRescriptLabels}
-          onOpenDreamPractice={onOpenDreamPractice}
-          onEditDream={onEditDream}
-        />
+        {showNightmare ? (
+          <>
+            <View style={styles.sheetDivider} />
+            <DreamNightmareSection
+              dream={dream}
+              copy={copy}
+              styles={styles}
+              practiceCopy={practiceCopy}
+              nightmareAftereffectLabels={nightmareAftereffectLabels}
+              nightmareGroundingLabels={nightmareGroundingLabels}
+              nightmareRescriptLabels={nightmareRescriptLabels}
+              onOpenDreamPractice={onOpenDreamPractice}
+              onEditDream={onEditDream}
+            />
+          </>
+        ) : null}
 
-        <View style={styles.sheetDivider} />
-        <DreamStateSection
-          dream={dream}
-          copy={copy}
-          styles={styles}
-          viewModel={viewModel}
-          stressLabels={stressLabels}
-          wakeEmotionLabels={wakeEmotionLabels}
-          preSleepEmotionLabels={preSleepEmotionLabels}
-        />
+        {showState ? (
+          <>
+            <View style={styles.sheetDivider} />
+            <DreamStateSection
+              dream={dream}
+              copy={copy}
+              styles={styles}
+              viewModel={viewModel}
+              stressLabels={stressLabels}
+              wakeEmotionLabels={wakeEmotionLabels}
+              preSleepEmotionLabels={preSleepEmotionLabels}
+            />
+          </>
+        ) : null}
       </Card>
     </Animated.View>
   );

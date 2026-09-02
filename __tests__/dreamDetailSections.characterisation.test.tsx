@@ -139,16 +139,36 @@ const sections = {
 
 const labels = { curious: 'Curious', restless: 'Restless' };
 
-function renderSections() {
+function renderSections(overrides?: {
+  dream?: Partial<Dream>;
+  relatedDreams?: typeof relatedDreams;
+}) {
+  const nextDream = overrides?.dream
+    ? ({ ...dream, ...overrides.dream } as Dream)
+    : dream;
+  const nextRelated = overrides?.relatedDreams ?? relatedDreams;
+  const nextViewModel =
+    nextDream === dream && nextRelated === relatedDreams
+      ? viewModel
+      : getDreamDetailViewModel({
+          dream: nextDream,
+          copy,
+          moodLabels,
+          analysisSettings,
+          relatedDreams: nextRelated,
+          isTranscribingAudio: false,
+          now: Date.UTC(2026, 6, 21, 9),
+        });
+
   return render(
     <SafeAreaProvider initialMetrics={SAFE_AREA_METRICS}>
       <ThemeProvider theme={themes.kaleidoscope}>
         <DreamDetailSections
-          dream={dream}
+          dream={nextDream}
           copy={copy}
           styles={styles}
-          viewModel={viewModel}
-          relatedDreams={relatedDreams}
+          viewModel={nextViewModel}
+          relatedDreams={nextRelated}
           sections={sections}
           isTranscribingAudio={false}
           isEditingTranscript={false}
@@ -189,9 +209,9 @@ function renderSections() {
 }
 
 describe('dream detail sections', () => {
-  test('every section is on the page', async () => {
-    // Seven headings, one per section. This is the list that a split has to
-    // keep intact — losing one would otherwise be invisible.
+  test('a fully populated dream shows all seven sections', async () => {
+    // Sections are conditional (see the bare-capture test), so this fixture is
+    // deliberately complete — every section has content to show.
     const { getAllByText } = await renderSections();
 
     for (const heading of [
@@ -210,6 +230,32 @@ describe('dream detail sections', () => {
         true,
       ]);
     }
+  });
+
+  test('a bare capture hides the sections that would only say "nothing saved"', async () => {
+    const { queryByText, getByText } = await renderSections({
+      dream: {
+        mood: undefined,
+        wakeEmotions: undefined,
+        lucidity: undefined,
+        lucidPractice: undefined,
+        nightmare: undefined,
+        sleepContext: undefined,
+        tags: [],
+      },
+      relatedDreams: [],
+    });
+
+    // The content and its prompts stay.
+    expect(getByText(copy.detailCaptureTitle)).toBeTruthy();
+    expect(getByText(copy.detailReflectionTitle)).toBeTruthy();
+    expect(getByText(copy.detailAnalysisTitle)).toBeTruthy();
+
+    // The empty ones are gone, not showing placeholder text.
+    expect(queryByText(practiceCopy.openLucid)).toBeNull();
+    expect(queryByText(practiceCopy.openNightmares)).toBeNull();
+    expect(queryByText(copy.detailStateTitle)).toBeNull();
+    expect(queryByText(copy.detailRelatedTitle)).toBeNull();
   });
 
   test('written text wins the capture panel, and the transcript is not shown at all', async () => {

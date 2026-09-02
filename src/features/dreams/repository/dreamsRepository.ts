@@ -608,21 +608,11 @@ export function markDreamSyncError(id: string, errorMessage?: string) {
 }
 
 /**
- * Marks every already-synced dream for upload again, and forgets where its
- * audio used to live.
- *
- * Used once, when the cloud copy turns out to be empty of this archive: the
- * encryption migration discarded the server's plaintext records and the audio
- * objects with them, so dreams that are locally "synced" have nothing behind
- * them any more.
- *
- * Clearing `audioRemotePath` is the part that is easy to miss. Upload skips any
- * dream that already has one, so leaving it set would mean the recording is
- * never re-sent — and the path would keep pointing at an object that no longer
- * exists, failing only much later, when someone tries to play it.
- *
- * `updatedAt` is deliberately left alone: bumping it would make every dream
- * look freshly edited to conflict resolution on the user's other devices.
+ * Re-queues every "synced" dream for upload and clears `audioRemotePath`. Used
+ * when the cloud copy turns out empty (the encryption migration discarded the
+ * server's plaintext + audio). Clearing the remote path matters: upload skips
+ * any dream that has one, so it would never re-send the recording. `updatedAt`
+ * is left alone so other devices do not see every dream as freshly edited.
  */
 export function markAllDreamsPendingUpload() {
   const all = listDreams();

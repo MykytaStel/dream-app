@@ -87,6 +87,9 @@ export default function NewDreamScreen() {
   const [streakToast, setStreakToast] =
     React.useState<StreakMilestoneToastData | null>(null);
   const [showWidgetPinToast, setShowWidgetPinToast] = React.useState(false);
+  // Queued during onSaved, shown only once the "Capture saved" sheet closes —
+  // otherwise the widget nag covers the save confirmation on the first dream.
+  const widgetPromptPendingRef = React.useRef(false);
   const [canPinNatively, setCanPinNatively] = React.useState(false);
   const [pendingSavedDream, setPendingSavedDream] = React.useState<{
     dream: Dream;
@@ -116,9 +119,21 @@ export default function NewDreamScreen() {
     pendingSavedDream && !streakToast && !showWidgetPinToast,
   );
 
+  const releaseWidgetPromptIfPending = React.useCallback(() => {
+    if (!widgetPromptPendingRef.current) {
+      return;
+    }
+    widgetPromptPendingRef.current = false;
+    setShowWidgetPinToast(true);
+    isPinNativelySupported()
+      .then(setCanPinNatively)
+      .catch(() => setCanPinNatively(false));
+  }, []);
+
   const closeSavedSheet = React.useCallback(() => {
     setPendingSavedDream(null);
-  }, []);
+    releaseWidgetPromptIfPending();
+  }, [releaseWidgetPromptIfPending]);
 
   const openSavedDreamDetail = React.useCallback(
     (focusSection?: DreamDetailFocusSection) => {
@@ -128,6 +143,7 @@ export default function NewDreamScreen() {
       }
 
       setPendingSavedDream(null);
+      widgetPromptPendingRef.current = false;
       navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
         source: 'other',
         dreamId: saved.dream.id,
@@ -145,6 +161,7 @@ export default function NewDreamScreen() {
     }
 
     setPendingSavedDream(null);
+    widgetPromptPendingRef.current = false;
     navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
       dreamId: saved.dream.id,
     });
@@ -213,11 +230,9 @@ export default function NewDreamScreen() {
               setStreakToast(toast);
             }
 
-            if (allDreams.length === 1 && !hasWidgetPinPromptBeenSeen()) {
-              setShowWidgetPinToast(true);
-              isPinNativelySupported()
-                .then(setCanPinNatively)
-                .catch(() => setCanPinNatively(false));
+            if (allDreams.length >= 3 && !hasWidgetPinPromptBeenSeen()) {
+              // Queued — released when the saved sheet closes, not stacked on it.
+              widgetPromptPendingRef.current = true;
             }
           } catch {
             // Non-critical: ignore errors

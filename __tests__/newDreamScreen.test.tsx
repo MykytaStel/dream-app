@@ -205,4 +205,31 @@ describe('NewDreamScreen', () => {
     // starts rather than the just-saved one lingering.
     expect(trackCaptureStarted).toHaveBeenCalledTimes(2);
   });
+
+  test('shows the saved sheet after a save, not a widget nag over it', async () => {
+    const mockedCaptureSavedSheet = jest.requireMock(
+      '../src/features/dreams/components/CaptureSavedSheet',
+    ).CaptureSavedSheet as jest.Mock;
+
+    mockedUseRoute.mockReturnValue({ key: 'new', name: 'New', params: {} });
+
+    await ReactTestRenderer.act(() => {
+      ReactTestRenderer.create(<NewDreamScreen />);
+    });
+
+    const { onSaved } = mockedDreamComposer.mock.calls.at(-1)![0] as {
+      onSaved: (dream: { id: string; createdAt: number }) => void;
+    };
+    mockedCaptureSavedSheet.mockClear();
+
+    await ReactTestRenderer.act(() => {
+      onSaved({ id: 'saved-dream', createdAt: Date.now() });
+    });
+
+    // The "Capture saved" sheet is visible; nothing is stacked on top of it.
+    const lastSheetProps = mockedCaptureSavedSheet.mock.calls.at(-1)![0] as {
+      visible: boolean;
+    };
+    expect(lastSheetProps.visible).toBe(true);
+  });
 });

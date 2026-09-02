@@ -23,8 +23,6 @@ export type MemoryDisclosureCopy = {
   hideDetailsLabel: string;
   practiceTitle: string;
   practiceDescription: string;
-  progressTitle: string;
-  progressDescription: string;
 };
 
 function normalizeDreamCount(value: number) {
@@ -213,8 +211,6 @@ export function getMemoryDisclosureCopy(
       practiceTitle: 'Практика снів',
       practiceDescription:
         'Люцидність, стабілізація та підтримка після кошмарів.',
-      progressTitle: 'Прогрес',
-      progressDescription: 'Тижнева ціль і всі досягнення в окремому екрані.',
     };
   }
 
@@ -229,7 +225,5 @@ export function getMemoryDisclosureCopy(
     practiceTitle: 'Dream practice',
     practiceDescription:
       'Lucidity, stabilization and support after nightmares.',
-    progressTitle: 'Progress',
-    progressDescription: 'Weekly goal and all achievements in one screen.',
   };
 }

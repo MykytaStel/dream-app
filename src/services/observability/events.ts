@@ -77,24 +77,16 @@ type RestoreMode = 'replace' | 'merge';
 type OnboardingPath = 'voice' | 'text' | 'no-dream';
 type DreamDetailSource = 'home' | 'archive' | 'stats' | 'other';
 /**
- * Deliberately the category, never the signal.
- *
- * `PatternDetailScreen` destructures `{ signal, kind }` on one line, and
- * `signal` is the symbol the person's dreams are about — exactly what §9
- * forbids collecting. A `string` here would let a one-word edit ship that to a
- * table read back in aggregate for months, so the type holds the line instead.
+ * The pattern category, never the signal itself — `signal` is the symbol the
+ * person's dreams are about, which §9 forbids collecting. The narrow type stops
+ * a one-word edit from shipping it.
  */
 type PatternKind = 'word' | 'theme' | 'symbol';
 /**
- * Where a practice or grounding surface was entered from.
- *
- * These are the values the analytics call sites pass: two literals plus
- * `route.params?.entrySource`, whose own union is declared on the route
- * (`DreamPractice` in `routes.ts`). An earlier version of this list also
- * carried 'startup' and 'tag' — swept up from a repo-wide grep for `source:`
- * that caught maintenance triggers and reflection code having nothing to do
- * with analytics. A union wider than reality is the same failure as one
- * narrower than it, just quieter.
+ * Where a practice or grounding surface was entered from — two literals plus
+ * `route.params?.entrySource` (union declared on `DreamPractice` in
+ * `routes.ts`). Keep this in sync with the actual call sites: a union wider
+ * than reality is as wrong as one narrower, just quieter.
  */
 type EntrySource =
   | 'manual'
@@ -144,11 +136,8 @@ export function trackOnboardingCompleted(input: { path: OnboardingPath }) {
   });
 }
 
-/**
- * `dreamAgeDays` is what makes §9's "first *old* dream reopened" answerable.
- * Opening the dream you just wrote is not the revisit loop; opening one from
- * three weeks ago is.
- */
+// `dreamAgeDays` makes §9's "first old dream reopened" answerable — opening the
+// dream you just wrote is not the revisit loop.
 export function trackDreamDetailOpened(input: {
   dreamAgeDays: number;
   source: DreamDetailSource;
@@ -215,15 +204,9 @@ export function trackDraftResumed(input: {
   });
 }
 
-/**
- * `captureId` ties this back to the `capture_started` that preceded it —
- * without a correlation id "median time to first Save" cannot be computed at
- * all, because nothing says which save belongs to which capture.
- *
- * `dreamIndex` is which dream this is by count, read from the existing meta
- * counter. It carries no content, and it is what makes the 1→2 transition —
- * the earliest retention signal there is — visible.
- */
+// `captureId` correlates this to its `capture_started` (needed for "median time
+// to first Save"). `dreamIndex` is a content-free count that makes the 1→2
+// transition — the earliest retention signal — visible.
 export function trackDreamSaved(input: {
   captureId?: string;
   mode: DreamSaveMode;

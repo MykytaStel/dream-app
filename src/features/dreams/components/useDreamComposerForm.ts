@@ -79,6 +79,28 @@ export function formatLocalAssetName(path?: string) {
   return segments[segments.length - 1] || path;
 }
 
+/**
+ * The identity of a capture's content: title, body, sleep date and audio.
+ *
+ * `onSave` records this when a dream is written, and the autosave compares
+ * against it so a debounce that fires around the same moment does not persist a
+ * draft of a dream that is already in the archive. Both sides must build it the
+ * same way, hence one function.
+ */
+function getComposerContentSignature(input: {
+  title?: string;
+  text?: string;
+  sleepDate?: string;
+  audioUri?: string;
+}) {
+  return JSON.stringify([
+    input.title?.trim() ?? '',
+    input.text?.trim() ?? '',
+    input.sleepDate?.trim() ?? '',
+    input.audioUri ?? null,
+  ]);
+}
+
 type UseDreamComposerFormArgs = {
   mode: DreamComposerMode;
   entryMode: DreamComposerEntryMode;
@@ -454,6 +476,13 @@ export function useDreamComposerForm({
   draftPayloadRef.current = draftPayload;
 
   /**
+   * The signature of the content last written to the archive, so an autosave
+   * that fires around the same moment does not re-create a draft of a dream
+   * that is already saved. Shared with `onSave`, which sets it.
+   */
+  const lastSavedSignatureRef = React.useRef<string | null>(null);
+
+  /**
    * Where this composer's draft belongs.
    *
    * Creating writes the one unfinished-dream draft, which the widget and the
@@ -473,6 +502,19 @@ export function useDreamComposerForm({
     // person believes their dream is safe.
     try {
       if (mode === 'create') {
+        // A debounce armed by the last keystroke can still fire after onSave
+        // has written the dream and cleared the draft, but before React
+        // commits the reset — draftPayloadRef then still holds the saved text,
+        // and writing it back is what leaves "Continue draft" on Home for a
+        // dream that is already in the archive.
+        if (
+          getComposerContentSignature(draftPayloadRef.current) ===
+          lastSavedSignatureRef.current
+        ) {
+          clearDreamDraft();
+          return;
+        }
+
         saveDreamDraft(draftPayloadRef.current);
         return;
       }
@@ -600,16 +642,13 @@ export function useDreamComposerForm({
    */
   const composingDreamIdRef = React.useRef(initialDream?.id ?? createDreamId());
 
-  /**
-   * What was last written, so the same content is not written twice.
-   *
-   * The id alone keeps the archive correct — a repeated save upserts the same
-   * dream — but it would still do the work, fire the analytics event and call
-   * `onSaved` a second time. Comparing content also draws the line in the
-   * right place: a second press is refused, and a deliberate save after an
-   * edit is not.
-   */
-  const lastSavedSignatureRef = React.useRef<string | null>(null);
+  // `lastSavedSignatureRef` is declared beside `draftPayloadRef` above so the
+  // autosave can read it. It records what was last written to the archive, so
+  // the same content is not written twice: the id alone keeps the archive
+  // correct — a repeated save upserts the same dream — but it would still do
+  // the work, fire the analytics event and call `onSaved` a second time.
+  // Comparing content also draws the line in the right place: a second press
+  // is refused, and a deliberate save after an edit is not.
 
   function onSave() {
     setHasTriedSave(true);
@@ -621,12 +660,12 @@ export function useDreamComposerForm({
       const cleanText = text.trim();
       const cleanSleepDate = sleepDate.trim();
 
-      const signature = JSON.stringify([
-        cleanTitle,
-        cleanText,
-        cleanSleepDate,
-        audioUri ?? null,
-      ]);
+      const signature = getComposerContentSignature({
+        title: cleanTitle,
+        text: cleanText,
+        sleepDate: cleanSleepDate,
+        audioUri,
+      });
 
       if (lastSavedSignatureRef.current === signature) {
         return;

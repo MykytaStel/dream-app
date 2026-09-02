@@ -179,4 +179,30 @@ describe('NewDreamScreen', () => {
       source: 'reminder',
     });
   });
+
+  test('gives the next capture a fresh composer after a save', async () => {
+    mockedUseRoute.mockReturnValue({
+      key: 'new',
+      name: 'New',
+      params: {},
+    });
+
+    await ReactTestRenderer.act(() => {
+      ReactTestRenderer.create(<NewDreamScreen />);
+    });
+
+    expect(trackCaptureStarted).toHaveBeenCalledTimes(1);
+
+    const { onSaved } = mockedDreamComposer.mock.calls.at(-1)![0] as {
+      onSaved: (dream: { id: string; createdAt: number }) => void;
+    };
+
+    await ReactTestRenderer.act(() => {
+      onSaved({ id: 'saved-dream', createdAt: Date.now() });
+    });
+
+    // The composer is remounted for the next capture, so a new capture session
+    // starts rather than the just-saved one lingering.
+    expect(trackCaptureStarted).toHaveBeenCalledTimes(2);
+  });
 });

@@ -19,6 +19,7 @@ import {
   DreamAnalysisProvider,
   DreamAnalysisStatus,
 } from '../../analysis/model/dreamAnalysis';
+import { normalizeUnicode } from '../../../utils/text';
 
 const SLEEP_DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 const TRANSCRIPT_STATUS_VALUES: DreamTranscriptStatus[] = [
@@ -354,7 +355,14 @@ function normalizeSyncFields(input: Dream) {
 }
 
 export function normalizeTag(value: string) {
-  return value.trim().toLowerCase().replace(/\s+/g, '-').replace(/-+/g, '-');
+  // NFC first: "café" with a precomposed "é" and "café" with a combining accent
+  // are different strings, and without this the same tag can be stored twice
+  // and never de-duplicated. Paste from iOS and macOS routinely decomposes.
+  return normalizeUnicode(value)
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-');
 }
 
 export function normalizeTags(tags: string[]) {

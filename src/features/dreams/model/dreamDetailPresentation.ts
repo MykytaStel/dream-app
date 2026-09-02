@@ -8,6 +8,7 @@ import type { DreamAnalysisSettings } from '../../analysis/model/dreamAnalysis';
 import type { DreamTranscriptionProgress } from '../services/dreamTranscriptionService';
 import type { Dream } from './dream';
 import { countDreamWords } from './dreamAnalytics';
+import { truncateChars } from '../../../utils/text';
 import { getRelatedSignalSummaries, type RelatedDream } from './relatedDreams';
 import {
   getDreamResurfacingMatch,
@@ -203,7 +204,7 @@ export function getHeroPreview(dream: Dream, copy: DreamDetailCopy) {
       return null;
     }
 
-    return text.length > 160 ? `${text.slice(0, 157)}...` : text;
+    return truncateChars(text, 160, '...');
   }
 
   const transcript = dream.transcript?.trim();
@@ -212,8 +213,7 @@ export function getHeroPreview(dream: Dream, copy: DreamDetailCopy) {
       return null;
     }
 
-    const visible =
-      transcript.length > 136 ? `${transcript.slice(0, 133)}...` : transcript;
+    const visible = truncateChars(transcript, 136, '...');
     return `${copy.transcriptPreviewPrefix}: ${visible}`;
   }
 
@@ -392,11 +392,7 @@ function getAudioSyncHint(dream: Dream, copy: DreamDetailCopy) {
 
 function truncateReflectionSummary(summary: string) {
   const normalized = summary.trim().replace(/\s+/g, ' ');
-  if (normalized.length <= 110) {
-    return normalized;
-  }
-
-  return `${normalized.slice(0, 107)}...`;
+  return truncateChars(normalized, 110, '...');
 }
 
 function getDetailResurfacingWindowLabel(

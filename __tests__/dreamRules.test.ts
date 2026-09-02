@@ -29,6 +29,16 @@ describe('dreamRules', () => {
     ).toEqual(['blue-sky', 'lucid-dream']);
   });
 
+  test('treats the two Unicode spellings of a tag as one', () => {
+    // The same word can arrive with a precomposed accent or with a base letter
+    // plus a combining accent (U+0301). iOS and macOS paste produce the latter.
+    const precomposed = 'café';
+    const decomposed = 'café';
+
+    expect(precomposed).not.toBe(decomposed);
+    expect(normalizeTags([precomposed, decomposed])).toEqual(['café']);
+  });
+
   test('sanitizes dream payload consistently', () => {
     const createdAt = new Date('2026-03-06T12:00:00.000Z').getTime();
     const dream: Dream = {

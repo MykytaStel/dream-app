@@ -1,6 +1,7 @@
 import type { AppLocale } from '../../../i18n/types';
 import type { Dream } from '../../dreams/model/dream';
 import { getDreamDate } from '../../dreams/model/dreamAnalytics';
+import { truncateChars } from '../../../utils/text';
 import {
   getRecurringReflectionSignals,
   getRecurringWordSignals,
@@ -55,11 +56,7 @@ export type MemoryPatternCopy = {
 
 function truncate(value: string, maxLength: number) {
   const normalized = value.replace(/\s+/g, ' ').trim();
-  if (normalized.length <= maxLength) {
-    return normalized;
-  }
-
-  return `${normalized.slice(0, maxLength - 1).trimEnd()}…`;
+  return truncateChars(normalized, maxLength);
 }
 
 function getEvidencePreview(dream: Dream) {

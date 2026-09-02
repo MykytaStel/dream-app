@@ -1,4 +1,5 @@
 import type { Dream } from './dream';
+import { normalizeUnicode } from '../../../utils/text';
 import {
   isControlledLucidDream,
   isHighDistressNightmare,
@@ -6,6 +7,14 @@ import {
   isNightmareDream,
   isRecurringNightmare,
 } from './dreamAnalytics';
+
+// Both sides of every comparison pass through here: the same word typed with a
+// precomposed accent and with a combining one are different strings, and
+// without folding them a search for "café" would miss a dream that stored the
+// other form. Paste from iOS and macOS routinely produces the decomposed form.
+function foldForSearch(value: string): string {
+  return normalizeUnicode(value).toLowerCase();
+}
 
 export type ArchiveSpecialFilter =
   | 'all'
@@ -43,14 +52,14 @@ export function getArchiveSearchMatchReasons(
   dream: Dream,
   query: string,
 ): ArchiveSearchMatchReason[] {
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = foldForSearch(query).trim();
   if (!normalizedQuery) {
     return [];
   }
 
   const reasons: ArchiveSearchMatchReason[] = [];
   const hasMatch = (value?: string) =>
-    value?.toLowerCase().includes(normalizedQuery);
+    value ? foldForSearch(value).includes(normalizedQuery) : false;
 
   if (hasMatch(dream.title)) {
     reasons.push('title');
@@ -80,7 +89,7 @@ export function getArchiveSearchMatchReasons(
 }
 
 function normalizeSearchValue(value?: string) {
-  return value?.trim().toLowerCase() ?? '';
+  return value ? foldForSearch(value).trim() : '';
 }
 
 function isExactSearchMatch(value: string | undefined, query: string) {
@@ -145,7 +154,7 @@ function getTagSearchScore(tags: string[], query: string) {
 }
 
 export function getArchiveSearchScore(dream: Dream, query: string) {
-  const normalizedQuery = query.trim().toLowerCase();
+  const normalizedQuery = foldForSearch(query).trim();
   if (!normalizedQuery) {
     return 0;
   }

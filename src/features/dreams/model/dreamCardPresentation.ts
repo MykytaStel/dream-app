@@ -1,6 +1,7 @@
 import type { Dream } from './dream';
 import { getMoodValence } from './dreamAnalytics';
 import { getDreamDate } from './dreamAnalytics';
+import { truncateChars } from '../../../utils/text';
 
 export type DreamCardValence = 'positive' | 'neutral' | 'negative';
 
@@ -40,8 +41,7 @@ export function buildDreamCardData(
   });
 
   const rawText = dream.text ?? dream.transcript ?? '';
-  const excerpt =
-    rawText.length > 120 ? rawText.slice(0, 117).trimEnd() + '…' : rawText;
+  const excerpt = truncateChars(rawText, 120);
 
   return {
     title: dream.title || copy.untitled,

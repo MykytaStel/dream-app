@@ -5,6 +5,7 @@ import { buildSavedDreamThreadShelfItems } from './dreamThread';
 import { normalizePatternSignal } from './patternMatches';
 import { buildSavedMonthlyReviewItems } from './statsScreenModel';
 import { getStatsCopy } from '../../../constants/copy/stats';
+import { truncateChars } from '../../../utils/text';
 import type {
   SavedDreamThreadRecord,
   SavedMonthlyReportRecord,
@@ -75,7 +76,7 @@ function getImportantDreamTitle(
 
   const preview = dream.text?.trim() || dream.transcript?.trim();
   if (preview) {
-    return preview.length > 48 ? `${preview.slice(0, 45)}...` : preview;
+    return truncateChars(preview, 48, '...');
   }
 
   return copy.reviewWorkspaceDreamFallbackTitle;

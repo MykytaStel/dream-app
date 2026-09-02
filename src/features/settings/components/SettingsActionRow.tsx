@@ -37,11 +37,11 @@ export function SettingsActionRow({
       <View style={styles.copy}>
         <Text style={styles.title}>{title}</Text>
         {meta && !calmMode ? (
-          <Text
-            style={styles.meta}
-            numberOfLines={variant === 'tile' ? 1 : 2}
-            ellipsizeMode={variant === 'tile' ? 'middle' : 'tail'}
-          >
+          // A description that runs long wraps to a second line and then clips
+          // at the end. `ellipsizeMode="middle"` used to cut it in the middle
+          // of a word — "…draft con|flicts…" — which reads as broken text
+          // rather than a shortened sentence.
+          <Text style={styles.meta} numberOfLines={2} ellipsizeMode="tail">
             {meta}
           </Text>
         ) : null}

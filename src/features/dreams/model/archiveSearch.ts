@@ -92,18 +92,10 @@ function normalizeSearchValue(value?: string) {
   return value ? foldForSearch(value).trim() : '';
 }
 
-function isExactSearchMatch(value: string | undefined, query: string) {
-  const normalizedValue = normalizeSearchValue(value);
-  return Boolean(normalizedValue) && normalizedValue === query;
-}
-
-function startsWithSearchQuery(value: string | undefined, query: string) {
-  const normalizedValue = normalizeSearchValue(value);
-  return Boolean(normalizedValue) && normalizedValue.startsWith(query);
-}
-
-function countQueryMatches(value: string | undefined, query: string) {
-  const haystack = normalizeSearchValue(value);
+// The sub-scores below each used to re-fold the same field — three
+// `normalize('NFC').toLowerCase()` passes per field, per dream, per keystroke.
+// They now take the already-folded haystack so a field is folded once.
+function countHaystackMatches(haystack: string, query: string) {
   if (!haystack || !query) {
     return 0;
   }
@@ -119,37 +111,48 @@ function countQueryMatches(value: string | undefined, query: string) {
   return matches;
 }
 
-function getFieldSearchScore(
-  value: string | undefined,
+function getFoldedFieldSearchScore(
+  haystack: string,
   query: string,
   weights: { exact: number; prefix: number; match: number },
 ) {
-  if (!query) {
+  if (!query || !haystack) {
     return 0;
   }
 
-  let score = countQueryMatches(value, query) * weights.match;
+  let score = countHaystackMatches(haystack, query) * weights.match;
 
-  if (isExactSearchMatch(value, query)) {
+  if (haystack === query) {
     score += weights.exact;
-  } else if (startsWithSearchQuery(value, query)) {
+  } else if (haystack.startsWith(query)) {
     score += weights.prefix;
   }
 
   return score;
 }
 
+function getFieldSearchScore(
+  value: string | undefined,
+  query: string,
+  weights: { exact: number; prefix: number; match: number },
+) {
+  return getFoldedFieldSearchScore(normalizeSearchValue(value), query, weights);
+}
+
 function getTagSearchScore(tags: string[], query: string) {
   return tags.reduce((score, tag) => {
-    if (isExactSearchMatch(tag, query)) {
-      return score + 54 + countQueryMatches(tag, query) * 14;
+    const haystack = normalizeSearchValue(tag);
+    const matches = countHaystackMatches(haystack, query) * 14;
+
+    if (haystack && haystack === query) {
+      return score + 54 + matches;
     }
 
-    if (startsWithSearchQuery(tag, query)) {
-      return score + 32 + countQueryMatches(tag, query) * 14;
+    if (haystack && haystack.startsWith(query)) {
+      return score + 32 + matches;
     }
 
-    return score + countQueryMatches(tag, query) * 14;
+    return score + matches;
   }, 0);
 }
 

@@ -67,15 +67,20 @@ export default function NewDreamScreen() {
   const shouldAutoStartRecording =
     route.params?.entryMode === 'voice' &&
     route.params?.autoStartRecording === true;
+  // Bumped after every save so the next capture gets a fresh composer rather
+  // than the one that just wrote a dream — otherwise its already-cleared fields
+  // and the "Continue draft" affordance linger on a dream that is safely saved.
+  const [savedNonce, setSavedNonce] = React.useState(0);
   const composerKey = React.useMemo(
     () =>
       `${entryMode}:${route.params?.source ?? 'none'}:${route.params?.launchKey ?? 'initial'}:${
         shouldAutoStartRecording ? 'autostart' : 'manual'
-      }`,
+      }:${savedNonce}`,
     [
       entryMode,
       route.params?.launchKey,
       route.params?.source,
+      savedNonce,
       shouldAutoStartRecording,
     ],
   );
@@ -192,6 +197,7 @@ export default function NewDreamScreen() {
             dream,
             focusSection: getPostSaveFocusSection(dream),
           });
+          setSavedNonce(current => current + 1);
 
           try {
             const allDreams = listDreamListItems();

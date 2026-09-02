@@ -1,6 +1,7 @@
 import { type DreamCopy } from '../../../constants/copy/dreams';
 import { type AppLocale } from '../../../i18n/types';
 import { Dream } from './dream';
+import { getDreamDisplayTitle } from './dreamTitle';
 import { getDreamSignalWeights } from './relatedDreams';
 import {
   getDreamResurfacingMatch,
@@ -71,7 +72,7 @@ export function formatLastViewedDreamMeta(
 const HOME_REVISIT_MIN_AGE_MS = 6 * 60 * 60 * 1000;
 
 function getHomeRevisitTitle(dream: Dream, copy: DreamCopy) {
-  return dream.title?.trim() || copy.untitled;
+  return getDreamDisplayTitle(dream, copy.untitled);
 }
 
 function getHomeResurfacingWindowLabel(

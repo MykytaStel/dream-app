@@ -2,6 +2,7 @@ import type { Dream } from './dream';
 import { getMoodValence } from './dreamAnalytics';
 import { getDreamDate } from './dreamAnalytics';
 import { truncateChars } from '../../../utils/text';
+import { getDreamDisplayTitle } from './dreamTitle';
 
 export type DreamCardValence = 'positive' | 'neutral' | 'negative';
 
@@ -44,7 +45,7 @@ export function buildDreamCardData(
   const excerpt = truncateChars(rawText, 120);
 
   return {
-    title: dream.title || copy.untitled,
+    title: getDreamDisplayTitle(dream, copy.untitled),
     dateLabel,
     moodLabel,
     moodValence: valence,

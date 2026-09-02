@@ -13,6 +13,7 @@ import { Theme } from '../../../../theme/theme';
 import { blend } from '../../../../theme/contrast';
 import { getDreamLayout } from '../../constants/layout';
 import { Dream, Mood } from '../../model/dream';
+import { getDreamDisplayTitle } from '../../model/dreamTitle';
 import { getDreamDate } from '../../model/dreamAnalytics';
 import {
   getDreamSearchMatchReasons,
@@ -565,7 +566,7 @@ export const HomeDreamRow = React.memo(function HomeDreamRow({
               >
                 <View style={styles.titleRow}>
                   <Text style={styles.title} numberOfLines={1}>
-                    {dream.title || copy.untitled}
+                    {getDreamDisplayTitle(dream, copy.untitled)}
                   </Text>
                   {!mood ? (
                     <View

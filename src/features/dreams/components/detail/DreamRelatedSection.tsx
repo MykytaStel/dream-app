@@ -10,6 +10,7 @@ import type { RelatedDream } from '../../model/relatedDreams';
 import type { DreamDetailScreenStyles } from '../../screens/DreamDetailScreen.styles';
 import type { DreamDetailCopy } from '../../model/dreamDetailPresentation';
 import type { Dream } from '../../model/dream';
+import { getDreamDisplayTitle } from '../../model/dreamTitle';
 
 /**
  * The dreams this one rhymes with.
@@ -76,7 +77,7 @@ export function DreamRelatedSection({
             >
               <View style={styles.relatedCopy}>
                 <Text style={styles.relatedTitle}>
-                  {item.dream.title || copy.untitled}
+                  {getDreamDisplayTitle(item.dream, copy.untitled)}
                 </Text>
                 <Text style={styles.relatedMeta}>
                   {item.dream.sleepDate ||

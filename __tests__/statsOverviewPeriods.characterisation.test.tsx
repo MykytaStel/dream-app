@@ -32,8 +32,21 @@ function makeDream(id: string, createdAt: number, overrides?: Partial<Dream>) {
   return { id, createdAt, tags: [], ...overrides } as Dream;
 }
 
+// The dreams below are placed relative to this instant, and the hook buckets
+// them into "current" and "previous" windows against the system clock. Without
+// freezing the clock to the same instant the windows drift with real time, and
+// on any day more than ~30 days past this the previous-period count changes.
 const now = Date.UTC(2026, 7, 2, 9);
 const day = 24 * 60 * 60 * 1000;
+
+beforeEach(() => {
+  jest.useFakeTimers();
+  jest.setSystemTime(now);
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+});
 
 const dreams: Dream[] = [
   makeDream('recent-1', now - day, { text: 'a short one', audioUri: 'a.m4a' }),

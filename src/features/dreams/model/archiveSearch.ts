@@ -8,10 +8,9 @@ import {
   isRecurringNightmare,
 } from './dreamAnalytics';
 
-// Both sides of every comparison pass through here: the same word typed with a
-// precomposed accent and with a combining one are different strings, and
-// without folding them a search for "café" would miss a dream that stored the
-// other form. Paste from iOS and macOS routinely produces the decomposed form.
+// Both sides of every comparison fold to NFC + lowercase, so a search for
+// "café" matches a dream that stored the decomposed spelling (common from
+// iOS/macOS paste).
 function foldForSearch(value: string): string {
   return normalizeUnicode(value).toLowerCase();
 }

@@ -13,17 +13,10 @@ import type {
 } from '../DreamComposer.types';
 
 /**
- * The microphone, from pressing record to whatever ends the recording.
- *
- * The fourth group to leave the composer, and the one with the most going on
- * that is not a field: two pieces of state that have to agree, a timer, a
- * subscription that only exists while recording, and an auto-start the wake
- * screen triggers. None of it is read by the rest of the form except through
- * `audioUri`, which is what made it separable.
- *
- * It still needs the form's busy flag and error line, because pressing record
- * and pressing save compete for the same two: a screen that reported "saving"
- * and "recording" independently would let someone start one during the other.
+ * The microphone, from pressing record to whatever ends the recording. Shares
+ * the form's busy flag and error line because record and save compete for
+ * them — reporting the two states independently would let one start during the
+ * other. The rest of the form reads only `audioUri`.
  */
 
 /** Just the strings this needs, so a caller can be built in a test. */

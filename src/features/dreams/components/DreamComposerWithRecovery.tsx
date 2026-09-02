@@ -60,11 +60,9 @@ function readRecoveryResult({
 
 /**
  * Resolves local draft recovery before DreamComposer reads its initial fields.
- *
- * The first render deliberately mounts no composer. The layout effect performs
- * the storage recovery, then the child mounts against clean storage before the
- * frame is presented. This keeps MMKV writes out of render and remains safe
- * when React Strict Mode repeats render-phase work and effects in development.
+ * The first render mounts no composer; a layout effect does the storage
+ * recovery, then the child mounts against clean storage — keeping MMKV writes
+ * out of render and safe under Strict Mode's repeated effects.
  */
 export function DreamComposerWithRecovery(props: DreamComposerProps) {
   const { locale } = useI18n();

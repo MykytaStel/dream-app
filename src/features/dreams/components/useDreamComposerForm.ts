@@ -58,12 +58,7 @@ export function getTodayDate() {
   return new Date(now.getTime() - offset).toISOString().slice(0, 10);
 }
 
-/**
- * Adds a value to a multi-select, or removes it if it is already chosen.
- *
- * Exported because several of the extracted field groups drive multi-selects
- * with it, and it belongs to none of them in particular.
- */
+/** Adds a value to a multi-select, or removes it if already chosen. */
 export function toggleSelection<T extends string>(values: T[], nextValue: T) {
   return values.includes(nextValue)
     ? values.filter(value => value !== nextValue)
@@ -80,12 +75,9 @@ export function formatLocalAssetName(path?: string) {
 }
 
 /**
- * The identity of a capture's content: title, body, sleep date and audio.
- *
- * `onSave` records this when a dream is written, and the autosave compares
- * against it so a debounce that fires around the same moment does not persist a
- * draft of a dream that is already in the archive. Both sides must build it the
- * same way, hence one function.
+ * Content identity: title, body, sleep date, audio. `onSave` records it; the
+ * autosave compares against it so a same-moment debounce does not re-persist a
+ * draft of an already-saved dream.
  */
 function getComposerContentSignature(input: {
   title?: string;
@@ -128,22 +120,17 @@ export function useDreamComposerForm({
     }
 
     const editDraft = getDreamEditDraft(initialDream.id);
-    // A draft older than the dream is left over from an edit that was
-    // abandoned before something else wrote the dream — another device, a
-    // sync, an edit that did get saved. Restoring it would undo that.
+    // A draft older than the dream is a stale abandoned edit — restoring it
+    // would undo a newer write (another device, a sync).
     const savedAt = initialDream.updatedAt ?? initialDream.createdAt;
 
     return editDraft && (editDraft.updatedAt ?? 0) > savedAt ? editDraft : null;
   }, [initialDream, mode]);
 
   /**
-   * The dream as the field initialisers should read it.
-   *
-   * Undefined once an edit draft has been restored. The draft carries every
-   * field the composer owns, so letting the saved dream win any of them would
-   * discard the unsaved change the draft exists to preserve — including a
-   * field the person had deliberately cleared, which is the one case a merge
-   * cannot tell apart from an absent value.
+   * What the field initialisers read. Undefined once an edit draft is restored:
+   * the draft owns every field, so merging the saved dream back in would drop
+   * an unsaved change — including one the user cleared on purpose.
    */
   const initialDreamFields =
     mode === 'edit' && initialDraft ? undefined : initialDream;
@@ -399,8 +386,8 @@ export function useDreamComposerForm({
       title,
       text,
       sleepDate,
-      // A recording still being written counts: the draft is what will point
-      // at the file if the app never gets a chance to finish the recording.
+      // A recording still being written counts — the draft points at the file
+      // if the app dies mid-recording.
       audioUri: audioUri ?? pendingAudioUri,
       entryMode,
       mood,
@@ -468,45 +455,27 @@ export function useDreamComposerForm({
     ],
   );
 
-  /**
-   * Read by the listeners below, which need the newest draft without being
-   * torn down and rebuilt every keystroke to capture it.
-   */
+  // Lets the listeners below read the newest draft without re-subscribing per keystroke.
   const draftPayloadRef = React.useRef(draftPayload);
   draftPayloadRef.current = draftPayload;
 
-  /**
-   * The signature of the content last written to the archive, so an autosave
-   * that fires around the same moment does not re-create a draft of a dream
-   * that is already saved. Shared with `onSave`, which sets it.
-   */
+  // Last-saved content signature; the autosave checks it so it never re-creates
+  // a draft of a saved dream. Set by onSave.
   const lastSavedSignatureRef = React.useRef<string | null>(null);
 
   /**
-   * Where this composer's draft belongs.
-   *
-   * Creating writes the one unfinished-dream draft, which the widget and the
-   * home screen read. Editing writes a draft of its own, keyed by the dream,
-   * so an edit in progress never reads as a new dream waiting to be finished.
+   * Create mode writes the one unfinished-dream draft (read by the widget and
+   * Home); edit mode writes a per-dream draft so it is not seen as a new dream.
    */
   const persistDraft = React.useCallback(() => {
-    // A failed draft write must not take the composer with it. This runs from
-    // a timer every 400ms while someone types and from the background
-    // listener, so a storage failure — a full disk is the realistic one —
-    // would otherwise throw outside any render, repeatedly, on the one screen
-    // the product cannot afford to lose. Losing the draft is survivable;
-    // losing the ability to keep typing is not.
-    //
-    // Nothing is shown here on purpose. The place a write failure has to be
-    // visible is the save itself, which alerts, and which is the moment the
-    // person believes their dream is safe.
+    // Runs every 400ms and on backgrounding, so a failed write (full disk) must
+    // not throw — losing the draft is survivable, losing the ability to type is
+    // not. Not surfaced here; the save itself alerts on a write failure.
     try {
       if (mode === 'create') {
-        // A debounce armed by the last keystroke can still fire after onSave
-        // has written the dream and cleared the draft, but before React
-        // commits the reset — draftPayloadRef then still holds the saved text,
-        // and writing it back is what leaves "Continue draft" on Home for a
-        // dream that is already in the archive.
+        // A debounce armed by the last keystroke can fire after onSave cleared
+        // the draft but before the reset render — draftPayloadRef still holds
+        // the saved text. Writing it back is the "Continue draft" ghost.
         if (
           getComposerContentSignature(draftPayloadRef.current) ===
           lastSavedSignatureRef.current
@@ -533,14 +502,8 @@ export function useDreamComposerForm({
     return () => clearTimeout(timeoutId);
   }, [draftPayload, persistDraft]);
 
-  /**
-   * Writes the draft the moment the app leaves the foreground.
-   *
-   * The debounce above is what makes typing cheap, but it also means the last
-   * few hundred milliseconds of writing exist only in memory — and leaving the
-   * foreground is exactly when the system may never give this screen another
-   * turn. A call arriving mid-sentence should not cost the sentence.
-   */
+  // Flush the draft on backgrounding — the 400ms debounce means the last few
+  // hundred ms exist only in memory, and the app may not get another turn.
   React.useEffect(() => {
     const subscription = AppState.addEventListener('change', state => {
       if (state === 'background' || state === 'inactive') {
@@ -627,28 +590,15 @@ export function useDreamComposerForm({
   }
 
   /**
-   * The identity of the dream being composed, decided once.
-   *
-   * This used to be `createDreamId()` inside the save, which made the id a
-   * property of the button press rather than of the dream. Two presses meant
-   * two ids, and since the repository upserts by id, two dreams. Everything
-   * from the press to the write is synchronous, so the second press is not
-   * interrupted by the first — it runs afterwards, in full, and the busy flag
-   * that looks like it guards this is set inside the save and never read
-   * there.
-   *
-   * Held in a ref and replaced after a successful create, so the next dream
-   * does not overwrite the one just saved.
+   * The composed dream's id, minted once. Minting it per Save press made two
+   * fast taps upsert two dreams (same id → one dream). Replaced after a
+   * successful create so the next dream gets its own id.
    */
   const composingDreamIdRef = React.useRef(initialDream?.id ?? createDreamId());
 
-  // `lastSavedSignatureRef` is declared beside `draftPayloadRef` above so the
-  // autosave can read it. It records what was last written to the archive, so
-  // the same content is not written twice: the id alone keeps the archive
-  // correct — a repeated save upserts the same dream — but it would still do
-  // the work, fire the analytics event and call `onSaved` a second time.
-  // Comparing content also draws the line in the right place: a second press
-  // is refused, and a deliberate save after an edit is not.
+  // The signature check below refuses a repeated identical save (which would
+  // re-fire analytics and onSaved) but still allows a deliberate save after an
+  // edit. lastSavedSignatureRef is declared above so the autosave can read it.
 
   function onSave() {
     setHasTriedSave(true);
@@ -713,20 +663,14 @@ export function useDreamComposerForm({
       saveDream(dream);
       lastSavedSignatureRef.current = signature;
       hapticSave();
-      // Wrapped because everything in here is measurement, and the dream is
-      // already saved by this point. Reading the counter touches the
-      // repository, and no repository hiccup is worth turning a saved dream
-      // into an error the person sees.
+      // Measurement only, and the dream is already saved — a repository hiccup
+      // reading the counter must not become an error the person sees.
       try {
-        // Both correlation fields describe a capture, and an edit is not one:
-        // it has no capture_started to join back to, and the archive total is
-        // not the edited dream's position. Sending either would put wrong
-        // numbers into the funnel rather than leaving a gap, so an edit sends
-        // neither and the §9 queries read only what is actually there.
-        //
-        // dream_index is a count, never content, and is read after the save so
-        // a create is counted. It is what makes the 1→2 transition visible,
-        // which is the earliest retention signal there is.
+        // captureId and dreamIndex describe a capture; an edit is not one (no
+        // capture_started to join, and the archive total is not the edited
+        // dream's position), so an edit sends neither. dreamIndex is a count,
+        // read after the save so a create is counted — it makes the 1→2
+        // transition visible.
         trackDreamSaved({
           captureId: isEdit ? undefined : getCaptureSessionId(),
           mode: isEdit ? 'edit' : 'create',
@@ -743,12 +687,9 @@ export function useDreamComposerForm({
         // The dream now holds everything the draft was protecting.
         clearDreamEditDraft(dream.id);
       } else {
-        // A new identity for whatever is written next, so the following dream
-        // does not upsert over the one just saved.
+        // New id for the next dream. resetForm keeps lastSavedSignatureRef:
+        // its state clears do not land before a second press could arrive.
         composingDreamIdRef.current = createDreamId();
-        // The signature is deliberately kept. resetForm empties the fields
-        // through state, which does not take effect before a second press
-        // arrives — clearing it here would hand that press an open door.
         resetForm();
       }
 

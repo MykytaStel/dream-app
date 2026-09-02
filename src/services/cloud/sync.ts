@@ -95,15 +95,7 @@ function getCurrentPendingCounts(
   });
 }
 
-/**
- * The counters a sync reports when it finishes.
- *
- * Passed into each phase and updated in place. The alternative — returning
- * seven numbers from every phase and adding them at the call site — is the
- * shape this code already had, spelled `({ a, b, c } = accumulate(...))`, and
- * it is why the two upload loops could only be read inside the three hundred
- * line function that owned the variables.
- */
+/** The counters a sync reports when it finishes; passed into each phase and updated in place. */
 type PendingTombstone = ReturnType<typeof listDreamDeletionTombstones>[number];
 type PendingDream = ReturnType<typeof listDreams>[number];
 
@@ -118,13 +110,9 @@ type SyncCounters = {
 };
 
 /**
- * Sends the dreams that are waiting, resolving each against what the server
- * already has.
- *
- * Returns the last upload error, or undefined. A failure here is recorded on
- * the dream and counted, never thrown: one unsendable dream must not stop the
- * rest of the sync, which is the whole reason this loop exists rather than a
- * `Promise.all`.
+ * Uploads waiting dreams, resolving each against the server. Returns the last
+ * error, or undefined — a failure is recorded on the dream and counted, never
+ * thrown, so one bad dream does not stop the sync.
  */
 async function uploadPendingDreams(
   input: {
@@ -241,16 +229,10 @@ async function uploadPendingTombstones(
 }
 
 /**
- * Applies the deletions and the dreams the server has that this device does
- * not.
- *
- * Deletions first, deliberately: a dream deleted elsewhere and edited here has
- * to meet the tombstone before it is pulled back in, or the pull would
- * resurrect it and the tombstone would then delete it again on the next sync.
- *
- * Returns the last error, or undefined. A record that cannot be decrypted is
- * counted as a failure and named, not thrown — the rest of the archive still
- * syncs, and the settings screen has something to say.
+ * Applies deletions, then the dreams the server has that this device lacks.
+ * Deletions first: a dream deleted elsewhere and edited here must meet the
+ * tombstone before the pull, or it would be resurrected then deleted again.
+ * An undecryptable record is counted as a failure and named, not thrown.
  */
 async function pullRemoteChanges(
   input: {
@@ -314,13 +296,9 @@ async function pullRemoteChanges(
 }
 
 /**
- * Reconciles the saved months and threads — the reading state, not the dreams.
- *
- * It travels as one snapshot rather than per item, so the resolution is a
- * single decision about which side is newer. The `else if` at the end counts a
- * skip only when there was something to skip; a device that has never saved
- * anything and a server that holds nothing are not a conflict avoided, they are
- * an empty shelf on both sides.
+ * Reconciles saved months and threads (reading state, not dreams). Travels as
+ * one snapshot, so resolution is a single newer-side decision. A skip is
+ * counted only when there was something to skip.
  */
 async function syncSavedReviewState(
   input: { userId: string },
@@ -443,11 +421,9 @@ async function performCloudSync(
       session.userId,
     );
 
-    // Nobody has sealed this account's archive yet, which is what the server
-    // looks like after the encryption migration discarded the plaintext copy.
-    // Dreams marked "synced" locally now have nothing behind them, so they are
-    // queued again. The reverse — deleting local dreams because the server is
-    // empty — is exactly the mistake this must not make.
+    // The server has no sealed archive for this account (e.g. right after the
+    // encryption migration discarded the plaintext). Re-queue local "synced"
+    // dreams; never delete them because the server looks empty.
     const dreamsToUpload = isUnclaimedArchive
       ? (markAllDreamsPendingUpload(),
         listDreams().filter(dream => dream.syncStatus !== 'synced'))

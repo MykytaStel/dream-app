@@ -124,15 +124,16 @@ function MemorySecondaryAction({
 export function MemorySecondaryActions({
   copy,
   onOpenPractice,
-  onOpenProgress,
 }: {
   copy: MemoryDisclosureCopy;
   onOpenPractice: () => void;
-  onOpenProgress: () => void;
 }) {
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
+  // The weekly-goal / achievements ("Progress") card was removed here: PRODUCT.md
+  // is explicit that this is not a habit tracker. The ProgressScreen and route
+  // still exist but are no longer reachable from the main flow.
   return (
     <View style={styles.secondaryActionsRow}>
       <MemorySecondaryAction
@@ -140,12 +141,6 @@ export function MemorySecondaryActions({
         description={copy.practiceDescription}
         icon="moon-outline"
         onPress={onOpenPractice}
-      />
-      <MemorySecondaryAction
-        title={copy.progressTitle}
-        description={copy.progressDescription}
-        icon="flag-outline"
-        onPress={onOpenProgress}
       />
     </View>
   );

@@ -55,7 +55,6 @@ describe('memoryDisclosure', () => {
       title: 'Перші сигнали',
       detailsTitle: 'Детальна аналітика',
       practiceTitle: 'Практика снів',
-      progressTitle: 'Прогрес',
       showDetailsLabel: 'Показати деталі',
       progressLabel: 'Ще 2 записи до наступного рівня',
     });
@@ -63,7 +62,6 @@ describe('memoryDisclosure', () => {
       title: 'First signals',
       detailsTitle: 'Detailed analysis',
       practiceTitle: 'Dream practice',
-      progressTitle: 'Progress',
       showDetailsLabel: 'Show details',
       progressLabel: '2 more entries to the next level',
     });

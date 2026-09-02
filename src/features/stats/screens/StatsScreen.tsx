@@ -308,9 +308,6 @@ export default function StatsScreen() {
                 entrySource: 'stats',
               })
             }
-            onOpenProgress={() =>
-              navigation.navigate(ROOT_ROUTE_NAMES.Progress)
-            }
           />
         </>
       ) : null}

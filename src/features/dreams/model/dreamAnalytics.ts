@@ -30,8 +30,26 @@ export function getDreamDate(dream: DreamDateLike) {
   return new Date(`${value}T00:00:00`);
 }
 
+// Scripts written without spaces between words, where one character is roughly
+// one word: CJK ideographs (incl. Extension A and compatibility forms) and
+// Japanese kana. `\s+` splitting counts a whole paragraph of these as one
+// "word", which then makes the composer's counter and the "needs more detail"
+// prompt wrong for anyone writing in them.
+const SPACELESS_WORD_CHAR = /[぀-ヿ㐀-䶿一-鿿豈-﫿]/g;
+
 export function countDreamWords(text?: string) {
-  return text?.trim() ? text.trim().split(/\s+/).length : 0;
+  const trimmed = text?.trim();
+  if (!trimmed) {
+    return 0;
+  }
+
+  // Surround every spaceless-script character with spaces, so it becomes its
+  // own token, then count tokens the ordinary way.
+  return trimmed
+    .replace(SPACELESS_WORD_CHAR, ' $& ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean).length;
 }
 
 export function getCurrentStreak(dreams: DreamDateLike[]) {

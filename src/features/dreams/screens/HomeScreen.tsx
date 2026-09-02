@@ -38,6 +38,7 @@ import { HomeHero } from '../components/home/HomeHero';
 import { HomeDraftPrompt } from '../components/home/HomeDraftPrompt';
 import { HomeListHeader } from '../components/home/HomeListHeader';
 import { isWakeCaptureWindow } from '../model/homeOverview';
+import { getDreamDisplayTitle } from '../model/dreamTitle';
 import { getDreamDraftResumeDescription } from '../model/dreamDraftPresentation';
 import { getHomeFeedCopy, getHomeFeedState } from '../model/homeFeed';
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
@@ -444,7 +445,7 @@ export default function HomeScreen() {
           <View style={styles.dreamHeaderCopy}>
             <View style={styles.titleRow}>
               <Text style={styles.title} numberOfLines={1}>
-                {dream.title || copy.untitled}
+                {getDreamDisplayTitle(dream, copy.untitled)}
               </Text>
             </View>
             <View style={styles.timestampRow}>

@@ -7,6 +7,7 @@ import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
 import { Theme } from '../../../theme/theme';
 import type { Dream } from '../model/dream';
+import { getDreamDisplayTitle } from '../model/dreamTitle';
 import {
   moodColor,
   type DreamDetailCopy,
@@ -156,7 +157,9 @@ export function DreamDetailOverview({
         </View>
 
         <View style={styles.heroHeader}>
-          <Text style={styles.heroTitle}>{dream.title || copy.untitled}</Text>
+          <Text style={styles.heroTitle}>
+            {getDreamDisplayTitle(dream, copy.untitled)}
+          </Text>
           <Text style={styles.heroSubtitle}>{viewModel.heroSubtitle}</Text>
         </View>
 

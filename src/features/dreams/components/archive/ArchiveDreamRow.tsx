@@ -13,6 +13,7 @@ import {
 import { Theme } from '../../../../theme/theme';
 import { type AppLocale } from '../../../../i18n/types';
 import { Dream, Mood } from '../../model/dream';
+import { getDreamDisplayTitle } from '../../model/dreamTitle';
 import { getDreamDate, getMoodValence } from '../../model/dreamAnalytics';
 import { isDreamArchived, isDreamStarred } from '../../model/homeTimeline';
 import {
@@ -345,7 +346,7 @@ export const ArchiveDreamRow = React.memo(function ArchiveDreamRow({
 
         <View style={styles.rowCopy}>
           <Text style={styles.rowTitle} numberOfLines={2}>
-            {dream.title || copy.untitled}
+            {getDreamDisplayTitle(dream, copy.untitled)}
           </Text>
 
           {signalChips.length ? (

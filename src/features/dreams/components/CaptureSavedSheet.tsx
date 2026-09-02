@@ -14,6 +14,7 @@ import { createControlPill } from '../../../theme/surfaces';
 import { Theme } from '../../../theme/theme';
 import { fontFamilies } from '../../../theme/fonts';
 import { Dream } from '../model/dream';
+import { getDreamDisplayTitle } from '../model/dreamTitle';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 import {
   getCaptureFlowCopy,
@@ -35,11 +36,7 @@ type CaptureSavedSheetProps = {
 };
 
 function formatSavedDreamTitle(dream: Dream | null, fallback: string) {
-  if (!dream) {
-    return fallback;
-  }
-
-  return dream.title?.trim() || fallback;
+  return dream ? getDreamDisplayTitle(dream, fallback) : fallback;
 }
 
 export function CaptureSavedSheet({

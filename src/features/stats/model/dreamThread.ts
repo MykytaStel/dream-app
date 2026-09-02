@@ -3,6 +3,7 @@ import { getStatsCopy } from '../../../constants/copy/stats';
 import type { PatternDetailKind } from '../../../app/navigation/routes';
 import type { AppLocale } from '../../../i18n/types';
 import type { Mood } from '../../dreams/model/dream';
+import { getDreamDisplayTitle } from '../../dreams/model/dreamTitle';
 import { getDreamDate } from '../../dreams/model/dreamAnalytics';
 import {
   getPatternDreamMatches,
@@ -419,7 +420,7 @@ export function buildDreamThreadViewModel(input: {
     timelineTitle: statsCopy.threadDetailTimelineTitle,
     entries: sortedMatches.map((match, index) => ({
       dreamId: match.dream.id,
-      title: match.dream.title?.trim() || dreamCopy.untitled,
+      title: getDreamDisplayTitle(match.dream, dreamCopy.untitled),
       meta: formatRowMeta(match, moodLabels),
       preview: formatPreview(match, dreamCopy),
       sourceLabels: match.sources.map(source =>

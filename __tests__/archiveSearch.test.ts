@@ -1,4 +1,5 @@
 import type { Dream } from '../src/features/dreams/model/dream';
+import * as textUtils from '../src/utils/text';
 import {
   getArchiveSearchMatchReasons,
   getArchiveSearchScore,
@@ -66,6 +67,27 @@ describe('archiveSearch', () => {
 
   test('keeps the all special filter neutral', () => {
     expect(matchesArchiveSpecialFilter(titleMatch, 'all')).toBe(true);
+  });
+
+  test('folds each searchable field only once per score', () => {
+    const dream: Dream = {
+      id: 'folding',
+      createdAt: new Date('2026-03-09T08:00:00.000Z').getTime(),
+      sleepDate: '2026-03-09',
+      title: 'Lantern room',
+      text: 'a lantern over the lantern water',
+      transcript: 'lantern lantern lantern',
+      tags: ['lantern'],
+      sleepContext: { importantEvents: 'the lantern shop' },
+    };
+
+    const spy = jest.spyOn(textUtils, 'normalizeUnicode');
+    getArchiveSearchScore(dream, 'lantern');
+
+    // one fold for the query, then one per non-empty field/tag (title, text,
+    // transcript, importantEvents, tag) — not three per field as before.
+    expect(spy.mock.calls.length).toBeLessThanOrEqual(6);
+    spy.mockRestore();
   });
 
   test('matches across Unicode normalization forms', () => {

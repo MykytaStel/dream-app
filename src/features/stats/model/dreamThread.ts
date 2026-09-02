@@ -14,6 +14,7 @@ import {
 import type { DreamReflectionSignal, DreamWordSignal } from './dreamReflection';
 import type { SavedDreamThreadRecord } from '../services/dreamThreadShelfService';
 import { formatCount } from '../../../i18n/plural';
+import { truncateChars } from '../../../utils/text';
 
 type StatsCopy = ReturnType<typeof getStatsCopy>;
 type DreamThreadShelfCopy = Pick<
@@ -77,7 +78,7 @@ export type RecurringSignalDashboardItem = {
 function formatPreview(match: PatternDreamMatch, dreamCopy: DreamCopy) {
   const text = match.dream.text?.trim();
   if (text) {
-    return text.length > 120 ? `${text.slice(0, 117)}...` : text;
+    return truncateChars(text, 120, '...');
   }
 
   const transcript = match.dream.transcript?.trim();
@@ -86,8 +87,7 @@ function formatPreview(match: PatternDreamMatch, dreamCopy: DreamCopy) {
       match.dream.transcriptSource === 'edited'
         ? `${dreamCopy.editedTranscriptPreviewPrefix}: `
         : `${dreamCopy.transcriptPreviewPrefix}: `;
-    const visible =
-      transcript.length > 96 ? `${transcript.slice(0, 93)}...` : transcript;
+    const visible = truncateChars(transcript, 96, '...');
     return `${prefix}${visible}`;
   }
 

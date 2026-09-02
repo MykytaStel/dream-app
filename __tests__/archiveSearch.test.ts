@@ -67,4 +67,24 @@ describe('archiveSearch', () => {
   test('keeps the all special filter neutral', () => {
     expect(matchesArchiveSpecialFilter(titleMatch, 'all')).toBe(true);
   });
+
+  test('matches across Unicode normalization forms', () => {
+    // Text stored with a decomposed accent ("e" + U+0301), query typed with a
+    // precomposed one (U+00E9). Without normalization .includes() misses it.
+    const decomposedText = 'A stroll along the café terrace';
+    const precomposedQuery = 'café';
+
+    const dream: Dream = {
+      id: 'accent-match',
+      createdAt: new Date('2026-03-08T08:00:00.000Z').getTime(),
+      sleepDate: '2026-03-08',
+      text: decomposedText,
+      tags: [],
+    };
+
+    expect(getArchiveSearchMatchReasons(dream, precomposedQuery)).toEqual([
+      'notes',
+    ]);
+    expect(getArchiveSearchScore(dream, precomposedQuery)).toBeGreaterThan(0);
+  });
 });

@@ -8,6 +8,7 @@ import {
   getArchiveSearchScore,
   type ArchiveSearchMatchReason,
 } from './archiveSearch';
+import { truncateChars } from '../../../utils/text';
 import {
   isDreamArchived,
   isDreamStarred,
@@ -180,7 +181,7 @@ export function getArchivePills(dream: Dream, copy: DreamCopy, mood?: string) {
 export function formatArchivePreview(dream: Dream, copy: DreamCopy) {
   const text = dream.text?.trim();
   if (text) {
-    return text.length > 110 ? `${text.slice(0, 107)}...` : text;
+    return truncateChars(text, 110, '...');
   }
 
   const transcript = dream.transcript?.trim();
@@ -189,8 +190,7 @@ export function formatArchivePreview(dream: Dream, copy: DreamCopy) {
       dream.transcriptSource === 'edited'
         ? `${copy.editedTranscriptPreviewPrefix}: `
         : `${copy.transcriptPreviewPrefix}: `;
-    const visible =
-      transcript.length > 88 ? `${transcript.slice(0, 85)}...` : transcript;
+    const visible = truncateChars(transcript, 88, '...');
     return `${prefix}${visible}`;
   }
 

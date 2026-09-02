@@ -422,6 +422,7 @@ const DREAM_COPY_EN = {
   detailStateTitle: 'Dream state',
   detailStateEmpty:
     'No lucid state, wake-up emotions, or pre-sleep context were saved for this dream.',
+  detailLucidPracticeEmpty: 'No lucid practice was logged for this dream.',
   detailLucidityLabel: 'Lucid state',
   detailAudioDescription: 'An original voice note is attached to this dream.',
   detailAudioPathLabel: 'Local file',
@@ -1047,6 +1048,8 @@ const DREAM_COPY_UK: typeof DREAM_COPY_EN = {
   detailStateTitle: 'Стан сну',
   detailStateEmpty:
     'Для цього сну не збережено усвідомленість, емоції після пробудження чи контекст перед сном.',
+  detailLucidPracticeEmpty:
+    'Для цього сну не записано практику усвідомлених снів.',
   detailLucidityLabel: 'Усвідомленість',
   detailAudioDescription:
     'До цього сну прикріплена оригінальна голосова нотатка.',

@@ -135,7 +135,7 @@ export function DreamLucidSection({
           ) : null}
         </>
       ) : (
-        <Text style={styles.supportText}>{copy.detailStateEmpty}</Text>
+        <Text style={styles.supportText}>{copy.detailLucidPracticeEmpty}</Text>
       )}
     </View>
   );

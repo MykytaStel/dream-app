@@ -1,6 +1,7 @@
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import { Card } from '../../../components/ui/Card';
+import { Text } from '../../../components/ui/Text';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import { createSettingsScreenStyles } from '../screens/SettingsScreen.styles';
 import { SettingsSectionHeader } from './SettingsSectionHeader';
@@ -93,6 +94,9 @@ export function SettingsAppIconSection({
         columns={2}
         minWidth={92}
       />
+      {Platform.OS === 'android' ? (
+        <Text style={styles.themeFootnote}>{copy.appIconAndroidHint}</Text>
+      ) : null}
     </Card>
   );
 }

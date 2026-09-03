@@ -99,6 +99,8 @@ export const SETTINGS_COPY_UK: SettingsCopy = {
   appIconErrorTitle: 'Іконку не змінено',
   appIconErrorDescription:
     'На цьому пристрої не вдалося змінити іконку застосунку.',
+  appIconAndroidHint:
+    'Нова іконка зʼявиться, коли наступного разу вийдеш із застосунку.',
   privacyTitle: 'Приватність і зберігання',
   privacyDescription:
     'Дані про сни лишаються на пристрої за замовчуванням. Хмара лишається опційною і не блокує перший запис.',

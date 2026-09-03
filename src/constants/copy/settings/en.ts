@@ -96,6 +96,7 @@ export const SETTINGS_COPY_EN = {
   appIconOptionMono: 'Mono',
   appIconErrorTitle: 'Icon not changed',
   appIconErrorDescription: 'The app icon could not be changed on this device.',
+  appIconAndroidHint: 'The new icon appears the next time you leave the app.',
   privacyTitle: 'Privacy and storage',
   privacyDescription:
     'Dream data stays on your device by default. Cloud stays optional and does not block first capture.',

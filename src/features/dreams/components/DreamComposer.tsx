@@ -47,10 +47,8 @@ import {
   type ChoiceOption,
 } from './DreamComposerDetailSections';
 import { DreamComposerProps } from './DreamComposer.types';
-import {
-  formatLocalAssetName,
-  useDreamComposerForm,
-} from './useDreamComposerForm';
+import { useDreamComposerForm } from './useDreamComposerForm';
+import { formatLocalAssetName } from './composer/composerHelpers';
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 import { DreamComposerQuickCaptureCard } from './DreamComposerQuickCaptureCard';
 

@@ -9,7 +9,7 @@ import {
   type DreamDraft,
 } from '../../services/dreamDraftService';
 import { logActionError } from '../../../../app/errorReporting';
-import { getComposerContentSignature } from './composerContentSignature';
+import { getComposerContentSignature } from './composerHelpers';
 
 type DraftPayload = Omit<DreamDraft, 'updatedAt'>;
 

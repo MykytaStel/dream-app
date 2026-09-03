@@ -1,5 +1,4 @@
 import React from 'react';
-import { Alert } from 'react-native';
 import {
   Dream,
   DreamIntensity,
@@ -33,46 +32,18 @@ import {
 } from './composer/useNightmareFields';
 import { useRecordingLifecycle } from './composer/useRecordingLifecycle';
 import { useComposerDraftAutosave } from './composer/useComposerDraftAutosave';
-import { getComposerContentSignature } from './composer/composerContentSignature';
-import { getDreamsMeta, saveDream } from '../repository/dreamsRepository';
-import { logActionError } from '../../../app/errorReporting';
+import { useComposerSave } from './composer/useComposerSave';
+import { getTodayDate, toggleSelection } from './composer/composerHelpers';
 import {
   clearDreamDraft,
-  clearDreamEditDraft,
   getDreamDraft,
   getDreamEditDraft,
 } from '../services/dreamDraftService';
-import { createDreamId } from '../utils/createDreamId';
 import {
   DreamComposerCopy,
   DreamComposerEntryMode,
   DreamComposerMode,
 } from './DreamComposer.types';
-import { trackDreamSaved } from '../../../services/observability/events';
-import { getCaptureSessionId } from '../../../services/analytics/captureSession';
-import { hapticSave } from '../../../services/haptics/hapticService';
-
-export function getTodayDate() {
-  const now = new Date();
-  const offset = now.getTimezoneOffset() * 60_000;
-  return new Date(now.getTime() - offset).toISOString().slice(0, 10);
-}
-
-/** Adds a value to a multi-select, or removes it if already chosen. */
-export function toggleSelection<T extends string>(values: T[], nextValue: T) {
-  return values.includes(nextValue)
-    ? values.filter(value => value !== nextValue)
-    : [...values, nextValue];
-}
-
-export function formatLocalAssetName(path?: string) {
-  if (!path) {
-    return undefined;
-  }
-
-  const segments = path.split(/[\\/]/);
-  return segments[segments.length - 1] || path;
-}
 
 type UseDreamComposerFormArgs = {
   mode: DreamComposerMode;
@@ -522,126 +493,32 @@ export function useDreamComposerForm({
     setShowMetaSection(!isWakeMode);
   }
 
-  /**
-   * The composed dream's id, minted once. Minting it per Save press made two
-   * fast taps upsert two dreams (same id → one dream). Replaced after a
-   * successful create so the next dream gets its own id.
-   */
-  const composingDreamIdRef = React.useRef(initialDream?.id ?? createDreamId());
-
-  // The signature check below refuses a repeated identical save (which would
-  // re-fire analytics and onSaved) but still allows a deliberate save after an
-  // edit. lastSavedSignatureRef is declared above so the autosave can read it.
-
-  function onSave() {
-    setHasTriedSave(true);
-    setIsBusy(true);
-    setLastActionError(null);
-
-    try {
-      const cleanTitle = title.trim();
-      const cleanText = text.trim();
-      const cleanSleepDate = sleepDate.trim();
-
-      const signature = getComposerContentSignature({
-        title: cleanTitle,
-        text: cleanText,
-        sleepDate: cleanSleepDate,
-        audioUri,
-      });
-
-      if (lastSavedSignatureRef.current === signature) {
-        return;
-      }
-
-      const saveValidationError = validateDreamForSave({
-        text: cleanText,
-        audioUri,
-        sleepDate: cleanSleepDate,
-      });
-
-      if (saveValidationError === DREAM_SAVE_VALIDATION.missingContent) {
-        setLastActionError(copy.saveErrorDescription);
-        Alert.alert(copy.saveErrorTitle, copy.saveErrorDescription);
-        return;
-      }
-
-      if (saveValidationError === DREAM_SAVE_VALIDATION.invalidSleepDate) {
-        setLastActionError(copy.sleepDateInvalidDescription);
-        Alert.alert(
-          copy.sleepDateInvalidTitle,
-          copy.sleepDateInvalidDescription,
-        );
-        return;
-      }
-
-      const dream: Dream = {
-        id: composingDreamIdRef.current,
-        createdAt: initialDream?.createdAt ?? Date.now(),
-        archivedAt: initialDream?.archivedAt,
-        sleepDate: cleanSleepDate || getTodayDate(),
-        title: cleanTitle || undefined,
-        text: cleanText || undefined,
-        audioUri,
-        tags: normalizeTags(tags),
-        mood,
-        dreamIntensity,
-        lucidity,
-        wakeEmotions: wakeEmotions.length ? wakeEmotions : undefined,
-        sleepContext: buildSleepContext(),
-        lucidPractice: buildLucidPractice(),
-        nightmare: buildNightmare(),
-      };
-
-      saveDream(dream);
-      lastSavedSignatureRef.current = signature;
-      hapticSave();
-      // Measurement only, and the dream is already saved — a repository hiccup
-      // reading the counter must not become an error the person sees.
-      try {
-        // captureId and dreamIndex describe a capture; an edit is not one (no
-        // capture_started to join, and the archive total is not the edited
-        // dream's position), so an edit sends neither. dreamIndex is a count,
-        // read after the save so a create is counted — it makes the 1→2
-        // transition visible.
-        trackDreamSaved({
-          captureId: isEdit ? undefined : getCaptureSessionId(),
-          mode: isEdit ? 'edit' : 'create',
-          entryMode,
-          hasAudio: Boolean(audioUri),
-          hasText: Boolean(cleanText),
-          dreamIndex: isEdit ? undefined : getDreamsMeta().totalCount,
-        });
-      } catch (error) {
-        logActionError('dream_saved_analytics', error);
-      }
-
-      if (isEdit) {
-        // The dream now holds everything the draft was protecting.
-        clearDreamEditDraft(dream.id);
-      } else {
-        // New id for the next dream. resetForm keeps lastSavedSignatureRef:
-        // its state clears do not land before a second press could arrive.
-        composingDreamIdRef.current = createDreamId();
-        resetForm();
-      }
-
-      if (onSaved) {
-        onSaved(dream);
-      } else {
-        Alert.alert(
-          isEdit ? copy.updateSuccessTitle : copy.saveSuccessTitle,
-          isEdit ? copy.updateSuccessDescription : copy.saveSuccessDescription,
-        );
-      }
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      setLastActionError(message);
-      Alert.alert(copy.recordErrorTitle, message);
-    } finally {
-      setIsBusy(false);
-    }
-  }
+  const { onSave } = useComposerSave({
+    mode,
+    entryMode,
+    initialDream,
+    copy,
+    onSaved,
+    fields: {
+      title,
+      text,
+      sleepDate,
+      audioUri,
+      tags,
+      mood,
+      dreamIntensity,
+      lucidity,
+      wakeEmotions,
+    },
+    buildSleepContext,
+    buildLucidPractice,
+    buildNightmare,
+    resetForm,
+    lastSavedSignatureRef,
+    setIsBusy,
+    setHasTriedSave,
+    setLastActionError,
+  });
 
   return {
     initialDraft,

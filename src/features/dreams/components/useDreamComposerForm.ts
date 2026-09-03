@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, AppState } from 'react-native';
+import { Alert } from 'react-native';
 import {
   Dream,
   DreamIntensity,
@@ -32,6 +32,8 @@ import {
   useNightmareFields,
 } from './composer/useNightmareFields';
 import { useRecordingLifecycle } from './composer/useRecordingLifecycle';
+import { useComposerDraftAutosave } from './composer/useComposerDraftAutosave';
+import { getComposerContentSignature } from './composer/composerContentSignature';
 import { getDreamsMeta, saveDream } from '../repository/dreamsRepository';
 import { logActionError } from '../../../app/errorReporting';
 import {
@@ -39,8 +41,6 @@ import {
   clearDreamEditDraft,
   getDreamDraft,
   getDreamEditDraft,
-  saveDreamDraft,
-  saveDreamEditDraft,
 } from '../services/dreamDraftService';
 import { createDreamId } from '../utils/createDreamId';
 import {
@@ -72,25 +72,6 @@ export function formatLocalAssetName(path?: string) {
 
   const segments = path.split(/[\\/]/);
   return segments[segments.length - 1] || path;
-}
-
-/**
- * Content identity: title, body, sleep date, audio. `onSave` records it; the
- * autosave compares against it so a same-moment debounce does not re-persist a
- * draft of an already-saved dream.
- */
-function getComposerContentSignature(input: {
-  title?: string;
-  text?: string;
-  sleepDate?: string;
-  audioUri?: string;
-}) {
-  return JSON.stringify([
-    input.title?.trim() ?? '',
-    input.text?.trim() ?? '',
-    input.sleepDate?.trim() ?? '',
-    input.audioUri ?? null,
-  ]);
 }
 
 type UseDreamComposerFormArgs = {
@@ -455,64 +436,16 @@ export function useDreamComposerForm({
     ],
   );
 
-  // Lets the listeners below read the newest draft without re-subscribing per keystroke.
-  const draftPayloadRef = React.useRef(draftPayload);
-  draftPayloadRef.current = draftPayload;
-
   // Last-saved content signature; the autosave checks it so it never re-creates
   // a draft of a saved dream. Set by onSave.
   const lastSavedSignatureRef = React.useRef<string | null>(null);
 
-  /**
-   * Create mode writes the one unfinished-dream draft (read by the widget and
-   * Home); edit mode writes a per-dream draft so it is not seen as a new dream.
-   */
-  const persistDraft = React.useCallback(() => {
-    // Runs every 400ms and on backgrounding, so a failed write (full disk) must
-    // not throw — losing the draft is survivable, losing the ability to type is
-    // not. Not surfaced here; the save itself alerts on a write failure.
-    try {
-      if (mode === 'create') {
-        // A debounce armed by the last keystroke can fire after onSave cleared
-        // the draft but before the reset render — draftPayloadRef still holds
-        // the saved text. Writing it back is the "Continue draft" ghost.
-        if (
-          getComposerContentSignature(draftPayloadRef.current) ===
-          lastSavedSignatureRef.current
-        ) {
-          clearDreamDraft();
-          return;
-        }
-
-        saveDreamDraft(draftPayloadRef.current);
-        return;
-      }
-
-      if (initialDream) {
-        saveDreamEditDraft(initialDream.id, draftPayloadRef.current);
-      }
-    } catch (error) {
-      logActionError('useDreamComposerForm.persistDraft', error);
-    }
-  }, [initialDream, mode]);
-
-  React.useEffect(() => {
-    const timeoutId = setTimeout(persistDraft, 400);
-
-    return () => clearTimeout(timeoutId);
-  }, [draftPayload, persistDraft]);
-
-  // Flush the draft on backgrounding — the 400ms debounce means the last few
-  // hundred ms exist only in memory, and the app may not get another turn.
-  React.useEffect(() => {
-    const subscription = AppState.addEventListener('change', state => {
-      if (state === 'background' || state === 'inactive') {
-        persistDraft();
-      }
-    });
-
-    return () => subscription.remove();
-  }, [persistDraft]);
+  useComposerDraftAutosave({
+    mode,
+    initialDream,
+    draftPayload,
+    lastSavedSignatureRef,
+  });
 
   React.useEffect(() => {
     if (!isWakeMode) {

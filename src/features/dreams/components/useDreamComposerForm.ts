@@ -33,6 +33,7 @@ import {
 import { useRecordingLifecycle } from './composer/useRecordingLifecycle';
 import { useComposerDraftAutosave } from './composer/useComposerDraftAutosave';
 import { useComposerSave } from './composer/useComposerSave';
+import { useComposerSections } from './composer/useComposerSections';
 import { getTodayDate, toggleSelection } from './composer/composerHelpers';
 import {
   clearDreamDraft,
@@ -93,89 +94,6 @@ export function useDreamComposerForm({
     : initialDraft
       ? getDreamLucidityLevel(initialDraft)
       : undefined;
-  const initialHasMoodDetails =
-    Boolean(initialDreamFields?.mood ?? initialDraft?.mood) ||
-    Boolean(
-      initialDreamFields?.dreamIntensity ?? initialDraft?.dreamIntensity,
-    ) ||
-    Boolean(
-      initialDreamFields?.wakeEmotions?.length ??
-      initialDraft?.wakeEmotions?.length,
-    ) ||
-    typeof initialLucidity === 'number';
-  const initialHasContextDetails = hasSleepContextValues({
-    stressLevel:
-      initialDreamFields?.sleepContext?.stressLevel ??
-      initialDraft?.stressLevel,
-    preSleepEmotions:
-      initialDreamFields?.sleepContext?.preSleepEmotions ??
-      initialDraft?.preSleepEmotions,
-    alcoholTaken:
-      initialDreamFields?.sleepContext?.alcoholTaken ??
-      initialDraft?.alcoholTaken,
-    caffeineLate:
-      initialDreamFields?.sleepContext?.caffeineLate ??
-      initialDraft?.caffeineLate,
-    medications:
-      initialDreamFields?.sleepContext?.medications ??
-      initialDraft?.medications,
-    importantEvents:
-      initialDreamFields?.sleepContext?.importantEvents ??
-      initialDraft?.importantEvents,
-    healthNotes:
-      initialDreamFields?.sleepContext?.healthNotes ??
-      initialDraft?.healthNotes,
-  });
-  const initialHasTags = Boolean(
-    initialDreamFields?.tags?.length ?? initialDraft?.tags?.length,
-  );
-  const initialHasLucidPractice = hasLucidPracticeValues({
-    lucidTechnique:
-      initialDreamFields?.lucidPractice?.technique ??
-      initialDraft?.lucidTechnique,
-    dreamSigns:
-      initialDreamFields?.lucidPractice?.dreamSigns ?? initialDraft?.dreamSigns,
-    lucidTrigger:
-      initialDreamFields?.lucidPractice?.trigger ?? initialDraft?.lucidTrigger,
-    controlAreas:
-      initialDreamFields?.lucidPractice?.controlAreas ??
-      initialDraft?.controlAreas,
-    stabilizationActions:
-      initialDreamFields?.lucidPractice?.stabilizationActions ??
-      initialDraft?.stabilizationActions,
-    recallScore:
-      initialDreamFields?.lucidPractice?.recallScore ??
-      initialDraft?.recallScore,
-  });
-  const initialHasNightmare = hasNightmareValues({
-    nightmareExplicit:
-      initialDreamFields?.nightmare?.explicit ??
-      initialDraft?.nightmareExplicit,
-    nightmareDistress:
-      initialDreamFields?.nightmare?.distress ??
-      initialDraft?.nightmareDistress,
-    nightmareRecurring:
-      initialDreamFields?.nightmare?.recurring ??
-      initialDraft?.nightmareRecurring,
-    nightmareRecurringKey:
-      initialDreamFields?.nightmare?.recurringKey ??
-      initialDraft?.nightmareRecurringKey,
-    nightmareWokeFromDream:
-      initialDreamFields?.nightmare?.wokeFromDream ??
-      initialDraft?.nightmareWokeFromDream,
-    nightmareAftereffects:
-      initialDreamFields?.nightmare?.aftereffects ??
-      initialDraft?.nightmareAftereffects,
-    nightmareGroundingUsed:
-      initialDreamFields?.nightmare?.groundingUsed ??
-      initialDraft?.nightmareGroundingUsed,
-    nightmareRewrittenEnding:
-      initialDreamFields?.nightmare?.rewrittenEnding ??
-      initialDraft?.nightmareRewrittenEnding,
-    nightmareRescriptStatus:
-      initialDreamFields?.nightmare?.rescriptStatus ??
-      initialDraft?.nightmareRescriptStatus,
-  });
 
   const [title, setTitle] = React.useState(
     initialDreamFields?.title ?? initialDraft?.title ?? '',
@@ -280,23 +198,27 @@ export function useDreamComposerForm({
     setIsBusy,
     setLastActionError,
   });
-  const [showMoodSection, setShowMoodSection] = React.useState(
-    isWakeMode || mode === 'edit' || initialHasMoodDetails,
-  );
-  const [showContextSection, setShowContextSection] = React.useState(
-    mode === 'edit' || initialHasContextDetails,
-  );
-  const [showTagsSection, setShowTagsSection] = React.useState(
-    mode === 'edit' || initialHasTags,
-  );
-  const [showLucidPracticeSection, setShowLucidPracticeSection] =
-    React.useState(mode === 'edit' || initialHasLucidPractice);
-  const [showNightmareSection, setShowNightmareSection] = React.useState(
-    mode === 'edit' || initialHasNightmare,
-  );
-  const [showMetaSection, setShowMetaSection] = React.useState(
-    mode === 'edit' || !isWakeMode,
-  );
+  const {
+    showMoodSection,
+    setShowMoodSection,
+    showContextSection,
+    setShowContextSection,
+    showTagsSection,
+    setShowTagsSection,
+    showLucidPracticeSection,
+    setShowLucidPracticeSection,
+    showNightmareSection,
+    setShowNightmareSection,
+    showMetaSection,
+    setShowMetaSection,
+    resetSections,
+  } = useComposerSections({
+    mode,
+    isWakeMode,
+    initialDreamFields,
+    initialDraft,
+    initialLucidity,
+  });
 
   const validationError = validateDreamForSave({
     text,
@@ -418,14 +340,6 @@ export function useDreamComposerForm({
     lastSavedSignatureRef,
   });
 
-  React.useEffect(() => {
-    if (!isWakeMode) {
-      return;
-    }
-
-    setShowMoodSection(true);
-  }, [isWakeMode]);
-
   function addTag() {
     const next = normalizeTag(tagInput);
     if (!next) {
@@ -485,12 +399,7 @@ export function useDreamComposerForm({
 
   function discardDraftAndReset() {
     resetForm();
-    setShowMoodSection(isWakeMode);
-    setShowContextSection(false);
-    setShowTagsSection(false);
-    setShowLucidPracticeSection(false);
-    setShowNightmareSection(false);
-    setShowMetaSection(!isWakeMode);
+    resetSections();
   }
 
   const { onSave } = useComposerSave({

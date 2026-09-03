@@ -4,7 +4,7 @@
     <shortcut
         android:shortcutId="capture"
         android:enabled="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_default"
         android:shortcutShortLabel="@string/shortcut_capture_short"
         android:shortcutLongLabel="@string/shortcut_capture_long">
         <intent
@@ -18,7 +18,7 @@
     <shortcut
         android:shortcutId="draft"
         android:enabled="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_default"
         android:shortcutShortLabel="@string/shortcut_draft_short"
         android:shortcutLongLabel="@string/shortcut_draft_long">
         <intent
@@ -32,7 +32,7 @@
     <shortcut
         android:shortcutId="memory"
         android:enabled="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/ic_launcher_default"
         android:shortcutShortLabel="@string/shortcut_memory_short"
         android:shortcutLongLabel="@string/shortcut_memory_long">
         <intent

@@ -15,6 +15,7 @@ import {
   LanguageSection,
   ThemeSection,
 } from '../components/SettingsTopSections';
+import { SettingsAppIconSection } from '../components/SettingsAppIconSection';
 
 /**
  * Palette, language, and how much the app explains itself.
@@ -53,6 +54,8 @@ export default function SettingsAppearanceScreen() {
         themeId={controller.themeId}
         onSelectTheme={controller.onSelectTheme}
       />
+
+      <SettingsAppIconSection copy={copy} styles={styles} />
 
       <Card style={styles.sectionCard}>
         <View style={styles.calmModeRow}>

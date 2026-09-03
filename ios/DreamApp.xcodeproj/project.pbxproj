@@ -23,6 +23,8 @@
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		7A649B7080051277F91602CC /* AudioRecorderModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = A29AAA5A1FA003F4C73457BD /* AudioRecorderModule.mm */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		A11C0F1C0000000000000001 /* AppIconModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11C0F1C0000000000000011 /* AppIconModule.swift */; };
+		A11C0F1C0000000000000002 /* AppIconModule.mm in Sources */ = {isa = PBXBuildFile; fileRef = A11C0F1C0000000000000012 /* AppIconModule.mm */; };
 		A23E850F395D4521A2FA56B4 /* Manrope-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 38794046B8AF400A876E918C /* Manrope-Bold.ttf */; };
 		EDD73D486B2644F88853D6E5 /* PlayfairDisplay-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7C451118D07A4E1387FD2E50 /* PlayfairDisplay-Bold.ttf */; };
 /* End PBXBuildFile section */
@@ -72,6 +74,8 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = DreamApp/AppDelegate.swift; sourceTree = "<group>"; };
 		7C451118D07A4E1387FD2E50 /* PlayfairDisplay-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "PlayfairDisplay-Bold.ttf"; path = "../assets/fonts/PlayfairDisplay-Bold.ttf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = DreamApp/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		A11C0F1C0000000000000011 /* AppIconModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppIconModule.swift; path = DreamApp/AppIconModule.swift; sourceTree = "<group>"; };
+		A11C0F1C0000000000000012 /* AppIconModule.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; name = AppIconModule.mm; path = DreamApp/AppIconModule.mm; sourceTree = "<group>"; };
 		A29AAA5A1FA003F4C73457BD /* AudioRecorderModule.mm */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.cpp.objcpp; name = AudioRecorderModule.mm; path = DreamApp/AudioRecorderModule.mm; sourceTree = "<group>"; };
 		A4580396B2ED79E4C0FFC94C /* AudioRecorderModule.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AudioRecorderModule.swift; path = DreamApp/AudioRecorderModule.swift; sourceTree = "<group>"; };
 		BC84B7AE540C405A833961E1 /* Manrope-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Manrope-Regular.ttf"; path = "../assets/fonts/Manrope-Regular.ttf"; sourceTree = "<group>"; };
@@ -162,6 +166,8 @@
 			children = (
 				1AA697862F6C608100029D4C /* DreamWidgetModule.mm */,
 				1AA697872F6C608100029D4C /* DreamWidgetModule.swift */,
+				A11C0F1C0000000000000011 /* AppIconModule.swift */,
+				A11C0F1C0000000000000012 /* AppIconModule.mm */,
 				1AA697802F6C598600029D4C /* DreamWidgetExtensionExtension.entitlements */,
 				13B07FAE1A68108700A75B9A /* DreamApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
@@ -400,6 +406,8 @@
 			files = (
 				1AA697882F6C608100029D4C /* DreamWidgetModule.swift in Sources */,
 				1AA697892F6C608100029D4C /* DreamWidgetModule.mm in Sources */,
+				A11C0F1C0000000000000001 /* AppIconModule.swift in Sources */,
+				A11C0F1C0000000000000002 /* AppIconModule.mm in Sources */,
 				761780ED2CA45674006654EE /* AppDelegate.swift in Sources */,
 				11A53F92ED527174D2464599 /* AudioRecorderModule.swift in Sources */,
 				7A649B7080051277F91602CC /* AudioRecorderModule.mm in Sources */,
@@ -428,7 +436,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 3B4392A12AC88292D35C810B /* Pods-DreamApp.debug.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Ivory AppIcon-Sage AppIcon-Night AppIcon-Mono";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = DreamApp/DreamApp.entitlements;
 				CURRENT_PROJECT_VERSION = 800;
@@ -460,7 +470,9 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 5709B34CF0A7D63546082F79 /* Pods-DreamApp.release.xcconfig */;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIcon-Ivory AppIcon-Sage AppIcon-Night AppIcon-Mono";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = DreamApp/DreamApp.entitlements;
 				CURRENT_PROJECT_VERSION = 800;

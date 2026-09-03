@@ -48,6 +48,8 @@ export const APP_THEME_KEY = 'app-theme';
 export const APP_CALM_MODE_KEY = 'app-calm-mode';
 /** Whether capture screens dim themselves during the dark hours. */
 export const APP_NIGHT_CAPTURE_KEY = 'app-night-capture';
+/** Which home-screen app icon the user picked. Native is the source of truth; this caches it for the settings UI. */
+export const APP_ICON_KEY = 'app-icon';
 export const WIDGET_SNAPSHOT_STORAGE_KEY = 'widget-snapshot';
 export const DREAM_ANALYSIS_SETTINGS_KEY = 'dream-analysis-settings';
 export const CLOUD_SESSION_STORAGE_KEY = 'cloud-session';

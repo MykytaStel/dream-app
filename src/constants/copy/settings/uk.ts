@@ -89,6 +89,16 @@ export const SETTINGS_COPY_UK: SettingsCopy = {
   themeOptionEmber: 'Ember',
   themeOptionMoss: 'Moss',
   themeOptionDaylight: 'Денне',
+  appIconTitle: 'Іконка застосунку',
+  appIconDescription: 'Обери іконку на головному екрані.',
+  appIconOptionDefault: 'Лісове золото',
+  appIconOptionIvory: 'Слонова кістка',
+  appIconOptionSage: 'Шавлія',
+  appIconOptionNight: 'Ніч',
+  appIconOptionMono: 'Моно',
+  appIconErrorTitle: 'Іконку не змінено',
+  appIconErrorDescription:
+    'На цьому пристрої не вдалося змінити іконку застосунку.',
   privacyTitle: 'Приватність і зберігання',
   privacyDescription:
     'Дані про сни лишаються на пристрої за замовчуванням. Хмара лишається опційною і не блокує перший запис.',

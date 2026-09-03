@@ -5,7 +5,6 @@ import {
 } from '../../../services/observability/events';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useTheme } from '@shopify/restyle';
 import { ScreenContainer } from '../../../components/ui/ScreenContainer';
 import { Card } from '../../../components/ui/Card';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
@@ -18,8 +17,8 @@ import {
   type RootStackParamList,
 } from '../../../app/navigation/routes';
 import { ScreenStateCard } from '../../dreams/components/ScreenStateCard';
-import { Theme } from '../../../theme/theme';
 import { createStatsScreenStyles } from './StatsScreen.styles';
+import { useStyles } from '../../../theme/useStyles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { useStatsScreenController } from '../hooks/useStatsScreenController';
 import {
@@ -52,7 +51,6 @@ import {
 } from '../services/memoryPatternFeedbackService';
 
 export default function StatsScreen() {
-  const theme = useTheme<Theme>();
   const { locale } = useI18n();
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
@@ -63,7 +61,7 @@ export default function StatsScreen() {
   );
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
+  const styles = useStyles(createStatsScreenStyles);
   const [selectedMemoryMode, setSelectedMemoryMode] =
     React.useState<MemoryMode>('overview');
   const [isMemoryDetailsExpanded, setIsMemoryDetailsExpanded] =

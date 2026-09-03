@@ -19,6 +19,7 @@ import {
 } from '../../../app/navigation/routes';
 import { Theme } from '../../../theme/theme';
 import { createStatsScreenStyles } from './StatsScreen.styles';
+import { useStyles } from '../../../theme/useStyles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { useStatsScreenController } from '../hooks/useStatsScreenController';
 import { getReviewWorkspaceViewModel } from '../model/reviewWorkspace';
@@ -36,7 +37,7 @@ export default function ReviewWorkspaceScreen() {
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const settingsCopy = React.useMemo(() => getSettingsCopy(locale), [locale]);
-  const styles = React.useMemo(() => createStatsScreenStyles(theme), [theme]);
+  const styles = useStyles(createStatsScreenStyles);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const [cloudSession, setCloudSession] = React.useState(() =>

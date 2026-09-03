@@ -29,6 +29,7 @@ import { Theme } from '../../../theme/theme';
 import { Dream } from '../model/dream';
 import { isWakeCaptureWindow } from '../model/homeOverview';
 import { createArchiveScreenStyles } from './ArchiveScreen.styles';
+import { useStyles } from '../../../theme/useStyles';
 import { useArchiveScreenData } from '../hooks/useArchiveScreenData';
 import { useArchiveBrowseState } from '../hooks/useArchiveBrowseState';
 import { ArchiveDreamRow } from '../components/archive/ArchiveDreamRow';
@@ -55,7 +56,7 @@ export default function ArchiveScreen() {
     [locale],
   );
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const styles = React.useMemo(() => createArchiveScreenStyles(theme), [theme]);
+  const styles = useStyles(createArchiveScreenStyles);
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const insets = useSafeAreaInsets();

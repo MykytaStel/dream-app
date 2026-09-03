@@ -86,6 +86,38 @@ components where nobody can find them.
 The inline-style backlog is cleared and `eslint . --max-warnings=0` is the CI gate, so
 a new inline style object fails the build rather than adding to a list.
 
+### Where styles live
+
+- **One style module per component**, named `<Component>.styles.ts`, exporting
+  `export function create<Component>Styles(theme: Theme)` that returns a single
+  `StyleSheet.create({...})`.
+- **The call site uses `useStyles`** (`src/theme/useStyles.ts`), passing the
+  module-level factory: `const styles = useStyles(createHomeScreenStyles);`. It
+  memoises by factory and theme, so it replaces both the hand-rolled
+  `useMemo(() => createX(theme), [theme])` and the per-file `WeakMap` caches.
+  Never pass an inline arrow — that defeats the cache.
+- **Styles are never passed as a prop.** A component that needs styles owns its
+  own `.styles.ts`. Threading one screen's sheet down to its subcomponents is
+  what turns a style file into a thousand-line monster.
+- **Big screens split by area, not by component.** When a screen legitimately
+  owns 400+ lines of its own styles, break them into
+  `<Screen>.styles.<area>.ts` files (`createHomeHeroStyles`, …) and keep
+  `<Screen>.styles.ts` as the barrel that spreads them together. The
+  `create<Screen>Styles` function and its `ReturnType` stay unchanged.
+- **Repeated visual treatments are fragments** in `src/theme/surfaces.ts`
+  (`createControlPill`, `createSoftTile`, `createFieldSurface`), spread into a
+  style: `{ ...createSoftTile(theme), gap: 8 }`. Add a fragment once a treatment
+  appears in three places.
+- **Values come from theme tokens** (`theme.colors.*`, `theme.spacing.*`,
+  `theme.borderRadii.*`). Raw hex only through `hexToRgba(theme.colors.x, a)`.
+
+### Migration state
+
+The `create*Styles` + `useStyles` shape is the target. Screens touched since it
+landed follow it; the older `useMemo(() => createX(theme), [theme])` call sites
+and the `components/ui` `WeakMap` getters (`getCardStyles`, `getTextStyles`, …)
+are migrated opportunistically as those files are edited, not in a sweep.
+
 ## What to avoid
 
 | Avoid | Why |

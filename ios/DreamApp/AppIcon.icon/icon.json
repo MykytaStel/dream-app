@@ -1,0 +1,70 @@
+{
+  "fill": {
+    "solid": "extended-srgb:0.05490,0.20000,0.14118,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "accent-dot.svg",
+          "name": "Accent dot"
+        }
+      ],
+      "name": "Accent dot",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "orbit.svg",
+          "name": "Orbit"
+        }
+      ],
+      "name": "Orbit",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "flower-front.svg",
+          "name": "Flower front"
+        },
+        {
+          "glass": true,
+          "image-name": "flower-back.svg",
+          "name": "Flower back"
+        }
+      ],
+      "lighting": "combined",
+      "name": "Flower",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

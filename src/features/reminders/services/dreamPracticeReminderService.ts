@@ -182,6 +182,7 @@ function createNotificationBase(input: {
     },
     android: {
       channelId: PRACTICE_REMINDER_CHANNEL_ID,
+      smallIcon: 'ic_stat_kaleidoscope',
       pressAction: { id: 'default' },
     },
     ios: {

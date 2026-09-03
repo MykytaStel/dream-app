@@ -203,6 +203,9 @@ async function scheduleAuthorizedDreamReminder(
       },
       android: {
         channelId: REMINDER_CHANNEL_ID,
+        // A white silhouette; Android draws the launcher icon as a blank square
+        // in the status bar when this is left unset.
+        smallIcon: 'ic_stat_kaleidoscope',
         pressAction: {
           id: 'default',
         },

@@ -40,6 +40,8 @@ describe('dream reminder service', () => {
           target: 'record',
           style: 'gentle',
         }),
+        // Without a dedicated small icon Android renders a blank white square.
+        android: expect.objectContaining({ smallIcon: 'ic_stat_kaleidoscope' }),
       }),
       expect.any(Object),
     );

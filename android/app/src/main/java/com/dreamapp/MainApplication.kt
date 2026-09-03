@@ -18,6 +18,7 @@ class MainApplication : Application(), ReactApplication {
           add(AudioRecorderPackage())
           add(AudioUploadPackage())
           add(DreamWidgetPackage())
+          add(AppIconPackage())
         },
     )
   }

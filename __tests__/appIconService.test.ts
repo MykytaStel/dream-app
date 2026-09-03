@@ -4,7 +4,19 @@ const mockNativeAppIcon = {
   setIcon: jest.fn(),
 };
 let mockModulePresent = true;
+let mockPlatformOS: 'ios' | 'android' = 'ios';
 const mockStore = new Map<string, string>();
+
+jest.mock('react-native', () => ({
+  Platform: {
+    get OS() {
+      return mockPlatformOS;
+    },
+  },
+  AppState: {
+    addEventListener: jest.fn(() => ({ remove: jest.fn() })),
+  },
+}));
 
 jest.mock('../src/specs/NativeAppIcon', () => ({
   __esModule: true,
@@ -17,20 +29,26 @@ jest.mock('../src/services/storage/mmkv', () => ({
   kv: {
     getString: (k: string) => mockStore.get(k),
     set: (k: string, v: string) => mockStore.set(k, v),
+    remove: (k: string) => mockStore.delete(k),
   },
 }));
 
 import {
   appIconsSupported,
+  applyPendingAppIcon,
   getCachedAppIconId,
   setAppIcon,
   syncAppIcon,
 } from '../src/features/settings/services/appIconService';
-import { APP_ICON_KEY } from '../src/services/storage/keys';
+import {
+  APP_ICON_KEY,
+  APP_ICON_PENDING_KEY,
+} from '../src/services/storage/keys';
 
 beforeEach(() => {
   mockStore.clear();
   mockModulePresent = true;
+  mockPlatformOS = 'ios';
   mockNativeAppIcon.isSupported.mockReset();
   mockNativeAppIcon.getIcon.mockReset();
   mockNativeAppIcon.setIcon.mockReset().mockResolvedValue(undefined);
@@ -46,6 +64,54 @@ describe('getCachedAppIconId', () => {
   test('returns a stored valid id', () => {
     mockStore.set(APP_ICON_KEY, 'sage');
     expect(getCachedAppIconId()).toBe('sage');
+  });
+});
+
+describe('setAppIcon on iOS', () => {
+  test('calls native and caches the new id', async () => {
+    await setAppIcon('mono');
+    expect(mockNativeAppIcon.setIcon).toHaveBeenCalledWith('mono');
+    expect(mockStore.get(APP_ICON_KEY)).toBe('mono');
+    expect(mockStore.has(APP_ICON_PENDING_KEY)).toBe(false);
+  });
+
+  test('does not cache when native rejects', async () => {
+    mockNativeAppIcon.setIcon.mockRejectedValue(new Error('unsupported'));
+    await expect(setAppIcon('sage')).rejects.toThrow('unsupported');
+    expect(mockStore.has(APP_ICON_KEY)).toBe(false);
+  });
+});
+
+describe('setAppIcon on Android', () => {
+  beforeEach(() => {
+    mockPlatformOS = 'android';
+  });
+
+  test('defers the switch: caches the choice, stores it pending, no native call', async () => {
+    await setAppIcon('night');
+    expect(mockNativeAppIcon.setIcon).not.toHaveBeenCalled();
+    expect(mockStore.get(APP_ICON_KEY)).toBe('night');
+    expect(mockStore.get(APP_ICON_PENDING_KEY)).toBe('night');
+  });
+
+  test('applyPendingAppIcon runs the deferred switch and clears the pending flag', () => {
+    mockStore.set(APP_ICON_PENDING_KEY, 'night');
+    applyPendingAppIcon();
+    expect(mockNativeAppIcon.setIcon).toHaveBeenCalledWith('night');
+    expect(mockStore.has(APP_ICON_PENDING_KEY)).toBe(false);
+  });
+
+  test('applyPendingAppIcon is a no-op when nothing is pending', () => {
+    applyPendingAppIcon();
+    expect(mockNativeAppIcon.setIcon).not.toHaveBeenCalled();
+  });
+
+  test('syncAppIcon returns the cached choice while a switch is pending', async () => {
+    mockStore.set(APP_ICON_KEY, 'night');
+    mockStore.set(APP_ICON_PENDING_KEY, 'night');
+    mockNativeAppIcon.getIcon.mockResolvedValue('default');
+    await expect(syncAppIcon()).resolves.toBe('night');
+    expect(mockNativeAppIcon.getIcon).not.toHaveBeenCalled();
   });
 });
 
@@ -68,21 +134,7 @@ describe('syncAppIcon', () => {
   });
 });
 
-describe('setAppIcon', () => {
-  test('calls native and caches the new id', async () => {
-    await setAppIcon('mono');
-    expect(mockNativeAppIcon.setIcon).toHaveBeenCalledWith('mono');
-    expect(mockStore.get(APP_ICON_KEY)).toBe('mono');
-  });
-
-  test('does not cache when native rejects', async () => {
-    mockNativeAppIcon.setIcon.mockRejectedValue(new Error('unsupported'));
-    await expect(setAppIcon('sage')).rejects.toThrow('unsupported');
-    expect(mockStore.has(APP_ICON_KEY)).toBe(false);
-  });
-});
-
-describe('when the native module is absent (Android for now)', () => {
+describe('when the native module is absent', () => {
   beforeEach(() => {
     mockModulePresent = false;
   });

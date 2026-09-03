@@ -43,6 +43,7 @@ import { getDreamDraftResumeDescription } from '../model/dreamDraftPresentation'
 import { getHomeFeedCopy, getHomeFeedState } from '../model/homeFeed';
 import { getDreamDraftSnapshot } from '../services/dreamDraftService';
 import { createHomeScreenStyles } from './HomeScreen.styles';
+import { useStyles } from '../../../theme/useStyles';
 import { useHomeScreenData } from '../hooks/useHomeScreenData';
 import { useHomeSwipeActions } from '../hooks/useHomeSwipeActions';
 import { useHomeTimelineState } from '../hooks/useHomeTimelineState';
@@ -103,7 +104,7 @@ export default function HomeScreen() {
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
   const homeFeedCopy = React.useMemo(() => getHomeFeedCopy(locale), [locale]);
   const moodLabels = React.useMemo(() => getDreamMoodLabels(locale), [locale]);
-  const styles = React.useMemo(() => createHomeScreenStyles(theme), [theme]);
+  const styles = useStyles(createHomeScreenStyles);
   const listContentStyle = React.useMemo(
     () => [
       styles.listContent,

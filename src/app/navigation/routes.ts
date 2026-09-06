@@ -18,7 +18,6 @@ export const ROOT_ROUTE_NAMES = {
   WakeEntry: 'WakeEntry',
   DreamDetail: 'DreamDetail',
   DreamEditor: 'DreamEditor',
-  Progress: 'Progress',
   MonthlyReport: 'MonthlyReport',
   PatternDetail: 'PatternDetail',
   ReviewWorkspace: 'ReviewWorkspace',
@@ -103,7 +102,6 @@ export type RootStackParamList = {
   [ROOT_ROUTE_NAMES.DreamEditor]: {
     dreamId: string;
   };
-  [ROOT_ROUTE_NAMES.Progress]: undefined;
   [ROOT_ROUTE_NAMES.Privacy]: undefined;
   [ROOT_ROUTE_NAMES.SettingsAppearance]: undefined;
   [ROOT_ROUTE_NAMES.SettingsReminders]: undefined;

@@ -131,9 +131,9 @@ export function MemorySecondaryActions({
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
-  // The weekly-goal / achievements ("Progress") card was removed here: PRODUCT.md
-  // is explicit that this is not a habit tracker. The ProgressScreen and route
-  // still exist but are no longer reachable from the main flow.
+  // The weekly-goal / achievements ("Progress") card was removed here, and its
+  // screen and route deleted: PRODUCT.md is explicit that this is not a habit
+  // tracker.
   return (
     <View style={styles.secondaryActionsRow}>
       <MemorySecondaryAction

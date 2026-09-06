@@ -12,7 +12,6 @@ import EditDreamScreen from '../../features/dreams/screens/EditDreamScreen';
 import WakeEntryScreen from '../../features/dreams/screens/WakeEntryScreen';
 import MonthlyReportScreen from '../../features/stats/screens/MonthlyReportScreen';
 import PatternDetailScreen from '../../features/stats/screens/PatternDetailScreen';
-import ProgressScreen from '../../features/stats/screens/ProgressScreen';
 import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
 import ArchiveHealthScreen from '../../features/settings/screens/ArchiveHealthScreen';
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
@@ -263,14 +262,6 @@ export default function RootNavigator() {
           name={ROOT_ROUTE_NAMES.SettingsAbout}
           component={SettingsAboutScreen}
           options={{ headerShown: true, title: 'About' }}
-        />
-        <Stack.Screen
-          name={ROOT_ROUTE_NAMES.Progress}
-          component={ProgressScreen}
-          options={{
-            headerShown: true,
-            title: 'Progress',
-          }}
         />
         <Stack.Screen
           name={ROOT_ROUTE_NAMES.MonthlyReport}

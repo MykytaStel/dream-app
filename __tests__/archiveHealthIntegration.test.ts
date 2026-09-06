@@ -95,7 +95,7 @@ describe('archive health and recovery integration', () => {
       'src/features/settings/services/localDataTransactionService.ts',
     );
     const repair = source(
-      'src/features/settings/services/archiveHealthService.ts',
+      'src/features/settings/services/archiveHealthService/repair.ts',
     );
 
     expectBefore(
@@ -109,7 +109,7 @@ describe('archive health and recovery integration', () => {
 
   test('inspects derived stores without invoking their auto-healing read APIs', () => {
     const health = source(
-      'src/features/settings/services/archiveHealthService.ts',
+      'src/features/settings/services/archiveHealthService/scan.ts',
     );
     const derived = source(
       'src/features/dreams/repository/dreamDerivedDataRepository.ts',
@@ -125,7 +125,7 @@ describe('archive health and recovery integration', () => {
 
   test('repairs derived stores inside the checkpointed transaction without rewriting dreams', () => {
     const health = source(
-      'src/features/settings/services/archiveHealthService.ts',
+      'src/features/settings/services/archiveHealthService/repair.ts',
     );
     const derived = source(
       'src/features/dreams/repository/dreamDerivedDataRepository.ts',
@@ -144,7 +144,7 @@ describe('archive health and recovery integration', () => {
 
   test('stores aggregate history without ids, audio paths, or dream content', () => {
     const service = source(
-      'src/features/settings/services/archiveHealthService.ts',
+      'src/features/settings/services/archiveHealthService/types.ts',
     );
     const historyType = service.slice(
       service.indexOf('export type ArchiveHealthHistoryEntry'),

@@ -1,8 +1,7 @@
 import React from 'react';
+import { View } from 'react-native';
 import { Button } from '../../../components/ui/Button';
-import { Card } from '../../../components/ui/Card';
 import { FormField } from '../../../components/ui/FormField';
-import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import {
   type DreamComposerCopy,
@@ -51,12 +50,7 @@ export function DreamComposerQuickCaptureCard({
   const helperTone = hasTriedSave && hasMissingContent ? 'error' : 'default';
 
   return (
-    <Card style={styles.card}>
-      <SectionHeader
-        title={copy.recordEmptyTitle}
-        subtitle={copy.recordEmptyDescription}
-      />
-
+    <View style={styles.quickCaptureBlock}>
       <FormField
         label={copy.textLabel}
         placeholder={copy.textPlaceholder}
@@ -102,6 +96,6 @@ export function DreamComposerQuickCaptureCard({
           />
         </>
       ) : null}
-    </Card>
+    </View>
   );
 }

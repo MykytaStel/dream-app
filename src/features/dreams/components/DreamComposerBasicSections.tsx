@@ -60,15 +60,13 @@ export function DreamComposerHeroCard({
   }
 
   if (!isEdit) {
-    return (
-      <View style={styles.heroCopyCompact}>
-        <Text style={styles.heroEyebrow}>{copy.quickAddKicker}</Text>
-        <SectionHeader
-          title={copy.createHeroTitle}
-          subtitle={copy.createSubtitle}
-        />
-      </View>
-    );
+    // Create mode is field-first: the composer opens straight onto the input,
+    // with no screen-framing header. "Capture before it fades" / "Sort the
+    // details later" said the same thing the field label and placeholder
+    // already say. The sleep date lives in the meta disclosure, a restored
+    // draft has its own card, and attached audio shows in the voice body — so
+    // nothing here is a lost signal.
+    return null;
   }
 
   return (

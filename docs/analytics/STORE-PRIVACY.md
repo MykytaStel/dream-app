@@ -109,9 +109,12 @@ or browsing history leaves the device through any path.
 
 ## Before you submit — the checklist
 
-- [ ] `SENTRY_DSN` decision made. If the first beta build ships **without** it,
-      the Crash/Diagnostics rows are over-declarations (harmless) — or drop them
-      and add them back with the DSN build. If **with** it, they are required.
+- [x] `SENTRY_DSN` — bundled and on for release builds
+      (`src/services/observability/sentryObservability.ts`). The Crash and
+      Diagnostics rows are **required**, not optional.
+- [ ] `ITSAppUsesNonExemptEncryption` is `false` in `Info.plist` — re-read the
+      rationale there and confirm it before the first submission. It is your
+      export self-classification, not the SDK's.
 - [ ] Privacy policy hosted at a stable URL, URL pasted into both consoles.
 - [ ] `PrivacyInfo.xcprivacy` table matches the Apple table above.
 - [ ] The "Identifiers / Device IDs" row is entered — the per-install id is easy

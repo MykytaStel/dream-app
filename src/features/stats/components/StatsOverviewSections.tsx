@@ -33,6 +33,7 @@ export function StatsOverviewSections({
   fingerprintFacets,
   isDetailsExpanded,
   onToggleDetails,
+  alwaysExpanded,
   selectedMode,
   onSelectMode,
   canCompare,
@@ -64,8 +65,9 @@ export function StatsOverviewSections({
   styles: StatsStyles;
   fingerprintLeadSignals: string[];
   fingerprintFacets: DreamFingerprintFacet[];
-  isDetailsExpanded: boolean;
-  onToggleDetails: () => void;
+  isDetailsExpanded?: boolean;
+  onToggleDetails?: () => void;
+  alwaysExpanded?: boolean;
   selectedMode: 'snapshot' | 'compare';
   onSelectMode: (value: 'snapshot' | 'compare') => void;
   canCompare: boolean;
@@ -138,6 +140,7 @@ export function StatsOverviewSections({
   onOpenPatternDetail: (signal: string, kind: 'word' | 'theme') => void;
 }) {
   const t = useTheme<Theme>();
+  const showDetailBlock = alwaysExpanded || isDetailsExpanded;
   const hasReviewShelf =
     workQueueItems.length > 0 ||
     importantDreamItems.length > 0 ||
@@ -378,30 +381,34 @@ export function StatsOverviewSections({
             </View>
           ) : null}
 
-          <Pressable
-            accessibilityRole="button"
-            style={styles.detailsToggleRow}
-            onPress={onToggleDetails}
-          >
-            <View style={styles.detailsToggleCopy}>
-              <Text style={styles.detailsToggleTitle}>{copy.detailsTitle}</Text>
-              <Text style={styles.detailsToggleDescription}>
-                {copy.detailsDescription}
-              </Text>
-            </View>
-            <View style={styles.detailsTogglePill}>
-              <Text style={styles.detailsTogglePillText}>
-                {isDetailsExpanded ? copy.detailsHide : copy.detailsShow}
-              </Text>
-              <Ionicons
-                name={isDetailsExpanded ? 'chevron-up' : 'chevron-down'}
-                size={14}
-                color={t.colors.text}
-              />
-            </View>
-          </Pressable>
+          {alwaysExpanded ? null : (
+            <Pressable
+              accessibilityRole="button"
+              style={styles.detailsToggleRow}
+              onPress={onToggleDetails}
+            >
+              <View style={styles.detailsToggleCopy}>
+                <Text style={styles.detailsToggleTitle}>
+                  {copy.detailsTitle}
+                </Text>
+                <Text style={styles.detailsToggleDescription}>
+                  {copy.detailsDescription}
+                </Text>
+              </View>
+              <View style={styles.detailsTogglePill}>
+                <Text style={styles.detailsTogglePillText}>
+                  {isDetailsExpanded ? copy.detailsHide : copy.detailsShow}
+                </Text>
+                <Ionicons
+                  name={isDetailsExpanded ? 'chevron-up' : 'chevron-down'}
+                  size={14}
+                  color={t.colors.text}
+                />
+              </View>
+            </Pressable>
+          )}
 
-          {isDetailsExpanded ? (
+          {showDetailBlock ? (
             <Animated.View
               entering={FadeInDown.duration(180)}
               layout={statsLayoutTransition}

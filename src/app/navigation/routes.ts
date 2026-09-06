@@ -21,6 +21,7 @@ export const ROOT_ROUTE_NAMES = {
   MonthlyReport: 'MonthlyReport',
   PatternDetail: 'PatternDetail',
   ReviewWorkspace: 'ReviewWorkspace',
+  MemoryTrends: 'MemoryTrends',
   DreamPractice: 'DreamPractice',
   Privacy: 'Privacy',
   // The settings hub's spokes. Each one is a screen the Settings tab lists a
@@ -116,6 +117,7 @@ export type RootStackParamList = {
       }
     | undefined;
   [ROOT_ROUTE_NAMES.ReviewWorkspace]: undefined;
+  [ROOT_ROUTE_NAMES.MemoryTrends]: undefined;
   [ROOT_ROUTE_NAMES.PatternDetail]: {
     signal: string;
     kind: PatternDetailKind;

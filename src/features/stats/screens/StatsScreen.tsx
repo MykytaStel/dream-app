@@ -10,7 +10,6 @@ import { Card } from '../../../components/ui/Card';
 import { SkeletonBlock } from '../../../components/ui/SkeletonBlock';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { getStatsCopy } from '../../../constants/copy/stats';
-import { getPracticeCopy } from '../../../constants/copy/practice';
 import {
   ROOT_ROUTE_NAMES,
   type PatternDetailKind,
@@ -24,16 +23,15 @@ import { useStatsScreenController } from '../hooks/useStatsScreenController';
 import {
   StatsHeroSection,
   StatsMonthlySections,
-  StatsOverviewSections,
   StatsThreadsSections,
   type MemoryMode,
 } from '../components/StatsScreenSections';
 import {
-  MemoryDetailsToggle,
   MemoryDisclosureCard,
   MemorySecondaryActions,
 } from '../components/MemoryProgressiveDisclosure';
 import { MemoryPatternCard } from '../components/MemoryPatternCard';
+import { SettingsActionRow } from '../../settings/components/SettingsActionRow';
 import {
   getMemoryDisclosureCopy,
   getMemoryDisclosureState,
@@ -54,7 +52,6 @@ export default function StatsScreen() {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getStatsCopy(locale), [locale]);
   const dreamCopy = React.useMemo(() => getDreamCopy(locale), [locale]);
-  const practiceCopy = React.useMemo(() => getPracticeCopy(locale), [locale]);
   const memoryPatternCopy = React.useMemo(
     () => getMemoryPatternCopy(locale),
     [locale],
@@ -64,8 +61,6 @@ export default function StatsScreen() {
   const styles = useStyles(createStatsScreenStyles);
   const [selectedMemoryMode, setSelectedMemoryMode] =
     React.useState<MemoryMode>('overview');
-  const [isMemoryDetailsExpanded, setIsMemoryDetailsExpanded] =
-    React.useState(false);
   const [memoryPatternFeedback, setMemoryPatternFeedback] = React.useState(() =>
     getMemoryPatternFeedback(),
   );
@@ -149,9 +144,6 @@ export default function StatsScreen() {
 
       React.startTransition(() => {
         setSelectedMemoryMode(value);
-        if (value !== 'overview') {
-          setIsMemoryDetailsExpanded(false);
-        }
       });
     },
     [disclosureState],
@@ -298,70 +290,13 @@ export default function StatsScreen() {
               copy={disclosureCopy}
             />
           ) : null}
-          <MemoryDetailsToggle
-            expanded={isMemoryDetailsExpanded}
-            copy={disclosureCopy}
-            onPress={() => setIsMemoryDetailsExpanded(current => !current)}
+          <SettingsActionRow
+            variant="inline"
+            title={copy.memoryTrendsTitle}
+            meta={copy.memoryTrendsRowMeta}
+            onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.MemoryTrends)}
           />
         </>
-      ) : null}
-
-      {selectedMemoryMode === 'overview' && isMemoryDetailsExpanded ? (
-        shouldShowScopedEmptyState ? (
-          <ScreenStateCard
-            variant="empty"
-            title={copy.emptyTitle}
-            subtitle={copy.emptyDescription}
-          />
-        ) : (
-          <StatsOverviewSections
-            copy={copy}
-            styles={styles}
-            fingerprintLeadSignals={controller.fingerprintLeadSignals}
-            fingerprintFacets={controller.fingerprintFacets}
-            isDetailsExpanded={controller.isDetailsExpanded}
-            onToggleDetails={() =>
-              controller.setIsDetailsExpanded(current => !current)
-            }
-            selectedMode={controller.selectedMode}
-            onSelectMode={controller.setSelectedMode}
-            canCompare={controller.canCompare}
-            selectedRangeLabel={controller.selectedRangeLabel}
-            compareOptions={controller.compareOptions}
-            compareMetrics={controller.compareMetrics}
-            activityBars={controller.activityBars}
-            emotionalTrendSeries={controller.emotionalTrendSeries}
-            emotionalTrendInsight={controller.emotionalTrendInsight}
-            lucidMetrics={controller.lucidMetrics}
-            lucidHistoryItems={controller.lucidHistoryItems}
-            nightmareMetrics={controller.nightmareMetrics}
-            lucidProgressTitle={practiceCopy.statsLucidProgressTitle}
-            lucidProgressDescription={
-              practiceCopy.statsLucidProgressDescription
-            }
-            nightmareRecoveryTitle={practiceCopy.statsNightmareRecoveryTitle}
-            nightmareRecoveryDescription={
-              practiceCopy.statsNightmareRecoveryDescription
-            }
-            weeklyPatternCards={controller.weeklyPatternCards}
-            summaryTiles={controller.summaryTiles}
-            coverageItems={controller.coverageItems}
-            attentionItems={controller.attentionItems}
-            workQueueItems={controller.workQueueItems}
-            importantDreamItems={controller.importantDreamItems}
-            savedSetItems={controller.savedSetItems}
-            onOpenReviewWorkspace={() =>
-              navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
-            }
-            onOpenLucidDream={dreamId =>
-              navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
-                dreamId,
-                source: 'stats',
-              })
-            }
-            onOpenPatternDetail={openPatternDetail}
-          />
-        )
       ) : null}
 
       {selectedMemoryMode === 'overview' ? (

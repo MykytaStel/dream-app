@@ -13,6 +13,7 @@ import WakeEntryScreen from '../../features/dreams/screens/WakeEntryScreen';
 import MonthlyReportScreen from '../../features/stats/screens/MonthlyReportScreen';
 import PatternDetailScreen from '../../features/stats/screens/PatternDetailScreen';
 import ReviewWorkspaceScreen from '../../features/stats/screens/ReviewWorkspaceScreen';
+import MemoryTrendsScreen from '../../features/stats/screens/MemoryTrendsScreen';
 import ArchiveHealthScreen from '../../features/settings/screens/ArchiveHealthScreen';
 import BackupOnboardingPreviewScreen from '../../features/settings/screens/BackupOnboardingPreviewScreen';
 import BackupScreen from '../../features/settings/screens/BackupScreen';
@@ -277,6 +278,14 @@ export default function RootNavigator() {
           options={{
             headerShown: true,
             title: 'Review workspace',
+          }}
+        />
+        <Stack.Screen
+          name={ROOT_ROUTE_NAMES.MemoryTrends}
+          component={MemoryTrendsScreen}
+          options={{
+            headerShown: true,
+            title: 'Trends & numbers',
           }}
         />
         <Stack.Screen

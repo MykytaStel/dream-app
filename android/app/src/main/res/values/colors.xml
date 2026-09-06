@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Kaleidoscope's default (midnight) theme background. The launch screen
+         uses it so there is no seam when the React Native view takes over. -->
+    <color name="launch_background">#141826</color>
+</resources>

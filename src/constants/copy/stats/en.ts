@@ -15,6 +15,7 @@ export const STATS_COPY_EN = {
   memoryTrendsSubtitle:
     'Charts, comparisons and counts from your local dream archive.',
   memoryTrendsRowMeta: 'Charts, comparisons and counts.',
+  memoryMonthlyRowMeta: 'Saved monthly reviews.',
   compareLabel: 'View',
   compareSnapshot: 'Snapshot',
   compareMode: 'Compare',

@@ -1,20 +1,8 @@
 import React from 'react';
-import { Pressable, View } from 'react-native';
-import { useTheme } from '@shopify/restyle';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import Ionicons from 'react-native-vector-icons/Ionicons';
+import Animated from 'react-native-reanimated';
 import { Card } from '../../../components/ui/Card';
-import {
-  SegmentedControl,
-  type SegmentedControlOption,
-} from '../../../components/ui/SegmentedControl';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
-import { Text } from '../../../components/ui/Text';
-import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
-import { type InsightRange } from '../model/statsScreenModel';
-import { Theme } from '../../../theme/theme';
 import {
-  type MemoryMode,
   statsLayoutTransition,
   type StatsCopy,
   type StatsStyles,
@@ -23,165 +11,14 @@ import {
 export function StatsHeroSection({
   copy,
   styles,
-  selectedMemoryMode,
-  onSelectMemoryMode,
-  memoryModeOptions,
-  selectedRange,
-  onSelectRange,
-  rangeOptions,
-  memoryNudge,
-  onOpenMemoryNudge,
-  coverageGap,
 }: {
   copy: StatsCopy;
   styles: StatsStyles;
-  selectedMemoryMode: MemoryMode;
-  onSelectMemoryMode: (value: MemoryMode) => void;
-  memoryModeOptions: ReadonlyArray<SegmentedControlOption<MemoryMode>>;
-  selectedRange: InsightRange;
-  onSelectRange: (value: InsightRange) => void;
-  rangeOptions: ReadonlyArray<{ key: InsightRange; label: string }>;
-  memoryNudge: {
-    dreamId: string;
-    dreamTitle: string;
-    reason: string;
-    badgeLabel: string;
-    actionLabel: string;
-    focusSection: DreamDetailFocusSection;
-    icon: string;
-  } | null;
-  onOpenMemoryNudge: (
-    dreamId: string,
-    focusSection: DreamDetailFocusSection,
-  ) => void;
-  coverageGap: { label: string; value: number } | null;
 }) {
-  const t = useTheme<Theme>();
-
   return (
     <Animated.View layout={statsLayoutTransition}>
       <Card style={styles.heroCard}>
-        <View style={styles.heroHeader}>
-          <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
-        </View>
-
-        {memoryModeOptions.length > 1 ? (
-          <View style={styles.modeSection}>
-            <Text style={styles.rangeLabel}>{copy.memoryModeLabel}</Text>
-            <SegmentedControl
-              options={memoryModeOptions}
-              selectedValue={selectedMemoryMode}
-              onChange={onSelectMemoryMode}
-            />
-          </View>
-        ) : null}
-
-        {selectedMemoryMode !== 'monthly' && rangeOptions.length > 0 ? (
-          <View style={styles.heroTopGrid}>
-            <View
-              style={[
-                styles.rangeSection,
-                selectedMemoryMode === 'threads'
-                  ? styles.rangeSectionWide
-                  : null,
-              ]}
-            >
-              <Text style={styles.rangeLabel}>{copy.rangeLabel}</Text>
-              <View style={styles.rangeRow}>
-                {rangeOptions.map(option => {
-                  const active = selectedRange === option.key;
-
-                  return (
-                    <Pressable
-                      accessibilityRole="button"
-                      accessibilityState={{ selected: active }}
-                      key={option.key}
-                      style={[
-                        styles.rangeChip,
-                        active ? styles.rangeChipActive : null,
-                      ]}
-                      onPress={() => onSelectRange(option.key)}
-                    >
-                      <Text
-                        style={[
-                          styles.rangeChipText,
-                          active ? styles.rangeChipTextActive : null,
-                        ]}
-                      >
-                        {option.label}
-                      </Text>
-                    </Pressable>
-                  );
-                })}
-              </View>
-            </View>
-          </View>
-        ) : null}
-
-        {selectedMemoryMode === 'overview' ? (
-          <Animated.View
-            entering={FadeInDown.duration(220)}
-            layout={statsLayoutTransition}
-          >
-            <View style={styles.overviewPanel}>
-              {memoryNudge ? (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() =>
-                    onOpenMemoryNudge(
-                      memoryNudge.dreamId,
-                      memoryNudge.focusSection,
-                    )
-                  }
-                  style={({ pressed }) => [
-                    styles.memoryNudgeCard,
-                    pressed ? styles.insightCardPressed : null,
-                  ]}
-                >
-                  <View style={styles.memoryNudgeHeader}>
-                    <Text style={styles.storyLabel}>
-                      {copy.memoryNudgeLabel}
-                    </Text>
-                    <View style={styles.memoryNudgeBadge}>
-                      <Ionicons
-                        name={memoryNudge.icon}
-                        size={12}
-                        color={t.colors.accent}
-                      />
-                      <Text style={styles.memoryNudgeBadgeText}>
-                        {memoryNudge.badgeLabel}
-                      </Text>
-                    </View>
-                  </View>
-                  <Text style={styles.storyValue} numberOfLines={2}>
-                    {memoryNudge.dreamTitle}
-                  </Text>
-                  <Text style={styles.storyHint} numberOfLines={3}>
-                    {memoryNudge.reason}
-                  </Text>
-                  <View style={styles.memoryNudgeActionRow}>
-                    <Text style={styles.memoryNudgeActionText}>
-                      {memoryNudge.actionLabel}
-                    </Text>
-                    <Ionicons
-                      name="arrow-forward-outline"
-                      size={14}
-                      color={t.colors.accent}
-                    />
-                  </View>
-                </Pressable>
-              ) : null}
-
-              <Text style={styles.overviewNextStepHint}>
-                {`${copy.overviewNextStepLabel}: ${
-                  coverageGap?.value
-                    ? coverageGap.label
-                    : copy.overviewNextStepEmpty
-                }`}
-              </Text>
-            </View>
-          </Animated.View>
-        ) : null}
+        <SectionHeader title={copy.title} subtitle={copy.subtitle} large />
       </Card>
     </Animated.View>
   );

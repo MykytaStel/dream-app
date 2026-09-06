@@ -18,10 +18,11 @@
  * backwards — is worth a test, and a module the tests cannot load would not get
  * one.
  *
- * Only the DreamApp target is touched. The widget extension keeps its own
- * MARKETING_VERSION of 1.0: it is a separate bundle that ships inside the app
- * and is never listed on its own, so tying it to the app version would imply a
- * relationship that does not exist.
+ * Both targets are written. The widget extension is never listed on its own,
+ * but it ships *inside* the app bundle, and App Store Connect rejects an upload
+ * where an embedded extension's CFBundleVersion or CFBundleShortVersionString
+ * differ from the app's. So the widget's two fields track the app's rather than
+ * keeping a separate 1.0 / 1 that only ever caused an upload to bounce.
  */
 
 const { readFileSync, writeFileSync } = require('fs');
@@ -75,11 +76,8 @@ function setPackageVersion(version) {
 }
 
 /**
- * Rewrites only the build configurations that already carry an app version.
- *
- * The widget extension's own settings sit in the same file, so this matches on
- * the values rather than replacing every occurrence: anything not already the
- * extension's 1.0 or 1 belongs to the app.
+ * Rewrites every version field in the project — both the app target's and the
+ * widget extension's, which must match it for the store to accept the upload.
  */
 function syncIos(version, buildNumber) {
   const raw = readFileSync(pbxprojPath, 'utf8');
@@ -88,17 +86,11 @@ function syncIos(version, buildNumber) {
   let projectCount = 0;
 
   const next = raw
-    .replace(/MARKETING_VERSION = ([^;]+);/g, (whole, current) => {
-      if (current.trim() === '1.0') {
-        return whole;
-      }
+    .replace(/MARKETING_VERSION = [^;]+;/g, () => {
       marketingCount += 1;
       return `MARKETING_VERSION = ${version};`;
     })
-    .replace(/CURRENT_PROJECT_VERSION = ([^;]+);/g, (whole, current) => {
-      if (current.trim() === '1') {
-        return whole;
-      }
+    .replace(/CURRENT_PROJECT_VERSION = [^;]+;/g, () => {
       projectCount += 1;
       return `CURRENT_PROJECT_VERSION = ${buildNumber};`;
     });

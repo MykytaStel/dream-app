@@ -11,6 +11,10 @@ export const STATS_COPY_EN = {
   memoryModeOverview: 'Overview',
   memoryModeThreads: 'Recurring',
   memoryModeMonthly: 'Monthly',
+  memoryTrendsTitle: 'Trends & numbers',
+  memoryTrendsSubtitle:
+    'Charts, comparisons and counts from your local dream archive.',
+  memoryTrendsRowMeta: 'Charts, comparisons and counts.',
   compareLabel: 'View',
   compareSnapshot: 'Snapshot',
   compareMode: 'Compare',

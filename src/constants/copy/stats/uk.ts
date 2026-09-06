@@ -13,6 +13,10 @@ export const STATS_COPY_UK: StatsCopy = {
   memoryModeOverview: 'Огляд',
   memoryModeThreads: 'Повтори',
   memoryModeMonthly: 'Місяць',
+  memoryTrendsTitle: 'Тренди й цифри',
+  memoryTrendsSubtitle:
+    'Графіки, порівняння й підрахунки з локального архіву снів.',
+  memoryTrendsRowMeta: 'Графіки, порівняння й підрахунки.',
   compareLabel: 'Режим',
   compareSnapshot: 'Зріз',
   compareMode: 'Порівняти',

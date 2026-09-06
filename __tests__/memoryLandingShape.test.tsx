@@ -52,6 +52,7 @@ function controller(overrides: Record<string, unknown> = {}) {
     setSelectedMode: jest.fn(),
     memoryNudge: null,
     nightmareCount: 0,
+    lucidHistoryItems: [],
     fingerprintLeadSignals: [],
     fingerprintFacets: [],
     workQueueItems: [],
@@ -109,7 +110,7 @@ beforeEach(() => {
 describe('Memory landing shape', () => {
   it('has no Section segmented control and no Range chips', async () => {
     const { queryByText } = await renderScreen();
-    expect(queryByText(copy.memoryModeThreads)).toBeNull();
+    expect(queryByText('Recurring')).toBeNull();
     expect(queryByText(copy.rangeLabel)).toBeNull();
     expect(queryByText(copy.range7Days)).toBeNull();
   });
@@ -169,6 +170,17 @@ describe('Memory landing shape', () => {
 
     await fireEvent.press(getByText('Kaleidoscope'));
     expect(openFacet).toHaveBeenCalled();
+  });
+
+  it('hides the Dream practice row when there is no lucid or nightmare content', async () => {
+    const { queryByText } = await renderScreen();
+    expect(queryByText(/Lucidity, stabilization/)).toBeNull();
+  });
+
+  it('shows the Dream practice row once a nightmare exists', async () => {
+    controllerMock.mockReturnValue(controller({ nightmareCount: 3 }));
+    const { queryByText } = await renderScreen();
+    expect(queryByText(/Lucidity, stabilization/)).not.toBeNull();
   });
 
   it('shows a pick-back-up row that opens the dream', async () => {

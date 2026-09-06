@@ -6,9 +6,7 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import { Card } from '../../../components/ui/Card';
 import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
-import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 import { Theme } from '../../../theme/theme';
-import { type DreamFingerprintFacet } from './DreamFingerprintCard';
 import { EmotionalTrendSection } from './EmotionalTrendSection';
 import {
   disabledRangeChipStyle,
@@ -54,8 +52,6 @@ export function StatsOverviewSections({
 }: {
   copy: StatsCopy;
   styles: StatsStyles;
-  fingerprintLeadSignals: string[];
-  fingerprintFacets: DreamFingerprintFacet[];
   isDetailsExpanded?: boolean;
   onToggleDetails?: () => void;
   alwaysExpanded?: boolean;
@@ -105,28 +101,6 @@ export function StatsOverviewSections({
     hint: string;
   }>;
   attentionItems: ReadonlyArray<{ label: string; value: number; hint: string }>;
-  workQueueItems: ReadonlyArray<{
-    dreamId: string;
-    dreamTitle: string;
-    reason: string;
-    badgeLabel: string;
-    actionLabel: string;
-    focusSection: DreamDetailFocusSection;
-    icon: string;
-  }>;
-  importantDreamItems: ReadonlyArray<{
-    dreamId: string;
-    title: string;
-    meta: string;
-  }>;
-  savedSetItems: ReadonlyArray<{
-    key: string;
-    kind: 'month' | 'thread';
-    title: string;
-    meta: string;
-    eyebrow: string;
-  }>;
-  onOpenReviewWorkspace: () => void;
   onOpenLucidDream: (dreamId: string) => void;
   onOpenPatternDetail: (signal: string, kind: 'word' | 'theme') => void;
 }) {

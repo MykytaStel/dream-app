@@ -13,7 +13,6 @@ import {
   type InsightRange,
 } from '../model/statsScreenModel';
 import { type PatternDetailKind } from '../../../app/navigation/routes';
-import { type MemoryMode } from '../components/StatsScreenSections';
 import { useStatsCatalogState } from './useStatsCatalogState';
 import { useStatsDerivedContent } from './useStatsDerivedContent';
 
@@ -24,7 +23,6 @@ type UseStatsScreenControllerArgs = {
   locale: AppLocale;
   copy: StatsCopy;
   dreamCopy: DreamCopy;
-  selectedMemoryMode: MemoryMode;
   openPatternDetail: (signal: string, kind: PatternDetailKind) => void;
 };
 
@@ -32,12 +30,14 @@ export function useStatsScreenController({
   locale,
   copy,
   dreamCopy,
-  selectedMemoryMode,
   openPatternDetail,
 }: UseStatsScreenControllerArgs) {
-  const isOverviewMode = selectedMemoryMode === 'overview';
-  const isThreadsMode = selectedMemoryMode === 'threads';
-  const isMonthlyMode = selectedMemoryMode === 'monthly';
+  // Memory has a single view now; the Section tabs (overview / threads /
+  // monthly) were removed in the IA rework. The derived-content hooks still
+  // take these flags — pinned so their per-mode gates keep working.
+  const isOverviewMode = true;
+  const isThreadsMode = false;
+  const isMonthlyMode = false;
   const preSleepEmotionLabels = React.useMemo(
     () => getDreamPreSleepEmotionLabels(locale),
     [locale],

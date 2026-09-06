@@ -40,7 +40,6 @@ export default function MemoryTrendsScreen() {
     locale,
     copy,
     dreamCopy,
-    selectedMemoryMode: 'overview',
     openPatternDetail,
   });
 
@@ -111,8 +110,6 @@ export default function MemoryTrendsScreen() {
         alwaysExpanded
         copy={copy}
         styles={styles}
-        fingerprintLeadSignals={controller.fingerprintLeadSignals}
-        fingerprintFacets={controller.fingerprintFacets}
         selectedMode={controller.selectedMode}
         onSelectMode={controller.setSelectedMode}
         canCompare={controller.canCompare}
@@ -135,12 +132,6 @@ export default function MemoryTrendsScreen() {
         summaryTiles={controller.summaryTiles}
         coverageItems={controller.coverageItems}
         attentionItems={controller.attentionItems}
-        workQueueItems={controller.workQueueItems}
-        importantDreamItems={controller.importantDreamItems}
-        savedSetItems={controller.savedSetItems}
-        onOpenReviewWorkspace={() =>
-          navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
-        }
         onOpenLucidDream={dreamId =>
           navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
             dreamId,

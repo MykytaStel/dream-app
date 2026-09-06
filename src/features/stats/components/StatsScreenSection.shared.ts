@@ -4,7 +4,6 @@ import { createStatsScreenStyles } from '../screens/StatsScreen.styles';
 
 export type StatsCopy = ReturnType<typeof getStatsCopy>;
 export type StatsStyles = ReturnType<typeof createStatsScreenStyles>;
-export type MemoryMode = 'overview' | 'threads' | 'monthly';
 
 export const statsLayoutTransition = LinearTransition.springify()
   .damping(18)

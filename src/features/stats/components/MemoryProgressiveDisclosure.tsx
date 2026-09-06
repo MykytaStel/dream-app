@@ -42,78 +42,36 @@ export function MemoryDisclosureCard({
   );
 }
 
-export function MemoryDetailsToggle({
-  expanded,
-  copy,
-  onPress,
-}: {
-  expanded: boolean;
-  copy: MemoryDisclosureCopy;
-  onPress: () => void;
-}) {
-  const theme = useTheme<Theme>();
-  const styles = React.useMemo(() => createStyles(theme), [theme]);
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ expanded }}
-      onPress={onPress}
-      style={({ pressed }) => [
-        styles.detailsButton,
-        pressed ? styles.buttonPressed : null,
-      ]}
-    >
-      <View style={styles.detailsCopy}>
-        <Text style={styles.detailsTitle}>{copy.detailsTitle}</Text>
-        <Text style={styles.detailsDescription}>{copy.detailsDescription}</Text>
-      </View>
-      <View style={styles.detailsAction}>
-        <Text style={styles.detailsActionText}>
-          {expanded ? copy.hideDetailsLabel : copy.showDetailsLabel}
-        </Text>
-        <Ionicons
-          name={expanded ? 'chevron-up' : 'chevron-down'}
-          size={16}
-          color={theme.colors.text}
-        />
-      </View>
-    </Pressable>
-  );
-}
-
-function MemorySecondaryAction({
-  title,
-  description,
-  icon,
-  onPress,
-}: {
+export type MemoryLinkRow = {
+  key: string;
   title: string;
   description: string;
   icon: string;
   onPress: () => void;
-}) {
+};
+
+function MemoryLinkRowItem({ row }: { row: MemoryLinkRow }) {
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={title}
-      accessibilityHint={description}
-      onPress={onPress}
+      accessibilityLabel={row.title}
+      accessibilityHint={row.description}
+      onPress={row.onPress}
       style={({ pressed }) => [
         styles.secondaryAction,
         pressed ? styles.buttonPressed : null,
       ]}
     >
       <View style={styles.secondaryIcon}>
-        <Ionicons name={icon} size={17} color={theme.colors.accent} />
+        <Ionicons name={row.icon} size={17} color={theme.colors.accent} />
       </View>
       <View style={styles.secondaryCopy}>
-        <Text style={styles.secondaryTitle}>{title}</Text>
+        <Text style={styles.secondaryTitle}>{row.title}</Text>
         <Text style={styles.secondaryDescription} numberOfLines={2}>
-          {description}
+          {row.description}
         </Text>
       </View>
       <Ionicons name="chevron-forward" size={16} color={theme.colors.textDim} />
@@ -121,27 +79,22 @@ function MemorySecondaryAction({
   );
 }
 
-export function MemorySecondaryActions({
-  copy,
-  onOpenPractice,
-}: {
-  copy: MemoryDisclosureCopy;
-  onOpenPractice: () => void;
-}) {
+// The weekly-goal / achievements ("Progress") card was removed from here, and
+// its screen and route deleted: PRODUCT.md is explicit that this is not a habit
+// tracker. What remains is a plain list of destinations the Memory tab links to.
+export function MemoryLinkRows({ rows }: { rows: MemoryLinkRow[] }) {
   const theme = useTheme<Theme>();
   const styles = React.useMemo(() => createStyles(theme), [theme]);
 
-  // The weekly-goal / achievements ("Progress") card was removed here, and its
-  // screen and route deleted: PRODUCT.md is explicit that this is not a habit
-  // tracker.
+  if (!rows.length) {
+    return null;
+  }
+
   return (
-    <View style={styles.secondaryActionsRow}>
-      <MemorySecondaryAction
-        title={copy.practiceTitle}
-        description={copy.practiceDescription}
-        icon="moon-outline"
-        onPress={onOpenPractice}
-      />
+    <View style={styles.linkRowsColumn}>
+      {rows.map(row => (
+        <MemoryLinkRowItem key={row.key} row={row} />
+      ))}
     </View>
   );
 }
@@ -198,58 +151,13 @@ function createStyles(theme: Theme) {
       lineHeight: 14,
       fontWeight: '700',
     },
-    detailsButton: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 12,
-      borderRadius: 18,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surface,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-    },
     buttonPressed: {
       opacity: 0.94,
     },
-    detailsCopy: {
-      flex: 1,
-      minWidth: 0,
-      gap: 3,
-    },
-    detailsTitle: {
-      color: theme.colors.text,
-      fontSize: 14,
-      lineHeight: 18,
-      fontWeight: '700',
-    },
-    detailsDescription: {
-      color: theme.colors.textDim,
-      fontSize: 11,
-      lineHeight: 16,
-    },
-    detailsAction: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-      flexShrink: 0,
-    },
-    detailsActionText: {
-      color: theme.colors.text,
-      fontSize: 11,
-      lineHeight: 15,
-      fontWeight: '700',
-    },
-    secondaryActionsRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+    linkRowsColumn: {
       gap: 10,
     },
     secondaryAction: {
-      flexGrow: 1,
-      flexBasis: '48%',
-      minWidth: 150,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,

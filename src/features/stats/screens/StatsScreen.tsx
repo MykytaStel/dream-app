@@ -23,13 +23,13 @@ import { useStatsScreenController } from '../hooks/useStatsScreenController';
 import { StatsHeroSection } from '../components/StatsScreenSections';
 import {
   MemoryDisclosureCard,
-  MemorySecondaryActions,
+  MemoryLinkRows,
+  type MemoryLinkRow,
 } from '../components/MemoryProgressiveDisclosure';
 import { MemoryPatternCard } from '../components/MemoryPatternCard';
 import { MemoryRevisitNudgeCard } from '../components/MemoryRevisitNudgeCard';
 import { DreamFingerprintCard } from '../components/DreamFingerprintCard';
 import { MemoryPickBackUpCard } from '../components/MemoryPickBackUpCard';
-import { SettingsActionRow } from '../../settings/components/SettingsActionRow';
 import {
   getMemoryDisclosureCopy,
   getMemoryDisclosureState,
@@ -74,7 +74,6 @@ export default function StatsScreen() {
     locale,
     copy,
     dreamCopy,
-    selectedMemoryMode: 'overview',
     openPatternDetail,
   });
   const disclosureState = React.useMemo(
@@ -94,6 +93,42 @@ export default function StatsScreen() {
       }),
     [controller.scopedDreams, locale, memoryPatternFeedback],
   );
+
+  const hasPracticeContent =
+    controller.lucidHistoryItems.length > 0 || controller.nightmareCount > 0;
+  const linkRows: MemoryLinkRow[] = [
+    {
+      key: 'monthly',
+      title: copy.memoryModeMonthly,
+      description: copy.memoryMonthlyRowMeta,
+      icon: 'calendar-outline',
+      onPress: () => navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport),
+    },
+    {
+      key: 'trends',
+      title: copy.memoryTrendsTitle,
+      description: copy.memoryTrendsRowMeta,
+      icon: 'stats-chart-outline',
+      onPress: () => navigation.navigate(ROOT_ROUTE_NAMES.MemoryTrends),
+    },
+    ...(hasPracticeContent
+      ? [
+          {
+            key: 'practice',
+            title: disclosureCopy.practiceTitle,
+            description: disclosureCopy.practiceDescription,
+            icon: 'moon-outline',
+            onPress: () =>
+              navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+                focus: (controller.nightmareCount === 0
+                  ? 'lucid'
+                  : 'nightmares') as 'lucid' | 'nightmares',
+                entrySource: 'stats' as const,
+              }),
+          },
+        ]
+      : []),
+  ];
 
   // The denominator for §9's "≥30% of people with 10+ dreams open Memory".
   // The count is what makes that conditional answerable; nothing about the
@@ -255,28 +290,7 @@ export default function StatsScreen() {
         <MemoryDisclosureCard state={disclosureState} copy={disclosureCopy} />
       ) : null}
 
-      <SettingsActionRow
-        variant="inline"
-        title={copy.memoryModeMonthly}
-        meta={copy.memoryMonthlyRowMeta}
-        onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport)}
-      />
-      <SettingsActionRow
-        variant="inline"
-        title={copy.memoryTrendsTitle}
-        meta={copy.memoryTrendsRowMeta}
-        onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.MemoryTrends)}
-      />
-
-      <MemorySecondaryActions
-        copy={disclosureCopy}
-        onOpenPractice={() =>
-          navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
-            focus: controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
-            entrySource: 'stats',
-          })
-        }
-      />
+      <MemoryLinkRows rows={linkRows} />
     </ScreenContainer>
   );
 }

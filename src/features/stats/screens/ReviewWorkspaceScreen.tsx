@@ -62,7 +62,6 @@ export default function ReviewWorkspaceScreen() {
     locale,
     copy,
     dreamCopy,
-    selectedMemoryMode: 'overview',
     openPatternDetail,
   });
   const refreshBackupState = React.useCallback(() => {

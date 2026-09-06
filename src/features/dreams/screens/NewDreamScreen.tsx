@@ -154,19 +154,6 @@ export default function NewDreamScreen() {
     [navigation, pendingSavedDream],
   );
 
-  const openSavedDreamEditor = React.useCallback(() => {
-    const saved = pendingSavedDream;
-    if (!saved) {
-      return;
-    }
-
-    setPendingSavedDream(null);
-    widgetPromptPendingRef.current = false;
-    navigation.navigate(ROOT_ROUTE_NAMES.DreamEditor, {
-      dreamId: saved.dream.id,
-    });
-  }, [navigation, pendingSavedDream]);
-
   const handleWidgetPinAction = React.useCallback(async () => {
     if (Platform.OS === 'android') {
       await requestPinWidget();
@@ -247,7 +234,6 @@ export default function NewDreamScreen() {
         onClose={closeSavedSheet}
         onCaptureAnother={closeSavedSheet}
         onOpenDetail={openSavedDreamDetail}
-        onOpenEditor={openSavedDreamEditor}
       />
       {streakToast ? (
         <StreakMilestoneToast

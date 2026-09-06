@@ -109,30 +109,49 @@ where saves.saved_at >= first_capture.started_at;
 ### 3. <1% of started captures are lost
 
 There is **no `capture_failed` event** — a lost capture is a `capture_started`
-with no `dream_saved` for the same `capture_id`, *and* no later `capture_started`
-in the same session that did save (the user retried). Treat this as an upper
-bound, not an exact figure, and read it alongside Sentry `diag.global_js_error`
-around the same `server_ts`.
+with no `dream_saved` for the same `capture_id`. Treat this as an upper bound,
+not an exact figure, and read it alongside Sentry `diag.global_js_error` around
+the same `server_ts`.
+
+**One known false positive is filtered here.** After every save the capture
+screen remounts a fresh session (`NewDreamScreen` bumps `savedNonce` →
+`startCaptureSession()` → a new `capture_started`), so a user who saves once and
+then leaves the tab always leaves one childless `capture_id` behind. Those fire
+within a second or two of a `dream_saved` in the same session and are dropped
+below; a real second capture still counts, because it produces its own save.
 
 ```sql
 with ev as (select distinct on (id) * from public.analytics_events order by id, server_ts),
-starts as (
-  select install_id, session_id, props->>'capture_id' as capture_id, server_ts
-  from ev
-  where event = 'product.capture_started' and props->>'capture_id' is not null
-),
-saved_ids as (
-  select distinct props->>'capture_id' as capture_id
+saves as (
+  select install_id, session_id, server_ts, props->>'capture_id' as capture_id
   from ev where event = 'product.dream_saved'
-)
+),
+starts as (
+  select st.props->>'capture_id' as capture_id
+  from ev st
+  where st.event = 'product.capture_started' and st.props->>'capture_id' is not null
+    and not exists (
+      select 1 from saves v
+      where v.session_id = st.session_id
+        and v.server_ts <= st.server_ts
+        and v.server_ts >  st.server_ts - interval '15 seconds'
+    )
+),
+saved_ids as (select distinct capture_id from saves where capture_id is not null)
 select
-  count(*)                                                          as started,
-  count(*) filter (where s.capture_id is null)                      as no_save_same_id,
-  round(100.0 * count(*) filter (where s.capture_id is null)
-        / nullif(count(*), 0), 2)                                   as pct_upper_bound
+  count(*)                                                     as started,
+  count(*) filter (where si.capture_id is null)                as no_save,
+  round(100.0 * count(*) filter (where si.capture_id is null)
+        / nullif(count(*), 0), 2)                              as pct_upper_bound
 from starts
-left join saved_ids s using (capture_id);
+left join saved_ids si using (capture_id);
 ```
+
+> If this number still reads high once real data lands, the fix is client-side:
+> stop emitting `capture_started` on the post-save remount (it is currently
+> deliberate — `__tests__/newDreamScreen.test.tsx` asserts the second event) and
+> emit it on first real capture activity instead. That is an analytics-semantics
+> change and wants its own review.
 
 ### 4. >25% week-1 retention · 5. >15% week-4 retention
 

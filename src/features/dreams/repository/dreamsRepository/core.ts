@@ -1,35 +1,25 @@
-import { kv } from '../../../services/storage/mmkv';
-import { reportError } from '../../../services/observability/errorReporting';
-import { clearDreamEditDraft } from '../services/dreamDraftService';
+import { kv } from '../../../../services/storage/mmkv';
+import { reportError } from '../../../../services/observability/errorReporting';
+import { clearDreamEditDraft } from '../../services/dreamDraftService';
 import {
   DREAMS_INDEX_STORAGE_KEY,
   DREAMS_META_STORAGE_KEY,
   DREAMS_STORAGE_KEY,
-} from '../../../services/storage/keys';
-import {
-  Dream,
-  DreamTranscriptSource,
-  DreamTranscriptStatus,
-} from '../model/dream';
-import { DreamAnalysisRecord } from '../../analysis/model/dreamAnalysis';
+} from '../../../../services/storage/keys';
+import { Dream } from '../../model/dream';
 import {
   clearDreamDeletionTombstone,
-  applyRemoteDreamDeletionTombstone,
   saveDreamDeletionTombstone,
-} from './dreamDeletionTombstonesRepository';
-import {
-  DreamSyncBundle,
-  hydrateDreamFromSyncBundle,
-} from '../../../services/api/contracts/dreamSync';
+} from '../dreamDeletionTombstonesRepository';
 import {
   sanitizeDream,
   sortDreamsStable,
   validateDreamForSave,
-} from '../model/dreamRules';
-import { reconcileDerivedReviewState } from '../../stats/services/reviewShelfStateService';
-import { scheduleDreamWidgetSync } from '../../widgets/services/dreamWidgetSyncService';
+} from '../../model/dreamRules';
+import { reconcileDerivedReviewState } from '../../../stats/services/reviewShelfStateService';
+import { scheduleDreamWidgetSync } from '../../../widgets/services/dreamWidgetSyncService';
 
-const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
+export const PREVIEW_DREAM_ID = 'preview-dream-kaleidoskop';
 let dreamCache: Dream[] | null = null;
 let dreamCacheRaw: string | null = null;
 let dreamIndexCache: DreamListItem[] | null = null;
@@ -192,7 +182,7 @@ export function listDreams(): Dream[] {
   }
 }
 
-function persistDreams(dreams: Dream[]) {
+export function persistDreams(dreams: Dream[]) {
   if (dreamStoreUnreadable) {
     throw new UnreadableDreamStoreError();
   }
@@ -345,7 +335,7 @@ export function replaceAllDreams(dreams: Dream[]) {
   persistDreams(dreams);
 }
 
-function removeUndefinedSyncError<T extends Dream>(dream: T): T {
+export function removeUndefinedSyncError<T extends Dream>(dream: T): T {
   if (dream.syncError) {
     return dream;
   }
@@ -355,7 +345,7 @@ function removeUndefinedSyncError<T extends Dream>(dream: T): T {
   return nextDream as T;
 }
 
-function markDreamAsLocalChange(dream: Dream, changedAt = Date.now()) {
+export function markDreamAsLocalChange(dream: Dream, changedAt = Date.now()) {
   return removeUndefinedSyncError({
     ...dream,
     updatedAt: Math.max(changedAt, dream.createdAt),
@@ -364,7 +354,7 @@ function markDreamAsLocalChange(dream: Dream, changedAt = Date.now()) {
   });
 }
 
-function updateDreamById(
+export function updateDreamById(
   id: string,
   updater: (dream: Dream) => Dream,
   options: { markLocalChange?: boolean } = {},
@@ -426,224 +416,6 @@ export function deleteDream(id: string) {
   // A draft of an edit to a dream that no longer exists has nothing to be
   // restored into, and would otherwise sit in storage for good.
   clearDreamEditDraft(id);
-}
-
-export function applyRemoteDreamDeletion(id: string, deletedAt: number) {
-  persistDreams(listDreams().filter(dream => dream.id !== id));
-  clearDreamEditDraft(id);
-  return applyRemoteDreamDeletionTombstone(id, deletedAt);
-}
-
-export function archiveDream(id: string) {
-  const next = listDreams().map(dream =>
-    dream.id === id
-      ? markDreamAsLocalChange({
-          ...dream,
-          archivedAt: Date.now(),
-        })
-      : dream,
-  );
-  persistDreams(next);
-  return next.find(dream => dream.id === id);
-}
-
-export function starDream(id: string) {
-  return updateDreamById(id, dream => ({
-    ...dream,
-    starredAt: Date.now(),
-  }));
-}
-
-export function unstarDream(id: string) {
-  return updateDreamById(id, dream => {
-    const nextDream: Dream = { ...dream, starredAt: undefined };
-    delete nextDream.starredAt;
-    return nextDream;
-  });
-}
-
-export function unarchiveDream(id: string) {
-  const next = listDreams().map(dream => {
-    if (dream.id !== id) {
-      return dream;
-    }
-
-    const nextDream: Dream = { ...dream, archivedAt: undefined };
-    delete nextDream.archivedAt;
-    return nextDream;
-  });
-  persistDreams(next);
-  return next.find(dream => dream.id === id);
-}
-
-export function updateDreamTranscriptState(
-  id: string,
-  input: {
-    transcriptStatus: DreamTranscriptStatus;
-    transcript?: string;
-    transcriptSource?: DreamTranscriptSource;
-    transcriptUpdatedAt?: number;
-  },
-) {
-  return updateDreamById(id, dream => {
-    const nextDream: Dream = {
-      ...dream,
-      transcriptStatus: input.transcriptStatus,
-      transcriptUpdatedAt: input.transcriptUpdatedAt ?? Date.now(),
-    };
-
-    if (typeof input.transcript === 'string') {
-      nextDream.transcript = input.transcript;
-    }
-
-    if (input.transcriptSource) {
-      nextDream.transcriptSource = input.transcriptSource;
-    }
-
-    return nextDream;
-  });
-}
-
-export function saveDreamTranscriptEdit(id: string, transcript: string) {
-  return updateDreamById(id, dream => ({
-    ...dream,
-    transcript,
-    transcriptStatus: 'ready',
-    transcriptSource: 'edited',
-    transcriptUpdatedAt: Date.now(),
-  }));
-}
-
-export function clearDreamTranscript(id: string) {
-  return updateDreamById(id, dream => {
-    const nextDream: Dream = {
-      ...dream,
-      transcript: undefined,
-      transcriptSource: undefined,
-      transcriptUpdatedAt: undefined,
-      transcriptStatus: dream.audioUri?.trim() ? 'idle' : undefined,
-    };
-
-    delete nextDream.transcript;
-    delete nextDream.transcriptSource;
-    delete nextDream.transcriptUpdatedAt;
-
-    if (!nextDream.transcriptStatus) {
-      delete nextDream.transcriptStatus;
-    }
-
-    return nextDream;
-  });
-}
-
-export function setDreamAudioUri(id: string, audioUri: string) {
-  return updateDreamById(id, dream => ({
-    ...dream,
-    audioUri,
-  }));
-}
-
-export function saveDreamAnalysis(id: string, analysis: DreamAnalysisRecord) {
-  return updateDreamById(id, dream => ({
-    ...dream,
-    analysis,
-  }));
-}
-
-export function clearDreamAnalysis(id: string) {
-  return updateDreamById(id, dream => {
-    const nextDream: Dream = {
-      ...dream,
-      analysis: undefined,
-    };
-
-    delete nextDream.analysis;
-    return nextDream;
-  });
-}
-
-export function markDreamSyncing(id: string) {
-  return updateDreamById(
-    id,
-    dream =>
-      removeUndefinedSyncError({
-        ...dream,
-        syncStatus: 'syncing',
-        syncError: undefined,
-      }),
-    { markLocalChange: false },
-  );
-}
-
-export function markDreamSynced(
-  id: string,
-  input: { audioRemotePath?: string; syncedAt?: number } = {},
-) {
-  const syncedAt = input.syncedAt ?? Date.now();
-
-  return updateDreamById(
-    id,
-    dream =>
-      removeUndefinedSyncError({
-        ...dream,
-        audioRemotePath: input.audioRemotePath ?? dream.audioRemotePath,
-        syncStatus: 'synced',
-        lastSyncedAt: syncedAt,
-        syncError: undefined,
-      }),
-    { markLocalChange: false },
-  );
-}
-
-export function markDreamSyncError(id: string, errorMessage?: string) {
-  return updateDreamById(
-    id,
-    dream => ({
-      ...dream,
-      syncStatus: 'error',
-      syncError: errorMessage?.trim() || 'sync-error',
-    }),
-    { markLocalChange: false },
-  );
-}
-
-/**
- * Re-queues every "synced" dream for upload and clears `audioRemotePath`. Used
- * when the cloud copy turns out empty (the encryption migration discarded the
- * server's plaintext + audio). Clearing the remote path matters: upload skips
- * any dream that has one, so it would never re-send the recording. `updatedAt`
- * is left alone so other devices do not see every dream as freshly edited.
- */
-export function markAllDreamsPendingUpload() {
-  const all = listDreams();
-  const pending = all.map(dream =>
-    dream.syncStatus === 'synced'
-      ? {
-          ...dream,
-          syncStatus: 'local' as const,
-          audioRemotePath: undefined,
-        }
-      : { ...dream, audioRemotePath: undefined },
-  );
-
-  persistDreams(pending);
-  return pending.length;
-}
-
-export function upsertDreamFromSyncBundle(bundle: DreamSyncBundle) {
-  const nextDream = hydrateDreamFromSyncBundle(bundle);
-  const all = listDreams();
-  const idx = all.findIndex(dream => dream.id === nextDream.id);
-
-  if (idx >= 0) {
-    all[idx] = nextDream;
-  } else {
-    all.unshift(nextDream);
-  }
-
-  persistDreams(all);
-  clearDreamDeletionTombstone(nextDream.id);
-  return nextDream;
 }
 
 export function ensurePreviewDream() {

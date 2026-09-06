@@ -33,6 +33,15 @@
 	</array>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- The app's only cryptography is HTTPS and the standard libsodium/AES
+	     primitives used to encrypt the user's own archive before optional cloud
+	     sync (docs/PRIVACY.md). No proprietary algorithm, no encryption offered
+	     as a feature to third parties — so it falls under the US EAR exemptions
+	     and needs no CCATS filing. This key set to false is what lets a build
+	     reach TestFlight without answering the export prompt on every upload.
+	     Re-confirm this classification before the first App Store submission. -->
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSAppTransportSecurity</key>

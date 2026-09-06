@@ -70,12 +70,11 @@ describe('app version', () => {
     expect(buildGradle).not.toMatch(/versionCode\s+\d/);
   });
 
-  test('iOS carries the same version', () => {
-    const marketing = settingValues('MARKETING_VERSION').filter(
-      // The widget extension is a separate bundle that ships inside the app and
-      // is never listed on its own, so it keeps its own 1.0.
-      value => value !== '1.0',
-    );
+  test('iOS carries the same version — including the widget extension', () => {
+    // The widget ships inside the app bundle, so App Store Connect rejects an
+    // upload where its version differs from the app's. Every MARKETING_VERSION
+    // in the project must be package.json's, with none left at the old 1.0.
+    const marketing = settingValues('MARKETING_VERSION');
 
     expect(marketing.length).toBeGreaterThan(0);
     for (const value of marketing) {
@@ -86,9 +85,8 @@ describe('app version', () => {
   test('both platforms derive the same build number', () => {
     const expected = buildNumberFor(packageJson.version);
 
-    const project = settingValues('CURRENT_PROJECT_VERSION').filter(
-      value => value !== '1',
-    );
+    // Every target, widget included — see the note above.
+    const project = settingValues('CURRENT_PROJECT_VERSION');
 
     expect(project.length).toBeGreaterThan(0);
     for (const value of project) {

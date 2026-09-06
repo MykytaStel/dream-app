@@ -1,5 +1,9 @@
 # Memory IA — Phases 1 & 2 Implementation Plan
 
+> **Status (2026-09-06): DONE.** Task 1 merged `a26b44d`; Tasks 2–4 merged `3c0a023`.
+> Full gate suite green (tsc / eslint / prettier / jest 1093). Task 4 sim-verified
+> at the `deep` disclosure stage. Phases 3–4 get their own plan.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Remove the unreachable `Progress` screen, and stand up a new `MemoryTrends` sub-screen that holds the analytics dashboard currently buried behind a double-nested toggle on the Memory tab.

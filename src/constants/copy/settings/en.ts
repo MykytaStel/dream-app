@@ -105,7 +105,7 @@ export const SETTINGS_COPY_EN = {
   privacyReminderLabel: 'Reminders',
   privacyReminderValue: 'Local notifications only',
   privacyFootnote:
-    'If you delete the app, local entries, downloaded transcription model, and drafts may be removed with it until export or sync exists.',
+    'If you delete the app, your local entries, the downloaded transcription model and drafts go with it. Export a copy first if you want to keep them.',
   privacyOpenAction: 'How your data is handled',
   privacyScreenTitle: 'Your data',
   privacyScreenIntro:
@@ -134,7 +134,7 @@ export const SETTINGS_COPY_EN = {
   privacyDeleteBody:
     'Removing the app deletes what is stored here, including recordings and drafts. Export first if you want to keep them. Anything already uploaded stays until you delete those dreams while backup is on.',
   privacyNoAccountNote:
-    'There is no account, no profile and no analytics service. Offline, the app is complete.',
+    'There is no account and no profile. Offline, the app is complete — usage counts, below, are the one thing that leaves on their own, and a switch away from off.',
   archiveKeyTitle: 'The key to your archive',
   archiveKeyDescription:
     'Your dreams are encrypted before they are uploaded. This is the key that opens them.',

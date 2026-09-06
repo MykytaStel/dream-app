@@ -44,6 +44,12 @@ export function FormField({
         placeholderTextColor={t.colors.textDim}
         multiline={multiline}
         textAlignVertical={multiline ? 'top' : 'center'}
+        // The visible label is a separate node, so a screen reader lands on the
+        // input with nothing to say. Name it after the label, and when the field
+        // is refusing input, read why. A caller's own a11y props still win —
+        // they are spread last.
+        accessibilityLabel={label}
+        accessibilityHint={invalid && helperText ? helperText : undefined}
         style={[styles.input, invalid ? styles.inputInvalid : null, inputStyle]}
         {...props}
       />

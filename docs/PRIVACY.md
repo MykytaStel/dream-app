@@ -4,15 +4,18 @@ This describes what the app actually does with your data, checked against the co
 rather than against intentions. It is the source for the privacy policy the app stores
 require, and for the in-app privacy screen.
 
-Last verified against the code: 2026-07-30.
+Last verified against the code: 2026-09-06.
 
 ## The short version
 
-Your dreams are stored on your device. Nothing is sent anywhere unless you turn on a
-feature that sends it, and each of those is off until you turn it on.
+Your dreams are stored on your device. Nothing that is *content* — what you wrote,
+recorded or tagged — is ever sent anywhere unless you turn on a feature that sends it,
+and each of those is off until you turn it on.
 
-There are exactly three ways data leaves the device, listed below. If none of them are
-enabled, the app makes no network requests at all.
+There are four ways data can leave the device, listed below. Three of them — cloud
+backup, crash reports, the speech model — are off until you enable them. The fourth,
+usage analytics, is on during the beta and has a switch in settings. None of the four
+ever carries dream content.
 
 ## What is stored, and where
 
@@ -24,8 +27,9 @@ enabled, the app makes no network requests at all.
 | Patterns, streaks, statistics | Computed on the device, not stored elsewhere |
 | Settings and preferences | On the device |
 
-There is no account, no profile and no analytics service. The app works fully without
-an internet connection.
+There is no account and no profile. The app works fully without an internet
+connection. Usage analytics (below) is the one thing that is on by default during the
+beta; it is a switch away from off, and it never carries anything you wrote.
 
 ## What can leave the device
 
@@ -109,6 +113,35 @@ English transcribes Ukrainian into confident nonsense rather than failing. Engli
 downloads about 74 MB, Ukrainian about 141 MB. Changing the language downloads the
 other one and deletes the one no longer used, so only one is ever kept.
 
+### 4. Usage analytics — on by default during the beta, one switch to stop
+
+The app records what a person *does* with it — which screens open, which actions run,
+how far the first-capture flow gets — so that the parts that fail people can be found
+and fixed rather than guessed at. During the beta this is on by default. **Settings →
+Your data → Share usage counts** turns it off; doing so also clears every event still
+queued on the device, so opting back in later does not ship a backlog gathered before
+you agreed to it. Events that already reached the server during the beta are purged
+there by hand on request — the table has no automated deletion path yet.
+
+Every event is a count or a short fixed label. What is **never** sent: dream text,
+transcripts, titles, tags, symbols, moods, sleep notes, recovery codes, or search
+queries. The search event carries how many characters the query had and how many
+results it returned — never the text of it. The pattern events carry the *category* of
+a symbol (`word`, `theme`, `symbol`), never the symbol. A content allowlist strips
+every field not on it before an event is queued; a test writes dream text into every
+field of every event and asserts the finished payload comes out empty
+(`__tests__/analyticsContentGuard.test.ts`).
+
+The events are tied to a random per-install id generated on the device. It is **not**
+your cloud-sync account id, not an email, not an advertising identifier, and is never
+joined to any of them. Events go to the same Supabase project as sync, into a table
+the app can only write to and never read back. Like any network request, sending them
+reveals your device's IP address to that host; the IP is not stored in the event.
+
+This is analytics for making the app work, not for tracking you across other apps or
+sites — there is none of that, and the iOS privacy manifest declares
+`NSPrivacyTracking` false to say so.
+
 ## What never leaves the device
 
 - The dreams themselves, when cloud sync is off
@@ -133,6 +166,10 @@ PDF, Markdown or plain text copy.
 
 If you used cloud backup, deleting the app does not remove what was uploaded. Delete
 the dreams first, while sync is on, so the deletion reaches the server.
+
+Turning off **Share usage counts** stops any more usage analytics being sent and
+clears what is still queued on the device. Events already delivered to the server are
+removed there on request during the beta.
 
 ## Children
 

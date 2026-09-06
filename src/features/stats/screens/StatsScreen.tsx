@@ -292,20 +292,16 @@ export default function StatsScreen() {
 
       {selectedMemoryMode === 'overview' ? (
         <>
-          <MemoryDisclosureCard state={disclosureState} copy={disclosureCopy} />
+          {disclosureState.stage !== 'deep' ? (
+            <MemoryDisclosureCard
+              state={disclosureState}
+              copy={disclosureCopy}
+            />
+          ) : null}
           <MemoryDetailsToggle
             expanded={isMemoryDetailsExpanded}
             copy={disclosureCopy}
             onPress={() => setIsMemoryDetailsExpanded(current => !current)}
-          />
-          <MemorySecondaryActions
-            copy={disclosureCopy}
-            onOpenPractice={() =>
-              navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
-                focus: controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
-                entrySource: 'stats',
-              })
-            }
           />
         </>
       ) : null}
@@ -366,6 +362,18 @@ export default function StatsScreen() {
             onOpenPatternDetail={openPatternDetail}
           />
         )
+      ) : null}
+
+      {selectedMemoryMode === 'overview' ? (
+        <MemorySecondaryActions
+          copy={disclosureCopy}
+          onOpenPractice={() =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+              focus: controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
+              entrySource: 'stats',
+            })
+          }
+        />
       ) : null}
 
       {selectedMemoryMode !== 'overview' && shouldShowScopedEmptyState ? (

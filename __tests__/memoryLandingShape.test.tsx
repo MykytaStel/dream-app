@@ -52,6 +52,11 @@ function controller(overrides: Record<string, unknown> = {}) {
     setSelectedMode: jest.fn(),
     memoryNudge: null,
     nightmareCount: 0,
+    fingerprintLeadSignals: [],
+    fingerprintFacets: [],
+    workQueueItems: [],
+    importantDreamItems: [],
+    savedSetItems: [],
     ...overrides,
   } as any;
 }
@@ -141,5 +146,53 @@ describe('Memory landing shape', () => {
     const { queryByText } = await renderScreen();
     expect(queryByText('Glass hallway')).toBeNull();
     expect(queryByText('Kaleidoscope')).not.toBeNull();
+  });
+
+  it('shows the dream fingerprint on the landing', async () => {
+    const openFacet = jest.fn();
+    controllerMock.mockReturnValue(
+      controller({
+        fingerprintFacets: [
+          {
+            key: 'theme',
+            label: 'THEME',
+            value: 'Kaleidoscope',
+            meta: '50 dreams',
+            onPress: openFacet,
+          },
+        ],
+      }),
+    );
+
+    const { getByText, queryByText } = await renderScreen();
+    expect(queryByText(copy.fingerprintTitle)).not.toBeNull();
+
+    await fireEvent.press(getByText('Kaleidoscope'));
+    expect(openFacet).toHaveBeenCalled();
+  });
+
+  it('shows a pick-back-up row that opens the dream', async () => {
+    controllerMock.mockReturnValue(
+      controller({
+        workQueueItems: [
+          {
+            dreamId: 'w1',
+            dreamTitle: 'Bridge',
+            reason: 'No reflection yet',
+            badgeLabel: 'Draft',
+            actionLabel: 'Open',
+            focusSection: 'reflection',
+            icon: 'create-outline',
+          },
+        ],
+      }),
+    );
+
+    const { getByText } = await renderScreen();
+    await fireEvent.press(getByText('Bridge'));
+    expect(mockNavigate).toHaveBeenCalledWith(
+      'DreamDetail',
+      expect.objectContaining({ dreamId: 'w1' }),
+    );
   });
 });

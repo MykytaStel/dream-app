@@ -8,10 +8,7 @@ import { SectionHeader } from '../../../components/ui/SectionHeader';
 import { Text } from '../../../components/ui/Text';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
 import { Theme } from '../../../theme/theme';
-import {
-  DreamFingerprintCard,
-  type DreamFingerprintFacet,
-} from './DreamFingerprintCard';
+import { type DreamFingerprintFacet } from './DreamFingerprintCard';
 import { EmotionalTrendSection } from './EmotionalTrendSection';
 import {
   disabledRangeChipStyle,
@@ -29,8 +26,6 @@ import { type WeeklyPatternCard } from '../model/weeklyPatternCards';
 export function StatsOverviewSections({
   copy,
   styles,
-  fingerprintLeadSignals,
-  fingerprintFacets,
   isDetailsExpanded,
   onToggleDetails,
   alwaysExpanded,
@@ -54,10 +49,6 @@ export function StatsOverviewSections({
   summaryTiles,
   coverageItems,
   attentionItems,
-  workQueueItems,
-  importantDreamItems,
-  savedSetItems,
-  onOpenReviewWorkspace,
   onOpenLucidDream,
   onOpenPatternDetail,
 }: {
@@ -141,45 +132,9 @@ export function StatsOverviewSections({
 }) {
   const t = useTheme<Theme>();
   const showDetailBlock = alwaysExpanded || isDetailsExpanded;
-  const hasReviewShelf =
-    workQueueItems.length > 0 ||
-    importantDreamItems.length > 0 ||
-    savedSetItems.length > 0;
-  const reviewWorkspacePreview = workQueueItems[0]
-    ? {
-        eyebrow: copy.reviewShelfContinueEyebrow,
-        title: workQueueItems[0].dreamTitle,
-        meta: workQueueItems[0].reason,
-      }
-    : importantDreamItems[0]
-      ? {
-          eyebrow: copy.reviewShelfImportantDreamEyebrow,
-          title: importantDreamItems[0].title,
-          meta: importantDreamItems[0].meta,
-        }
-      : savedSetItems[0]
-        ? {
-            eyebrow: savedSetItems[0].eyebrow,
-            title: savedSetItems[0].title,
-            meta: savedSetItems[0].meta,
-          }
-        : null;
 
   return (
     <>
-      <Animated.View layout={statsLayoutTransition}>
-        <Card style={styles.sectionCard}>
-          <DreamFingerprintCard
-            title={copy.fingerprintTitle}
-            description={copy.fingerprintDescription}
-            leadLabel={copy.fingerprintLeadLabel}
-            leadSignals={fingerprintLeadSignals}
-            emptyLabel={copy.fingerprintEmpty}
-            facets={fingerprintFacets}
-          />
-        </Card>
-      </Animated.View>
-
       <EmotionalTrendSection
         series={emotionalTrendSeries as EmotionalTrendEntry[]}
         insight={emotionalTrendInsight}
@@ -332,55 +287,6 @@ export function StatsOverviewSections({
 
       <Animated.View layout={statsLayoutTransition}>
         <Card style={styles.sectionCard}>
-          {hasReviewShelf ? (
-            <View style={styles.detailsSubsection}>
-              <View style={styles.threadHeaderRow}>
-                <View style={styles.threadHeaderCopy}>
-                  <SectionHeader
-                    title={copy.reviewShelfTitle}
-                    subtitle={copy.reviewShelfDescription}
-                  />
-                </View>
-                <Pressable
-                  accessibilityRole="button"
-                  style={styles.toggleButton}
-                  onPress={onOpenReviewWorkspace}
-                >
-                  <Text style={styles.toggleButtonText}>
-                    {copy.reviewWorkspaceOpenAction}
-                  </Text>
-                </Pressable>
-              </View>
-              <Pressable
-                accessibilityRole="button"
-                onPress={onOpenReviewWorkspace}
-                style={({ pressed }) => [
-                  styles.reviewShelfCompactRow,
-                  pressed ? styles.insightCardPressed : null,
-                ]}
-              >
-                <View style={styles.reviewShelfCompactCopy}>
-                  <Text style={styles.reviewShelfCompactEyebrow}>
-                    {reviewWorkspacePreview?.eyebrow ??
-                      copy.reviewWorkspaceTitle}
-                  </Text>
-                  <Text style={styles.reviewShelfCompactTitle}>
-                    {reviewWorkspacePreview?.title ?? copy.reviewWorkspaceTitle}
-                  </Text>
-                  <Text style={styles.reviewShelfCompactMeta}>
-                    {reviewWorkspacePreview?.meta ??
-                      copy.reviewWorkspaceSubtitle}
-                  </Text>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={16}
-                  color={t.colors.textDim}
-                />
-              </Pressable>
-            </View>
-          ) : null}
-
           {alwaysExpanded ? null : (
             <Pressable
               accessibilityRole="button"

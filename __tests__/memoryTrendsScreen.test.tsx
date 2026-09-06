@@ -78,5 +78,7 @@ describe('MemoryTrendsScreen', () => {
     expect(queryByText(copy.snapshotTitle)).not.toBeNull();
     expect(queryByText(copy.detailsShow)).toBeNull();
     expect(queryByText(copy.detailsHide)).toBeNull();
+    // The dream fingerprint moved to the Memory landing.
+    expect(queryByText(copy.fingerprintTitle)).toBeNull();
   });
 });

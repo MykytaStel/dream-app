@@ -27,6 +27,8 @@ import {
 } from '../components/MemoryProgressiveDisclosure';
 import { MemoryPatternCard } from '../components/MemoryPatternCard';
 import { MemoryRevisitNudgeCard } from '../components/MemoryRevisitNudgeCard';
+import { DreamFingerprintCard } from '../components/DreamFingerprintCard';
+import { MemoryPickBackUpCard } from '../components/MemoryPickBackUpCard';
 import { SettingsActionRow } from '../../settings/components/SettingsActionRow';
 import {
   getMemoryDisclosureCopy,
@@ -221,6 +223,33 @@ export default function StatsScreen() {
           }
         />
       ) : null}
+
+      <Card style={styles.sectionCard}>
+        <DreamFingerprintCard
+          title={copy.fingerprintTitle}
+          description={copy.fingerprintDescription}
+          leadLabel={copy.fingerprintLeadLabel}
+          leadSignals={controller.fingerprintLeadSignals}
+          emptyLabel={copy.fingerprintEmpty}
+          facets={controller.fingerprintFacets}
+        />
+      </Card>
+
+      <MemoryPickBackUpCard
+        copy={copy}
+        workQueueItems={controller.workQueueItems}
+        importantDreamItems={controller.importantDreamItems}
+        savedSetItems={controller.savedSetItems}
+        onOpenReviewWorkspace={() =>
+          navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
+        }
+        onOpenDream={dreamId =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            dreamId,
+            source: 'stats',
+          })
+        }
+      />
 
       {disclosureState.stage !== 'deep' ? (
         <MemoryDisclosureCard state={disclosureState} copy={disclosureCopy} />

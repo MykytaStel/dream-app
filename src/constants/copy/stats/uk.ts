@@ -9,9 +9,6 @@ export const STATS_COPY_UK: StatsCopy = {
   rangeAll: 'Увесь час',
   range30Days: '30 днів',
   range7Days: '7 днів',
-  memoryModeLabel: 'Розділ',
-  memoryModeOverview: 'Огляд',
-  memoryModeThreads: 'Повтори',
   memoryModeMonthly: 'Місяць',
   memoryTrendsTitle: 'Тренди й цифри',
   memoryTrendsSubtitle:
@@ -129,8 +126,6 @@ export const STATS_COPY_UK: StatsCopy = {
     'Спокійний зріз того, що виділилося за останні сім днів.',
   overviewTopSignalLabel: 'Головний сигнал',
   overviewTopSignalEmpty: 'Ще формується',
-  overviewNextStepLabel: 'Наступний крок',
-  overviewNextStepEmpty: 'Нічого термінового зараз немає.',
   weeklyPatternRhythmLabel: 'Ритм',
   weeklyPatternSignalLabel: 'Свіжий сигнал',
   weeklyPatternToneLabel: 'Тон',

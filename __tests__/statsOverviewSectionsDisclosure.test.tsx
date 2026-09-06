@@ -12,8 +12,6 @@ const styles = createStatsScreenStyles(themes.kaleidoscope);
 const baseProps: React.ComponentProps<typeof StatsOverviewSections> = {
   copy,
   styles,
-  fingerprintLeadSignals: [],
-  fingerprintFacets: [],
   selectedMode: 'snapshot',
   onSelectMode: () => {},
   canCompare: false,
@@ -34,10 +32,6 @@ const baseProps: React.ComponentProps<typeof StatsOverviewSections> = {
   summaryTiles: [{ label: 'Total', value: 7 }],
   coverageItems: [],
   attentionItems: [],
-  workQueueItems: [],
-  importantDreamItems: [],
-  savedSetItems: [],
-  onOpenReviewWorkspace: () => {},
   onOpenLucidDream: () => {},
   onOpenPatternDetail: () => {},
 };

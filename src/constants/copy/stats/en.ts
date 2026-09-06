@@ -7,9 +7,6 @@ export const STATS_COPY_EN = {
   rangeAll: 'All time',
   range30Days: '30 days',
   range7Days: '7 days',
-  memoryModeLabel: 'Section',
-  memoryModeOverview: 'Overview',
-  memoryModeThreads: 'Recurring',
   memoryModeMonthly: 'Monthly',
   memoryTrendsTitle: 'Trends & numbers',
   memoryTrendsSubtitle:
@@ -125,8 +122,6 @@ export const STATS_COPY_EN = {
     'A calm read of what stood out in the last seven days.',
   overviewTopSignalLabel: 'Top signal',
   overviewTopSignalEmpty: 'Still forming',
-  overviewNextStepLabel: 'Next step',
-  overviewNextStepEmpty: 'Nothing urgent right now.',
   weeklyPatternRhythmLabel: 'Rhythm',
   weeklyPatternSignalLabel: 'Recent signal',
   weeklyPatternToneLabel: 'Tone',

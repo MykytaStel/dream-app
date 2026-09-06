@@ -1,5 +1,11 @@
 # Memory IA — Phase 3 Implementation Plan
 
+> **Status (2026-09-06): DONE.** All 4 tasks merged `69da00b`. Full gates green
+> (tsc / eslint / prettier / jest 1099). Sim-verified at the deep stage. Deviation:
+> the Recurring row was dropped (PatternDetail needs a {signal,kind} param).
+> Deferred to a Phase 4: conditional practice row, dead MemoryMode plumbing,
+> unused StatsOverviewSections props, link-row styling.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans (inline) to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax.
 
 **Goal:** Strip the Memory tab landing to its three blocks — a single "reason to revisit" card, "what keeps coming back", and "pick back up" — followed by link rows. Remove the Section tabs and the Range filter from the landing.

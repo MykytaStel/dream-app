@@ -1,0 +1,65 @@
+{
+  "fill": {
+    "solid": "extended-srgb:0.65882,0.69412,0.58039,1.00000"
+  },
+  "groups": [
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "accent-dot.png",
+          "name": "Accent dot"
+        }
+      ],
+      "name": "Accent dot",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "orbit.png",
+          "name": "Orbit"
+        }
+      ],
+      "name": "Orbit",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    },
+    {
+      "layers": [
+        {
+          "glass": true,
+          "image-name": "flower.png",
+          "name": "Flower"
+        }
+      ],
+      "lighting": "combined",
+      "name": "Flower",
+      "shadow": {
+        "kind": "neutral",
+        "opacity": 0.5
+      },
+      "translucency": {
+        "enabled": false,
+        "value": 0.5
+      }
+    }
+  ],
+  "supported-platforms": {
+    "squares": "shared"
+  }
+}

@@ -17,6 +17,7 @@ export const STATS_COPY_UK: StatsCopy = {
   memoryTrendsSubtitle:
     'Графіки, порівняння й підрахунки з локального архіву снів.',
   memoryTrendsRowMeta: 'Графіки, порівняння й підрахунки.',
+  memoryMonthlyRowMeta: 'Збережені місячні огляди.',
   compareLabel: 'Режим',
   compareSnapshot: 'Зріз',
   compareMode: 'Порівняти',

@@ -20,22 +20,19 @@ import { createStatsScreenStyles } from './StatsScreen.styles';
 import { useStyles } from '../../../theme/useStyles';
 import { useI18n } from '../../../i18n/I18nProvider';
 import { useStatsScreenController } from '../hooks/useStatsScreenController';
-import {
-  StatsHeroSection,
-  StatsMonthlySections,
-  StatsThreadsSections,
-  type MemoryMode,
-} from '../components/StatsScreenSections';
+import { StatsHeroSection } from '../components/StatsScreenSections';
 import {
   MemoryDisclosureCard,
   MemorySecondaryActions,
 } from '../components/MemoryProgressiveDisclosure';
 import { MemoryPatternCard } from '../components/MemoryPatternCard';
+import { MemoryRevisitNudgeCard } from '../components/MemoryRevisitNudgeCard';
+import { DreamFingerprintCard } from '../components/DreamFingerprintCard';
+import { MemoryPickBackUpCard } from '../components/MemoryPickBackUpCard';
 import { SettingsActionRow } from '../../settings/components/SettingsActionRow';
 import {
   getMemoryDisclosureCopy,
   getMemoryDisclosureState,
-  isMemoryModeAvailable,
 } from '../model/memoryDisclosure';
 import {
   getMemoryPatternCopy,
@@ -59,8 +56,6 @@ export default function StatsScreen() {
   const navigation =
     useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const styles = useStyles(createStatsScreenStyles);
-  const [selectedMemoryMode, setSelectedMemoryMode] =
-    React.useState<MemoryMode>('overview');
   const [memoryPatternFeedback, setMemoryPatternFeedback] = React.useState(() =>
     getMemoryPatternFeedback(),
   );
@@ -79,7 +74,7 @@ export default function StatsScreen() {
     locale,
     copy,
     dreamCopy,
-    selectedMemoryMode,
+    selectedMemoryMode: 'overview',
     openPatternDetail,
   });
   const disclosureState = React.useMemo(
@@ -99,22 +94,6 @@ export default function StatsScreen() {
       }),
     [controller.scopedDreams, locale, memoryPatternFeedback],
   );
-  const memoryModeOptions = React.useMemo(
-    () =>
-      [
-        { value: 'overview' as const, label: copy.memoryModeOverview },
-        { value: 'threads' as const, label: copy.memoryModeThreads },
-        { value: 'monthly' as const, label: copy.memoryModeMonthly },
-      ].filter(option => disclosureState.availableModes.includes(option.value)),
-    [
-      copy.memoryModeMonthly,
-      copy.memoryModeOverview,
-      copy.memoryModeThreads,
-      disclosureState.availableModes,
-    ],
-  );
-  const visibleRangeOptions =
-    disclosureState.stage === 'foundation' ? [] : controller.rangeOptions;
 
   // The denominator for §9's "≥30% of people with 10+ dreams open Memory".
   // The count is what makes that conditional answerable; nothing about the
@@ -129,35 +108,6 @@ export default function StatsScreen() {
       trackMemoryOpened({ dreamCount: totalDreamCount });
     }, [totalDreamCount]),
   );
-
-  React.useEffect(() => {
-    if (!isMemoryModeAvailable(disclosureState, selectedMemoryMode)) {
-      setSelectedMemoryMode('overview');
-    }
-  }, [disclosureState, selectedMemoryMode]);
-
-  const handleSelectMemoryMode = React.useCallback(
-    (value: MemoryMode) => {
-      if (!isMemoryModeAvailable(disclosureState, value)) {
-        return;
-      }
-
-      React.startTransition(() => {
-        setSelectedMemoryMode(value);
-      });
-    },
-    [disclosureState],
-  );
-  const handleSelectRange = React.useCallback(
-    (value: 'all' | '30d' | '7d') => {
-      React.startTransition(() => {
-        controller.setSelectedRange(value);
-      });
-    },
-    [controller],
-  );
-  const shouldShowScopedEmptyState =
-    selectedMemoryMode !== 'monthly' && !controller.scopedDreams.length;
 
   if (controller.loading) {
     return (
@@ -205,29 +155,9 @@ export default function StatsScreen() {
 
   return (
     <ScreenContainer scroll>
-      <StatsHeroSection
-        copy={copy}
-        styles={styles}
-        selectedMemoryMode={selectedMemoryMode}
-        onSelectMemoryMode={handleSelectMemoryMode}
-        memoryModeOptions={memoryModeOptions}
-        selectedRange={controller.selectedRange}
-        onSelectRange={handleSelectRange}
-        rangeOptions={visibleRangeOptions}
-        memoryNudge={controller.memoryNudge}
-        onOpenMemoryNudge={(dreamId, focusSection) =>
-          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
-            source: 'stats',
-            dreamId,
-            focusSection,
-          })
-        }
-        coverageGap={controller.coverageGap}
-      />
+      <StatsHeroSection copy={copy} styles={styles} />
 
-      {selectedMemoryMode === 'overview' &&
-      disclosureState.stage !== 'foundation' &&
-      primaryMemoryPattern ? (
+      {disclosureState.stage !== 'foundation' && primaryMemoryPattern ? (
         <MemoryPatternCard
           candidate={primaryMemoryPattern}
           copy={memoryPatternCopy}
@@ -280,67 +210,73 @@ export default function StatsScreen() {
             )
           }
         />
-      ) : null}
-
-      {selectedMemoryMode === 'overview' ? (
-        <>
-          {disclosureState.stage !== 'deep' ? (
-            <MemoryDisclosureCard
-              state={disclosureState}
-              copy={disclosureCopy}
-            />
-          ) : null}
-          <SettingsActionRow
-            variant="inline"
-            title={copy.memoryTrendsTitle}
-            meta={copy.memoryTrendsRowMeta}
-            onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.MemoryTrends)}
-          />
-        </>
-      ) : null}
-
-      {selectedMemoryMode === 'overview' ? (
-        <MemorySecondaryActions
-          copy={disclosureCopy}
-          onOpenPractice={() =>
-            navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
-              focus: controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
-              entrySource: 'stats',
+      ) : controller.memoryNudge ? (
+        <MemoryRevisitNudgeCard
+          nudge={controller.memoryNudge}
+          copy={copy}
+          onOpen={(dreamId, focusSection) =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+              source: 'stats',
+              dreamId,
+              focusSection,
             })
           }
         />
       ) : null}
 
-      {selectedMemoryMode !== 'overview' && shouldShowScopedEmptyState ? (
-        <ScreenStateCard
-          variant="empty"
-          title={copy.emptyTitle}
-          subtitle={copy.emptyDescription}
+      <Card style={styles.sectionCard}>
+        <DreamFingerprintCard
+          title={copy.fingerprintTitle}
+          description={copy.fingerprintDescription}
+          leadLabel={copy.fingerprintLeadLabel}
+          leadSignals={controller.fingerprintLeadSignals}
+          emptyLabel={copy.fingerprintEmpty}
+          facets={controller.fingerprintFacets}
         />
+      </Card>
+
+      <MemoryPickBackUpCard
+        copy={copy}
+        workQueueItems={controller.workQueueItems}
+        importantDreamItems={controller.importantDreamItems}
+        savedSetItems={controller.savedSetItems}
+        onOpenReviewWorkspace={() =>
+          navigation.navigate(ROOT_ROUTE_NAMES.ReviewWorkspace)
+        }
+        onOpenDream={dreamId =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+            dreamId,
+            source: 'stats',
+          })
+        }
+      />
+
+      {disclosureState.stage !== 'deep' ? (
+        <MemoryDisclosureCard state={disclosureState} copy={disclosureCopy} />
       ) : null}
 
-      {selectedMemoryMode === 'threads' && !shouldShowScopedEmptyState ? (
-        <StatsThreadsSections
-          copy={copy}
-          styles={styles}
-          patternGroups={controller.patternGroups}
-          savedThreadItems={controller.savedThreadItems}
-          onOpenThreadDetail={openPatternDetail}
-        />
-      ) : null}
+      <SettingsActionRow
+        variant="inline"
+        title={copy.memoryModeMonthly}
+        meta={copy.memoryMonthlyRowMeta}
+        onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport)}
+      />
+      <SettingsActionRow
+        variant="inline"
+        title={copy.memoryTrendsTitle}
+        meta={copy.memoryTrendsRowMeta}
+        onPress={() => navigation.navigate(ROOT_ROUTE_NAMES.MemoryTrends)}
+      />
 
-      {selectedMemoryMode === 'monthly' ? (
-        <StatsMonthlySections
-          copy={copy}
-          styles={styles}
-          latestMonthlyReport={controller.latestMonthlyReport}
-          latestMonthlyReportTitle={controller.latestMonthlyReportTitle}
-          monthlyReportPreviewSignals={controller.monthlyReportPreviewSignals}
-          onOpenMonthlyReport={() =>
-            navigation.navigate(ROOT_ROUTE_NAMES.MonthlyReport)
-          }
-        />
-      ) : null}
+      <MemorySecondaryActions
+        copy={disclosureCopy}
+        onOpenPractice={() =>
+          navigation.navigate(ROOT_ROUTE_NAMES.DreamPractice, {
+            focus: controller.nightmareCount === 0 ? 'lucid' : 'nightmares',
+            entrySource: 'stats',
+          })
+        }
+      />
     </ScreenContainer>
   );
 }

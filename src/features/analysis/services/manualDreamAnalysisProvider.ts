@@ -1,5 +1,6 @@
 import { Dream } from '../../dreams/model/dream';
 import { DreamAnalysisResult } from '../model/dreamAnalysis';
+import { truncateChars } from '../../../utils/text';
 
 const STOPWORDS = new Set([
   'about',
@@ -43,7 +44,7 @@ function firstSentence(value?: string) {
 
   const match = text.match(/(.+?[.!?])(\s|$)/);
   const sentence = match ? match[1] : text;
-  return sentence.length > 180 ? `${sentence.slice(0, 177)}...` : sentence;
+  return sentence.length > 180 ? truncateChars(sentence, 180, '...') : sentence;
 }
 
 function collectTokens(value?: string) {

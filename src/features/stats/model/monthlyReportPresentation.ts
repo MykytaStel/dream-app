@@ -1,5 +1,6 @@
 import type { Dream } from '../../dreams/model/dream';
 import type { PatternDetailKind } from '../../../app/navigation/routes';
+import { truncateChars } from '../../../utils/text';
 import {
   getDreamResurfacingMatch,
   type DreamResurfacingWindow,
@@ -178,7 +179,9 @@ function getMonthlyReportDreamTitle(
     .map(line => line.trim())
     .find(Boolean);
   if (firstLine) {
-    return firstLine.length <= 42 ? firstLine : `${firstLine.slice(0, 39)}...`;
+    return firstLine.length <= 42
+      ? firstLine
+      : truncateChars(firstLine, 42, '...');
   }
 
   return copy.monthlyReportTitle;

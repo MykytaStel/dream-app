@@ -36,6 +36,11 @@ import {
   getDreamAnalysisSettings,
   saveDreamAnalysisSettings,
 } from '../../analysis/services/dreamAnalysisSettingsService';
+import { observability } from '../../../services/observability';
+import {
+  getSentryDsn,
+  getSentryEnvironment,
+} from '../../../services/observability/sentryObservability';
 import { getSettingsCopy } from '../../../constants/copy/settings';
 import {
   buildAnalysisHighlights,
@@ -404,6 +409,25 @@ export function useSettingsScreenController({
     }
   }, [biometricAvailability, biometricLockEnabled, copy]);
 
+  const onSendSentryTestEvent = React.useCallback(() => {
+    if (!getSentryDsn()) {
+      Alert.alert(copy.devSentryTestTitle, copy.devSentryTestNoDsn);
+      return;
+    }
+
+    observability.captureMessage(
+      'Kaleidoscope Sentry test event',
+      'info',
+      // Content-free — proves the pipe works, carries nothing about a dream.
+      { source: 'settings.dev', environment: getSentryEnvironment() },
+    );
+
+    Alert.alert(
+      copy.devSentryTestTitle,
+      copy.devSentryTestSent.replace('{env}', getSentryEnvironment()),
+    );
+  }, [copy]);
+
   const onClearSeedDreams = React.useCallback(() => {
     Alert.alert(copy.scaleTestClearTitle, copy.scaleTestClearDescription, [
       {
@@ -471,5 +495,6 @@ export function useSettingsScreenController({
     isUpdatingSeedDreams,
     onSeedDreams,
     onClearSeedDreams,
+    onSendSentryTestEvent,
   };
 }

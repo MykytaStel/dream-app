@@ -60,25 +60,30 @@ export class SentryObservabilityService implements ObservabilityService {
 }
 
 /**
+ * The environment tag on every event. Dev builds report too — so the pipeline
+ * can be verified without a store build — but under `development`, which is one
+ * inbound filter away from silence in the Sentry project if it gets noisy.
+ */
+export function getSentryEnvironment(): string {
+  return __DEV__ ? 'development' : 'production';
+}
+
+/**
  * Returns the provider when crash reporting should run, and null otherwise so
- * the caller leaves the console provider in place.
- *
- * Skipped in dev: `__DEV__` builds would otherwise send every fast-refresh
- * error and every deliberately-thrown test throwaway into the same project the
- * beta reports to. A developer testing the Sentry path directly can drop the
- * `__DEV__` check locally.
+ * the caller leaves the console provider in place. Runs whenever a DSN is
+ * configured; the jest environment has none, so tests never call `Sentry.init`.
  */
 export function initSentry(): ObservabilityService | null {
   const dsn = getSentryDsn();
 
-  if (!dsn || __DEV__) {
+  if (!dsn) {
     return null;
   }
 
   Sentry.init({
     dsn,
     release: APP_VERSION,
-    environment: 'production',
+    environment: getSentryEnvironment(),
     // Dream content must never reach the server, whatever the SDK defaults to.
     sendDefaultPii: false,
     beforeSend: (event: ErrorEvent) => redactSentryEvent(event),

@@ -58,6 +58,14 @@ export const SETTINGS_COPY_EN = {
   devPreviewSyncDiagnostics: 'Preview sync diagnostics',
   devPreviewSyncDiagnosticsMeta:
     'Open the debug-only screen with the latest sync snapshot and recent sync attempts.',
+  devSentryTestAction: 'Send a test event to Sentry',
+  devSentryTestMeta:
+    'Fires one content-free event so you can confirm crash reporting is wired up.',
+  devSentryTestTitle: 'Sentry test',
+  devSentryTestSent:
+    'Sent as environment "{env}". It should appear in the Sentry project within a minute.',
+  devSentryTestNoDsn:
+    'No DSN is configured, so nothing was sent. Set SENTRY_DSN or check the bundled default.',
   actionCancel: 'Cancel',
   reminderPermissionDeniedTitle: 'Notifications disabled',
   reminderPermissionDeniedDescription:

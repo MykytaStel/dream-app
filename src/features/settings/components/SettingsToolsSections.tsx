@@ -173,6 +173,7 @@ export function DevSection({
   onPreviewBackupOnboarding,
   onPreviewSyncDiagnostics,
   onClearSeedDreams,
+  onSendSentryTestEvent,
 }: {
   copy: SettingsCopy;
   styles: SettingsStyles;
@@ -185,6 +186,7 @@ export function DevSection({
   onPreviewBackupOnboarding: () => void;
   onPreviewSyncDiagnostics: () => void;
   onClearSeedDreams: () => void;
+  onSendSentryTestEvent: () => void;
 }) {
   return (
     <Card style={styles.sectionCard}>
@@ -214,6 +216,12 @@ export function DevSection({
         meta={copy.devPreviewSyncDiagnosticsMeta}
         variant="inline"
         onPress={onPreviewSyncDiagnostics}
+      />
+      <SettingsActionRow
+        title={copy.devSentryTestAction}
+        meta={copy.devSentryTestMeta}
+        variant="inline"
+        onPress={onSendSentryTestEvent}
       />
       <Text style={styles.restoreLabel}>{copy.scaleTestTitle}</Text>
       <SettingsActionRow

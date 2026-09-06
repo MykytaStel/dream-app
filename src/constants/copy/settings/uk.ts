@@ -58,6 +58,14 @@ export const SETTINGS_COPY_UK: SettingsCopy = {
   devPreviewSyncDiagnostics: 'Переглянути sync diagnostics',
   devPreviewSyncDiagnosticsMeta:
     'Відкрий debug-only екран з останнім sync snapshot і недавніми sync спробами.',
+  devSentryTestAction: 'Надіслати тестову подію в Sentry',
+  devSentryTestMeta:
+    'Відправляє одну подію без контенту, щоб ти переконався, що краш-репортинг підключено.',
+  devSentryTestTitle: 'Тест Sentry',
+  devSentryTestSent:
+    'Надіслано як environment «{env}». Має зʼявитися в проєкті Sentry протягом хвилини.',
+  devSentryTestNoDsn:
+    'DSN не налаштовано, тож нічого не надіслано. Встанови SENTRY_DSN або перевір вшитий за замовчуванням.',
   actionCancel: 'Скасувати',
   reminderPermissionDeniedTitle: 'Сповіщення вимкнені',
   reminderPermissionDeniedDescription:

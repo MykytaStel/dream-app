@@ -47,6 +47,7 @@ export default function SettingsAboutScreen() {
           onPreviewBackupOnboarding={() => openBackupOnboardingPreview()}
           onPreviewSyncDiagnostics={() => openSyncDiagnosticsPreview()}
           onClearSeedDreams={controller.onClearSeedDreams}
+          onSendSentryTestEvent={controller.onSendSentryTestEvent}
         />
       ) : null}
 

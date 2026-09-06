@@ -273,42 +273,9 @@ export const STATS_COPY_EN = {
   recurringThemesDescription: 'From tags and transcript language.',
   recurringSymbolsDescription: 'From transcript language only.',
   preSleepEmotionsDescription: 'The feelings you log before sleep most often.',
-  progressOpenButton: 'Open progress',
-  progressBackButton: 'Back',
-  progressScreenTitle: 'Progress',
-  progressScreenSubtitle:
-    'See your weekly rhythm, unlocked milestones, and the next recording goal.',
-  progressLoadingTitle: 'Loading progress',
-  progressLoadingDescription: 'Refreshing local milestones and weekly rhythm.',
-  progressFocusTitle: 'Next unlock',
-  progressFocusDoneTitle: 'All core milestones unlocked',
-  progressFocusDoneDescription:
-    'The recording habit is established. New entries now mainly deepen the archive.',
-  milestonesToggleShow: 'Show milestones',
-  milestonesToggleHide: 'Hide milestones',
-  currentStreak: 'Current streak',
-  lastSevenDays: 'Last 7 days',
   emptyTitle: 'No memory yet',
   emptyDescription:
     'Save a few dreams first. Memory will start connecting recurring signals from your local archive automatically.',
-  readinessTitle: 'Insight readiness',
-  readinessDescription:
-    'The more mood, tags, and pre-sleep context you add, the more useful these patterns become.',
-  entriesWithMood: 'Entries with mood',
-  entriesWithTags: 'Entries with tags',
-  readinessHint:
-    'Small sample sizes can swing fast. Treat early patterns as directional, not final.',
-  milestonesTitle: 'All milestones',
-  milestonesDescription:
-    'A simple view of what is already unlocked and what is still building up.',
-  milestonesUnlockedLabel: 'Unlocked',
-  milestonesCompleteTitle: 'Milestones complete',
-  milestonesCompleteDescription:
-    'All core recording milestones are unlocked. The archive now has enough volume for richer reflection.',
-  milestoneHighlightLabel: 'Highlight',
-  milestoneUnlocked: 'Unlocked',
-  milestoneInProgress: 'In progress',
-  milestoneProgressLabel: 'Done / goal',
   milestoneFirstDreamTitle: 'First dream saved',
   milestoneFirstDreamDescription:
     'Capture the first dream to start building a usable archive.',
@@ -321,13 +288,6 @@ export const STATS_COPY_EN = {
   milestoneFirstVoiceDreamTitle: 'First voice dream',
   milestoneFirstVoiceDreamDescription:
     'Save one dream with audio to preserve the original memory before it fades.',
-  weeklyGoalTitle: 'Weekly goal',
-  weeklyGoalDescription:
-    'Aim for three entries in the last seven days to keep the habit warm.',
-  weeklyGoalStatusDone: 'On track',
-  weeklyGoalStatusPending: 'Keep going',
-  weeklyGoalProgressLabel: 'Entries this week',
-  weeklyGoalTargetLabel: 'Goal',
   journalVolume: 'Journal volume',
   entries: 'Entries',
   wordsSaved: 'Words saved',

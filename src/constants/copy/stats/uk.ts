@@ -280,42 +280,9 @@ export const STATS_COPY_UK: StatsCopy = {
   recurringSymbolsDescription: 'Лише з мови транскриптів.',
   preSleepEmotionsDescription:
     'Емоції, які ти найчастіше відмічаєш перед сном.',
-  progressOpenButton: 'Відкрити прогрес',
-  progressBackButton: 'Назад',
-  progressScreenTitle: 'Прогрес',
-  progressScreenSubtitle:
-    'Тут видно тижневий ритм, відкриті майлстоуни і наступну ціль запису.',
-  progressLoadingTitle: 'Завантажуємо прогрес',
-  progressLoadingDescription: 'Оновлюємо локальні майлстоуни й тижневий ритм.',
-  progressFocusTitle: 'Наступне відкриття',
-  progressFocusDoneTitle: 'Усі базові майлстоуни відкриті',
-  progressFocusDoneDescription:
-    'Звичка запису вже зібрана. Тепер нові записи головно поглиблюють архів.',
-  milestonesToggleShow: 'Показати майлстоуни',
-  milestonesToggleHide: 'Сховати майлстоуни',
-  currentStreak: 'Поточний стрік',
-  lastSevenDays: 'Останні 7 днів',
   emptyTitle: "Пам'ять ще формується",
   emptyDescription:
     "Спочатку збережи кілька снів. Пам'ять почне автоматично пов'язувати повторювані сигнали з локального архіву.",
-  readinessTitle: 'Готовність аналітики',
-  readinessDescription:
-    'Що більше ти додаєш настрою, тегів і контексту перед сном, то кориснішими стають ці патерни.',
-  entriesWithMood: 'Записи з настроєм',
-  entriesWithTags: 'Записи з тегами',
-  readinessHint:
-    'На малому обсязі даних патерни легко коливаються. Сприймай ранні сигнали як орієнтир, а не як висновок.',
-  milestonesTitle: 'Усі майлстоуни',
-  milestonesDescription:
-    'Простий зріз того, що вже відкрито і що ще добудовується.',
-  milestonesUnlockedLabel: 'Відкрито',
-  milestonesCompleteTitle: 'Майлстоуни закрито',
-  milestonesCompleteDescription:
-    'Усі базові майлстоуни запису відкриті. Архів уже достатньо насичений для глибшої рефлексії.',
-  milestoneHighlightLabel: 'Фокус',
-  milestoneUnlocked: 'Відкрито',
-  milestoneInProgress: 'У процесі',
-  milestoneProgressLabel: 'Виконано / ціль',
   milestoneFirstDreamTitle: 'Перший сон збережено',
   milestoneFirstDreamDescription:
     'Збережи перший сон, щоб почати будувати корисний архів.',
@@ -328,13 +295,6 @@ export const STATS_COPY_UK: StatsCopy = {
   milestoneFirstVoiceDreamTitle: 'Перший голосовий сон',
   milestoneFirstVoiceDreamDescription:
     'Збережи хоча б один сон з аудіо, щоб не втратити оригінальний спогад.',
-  weeklyGoalTitle: 'Ціль на тиждень',
-  weeklyGoalDescription:
-    'Спробуй дійти до трьох записів за останні сім днів, щоб не втрачати ритм.',
-  weeklyGoalStatusDone: 'Рух хороший',
-  weeklyGoalStatusPending: 'Продовжуй',
-  weeklyGoalProgressLabel: 'Записів за тиждень',
-  weeklyGoalTargetLabel: 'Ціль',
   journalVolume: 'Обсяг щоденника',
   entries: 'Записи',
   wordsSaved: 'Збережено слів',

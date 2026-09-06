@@ -26,6 +26,7 @@ import {
   MemorySecondaryActions,
 } from '../components/MemoryProgressiveDisclosure';
 import { MemoryPatternCard } from '../components/MemoryPatternCard';
+import { MemoryRevisitNudgeCard } from '../components/MemoryRevisitNudgeCard';
 import { SettingsActionRow } from '../../settings/components/SettingsActionRow';
 import {
   getMemoryDisclosureCopy,
@@ -205,6 +206,18 @@ export default function StatsScreen() {
               primaryMemoryPattern.signal,
               primaryMemoryPattern.kind,
             )
+          }
+        />
+      ) : controller.memoryNudge ? (
+        <MemoryRevisitNudgeCard
+          nudge={controller.memoryNudge}
+          copy={copy}
+          onOpen={(dreamId, focusSection) =>
+            navigation.navigate(ROOT_ROUTE_NAMES.DreamDetail, {
+              source: 'stats',
+              dreamId,
+              focusSection,
+            })
           }
         />
       ) : null}

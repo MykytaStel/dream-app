@@ -107,7 +107,7 @@ describe('StatsScreen → MemoryTrends link', () => {
     expect(queryByText(copy.detailsShow)).toBeNull();
     expect(queryByText(copy.detailsHide)).toBeNull();
 
-    fireEvent.press(getByText(copy.memoryTrendsTitle));
+    await fireEvent.press(getByText(copy.memoryTrendsTitle));
     expect(mockNavigate).toHaveBeenCalledWith('MemoryTrends');
   });
 });

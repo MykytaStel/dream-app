@@ -70,6 +70,22 @@ function applyFocusedSection(
   };
 }
 
+const FRESH_CAPTURE_WINDOW_MS = 24 * 60 * 60 * 1000;
+
+// A dream is "fresh" for a day, or whenever the saver navigated straight here.
+// Fresh dreams open on their content; the revisit prompts wait for a real
+// revisit.
+function isFreshCapture(
+  dream: { createdAt: number } | null | undefined,
+  justSaved: boolean,
+) {
+  if (justSaved) {
+    return true;
+  }
+
+  return dream ? Date.now() - dream.createdAt < FRESH_CAPTURE_WINDOW_MS : false;
+}
+
 export function useDreamDetailController({
   dreamId,
   justSaved,
@@ -459,6 +475,7 @@ export function useDreamDetailController({
 
   return {
     dream,
+    isFreshCapture: isFreshCapture(dream, justSaved),
     relatedDreams,
     showSavedHighlight,
     isTranscribingAudio,

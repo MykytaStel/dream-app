@@ -32,6 +32,7 @@ type DreamDetailSectionsProps = {
   viewModel: DreamDetailViewModel;
   relatedDreams: RelatedDream[];
   sections: DreamDetailSectionsState;
+  isFreshCapture: boolean;
   isTranscribingAudio: boolean;
   isEditingTranscript: boolean;
   transcriptDraft: string;
@@ -87,6 +88,7 @@ export function DreamDetailSections({
   viewModel,
   relatedDreams,
   sections: _sections,
+  isFreshCapture,
   isTranscribingAudio,
   isEditingTranscript,
   transcriptDraft,
@@ -154,7 +156,7 @@ export function DreamDetailSections({
           onDownloadAudio={onDownloadAudio}
         />
 
-        {hasReflectionPrompt(viewModel) ? (
+        {!isFreshCapture && hasReflectionPrompt(viewModel) ? (
           <View style={styles.sheetDivider} />
         ) : null}
         <DreamReflectionSection
@@ -163,6 +165,7 @@ export function DreamDetailSections({
           styles={styles}
           viewModel={viewModel}
           relatedDreams={relatedDreams}
+          isFreshCapture={isFreshCapture}
           onEditDream={onEditDream}
           onOpenRelatedDream={onOpenRelatedDream}
           onTranscribeAudio={onTranscribeAudio}

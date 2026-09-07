@@ -290,10 +290,9 @@ export const DREAM_COPY_EN = {
     '. Add one line about what still feels true now.',
   detailReflectionCaptureTitle: 'Keep one vivid detail',
   detailReflectionCaptureBody:
-    'Add one concrete image, place, or sentence that your future self will still understand in a week.',
-  detailReflectionFallbackTitle: 'Leave a trace for later',
-  detailReflectionFallbackBody:
-    'Add one short note your future self would thank you for.',
+    'Add one concrete image, place, or sentence you will still understand in a week.',
+  detailReflectionFallbackTitle: 'Add a note',
+  detailReflectionFallbackBody: 'One detail you will want later.',
   detailReflectionActionEdit: 'Add detail',
   detailReflectionActionRelated: 'Open thread',
   detailReflectionActionAnalysis: 'Review analysis',

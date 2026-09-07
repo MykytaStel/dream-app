@@ -170,6 +170,7 @@ function renderSections(overrides?: {
           viewModel={nextViewModel}
           relatedDreams={nextRelated}
           sections={sections}
+          isFreshCapture={false}
           isTranscribingAudio={false}
           isEditingTranscript={false}
           transcriptDraft=""

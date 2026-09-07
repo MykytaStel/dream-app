@@ -295,10 +295,9 @@ export const DREAM_COPY_UK: DreamCopy = {
     '. Додай один рядок про те, що все ще відчувається правдою зараз.',
   detailReflectionCaptureTitle: 'Залиши одну яскраву деталь',
   detailReflectionCaptureBody:
-    'Додай один конкретний образ, місце або рядок, який твій майбутній ти все ще зрозуміє через тиждень.',
-  detailReflectionFallbackTitle: 'Залиши слід на потім',
-  detailReflectionFallbackBody:
-    'Додай одну коротку нотатку, за яку майбутній ти буде вдячний.',
+    'Додай один конкретний образ, місце або рядок, який ти зрозумієш і через тиждень.',
+  detailReflectionFallbackTitle: 'Додати нотатку',
+  detailReflectionFallbackBody: 'Одна деталь, яка знадобиться пізніше.',
   detailReflectionActionEdit: 'Додати деталь',
   detailReflectionActionRelated: 'Відкрити нитку',
   detailReflectionActionAnalysis: 'Переглянути аналіз',

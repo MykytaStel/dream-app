@@ -243,6 +243,7 @@ export default function DreamDetailScreen() {
         viewModel={viewModel}
         relatedDreams={controller.relatedDreams}
         sections={controller.sections}
+        isFreshCapture={controller.isFreshCapture}
         isTranscribingAudio={controller.isTranscribingAudio}
         isEditingTranscript={controller.isEditingTranscript}
         transcriptDraft={controller.transcriptDraft}

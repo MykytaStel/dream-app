@@ -114,6 +114,11 @@ export function createNewDreamScreenStyles(theme: Theme) {
     card: {
       gap: layout.sectionGap + 2,
     },
+    // Create-mode quick capture is a flat block on the screen, not a card —
+    // the field is the screen.
+    quickCaptureBlock: {
+      gap: layout.sectionGap + 2,
+    },
     refineActionsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',

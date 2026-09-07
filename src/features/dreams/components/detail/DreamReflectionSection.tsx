@@ -31,6 +31,7 @@ type DreamReflectionSectionProps = {
   styles: DreamDetailScreenStyles;
   viewModel: DreamDetailViewModel;
   relatedDreams: RelatedDream[];
+  isFreshCapture: boolean;
   onEditDream: () => void;
   onOpenRelatedDream: (dreamId: string) => void;
   onTranscribeAudio: () => void;
@@ -43,6 +44,7 @@ export function DreamReflectionSection({
   styles,
   viewModel,
   relatedDreams,
+  isFreshCapture,
   onEditDream,
   onOpenRelatedDream,
   onTranscribeAudio,
@@ -52,7 +54,9 @@ export function DreamReflectionSection({
   const leadPrompt =
     viewModel.followUpPrompt ?? viewModel.reflectionPrompts[0] ?? null;
 
-  if (!leadPrompt) {
+  // A dream saved in the last day opens on its content. "Revisit" belongs on a
+  // real revisit, not twenty seconds after the capture.
+  if (isFreshCapture || !leadPrompt) {
     return null;
   }
 

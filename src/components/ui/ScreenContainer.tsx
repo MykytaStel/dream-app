@@ -37,31 +37,53 @@ export function ScreenContainer(
         : undefined,
   };
 
+  // A screen that owns its top area (no native header) scrolls its own content —
+  // a ScrollView here, or a FlatList/SectionList passed as the child of a
+  // `scroll={false} padded={false}` container — up past the system status bar
+  // with nothing to hide it, so the title and body collide with the clock. A
+  // solid strip in the background colour behaves like a nav bar would: content
+  // just ends at the status-bar line. Screens with `withTopInset={false}` have a
+  // native header already doing this, so they are left alone.
+  const showStatusBarMask = withTopInset && insets.top > 0;
+  const statusBarMaskSize = {
+    height: insets.top,
+    backgroundColor: t.colors.background,
+  };
+  const statusBarMask = showStatusBarMask ? (
+    <View style={[styles.statusBarMask, statusBarMaskSize]} />
+  ) : null;
+
   if (props.scroll) {
     const { contentContainerStyle, style, ...rest } = props;
     return (
-      <ScrollView
-        style={[styles.base, style]}
-        contentContainerStyle={[
-          padded ? styles.content : undefined,
-          padded ? insetStyle : undefined,
-          contentContainerStyle,
-        ]}
-        {...rest}
-      />
+      <View style={styles.base}>
+        <ScrollView
+          style={[styles.base, style]}
+          contentContainerStyle={[
+            padded ? styles.content : undefined,
+            padded ? insetStyle : undefined,
+            contentContainerStyle,
+          ]}
+          {...rest}
+        />
+        {statusBarMask}
+      </View>
     );
   }
 
   const { style, ...rest } = props;
   return (
-    <View
-      style={[
-        styles.base,
-        padded ? styles.content : undefined,
-        padded ? insetStyle : undefined,
-        style,
-      ]}
-      {...rest}
-    />
+    <View style={styles.base}>
+      <View
+        style={[
+          styles.base,
+          padded ? styles.content : undefined,
+          padded ? insetStyle : undefined,
+          style,
+        ]}
+        {...rest}
+      />
+      {statusBarMask}
+    </View>
   );
 }

@@ -10,20 +10,11 @@ import { Card } from '../../../components/ui/Card';
 import { Text } from '../../../components/ui/Text';
 import { getDreamCopy } from '../../../constants/copy/dreams';
 import { useI18n } from '../../../i18n/I18nProvider';
-import { createControlPill } from '../../../theme/surfaces';
 import { Theme } from '../../../theme/theme';
 import { fontFamilies } from '../../../theme/fonts';
 import { Dream } from '../model/dream';
 import { getDreamDisplayTitle } from '../model/dreamTitle';
 import { type DreamDetailFocusSection } from '../../../app/navigation/routes';
-import {
-  getCaptureFlowCopy,
-  getCaptureFollowUpDestination,
-} from '../model/captureFollowUp';
-import {
-  getPostSaveFollowUps,
-  type PostSaveFollowUp,
-} from '../model/postSaveFollowUp';
 
 type CaptureSavedSheetProps = {
   visible: boolean;
@@ -32,7 +23,6 @@ type CaptureSavedSheetProps = {
   onClose: () => void;
   onCaptureAnother: () => void;
   onOpenDetail: (focusSection?: DreamDetailFocusSection) => void;
-  onOpenEditor?: () => void;
 };
 
 function formatSavedDreamTitle(dream: Dream | null, fallback: string) {
@@ -46,14 +36,9 @@ export function CaptureSavedSheet({
   onClose,
   onCaptureAnother,
   onOpenDetail,
-  onOpenEditor,
 }: CaptureSavedSheetProps) {
   const { locale } = useI18n();
   const copy = React.useMemo(() => getDreamCopy(locale), [locale]);
-  const captureFlowCopy = React.useMemo(
-    () => getCaptureFlowCopy(locale),
-    [locale],
-  );
   const t = useTheme<Theme>();
   const insets = useSafeAreaInsets();
   const styles = React.useMemo(
@@ -62,36 +47,14 @@ export function CaptureSavedSheet({
   );
   const localeKey = locale === 'uk' ? 'uk-UA' : 'en-US';
   const title = formatSavedDreamTitle(dream, copy.untitled);
-  const followUps = React.useMemo(
-    () => getPostSaveFollowUps(dream, copy),
-    [copy, dream],
-  );
-  const primaryFollowUp = followUps[0];
-  const secondaryFollowUp = followUps[1] ?? null;
-  const savedDate = dream?.sleepDate
-    ? new Date(`${dream.sleepDate}T00:00:00`).toLocaleDateString(localeKey, {
+  const savedAt = dream?.createdAt
+    ? new Date(dream.createdAt).toLocaleString(localeKey, {
         month: 'short',
         day: 'numeric',
-        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       })
     : null;
-
-  const openFollowUp = React.useCallback(
-    (followUp: PostSaveFollowUp) => {
-      if (getCaptureFollowUpDestination(followUp) === 'editor') {
-        if (onOpenEditor) {
-          onOpenEditor();
-          return;
-        }
-
-        onOpenDetail('written');
-        return;
-      }
-
-      onOpenDetail(followUp.focusSection);
-    },
-    [onOpenDetail, onOpenEditor],
-  );
 
   return (
     <Modal
@@ -111,8 +74,6 @@ export function CaptureSavedSheet({
           style={styles.sheetWrap}
         >
           <Card style={styles.card}>
-            <View pointerEvents="none" style={styles.glowLarge} />
-            <View pointerEvents="none" style={styles.glowSmall} />
             <View style={styles.handle} />
 
             <View style={styles.successHero}>
@@ -128,90 +89,13 @@ export function CaptureSavedSheet({
               </View>
             </View>
 
-            <Text style={styles.eyebrow}>{copy.saveSuccessTitle}</Text>
-            <Text style={styles.title}>{copy.postSaveTitle}</Text>
-            <Text style={styles.description}>{copy.postSaveDescription}</Text>
-
-            <View style={styles.metaRow}>
-              <View style={styles.metaChip}>
-                <Text style={styles.metaChipLabel}>
-                  {copy.postSaveSavedLabel}
-                </Text>
-              </View>
-              {savedDate ? (
-                <View style={styles.metaChip}>
-                  <Text style={styles.metaChipLabel}>{savedDate}</Text>
-                </View>
-              ) : null}
-            </View>
-
-            <View style={styles.savedSurface}>
-              <Text style={styles.savedTitle} numberOfLines={2}>
-                {title}
-              </Text>
-              {dream?.audioUri ? (
-                <Text style={styles.savedHint}>{copy.attachedAudioTitle}</Text>
-              ) : dream?.text ? (
-                <Text style={styles.savedHint} numberOfLines={2}>
-                  {dream.text}
-                </Text>
-              ) : null}
-            </View>
-
-            <View style={styles.followUpCard}>
-              <View style={styles.followUpHeader}>
-                <View style={styles.followUpIconWrap}>
-                  <Ionicons
-                    name={primaryFollowUp.icon}
-                    size={16}
-                    color={t.colors.accent}
-                  />
-                </View>
-                <View style={styles.followUpCopy}>
-                  <Text style={styles.followUpLabel}>
-                    {copy.postSaveNextStepLabel}
-                  </Text>
-                  <Text style={styles.followUpTitle}>
-                    {primaryFollowUp.title}
-                  </Text>
-                </View>
-              </View>
-              <Text style={styles.followUpDescription}>
-                {primaryFollowUp.description}
-              </Text>
-            </View>
+            <Text style={styles.title}>{copy.saveSuccessTitle}</Text>
+            <Text style={styles.savedPreview} numberOfLines={1}>
+              {title}
+            </Text>
+            {savedAt ? <Text style={styles.savedMeta}>{savedAt}</Text> : null}
 
             <View style={styles.actions}>
-              <Button
-                title={primaryFollowUp.actionLabel}
-                onPress={() => openFollowUp(primaryFollowUp)}
-                variant="ghost"
-                icon="arrow-forward-outline"
-                iconPosition="right"
-                size="md"
-              />
-              {secondaryFollowUp ? (
-                <Pressable
-                  accessibilityRole="button"
-                  onPress={() => openFollowUp(secondaryFollowUp)}
-                  style={({ pressed }) => [
-                    styles.secondaryFollowUpRow,
-                    pressed ? styles.secondaryFollowUpRowPressed : null,
-                  ]}
-                >
-                  <View style={styles.secondaryFollowUpCopy}>
-                    <Text style={styles.secondaryFollowUpLabel}>
-                      {copy.postSaveThenLabel}
-                    </Text>
-                    <Text style={styles.secondaryFollowUpTitle}>
-                      {secondaryFollowUp.title}
-                    </Text>
-                  </View>
-                  <Text style={styles.secondaryFollowUpAction}>
-                    {secondaryFollowUp.actionLabel}
-                  </Text>
-                </Pressable>
-              ) : null}
               <Button
                 title={
                   prefersVoiceCapture
@@ -220,6 +104,12 @@ export function CaptureSavedSheet({
                 }
                 onPress={onCaptureAnother}
                 icon={prefersVoiceCapture ? 'mic-outline' : 'add-outline'}
+                size="md"
+              />
+              <Button
+                title={copy.postSaveOpenDetail}
+                onPress={() => onOpenDetail()}
+                variant="ghost"
                 size="md"
               />
             </View>
@@ -234,7 +124,7 @@ export function CaptureSavedSheet({
                 ]}
               >
                 <Text style={styles.footerActionLabel}>
-                  {captureFlowCopy.reflectLaterAction}
+                  {copy.postSaveContinueLater}
                 </Text>
               </Pressable>
             </View>
@@ -260,30 +150,10 @@ function createStyles(theme: Theme, bottomInset: number) {
       paddingBottom: bottomInset + theme.spacing.sm,
     },
     card: {
-      gap: 12,
+      gap: 10,
       paddingTop: theme.spacing.sm,
       overflow: 'hidden',
       position: 'relative',
-    },
-    glowLarge: {
-      position: 'absolute',
-      width: 160,
-      height: 160,
-      borderRadius: 999,
-      backgroundColor: theme.colors.auroraMid,
-      opacity: 0.08,
-      top: -58,
-      right: -36,
-    },
-    glowSmall: {
-      position: 'absolute',
-      width: 110,
-      height: 110,
-      borderRadius: 999,
-      backgroundColor: theme.colors.accent,
-      opacity: 0.08,
-      bottom: -26,
-      left: -24,
     },
     handle: {
       width: 44,
@@ -296,7 +166,7 @@ function createStyles(theme: Theme, bottomInset: number) {
     successHero: {
       alignItems: 'center',
       justifyContent: 'center',
-      marginTop: 2,
+      marginTop: 4,
       marginBottom: 2,
     },
     successPulseWrap: {
@@ -321,149 +191,28 @@ function createStyles(theme: Theme, bottomInset: number) {
       shadowRadius: 14,
       elevation: 5,
     },
-    eyebrow: {
-      color: theme.colors.accent,
-      fontSize: 11,
-      fontWeight: '700',
-      letterSpacing: 0.7,
-      textTransform: 'uppercase',
-    },
     title: {
       fontFamily: fontFamilies.display,
       fontSize: 24,
       lineHeight: 28,
       fontWeight: '700',
+      textAlign: 'center',
     },
-    description: {
-      color: theme.colors.textDim,
-      fontSize: 14,
-      lineHeight: 20,
-    },
-    metaRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
-    },
-    metaChip: {
-      ...createControlPill(theme, {
-        tone: 'background',
-        paddingVertical: 5,
-        paddingHorizontal: 9,
-      }),
-    },
-    metaChipLabel: {
-      color: theme.colors.textDim,
-      fontSize: 11,
-      fontWeight: '700',
-    },
-    savedSurface: {
-      borderRadius: theme.borderRadii.xl,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-      gap: 4,
-    },
-    savedTitle: {
-      fontSize: 17,
-      lineHeight: 22,
-      fontWeight: '700',
-    },
-    savedHint: {
-      color: theme.colors.textDim,
-      fontSize: 13,
-      lineHeight: 18,
-    },
-    followUpCard: {
-      gap: 8,
-      borderRadius: theme.borderRadii.xl,
-      borderWidth: 1,
-      borderColor: `${theme.colors.primary}29`,
-      backgroundColor: `${theme.colors.primary}14`,
-      paddingVertical: 12,
-      paddingHorizontal: 14,
-    },
-    followUpHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-    },
-    followUpIconWrap: {
-      width: 30,
-      height: 30,
-      borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: `${theme.colors.primary}1F`,
-      borderWidth: 1,
-      borderColor: `${theme.colors.primary}2E`,
-    },
-    followUpCopy: {
-      flex: 1,
-      gap: 2,
-    },
-    followUpLabel: {
-      color: theme.colors.accent,
-      fontSize: 10,
-      lineHeight: 13,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    followUpTitle: {
+    savedPreview: {
       color: theme.colors.text,
       fontSize: 14,
-      lineHeight: 18,
-      fontWeight: '700',
+      lineHeight: 19,
+      textAlign: 'center',
     },
-    followUpDescription: {
+    savedMeta: {
       color: theme.colors.textDim,
       fontSize: 12,
-      lineHeight: 17,
+      lineHeight: 16,
+      textAlign: 'center',
     },
     actions: {
       gap: 8,
-    },
-    secondaryFollowUpRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 12,
-      borderRadius: theme.borderRadii.lg,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surfaceAlt,
-      paddingVertical: 11,
-      paddingHorizontal: 14,
-    },
-    secondaryFollowUpRowPressed: {
-      opacity: 0.84,
-    },
-    secondaryFollowUpCopy: {
-      flex: 1,
-      gap: 2,
-    },
-    secondaryFollowUpLabel: {
-      color: theme.colors.textDim,
-      fontSize: 10,
-      lineHeight: 13,
-      fontWeight: '700',
-      textTransform: 'uppercase',
-      letterSpacing: 0.5,
-    },
-    secondaryFollowUpTitle: {
-      color: theme.colors.text,
-      fontSize: 13,
-      lineHeight: 18,
-      fontWeight: '700',
-    },
-    secondaryFollowUpAction: {
-      color: theme.colors.primary,
-      fontSize: 12,
-      lineHeight: 16,
-      fontWeight: '700',
-      textAlign: 'right',
+      marginTop: 6,
     },
     footerActions: {
       alignItems: 'center',

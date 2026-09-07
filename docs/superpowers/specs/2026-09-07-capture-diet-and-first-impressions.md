@@ -267,3 +267,37 @@ Verify: cold-launch the built app on the simulator, confirm no
 5. Detail age-aware (§3) — isolated from the rest
 
 One branch, five commits, one merge.
+
+---
+
+## Shipped 2026-09-07 (branch `feature/capture-diet`)
+
+All five landed and were verified on the simulator (dark theme):
+
+- **§4** — `ScreenContainer` masks both variants; verified on Home + DreamDetail,
+  content ends cleanly at the status-bar line.
+- **§5** — iOS `LaunchScreen.storyboard` + `LaunchLogo.imageset`; Android
+  `LaunchTheme` + `launch_screen.xml` + `colors.xml`, `MainActivity` theme swap.
+  `postSplashScreenTheme` dropped (needs `core-splashscreen`, out of scope).
+  iOS build + Android `processDebugResources` both pass.
+- **§1** — hero card gone for create; quick-capture is a flat block. Verified:
+  the composer opens straight on "What do you remember?" + field.
+- **§2** — saved sheet is checkmark + "Saved" + one preview line + date/time +
+  Keep capturing / Open / Continue later. Verified.
+- **§3** — `DreamReflectionSection` returns `null` when `isFreshCapture`
+  (`justSaved` or `createdAt` < 24h); older dreams unchanged. Sweet copy
+  replaced, en + uk. Verified: a just-saved dream shows Capture only.
+
+### Deferred (smaller polish, follow-up)
+
+- The secondary capture mode is still a full "Voice note" card, not a
+  "🎙 Record instead" one-line switch. The `activeMode` state and the flat
+  voice body were not built.
+- DreamDetail header still shows six action buttons; archive/share/delete were
+  not moved into a `···` menu.
+- "Dream analysis" when the analysis layer is off still renders as a full
+  section + card rather than one muted line.
+- `captureFollowUp.ts` / `postSaveFollowUp.ts` + a batch of `postSave*` copy
+  keys are now dead — spawned as a cleanup task.
+- Pre-existing LogBox warning ("Open debugger to view warnings") is unrelated to
+  this work and still shows in dev.
